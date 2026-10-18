@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VCP Voice Lab</title>
+<!-- TTV-TTS pack · voice-lab.html · by ZcarecroW (twitch.tv/zcarecrow) · MIT License
+     Creates a consistent set of "role" voices in Voice Creator Pro for ttv-tts.html:
+     6 roles (young woman, young man, woman ~40, man ~40, elderly woman, elderly man) × the languages you pick.
+     Every voice is designed from a text description, checked with speech recognition, saved,
+     primed once (so /speak streaming works) and verified. Open this file in your normal browser. -->
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --fg: #1d2129; --muted: #667085; --line: #e4e7ec;
+    --accent: #5b4cf0; --accent-fg: #ffffff; --ok: #12805c; --warn: #b54708; --err: #c4320a;
+    --ok-bg: #e7f6ef; --warn-bg: #fdf3e7; --err-bg: #fdecea; --code: #f2f4f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1115; --card: #171a21; --fg: #e6e8ee; --muted: #98a2b3; --line: #2a2f3a;
+      --accent: #8b7dff; --accent-fg: #0f1115; --ok: #3ccf91; --warn: #f5b546; --err: #ff7a6b;
+      --ok-bg: #12261f; --warn-bg: #2a2114; --err-bg: #2c1714; --code: #1f232c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 28px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 0 0 12px; }
+  p.lead { color: var(--muted); margin: 0 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+  .note { background: var(--warn-bg); border-color: transparent; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  label { font-size: 13px; color: var(--muted); }
+  .field label { display: block; margin-bottom: 4px; }
+  input[type=text], input[type=password], input[type=number], textarea { width: 100%; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  textarea { min-height: 54px; resize: vertical; font-size: 14px; }
+  .langs { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px 12px; }
+  .langs label, .opt { display: flex; gap: 8px; align-items: center; color: var(--fg); font-size: 14px; }
+  .roles { display: grid; gap: 10px; }
+  .role { display: grid; grid-template-columns: 26px 150px 1fr; gap: 10px; align-items: start; }
+  @media (max-width: 640px) { .role { grid-template-columns: 26px 1fr; } .role textarea { grid-column: 1 / -1; } }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+  button { font: inherit; font-weight: 600; border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+  button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  button:disabled { opacity: .55; cursor: default; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 13px; border-top: 0; }
+  .pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--code); color: var(--muted); white-space: nowrap; }
+  .pill.ok { background: var(--ok-bg); color: var(--ok); } .pill.warn { background: var(--warn-bg); color: var(--warn); } .pill.err { background: var(--err-bg); color: var(--err); }
+  .heard { color: var(--muted); font-size: 13px; max-width: 360px; }
+  #log { font: 12.5px/1.5 ui-monospace, Consolas, monospace; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; max-height: 260px; overflow: auto; white-space: pre-wrap; }
+  code { background: var(--code); border-radius: 5px; padding: 1px 5px; font: 13px ui-monospace, Consolas, monospace; }
+  .small { font-size: 13px; color: var(--muted); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>VCP Voice Lab</h1>
+  <p class="lead">Creates a consistent set of role voices in Voice Creator Pro for <code>ttv-tts.html</code> (<code>voices.mode: 'perUserLanguage'</code>). Background: <a href="readme.html#voices">readme → Voices</a>.</p>
+
+  <section class="card note">
+    <b>Before you start</b>
+    <ul class="small" style="margin:6px 0 0;padding-left:18px">
+      <li>This writes new voices into your VCP voice library (existing names are skipped, nothing is deleted). Use <b>Dry run</b> first to listen to the results.</li>
+      <li>The GPU of the VCP PC is busy for a few minutes (roughly 30–60 s per voice incl. checks and priming). Don't run it during a stream.</li>
+      <li>Voice design needs a model that supports it (Qwen3-TTS does). The speech check uses VCP's speech recognition; Japanese, Chinese and Korean are only length-checked by default.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>1 · Connection</h2>
+    <div class="grid">
+      <div class="field"><label for="url">VCP base URL</label><input type="text" id="url" value="http://127.0.0.1:8100"></div>
+      <div class="field"><label for="key">API key (empty if none)</label><input type="password" id="key" autocomplete="off"></div>
+    </div>
+    <div class="row"><label class="opt"><input type="checkbox" id="remember"> remember in this browser (shared with connection-check.html)</label></div>
+  </section>
+
+  <section class="card">
+    <h2>2 · Languages</h2>
+    <div class="langs" id="langs"></div>
+  </section>
+
+  <section class="card">
+    <h2>3 · Roles</h2>
+    <p class="small" style="margin-top:0">The role number is part of the voice name, so the same viewer keeps the same role in every language. Keep the same roles for all languages. You can edit the descriptions (English works best).</p>
+    <div class="roles" id="roles"></div>
+  </section>
+
+  <section class="card">
+    <h2>4 · Options</h2>
+    <div class="grid">
+      <div class="field"><label for="tpl">Name template ({lang}, {n}, {name})</label><input type="text" id="tpl" value="TTS-{lang} {n} {name}"></div>
+      <div class="field"><label for="maxErr">Max. error rate in speech check</label><input type="number" id="maxErr" value="0.12" min="0" max="1" step="0.01"></div>
+      <div class="field"><label for="attempts">Attempts per voice</label><input type="number" id="attempts" value="3" min="1" max="6"></div>
+    </div>
+    <div class="row">
+      <label class="opt"><input type="checkbox" id="asr" checked> check every voice with speech recognition</label>
+      <label class="opt"><input type="checkbox" id="dry"> dry run (generate &amp; check only – don't save)</label>
+    </div>
+    <p class="small">Keep <code>TTS-{lang} </code> at the start – ttv-tts finds its language pools by that prefix (<code>voices.languagePrefix</code>). Reference audio must be 3–10 s long; longer takes are retried automatically.</p>
+    <div class="row">
+      <button id="plan">Show plan</button>
+      <button class="primary" id="start">Start</button>
+      <button id="stop" disabled>Stop</button>
+      <span class="small" id="summary"></span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>5 · Results</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Voice</th><th>Status</th><th>Length</th><th>Check</th><th>Heard</th><th></th></tr></thead>
+      <tbody id="rows"><tr><td colspan="6" class="small">Press “Show plan” or “Start”.</td></tr></tbody>
+    </table></div>
+    <h2 style="margin-top:18px">Log</h2>
+    <div id="log"></div>
+  </section>
+</main>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const STORE = 'ttv-tts-tools';
+
+/* ───────── language data: reference sentence (gender-neutral, ~6–8 s), check sentence, names per role ───────── */
+const LANGS = {
+  en: { label: 'English', vcp: 'English', asr: true, accent: 'Native speaker of American English with a natural General American accent.',
+        text: "Hey everyone, it's great to see you here again today. Let's see what else we're going to experience in the stream.",
+        verify: 'Thanks for the follow, that really means a lot to me!', names: ['Emma', 'Jake', 'Rachel', 'Michael', 'Margaret', 'Arthur'] },
+  de: { label: 'German', vcp: 'German', asr: true, accent: 'Native German speaker with standard High German pronunciation and no foreign accent.',
+        text: 'Hallo zusammen, schön dass ihr heute wieder dabei seid. Mal sehen, was wir im Stream heute noch alles erleben werden.',
+        verify: 'Danke für den Follow, das freut mich wirklich sehr!', names: ['Lena', 'Jonas', 'Sabine', 'Thomas', 'Helga', 'Klaus'] },
+  ru: { label: 'Russian', vcp: 'Russian', asr: true, accent: 'Native Russian speaker with standard Moscow pronunciation and no foreign accent.',
+        text: 'Всем привет, как здорово снова видеть вас здесь. Посмотрим, что ещё интересного произойдёт сегодня на стриме.',
+        verify: 'Спасибо за подписку, мне это очень приятно!', names: ['Anya', 'Dima', 'Olga', 'Igor', 'Galina', 'Viktor'] },
+  fr: { label: 'French', vcp: 'French', asr: true, accent: 'Native French speaker from France with standard Parisian pronunciation and no foreign accent.',
+        text: "Salut tout le monde, c'est super de vous revoir ici aujourd'hui. Voyons ce qui va encore se passer pendant le stream.",
+        verify: 'Merci pour le follow, ça me fait vraiment plaisir !', names: ['Chloe', 'Lucas', 'Isabelle', 'Laurent', 'Monique', 'Bernard'] },
+  es: { label: 'Spanish', vcp: 'Spanish', asr: true, accent: 'Native Spanish speaker with a neutral, standard accent and no foreign accent.',
+        text: 'Hola a todos, qué bueno verlos de nuevo por aquí hoy. Vamos a ver qué más pasa hoy en el directo.',
+        verify: 'Gracias por el follow, ¡me alegra muchísimo!', names: ['Lucia', 'Mateo', 'Carmen', 'Javier', 'Dolores', 'Ramon'] },
+  it: { label: 'Italian', vcp: 'Italian', asr: true, accent: 'Native Italian speaker with standard Italian pronunciation and no foreign accent.',
+        text: "Ciao a tutti, che bello rivedervi qui anche oggi. Vediamo cos'altro succederà oggi nella live.",
+        verify: 'Grazie per il follow, mi fa davvero piacere!', names: ['Giulia', 'Luca', 'Francesca', 'Marco', 'Rosa', 'Giuseppe'] },
+  pt: { label: 'Portuguese', vcp: 'Portuguese', asr: true, accent: 'Native Brazilian Portuguese speaker with a natural Brazilian accent.',
+        text: 'Olá a todos, que bom ver vocês aqui de novo hoje. Vamos ver o que mais vai acontecer na live.',
+        verify: 'Valeu pelo follow, isso me deixa muito feliz!', names: ['Ana', 'Gabriel', 'Fernanda', 'Ricardo', 'Lourdes', 'Antonio'] },
+  ja: { label: 'Japanese', vcp: 'Japanese', asr: false, accent: 'Native Japanese speaker with standard Tokyo pronunciation.',
+        text: 'みなさん、こんにちは。今日もまた来てくれてうれしいです。配信でこれから何が起きるか楽しみですね。',
+        verify: 'フォローありがとうございます、本当にうれしいです！', names: ['Yui', 'Haruto', 'Yoko', 'Takeshi', 'Kazuko', 'Hiroshi'] },
+  zh: { label: 'Chinese', vcp: 'Chinese', asr: false, accent: 'Native Mandarin Chinese speaker with standard Beijing pronunciation.',
+        text: '大家好，很高兴今天又在这里见到你们。让我们看看今天的直播还会发生什么吧。',
+        verify: '谢谢你的关注，我真的很开心！', names: ['Mei', 'Hao', 'Lina', 'Wei', 'Guilan', 'Jianguo'] },
+  ko: { label: 'Korean', vcp: 'Korean', asr: false, accent: 'Native Korean speaker with standard Seoul pronunciation.',
+        text: '여러분 안녕하세요, 오늘도 다시 만나서 정말 반가워요. 오늘 방송에서 또 어떤 일이 일어날지 기대돼요.',
+        verify: '팔로우해 주셔서 감사합니다, 정말 기뻐요!', names: ['Jiwoo', 'Minjun', 'Eunji', 'Sungho', 'Soonja', 'Youngsoo'] },
+};
+const ROLES = [
+  ['young woman',   'A young woman in her early twenties with a bright, friendly and cheerful voice, lively but clear.'],
+  ['young man',     'A young man in his early twenties with a relaxed, casual and friendly voice, medium pitch, easygoing gamer vibe.'],
+  ['woman ~40',     'A woman around forty with a warm, calm and confident voice and clear articulation.'],
+  ['man ~40',       'A man around forty with a deep, resonant, calm and friendly voice.'],
+  ['elderly woman', 'An elderly woman around seventy with a gentle, kind and warm voice, speaking at a slightly slower pace.'],
+  ['elderly man',   'An elderly man around seventy with a warm, slightly raspy storyteller voice, speaking at a relaxed pace.'],
+];
+
+/* ───────── UI setup ───────── */
+$('langs').innerHTML = Object.entries(LANGS).map(([code, l]) =>
+  `<label><input type="checkbox" data-lang="${code}" ${code === 'en' ? 'checked' : ''}> ${l.label} <span class="small">(${code})</span></label>`).join('');
+$('roles').innerHTML = ROLES.map(([label, desc], i) =>
+  `<div class="role"><input type="checkbox" data-role="${i}" checked style="margin-top:10px"><div style="padding-top:8px"><b>${i + 1}</b> · ${label}</div><textarea data-desc="${i}">${desc}</textarea></div>`).join('');
+
+try {
+  const s = JSON.parse(localStorage.getItem(STORE) || 'null');
+  if (s) { $('url').value = s.url || $('url').value; $('key').value = s.key || ''; $('remember').checked = true; }
+} catch { /* storage not available */ }
+function saveSettings() {
+  try {
+    const old = JSON.parse(localStorage.getItem(STORE) || '{}');
+    if ($('remember').checked) localStorage.setItem(STORE, JSON.stringify({ ...old, url: base(), key: $('key').value.trim() }));
+    else localStorage.removeItem(STORE);
+  } catch { /* ignore */ }
+}
+
+/* ───────── API helpers ───────── */
+const base = () => $('url').value.trim().replace(/\/+$/, '');
+function url(path, q = {}) {
+  const u = new URL(base() + path);
+  for (const [k, v] of Object.entries(q)) u.searchParams.set(k, v);
+  const key = $('key').value.trim();
+  if (key) u.searchParams.set('api_key', key);
+  return u.toString();
+}
+async function api(path, { method = 'GET', body, query, timeout = 600000 } = {}) {
+  const res = await fetch(url(path, query), { method, headers: body ? { 'Content-Type': 'application/json' } : undefined, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(timeout) });
+  const text = await res.text(); let data = null; try { data = JSON.parse(text); } catch { /* not JSON */ }
+  if (!res.ok) throw new Error(`${method} ${path} → HTTP ${res.status}: ${(data && JSON.stringify(data.detail || data.error || data)) || text.slice(0, 200)}`);
+  return data;
+}
+
+function log(msg) { const t = new Date().toLocaleTimeString(); $('log').textContent += `${t}  ${msg}\n`; $('log').scrollTop = 1e9; }
+
+function wavSeconds(b64) {
+  const head = Uint8Array.from(atob(b64.slice(0, 80)), c => c.charCodeAt(0));
+  const dv = new DataView(head.buffer);
+  const rate = dv.getUint32(24, true), ch = dv.getUint16(22, true), bits = dv.getUint16(34, true);
+  return (b64.length * 3 / 4 - 44) / (rate * ch * bits / 8);
+}
+
+// error rate: words for languages with spaces, characters for Japanese/Chinese
+function errorRate(ref, hyp, lang) {
+  const norm = s => s.toLowerCase().replace(/ё/g, 'е').replace(/[^\p{L}\p{N}\s]/gu, ' ');
+  const a = lang === 'ja' || lang === 'zh' ? [...norm(ref).replace(/\s/g, '')] : norm(ref).split(/\s+/).filter(Boolean);
+  const b = lang === 'ja' || lang === 'zh' ? [...norm(hyp).replace(/\s/g, '')] : norm(hyp).split(/\s+/).filter(Boolean);
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length] / Math.max(1, a.length);
+}
+
+/* ───────── plan & table ───────── */
+let jobs = [], stopFlag = false;
+
+function selected() {
+  const langs = [...document.querySelectorAll('[data-lang]:checked')].map(e => e.dataset.lang);
+  const roles = [...document.querySelectorAll('[data-role]:checked')].map(e => Number(e.dataset.role));
+  return { langs, roles };
+}
+
+function voiceName(lang, role) {
+  return $('tpl').value.replace('{lang}', lang).replace('{n}', role + 1).replace('{name}', LANGS[lang].names[role]);
+}
+
+function buildJobs(existing) {
+  const { langs, roles } = selected();
+  const list = [];
+  for (const lang of langs) for (const role of roles) {
+    const name = voiceName(lang, role);
+    list.push({ lang, role, name, status: existing.has(name.toLowerCase()) ? 'exists' : 'planned', attempts: 0 });
+  }
+  return list;
+}
+
+const STATUS = {
+  planned: ['', 'planned'], exists: ['', 'already exists'], designing: ['warn', 'designing …'], checking: ['warn', 'checking …'],
+  checked: ['ok', 'check passed'], retry: ['warn', 'retry'], failed: ['err', 'failed'], saving: ['warn', 'saving …'],
+  saved: ['ok', 'saved'], priming: ['warn', 'priming …'], verifying: ['warn', 'verifying …'], done: ['ok', 'ready ✓'], dry: ['ok', 'dry run ✓'],
+};
+
+function render() {
+  if (!jobs.length) { $('rows').innerHTML = '<tr><td colspan="6" class="small">Nothing selected.</td></tr>'; return; }
+  $('rows').innerHTML = jobs.map((j, i) => {
+    const [cls, label] = STATUS[j.status] || ['', j.status];
+    const check = j.err != null ? `${Math.round(j.err * 100)} % errors${j.heardLang && j.heardLang !== LANGS[j.lang].vcp ? ' · ' + j.heardLang : ''}` : (j.checkNote || '');
+    return `<tr><td><b>${j.name}</b><div class="small">${ROLES[j.role][0]} · ${LANGS[j.lang].label}</div></td>
+      <td><span class="pill ${cls}">${label}</span>${j.msg ? `<div class="small">${j.msg}</div>` : ''}</td>
+      <td>${j.sec ? j.sec.toFixed(1) + ' s' : ''}</td><td>${check}</td><td class="heard">${j.heard ? j.heard.replace(/</g, '&lt;') : ''}</td>
+      <td>${j.b64 ? `<button data-play="${i}">▶</button>` : ''}</td></tr>`;
+  }).join('');
+  const c = s => jobs.filter(j => j.status === s).length;
+  $('summary').textContent = `${jobs.length} voices · ${c('done') + c('dry')} ready · ${c('exists')} existing · ${c('failed')} failed`;
+}
+$('rows').addEventListener('click', e => { const i = e.target.dataset.play; if (i != null) new Audio('data:audio/wav;base64,' + jobs[i].b64).play(); });
+
+async function existingNames() {
+  const v = (await api('/api/v1/voices', { timeout: 15000 })).voices || [];
+  return new Set(v.map(x => x.name.toLowerCase()));
+}
+
+async function showPlan() {
+  saveSettings();
+  try { jobs = buildJobs(await existingNames()); render(); log(`Plan: ${jobs.length} voices (${jobs.filter(j => j.status === 'exists').length} already exist).`); }
+  catch (e) { log('✕ ' + e.message); }
+}
+
+/* ───────── pipeline ───────── */
+async function design(j) {
+  const L = LANGS[j.lang];
+  const desc = document.querySelector(`[data-desc="${j.role}"]`).value.trim();
+  j.status = 'designing'; j.attempts++;
+  j.b64 = null; j.sec = 0; j.err = null; j.heard = ''; j.heardLang = null; j.checkNote = '';   // forget the rejected take
+  render();
+  const r = await api('/api/v1/generation/design', { method: 'POST', query: { sync: 'true' },
+    body: { instruct_text: `${desc} ${L.accent}`, target_text: L.text, language: L.vcp } });
+  if (!r.success || !r.audio_base64) throw new Error(r.error_detail || r.error_code || r.status || 'design failed');
+  j.b64 = r.audio_base64; j.sec = wavSeconds(r.audio_base64);
+}
+
+async function check(j) {
+  const L = LANGS[j.lang], maxErr = Number($('maxErr').value) || 0.12;
+  j.status = 'checking'; render();
+  if (j.sec < 3 || j.sec > 10) { j.ok = false; j.checkNote = `length ${j.sec.toFixed(1)} s (needs 3–10 s)`; return; }
+  if (!$('asr').checked || !L.asr) { j.ok = true; j.checkNote = 'length ok (no speech check)'; return; }
+  const t = await api('/api/v1/transcription/start', { method: 'POST', query: { sync: 'true' }, body: { audio_base64: j.b64, language: null } });
+  j.heard = t.text || ''; j.heardLang = t.language; j.err = errorRate(L.text, j.heard, j.lang);
+  j.ok = j.err <= maxErr && (!t.language || t.language === L.vcp);
+}
+
+async function run() {
+  saveSettings();
+  stopFlag = false; $('start').disabled = true; $('stop').disabled = false; $('plan').disabled = true; $('log').textContent = '';
+  const dry = $('dry').checked, maxAttempts = Number($('attempts').value) || 3;
+  try {
+    jobs = buildJobs(await existingNames()); render();
+    const todo = () => jobs.filter(j => !['exists', 'failed', 'checked'].includes(j.status));
+    log(`${todo().length} voices to create${dry ? ' (dry run – nothing is saved)' : ''}. Designing first, then checking – fewer model switches in VCP.`);
+
+    // 1+2. design all, then check all; retry the ones that failed the check
+    while (todo().length && !stopFlag) {
+      const batch = todo();
+      for (const j of batch) {
+        if (stopFlag) break;
+        try { await design(j); log(`designed ${j.name}: ${j.sec.toFixed(1)} s (attempt ${j.attempts})`); }
+        catch (e) { j.msg = e.message; log(`✕ design ${j.name}: ${e.message}`); if (j.attempts >= maxAttempts) j.status = 'failed'; }
+      }
+      for (const j of batch.filter(x => x.b64 && x.status === 'designing')) {
+        if (stopFlag) break;
+        try { await check(j); } catch (e) { j.ok = false; j.msg = e.message; }
+        if (j.ok) { j.status = 'checked'; j.msg = ''; log(`✓ check ${j.name}${j.err != null ? ` (${Math.round(j.err * 100)} % errors)` : ''}`); }
+        else { j.status = j.attempts >= maxAttempts ? 'failed' : 'retry'; log(`${j.status === 'failed' ? '✕' : '↻'} check ${j.name}: ${j.checkNote || `${Math.round((j.err || 1) * 100)} % errors, heard "${j.heard || ''}"`}`); }
+        render();
+      }
+    }
+
+    // 3. save → 4. prime → 5. verify
+    for (const j of jobs.filter(x => x.status === 'checked')) {
+      if (stopFlag) break;
+      if (dry) { j.status = 'dry'; render(); continue; }
+      const L = LANGS[j.lang];
+      try {
+        j.status = 'saving'; render();
+        const s = await api('/api/v1/voices', { method: 'POST', body: { name: j.name, audio_base64: j.b64, transcript: L.text, ref_text: L.text, voice_type: 'design', transcript_manual: true } });
+        if (!s.success) throw new Error(s.message || 'save failed');
+        j.id = s.voice.id; log(`saved ${j.name} (${j.id})`);
+
+        // VCP quirk: a voice created via the API must be cloned once before /speak streaming works
+        j.status = 'priming'; render();
+        const p = await api('/api/v1/generation/clone', { method: 'POST', query: { sync: 'true' }, body: { voice_id: j.id, target_text: L.verify, language: L.vcp } });
+        if (!p.success) throw new Error('priming failed: ' + (p.error_code || p.status));
+
+        j.status = 'verifying'; render();
+        const sp = await api('/api/v1/speak', { method: 'POST', body: { text: L.verify, voice: j.id, language: L.vcp, deliver: 'url' } });
+        const bytes = (await (await fetch(url(`/api/v1/streaming/${encodeURIComponent(sp.session_id)}/audio`))).arrayBuffer()).byteLength;
+        if (bytes <= 44) throw new Error('streaming test delivered no audio');
+        j.status = 'done'; j.msg = ''; log(`✓ ${j.name} ready (streaming test ${((bytes - 44) / 48000).toFixed(1)} s)`);
+      } catch (e) { j.status = 'failed'; j.msg = e.message; log(`✕ ${j.name}: ${e.message}`); }
+      render();
+    }
+    log(stopFlag ? 'Stopped.'
+      : dry ? 'Dry run finished – nothing was saved. Listen with ▶, then untick “dry run” and start again to save the voices.'
+      : 'Finished. Reload the ttv-tts browser source in OBS to use the new voices.');
+  } catch (e) {
+    log('✕ ' + e.message);
+  } finally {
+    $('start').disabled = false; $('stop').disabled = true; $('plan').disabled = false; render();
+  }
+}
+
+$('plan').onclick = showPlan;
+$('start').onclick = run;
+$('stop').onclick = () => { stopFlag = true; log('Stopping after the current step …'); };
+$('remember').onchange = saveSettings;
+</script>
+</body>
+</html>

@@ -1,0 +1,1578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Twitch Chat TTS</title>
+<!--
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  TTV-TTS – Twitch chat reader for OBS, powered by Voice Creator Pro  v1.0    ║
+║  by ZcarecroW (twitch.tv/zcarecrow) · MIT License · see readme.html          ║
+║  Updates & issues: https://github.com/ZcarecroW/ttv-tts                      ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║  What does this file do?                                                     ║
+║   • reads your Twitch chat anonymously (no login / token needed)             ║
+║   • detects the language of every message (en, de, ru, uk, fr, es, it, pt …) ║
+║   • handles Twitch, BTTV, FFZ and 7TV emotes as well as Unicode emojis       ║
+║   • sends the text to the REST API of Voice Creator Pro (VCP)                ║
+║   • plays the audio inside the browser source → it lands in the OBS mixer    ║
+║   • shows NOTHING (transparent) – except in debug mode                       ║
+║                                                                              ║
+║  OBS setup:                                                                  ║
+║   1. Add source → Browser → tick "Local file" → select this file             ║
+║   2. Width/height don't matter (e.g. 10 × 10) – the source is invisible      ║
+║   3. TICK "Control audio via OBS" (otherwise your stream hears nothing)      ║
+║   4. Do NOT tick "Shutdown source when not visible"                          ║
+║   5. After editing the config: source → "Refresh"                            ║
+║   With 5.1/7.1 in OBS: the voice sits on front left + right (the first two   ║
+║   level meters) – that is normal and correct for stereo sources.             ║
+║   Crackles/beeps in OBS: set CONFIG.vcp.playback to 'buffered'.              ║
+║                                                                              ║
+║  Testing in a normal browser: open the file and append "?debug",             ║
+║  e.g.  file:///C:/path/to/ttv-tts.html?debug                                 ║
+║  A panel with status, log and a test input field appears.                    ║
+║                                                                              ║
+║  Chat commands (broadcaster & mods only, see CONFIG.modCommands):            ║
+║   !skip · !ttsclear · !ttspause · !ttsresume · !ttsvol 50                    ║
+║   !ttsmute <name> · !ttsunmute <name>                                        ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+-->
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  CONFIGURATION – this is usually the only part you need to change
+ *  Every option is explained in detail in readme.html → "Configuration reference".
+ * ═══════════════════════════════════════════════════════════════════════════ */
+const CONFIG = {
+
+  // ── 1. TWITCH ──────────────────────────────────────────────────────────────
+  twitch: {
+    channel: 'your_channel_name',      // your channel name (lower case, without #)
+  },
+
+  // ── 2. VOICE CREATOR PRO (REST API) ────────────────────────────────────────
+  vcp: {
+    // Same PC as OBS:   'http://127.0.0.1:8100'
+    // Second PC on LAN: 'http://<IP of the VCP PC>:8101' (8101 = port proxy → VCP on 8100, see readme)
+    baseUrl: 'http://127.0.0.1:8100',
+    apiKey:  '',                       // the API key set in VCP; leave empty if VCP has no key
+
+    // Which API endpoint generates the speech?
+    //   'speak' = POST /api/v1/speak  → saved voices (clones / designs), streams live
+    //                                   (recommended: lowest latency)
+    //   'tts'   = POST /api/v1/tts/generate → built-in speakers (e.g. Ryan, Vivian),
+    //                                   waits until the whole message is finished
+    endpoint: 'speak',
+
+    // Where should the sound come out? (endpoint 'speak' only)
+    //   'obs'    = in this browser source → OBS mixer → stream   (recommended)
+    //   'vcp-pc' = on the speakers of the VCP PC
+    playOn: 'obs',
+
+    model: null,              // null = default model from VCP; otherwise e.g. 'qwen3-tts', 'omnivoice'
+    // How is audio played back?
+    //   'stream'   = immediately, while VCP is still generating (Web Audio, lowest latency)
+    //   'buffered' = download completely first, then play with the normal audio element
+    //                (more robust; try this if OBS crackles/beeps – thanks to prefetch hardly slower)
+    playback: 'stream',
+    prebufferSec: 2.0,        // 'stream': this much audio is buffered before playback starts (against dropouts)
+    sampleRate: 24000,        // sample rate of the VCP streams (Qwen3: 24000)
+    warmup: true,             // silently "warm up" once at start – the very first request after
+                              // a VCP restart otherwise takes ~20–30 s (model is being loaded)
+    prefetch: true,           // generate the next message while the current one is still playing
+                              // → almost no gap between messages (VCP generates ~2× faster than real time)
+    requestTimeoutSec: 20,    // how long to wait for an API response
+    checkLanguagesOnServer: true, // asks VCP which languages the model supports; others are sent as 'Auto'
+  },
+
+  // ── 3. VOICES ──────────────────────────────────────────────────────────────
+  voices: {
+    // 'perUserLanguage' = every viewer gets a fixed ROLE (e.g. "young woman"); it is spoken
+    //                     by the native voice of the detected language (recommended)
+    // 'perUser'         = fixed voice per viewer from the whole pool, regardless of language
+    // 'perLanguage'     = voice depends on the language only (see language.languages.xx.voice)
+    // 'single'          = always the same voice (voices.default)
+    mode: 'perUserLanguage',
+
+    // For 'perUserLanguage': voices whose name starts like this form the pool of that language.
+    // Same number = same role: "TTS-de 1 Lena", "TTS-en 1 Emma", "TTS-ru 1 Anya" = young woman.
+    // Roles 1–6: young woman · young man · woman ~40 · man ~40 · elderly woman · elderly man
+    // (voice-lab.html creates exactly such a voice set for you)
+    languagePrefix: 'TTS-{lang} ',
+    fallbackPoolLanguage: 'en', // languages without their own pool (fr, es, it, …) use these voices
+
+    // Voice pool for 'perUser'. EMPTY = automatically load ALL saved voices from VCP.
+    // Otherwise list names or IDs, e.g. ['Morgan', 'Lena', 'Dmitri']
+    pool: [],
+    exclude: [],              // never assign these voices automatically (name or ID)
+
+    default: null,            // fallback voice; null = default agent voice from the VCP settings
+
+    // Fixed voice for specific viewers (login name lower case → voice name/ID)
+    users: {
+      // 'your_channel_name': 'TTS-en 4 Michael',
+    },
+  },
+
+  // ── 4. WHAT IS READ OUT? ───────────────────────────────────────────────────
+  reading: {
+    // 'all'        = all messages
+    // 'command'    = only "!tts text"   (command see below)
+    // 'privileged' = only roles from allowedRoles
+    mode: 'all',
+    command: '!tts',
+    allowedRoles: ['broadcaster', 'moderator', 'vip', 'subscriber'],
+
+    // Read only a channel points reward? Enter the reward ID here.
+    // (In debug mode the ID of every redeemed message is shown in the log.)
+    rewardId: '',
+
+    ignoreBroadcaster: false, // ignore your own messages?
+    ignoreUsers: [            // bots etc. (lower case)
+      'nightbot', 'streamelements', 'streamlabs', 'moobot', 'fossabot', 'wizebot',
+      'sery_bot', 'soundalerts', 'botrixoficial', 'kofistreambot', 'blerp',
+      'pokemoncommunitygame', 'tangiabot', 'streamstickers', 'lumiastream', 'commanderroot',
+    ],
+    ignorePrefixes: ['!'],    // messages starting with these are ignored (bot commands)
+    readSubMessages: true,    // also read the text people attach to their resub/sub
+
+    maxChars: 999,            // longer messages are shortened – preferably at a sentence end (Twitch max: 500)
+    maxSecondsPerMessage: 99, // no message is played longer than this
+    userCooldownSec: 0,       // minimum gap per viewer (0 = off)
+    maxQueue: 15,             // max. waiting messages; on overflow the oldest one is dropped
+    pauseBetweenMs: 350,      // short pause between two messages
+    volume: 1.0,              // 0.0 – 1.0 (in addition to the OBS fader)
+  },
+
+  // ── 5. NAMES ───────────────────────────────────────────────────────────────
+  names: {
+    // 'onChange' = "Max says: …" only if someone else spoke before
+    // 'always'   = always · 'never' = never
+    announce: 'onChange',
+    onChangeResetSec: 90,     // after this many seconds of silence the name is announced again
+    cleanup: true,            // "max_mustermann123" → "max mustermann"
+    // Pronunciation help for names (login name lower case → spoken name)
+    aliases: {
+      // 'xx_gamer_xx': 'Gamer',
+    },
+  },
+
+  // ── 6. LANGUAGE DETECTION ──────────────────────────────────────────────────
+  language: {
+    default: 'en',            // used when the language is not detected reliably (e.g. "gg", "ok")
+    unsupported: 'auto',      // detected but unsupported language: 'auto' (VCP decides) or a code like 'en'
+    rememberUserMinutes: 15,  // unclear messages get the last detected language of that viewer
+
+    // vcp   = language name VCP expects (null = not supported)
+    // say   = template for the name announcement ({user} and {msg})
+    // link  = word spoken instead of a link
+    // beep  = replacement for blocked words
+    // voice = voice for voices.mode 'perLanguage'
+    // Note: Qwen3-TTS supports de/en/ru/fr/es/it/pt/ja/zh/ko – OmniVoice many more.
+    languages: {
+      de: { vcp: 'German',     say: '{user} sagt: {msg}',     link: 'Link',      beep: 'piep', voice: null },
+      en: { vcp: 'English',    say: '{user} says: {msg}',     link: 'link',      beep: 'beep', voice: null },
+      ru: { vcp: 'Russian',    say: '{user} пишет: {msg}',    link: 'ссылка',    beep: 'пип',  voice: null },
+      uk: { vcp: 'Ukrainian',  say: '{user} пише: {msg}',     link: 'посилання', beep: 'піп',  voice: null },
+      fr: { vcp: 'French',     say: '{user} dit : {msg}',     link: 'lien',      beep: 'bip',  voice: null },
+      es: { vcp: 'Spanish',    say: '{user} dice: {msg}',     link: 'enlace',    beep: 'pip',  voice: null },
+      it: { vcp: 'Italian',    say: '{user} dice: {msg}',     link: 'link',      beep: 'bip',  voice: null },
+      pt: { vcp: 'Portuguese', say: '{user} diz: {msg}',      link: 'link',      beep: 'bip',  voice: null },
+      nl: { vcp: 'Dutch',      say: '{user} zegt: {msg}',     link: 'link',      beep: 'piep', voice: null },
+      pl: { vcp: 'Polish',     say: '{user} pisze: {msg}',    link: 'link',      beep: 'pip',  voice: null },
+      tr: { vcp: 'Turkish',    say: '{user} diyor ki: {msg}', link: 'bağlantı',  beep: 'bip',  voice: null },
+      ja: { vcp: 'Japanese',   say: '{user}さん：{msg}',       link: 'リンク',     beep: 'ピー', voice: null },
+      zh: { vcp: 'Chinese',    say: '{user}说：{msg}',         link: '链接',       beep: '哔',   voice: null },
+      ko: { vcp: 'Korean',     say: '{user}님: {msg}',         link: '링크',       beep: '삐',   voice: null },
+    },
+  },
+
+  // ── 7. EMOTES (Twitch, BTTV, FFZ, 7TV) ─────────────────────────────────────
+  emotes: {
+    // 'once'   = read every emote only once ("KEKW KEKW KEKW" → "kek")
+    // 'remove' = silently remove emotes
+    // 'keep'   = read everything literally
+    mode: 'once',
+    maxPerMessage: 3,         // max. different emotes per message (with 'once')
+    splitWords: true,         // "PepeLaugh" → "Pepe Laugh", "catJAM" → "cat JAM"
+    skipEmoteOnly: false,     // skip messages that consist of emotes only?
+    providers: { bttv: true, ffz: true, seventv: true },
+    refreshMinutes: 10,       // reload the emote lists regularly (new emotes)
+
+    // Pronunciation of emotes ('' = never read). Case-insensitive.
+    // Only applies to words that ARE emotes in your channel (Twitch, or BTTV/FFZ/7TV channel/global).
+    aliases: {
+      'KEKW': 'kek', 'OMEGALUL': 'omega lul', 'LUL': 'lul', 'LULW': 'lul', 'LuL': 'lul',
+      'Pog': 'pog', 'PogU': 'pog', 'POGGERS': 'poggers', 'PogChamp': 'pog champ',
+      'monkaS': 'monka', 'monkaW': 'monka', 'Sadge': 'sadge', '4Head': 'for head',
+      '5Head': 'five head', 'EZ': 'easy', 'Kappa': 'kappa', 'xD': 'x d',
+      // Twitch smileys sound odd when read out → silent
+      ':)': '', ':(': '', ':D': '', ':P': '', ':p': '', ';)': '', ';P': '', ';p': '', ':O': '', ':o': '',
+      ':/': '', ':|': '', ':\\': '', 'B)': '', 'O_o': '', 'o_O': '', 'R)': '', '>(': '', '<3': '',
+    },
+  },
+
+  // ── 8. UNICODE EMOJIS 😂 ❤️ 🔥 ─────────────────────────────────────────────
+  emojis: {
+    // 'describe' = known emojis once as a word ("😂😂😂" → "laughing"), unknown ones removed
+    //              (dictionary further below: EMOJI_WORDS – for de, en, ru)
+    // 'remove'   = remove all emojis
+    // 'keep'     = send unchanged to VCP
+    mode: 'describe',
+    maxPerMessage: 2,
+  },
+
+  // ── 9. TEXT CLEANUP ────────────────────────────────────────────────────────
+  text: {
+    links: 'replace',         // 'replace' (= "link") · 'remove' · 'skip' (ignore the whole message)
+    mentions: 'name',         // '@max' → 'name' (= "max") · 'remove'
+    collapseRepeats: true,    // "sooooo" → "so", "!!!!!" → "!", "hahahahaha" → "haha"
+    fixShouting: true,        // ALL CAPS → lower case (otherwise some models spell it out)
+
+    // Word replacements (whole words, case-insensitive). 'all' applies to every language.
+    replacements: {
+      all: { 'w/': 'with' },
+      de:  { 'gg': 'gut gespielt', 'wp': 'well played', 'brb': 'bin gleich zurück', 'afk': 'a f k', 'vllt': 'vielleicht', 'iwie': 'irgendwie', 'kp': 'keine Ahnung', 'mmn': 'meiner Meinung nach' },
+      en: { 'gg': 'good game', 'wp': 'well played', 'brb': 'be right back', 'idk': "I don't know", 'imo': 'in my opinion', 'tbh': 'to be honest', 'ty': 'thank you', 'np': 'no problem' },
+      ru: { 'спс': 'спасибо', 'пж': 'пожалуйста', 'хз': 'не знаю' },
+    },
+
+    // Blocked words (partial match, case-insensitive)
+    blockedWords: [],
+    blockedMode: 'skip',      // 'skip' = drop the message · 'beep' = replace the word with "beep"
+  },
+
+  // ── 10. CHAT COMMANDS FOR MODS ─────────────────────────────────────────────
+  modCommands: {
+    enabled: true,
+    roles: ['broadcaster', 'moderator'],
+    skip: '!skip',            // stop the current message
+    clear: '!ttsclear',       // clear the queue
+    pause: '!ttspause',
+    resume: '!ttsresume',
+    volume: '!ttsvol',        // "!ttsvol 50"
+    mute: '!ttsmute',         // "!ttsmute name" – mute a viewer (persisted)
+    unmute: '!ttsunmute',
+    skipOnTimeout: true,      // ban/timeout/deleted message → remove it from the queue
+  },
+
+  // ── 11. DEBUG ──────────────────────────────────────────────────────────────
+  debug: false,               // true = show the status panel (or open the file with "?debug")
+};
+
+/* Emoji dictionary for emojis.mode = 'describe'  →  [German, English, Russian]
+   Other languages: the emoji is removed. Just add your own lines / columns
+   (add the language code to EMOJI_WORD_LANGS and a word to every row). */
+const EMOJI_WORDS = {
+  '😂': ['lachend', 'laughing', 'смеётся'],          '🤣': ['lachend', 'laughing', 'смеётся'],
+  '😆': ['lachend', 'laughing', 'смеётся'],          '😹': ['lachend', 'laughing', 'смеётся'],
+  '😭': ['weinend', 'crying', 'плачет'],             '😢': ['traurig', 'sad', 'грустно'],
+  '😞': ['traurig', 'sad', 'грустно'],               '😔': ['traurig', 'sad', 'грустно'],
+  '🙁': ['traurig', 'sad', 'грустно'],               '☹': ['traurig', 'sad', 'грустно'],
+  '😀': ['grinsend', 'grinning', 'улыбается'],       '😃': ['grinsend', 'grinning', 'улыбается'],
+  '😄': ['grinsend', 'grinning', 'улыбается'],       '😁': ['grinsend', 'grinning', 'улыбается'],
+  '😊': ['lächelnd', 'smiling', 'улыбается'],        '🙂': ['lächelnd', 'smiling', 'улыбается'],
+  '😅': ['verlegen lachend', 'nervous laugh', 'нервно смеётся'],
+  '😉': ['zwinker', 'wink', 'подмигивает'],          '😏': ['grinsend', 'smirk', 'ухмыляется'],
+  '😍': ['verliebt', 'heart eyes', 'влюблён'],        '🥰': ['verliebt', 'in love', 'влюблён'],
+  '😘': ['Küsschen', 'kiss', 'поцелуй'],             '😎': ['cool', 'cool', 'круто'],
+  '🤔': ['hmm', 'hmm', 'хмм'],                       '😮': ['oh', 'oh', 'ох'],
+  '😯': ['oh', 'oh', 'ох'],                          '😲': ['wow', 'wow', 'вау'],
+  '😱': ['schockiert', 'shocked', 'в шоке'],          '😳': ['oha', 'whoa', 'ого'],
+  '😡': ['wütend', 'angry', 'злится'],               '😠': ['wütend', 'angry', 'злится'],
+  '🤬': ['fluchend', 'cursing', 'ругается'],          '😤': ['schnaubt', 'huff', 'фыркает'],
+  '🙄': ['Augenrollen', 'eye roll', 'закатывает глаза'],
+  '😴': ['schläft', 'sleeping', 'спит'],             '🥱': ['gähn', 'yawn', 'зевает'],
+  '🤯': ['Kopf explodiert', 'mind blown', 'взрыв мозга'],
+  '🥺': ['bitte bitte', 'pretty please', 'ну пожалуйста'],
+  '😬': ['autsch', 'yikes', 'ой'],                   '😇': ['unschuldig', 'innocent', 'невинно'],
+  '🤗': ['Umarmung', 'hug', 'обнимашки'],            '🤫': ['psst', 'shh', 'тсс'],
+  '🤢': ['bäh', 'eww', 'фу'],                        '🤮': ['bäh', 'eww', 'фу'],
+  '🥶': ['eiskalt', 'freezing', 'холодно'],          '🥵': ['heiß', 'hot', 'жарко'],
+  '😋': ['lecker', 'yummy', 'вкусно'],               '🤑': ['Geld', 'money', 'деньги'],
+  '🤡': ['Clown', 'clown', 'клоун'],                 '💀': ['tot', 'dead', 'умер'],
+  '☠': ['tot', 'dead', 'умер'],                      '👻': ['Geist', 'ghost', 'призрак'],
+  '🔥': ['Feuer', 'fire', 'огонь'],                  '💯': ['hundert Prozent', 'hundred percent', 'сто процентов'],
+  '❤': ['Herz', 'heart', 'сердечко'],                '🧡': ['Herz', 'heart', 'сердечко'],
+  '💛': ['Herz', 'heart', 'сердечко'],               '💚': ['Herz', 'heart', 'сердечко'],
+  '💙': ['Herz', 'heart', 'сердечко'],               '💜': ['Herz', 'heart', 'сердечко'],
+  '🖤': ['Herz', 'heart', 'сердечко'],               '🤍': ['Herz', 'heart', 'сердечко'],
+  '💖': ['Herzen', 'hearts', 'сердечки'],            '💕': ['Herzen', 'hearts', 'сердечки'],
+  '💗': ['Herzen', 'hearts', 'сердечки'],            '💞': ['Herzen', 'hearts', 'сердечки'],
+  '💔': ['gebrochenes Herz', 'broken heart', 'разбитое сердце'],
+  '👍': ['Daumen hoch', 'thumbs up', 'класс'],        '👎': ['Daumen runter', 'thumbs down', 'не нравится'],
+  '👏': ['Applaus', 'applause', 'аплодисменты'],     '🙏': ['danke', 'thanks', 'спасибо'],
+  '💪': ['stark', 'strong', 'сила'],                 '👀': ['Augen', 'eyes', 'глаза'],
+  '👋': ['winke winke', 'wave', 'привет'],           '🤝': ['Handschlag', 'handshake', 'рукопожатие'],
+  '🤷': ['Schulterzucken', 'shrug', 'пожимает плечами'],
+  '🤦': ['Facepalm', 'facepalm', 'фейспалм'],        '🫡': ['Salut', 'salute', 'салют'],
+  '🙈': ['upsi', 'oops', 'упс'],                     '🎉': ['Party', 'party', 'ура'],
+  '🥳': ['Party', 'party', 'ура'],                   '✨': ['glitzer', 'sparkles', 'блеск'],
+  '⭐': ['Stern', 'star', 'звезда'],                  '🌟': ['Stern', 'star', 'звезда'],
+  '🚀': ['Rakete', 'rocket', 'ракета'],              '🤖': ['Roboter', 'robot', 'робот'],
+  '🐐': ['GOAT', 'GOAT', 'легенда'],                 '🍿': ['Popcorn', 'popcorn', 'попкорн'],
+  '🍺': ['Bier', 'beer', 'пиво'],                    '🍻': ['Prost', 'cheers', 'за здоровье'],
+  '☕': ['Kaffee', 'coffee', 'кофе'],                 '🍕': ['Pizza', 'pizza', 'пицца'],
+  '🎮': ['Gaming', 'gaming', 'игры'],                '✅': ['Haken', 'check', 'галочка'],
+  '❌': ['nein', 'no', 'нет'],                        '⚠': ['Achtung', 'warning', 'внимание'],
+};
+const EMOJI_WORD_LANGS = ['de', 'en', 'ru'];
+</script>
+
+<style>
+  /* Invisible in OBS: everything transparent. Only the debug panel is visible. */
+  :root {
+    --panel-bg: rgba(14, 15, 20, 0.88);
+    --panel-fg: #e7e8ec;
+    --muted: #9aa0ad;
+    --line: rgba(255, 255, 255, 0.10);
+    --ok: #3ecf8e;
+    --warn: #f5b942;
+    --err: #ff6b6b;
+    --accent: #9b8cff;
+  }
+  html, body { margin: 0; padding: 0; background: transparent; overflow: hidden; }
+  #debug {
+    display: none; position: fixed; left: 16px; bottom: 16px;
+    width: min(620px, calc(100vw - 32px)); max-height: calc(100vh - 32px);
+    flex-direction: column; gap: 8px; box-sizing: border-box; padding: 12px;
+    background: var(--panel-bg); color: var(--panel-fg); border: 1px solid var(--line); border-radius: 10px;
+    font: 12px/1.45 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  #debug.on { display: flex; }
+  #debug .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  #debug .pill { padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  #debug .pill b { color: var(--panel-fg); font-weight: 600; }
+  #debug .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--muted); margin-right: 5px; vertical-align: 0; }
+  #debug .dot.ok { background: var(--ok); } #debug .dot.warn { background: var(--warn); } #debug .dot.err { background: var(--err); }
+  #debug input, #debug button {
+    font: inherit; color: var(--panel-fg); background: rgba(255,255,255,0.06);
+    border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px;
+  }
+  #debug input { min-width: 0; }
+  #debug #dbgUser { width: 110px; } #debug #dbgText { flex: 1; }
+  #debug button { cursor: pointer; } #debug button:hover { border-color: var(--accent); }
+  #debug #dbgLog { overflow-y: auto; min-height: 80px; max-height: 50vh; border-top: 1px solid var(--line); padding-top: 6px; }
+  #debug .l { white-space: pre-wrap; word-break: break-word; padding: 1px 0; }
+  #debug .l .t { color: var(--muted); } #debug .l.warn { color: var(--warn); } #debug .l.err { color: var(--err); }
+  #debug .l.say { color: #cfe3ff; } #debug .l.ok { color: var(--ok); }
+</style>
+</head>
+<body>
+<div id="debug" aria-live="polite">
+  <div class="row" id="dbgStatus"></div>
+  <form class="row" id="dbgForm" autocomplete="off">
+    <input id="dbgUser" value="TestUser" aria-label="Name">
+    <input id="dbgText" placeholder="Test message, e.g.: Привет всем 😂 KEKW KEKW" aria-label="Message">
+    <button type="submit">Speak</button>
+    <button type="button" id="dbgSkip">Skip</button>
+    <button type="button" id="dbgClear">Clear</button>
+    <button type="button" id="dbgPause">Pause</button>
+  </form>
+  <div id="dbgLog"></div>
+</div>
+
+<script>
+'use strict';
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  FROM HERE ON: PROGRAM CODE – normally nothing to change
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+const params = new URLSearchParams(location.search);
+const DEBUG = CONFIG.debug || params.has('debug');
+const STORAGE_KEY = 'ttv-tts:' + CONFIG.twitch.channel;
+
+const state = {
+  queue: [],
+  current: null,
+  paused: false,
+  volume: clamp(CONFIG.reading.volume, 0, 1),
+  roomId: null,
+  chat: 'connecting',            // connecting | ok | err
+  vcp: 'unknown',                // unknown | ok | err
+  vcpInfo: '',
+  thirdPartyEmotes: new Set(),
+  emoteCounts: { bttv: 0, ffz: 0, seventv: 0 },
+  voicePool: [],                 // [{id, name}] – voices per viewer are assigned from this
+  allVoices: [],                 // all voices VCP knows
+  langPools: {},                 // language → voices (voices.mode 'perUserLanguage')
+  vcpRetryTimer: null,
+  serverLanguages: null,         // Set of VCP language names or null (unknown)
+  userLang: new Map(),           // login → {lang, t}
+  userLastMsg: new Map(),        // login → timestamp
+  muted: new Set(loadStored().muted || []),
+  lastSpoken: { user: null, t: 0 },
+  wake: null,
+};
+
+/* ───────────────────────────── Helpers ───────────────────────────── */
+
+function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, Number(v) || 0)); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function escapeRegex(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+
+function loadStored() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch { return {}; }
+}
+function saveStored() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ muted: [...state.muted] })); } catch { /* ignore */ }
+}
+
+// Stable hash (FNV-1a) – so every viewer always gets the same voice
+function hash(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  return h >>> 0;
+}
+
+/* ───────────────────────────── Debug panel ───────────────────────────── */
+
+const ui = {
+  root: document.getElementById('debug'),
+  status: document.getElementById('dbgStatus'),
+  log: document.getElementById('dbgLog'),
+};
+
+function log(level, ...args) {
+  // Without debug only warnings/errors: every console line is sent to the OBS main process
+  if (!DEBUG && level !== 'err' && level !== 'warn') return;
+  const text = args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ');
+  (level === 'err' ? console.error : level === 'warn' ? console.warn : console.log)('[TTS]', text);
+  if (!DEBUG) return;
+  const line = document.createElement('div');
+  line.className = 'l ' + level;
+  const t = document.createElement('span');
+  t.className = 't';
+  t.textContent = new Date().toLocaleTimeString() + '  ';
+  line.append(t, text);
+  ui.log.prepend(line);
+  while (ui.log.childElementCount > 150) ui.log.lastChild.remove();
+}
+
+function renderStatus() {
+  if (!DEBUG) return;
+  const dot = s => `<span class="dot ${s === 'ok' ? 'ok' : s === 'err' ? 'err' : 'warn'}"></span>`;
+  const e = state.emoteCounts;
+  ui.status.innerHTML =
+    `<span class="pill">${dot(state.chat)}Chat <b>#${CONFIG.twitch.channel}</b></span>` +
+    `<span class="pill">${dot(state.vcp)}VCP <b>${state.vcpInfo || '…'}</b></span>` +
+    `<span class="pill">Emotes <b>${e.bttv}</b> BTTV · <b>${e.ffz}</b> FFZ · <b>${e.seventv}</b> 7TV</span>` +
+    `<span class="pill">Voices <b>${state.voicePool.length}</b>${Object.keys(state.langPools).length ? ' (' + Object.entries(state.langPools).map(([k, p]) => `${k} ${p.length}`).join(' · ') + ')' : ''}</span>` +
+    `<span class="pill">Queue <b>${state.queue.length}</b>${state.paused ? ' · <b>PAUSED</b>' : ''}</span>`;
+}
+
+function setupDebugPanel() {
+  if (!DEBUG) return;
+  ui.root.classList.add('on');
+  document.getElementById('dbgForm').addEventListener('submit', ev => {
+    ev.preventDefault();
+    const user = document.getElementById('dbgUser').value.trim() || 'TestUser';
+    const input = document.getElementById('dbgText');
+    if (!input.value.trim()) return;
+    handleChatMessage({
+      login: user.toLowerCase(), displayName: user, userId: 'test-' + user.toLowerCase(),
+      text: input.value, tags: {}, roles: new Set(['everyone']), id: 'test-' + Date.now(),
+    });
+    input.value = '';
+  });
+  document.getElementById('dbgSkip').onclick = () => skipCurrent('debug');
+  document.getElementById('dbgClear').onclick = () => clearQueue('debug');
+  document.getElementById('dbgPause').onclick = ev => {
+    state.paused = !state.paused;
+    ev.target.textContent = state.paused ? 'Resume' : 'Pause';
+    if (!state.paused) wakeWorker();
+    renderStatus();
+  };
+  renderStatus();
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  TWITCH CHAT (anonymous via IRC WebSocket)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+let ws = null;
+let reconnectDelay = 1000;
+
+function connectChat() {
+  state.chat = 'connecting'; renderStatus();
+  ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+  ws.onopen = () => {
+    ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
+    ws.send('PASS SCHMOOPIIE');
+    ws.send('NICK justinfan' + (10000 + Math.floor(Math.random() * 80000)));
+    ws.send('JOIN #' + CONFIG.twitch.channel.toLowerCase());
+  };
+  ws.onmessage = ev => ev.data.split('\r\n').filter(Boolean).forEach(handleIrcLine);
+  ws.onclose = () => {
+    state.chat = 'err'; renderStatus();
+    log('warn', `Chat disconnected – retrying in ${reconnectDelay / 1000}s`);
+    setTimeout(connectChat, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+  };
+  ws.onerror = () => { /* onclose takes care of it */ };
+}
+
+function parseIrc(line) {
+  const msg = { tags: {}, prefix: '', command: '', params: [] };
+  if (line[0] === '@') {
+    const sp = line.indexOf(' ');
+    for (const part of line.slice(1, sp).split(';')) {
+      const eq = part.indexOf('=');
+      const key = eq < 0 ? part : part.slice(0, eq);
+      const val = eq < 0 ? '' : part.slice(eq + 1);
+      msg.tags[key] = val.replace(/\\(.)/g, (_, c) => ({ s: ' ', ':': ';', '\\': '\\', r: '\r', n: '\n' }[c] ?? c));
+    }
+    line = line.slice(sp + 1);
+  }
+  if (line[0] === ':') {
+    const sp = line.indexOf(' ');
+    msg.prefix = line.slice(1, sp);
+    line = line.slice(sp + 1);
+  }
+  const trailingAt = line.indexOf(' :');
+  let trailing = null;
+  if (trailingAt >= 0) { trailing = line.slice(trailingAt + 2); line = line.slice(0, trailingAt); }
+  const parts = line.split(' ').filter(Boolean);
+  msg.command = parts.shift() || '';
+  msg.params = parts;
+  if (trailing !== null) msg.params.push(trailing);
+  return msg;
+}
+
+function rolesFromTags(tags, login) {
+  const roles = new Set(['everyone']);
+  const badges = (tags.badges || '').split(',').map(b => b.split('/')[0]);
+  if (badges.includes('broadcaster') || login === CONFIG.twitch.channel.toLowerCase()) roles.add('broadcaster');
+  if (tags.mod === '1' || badges.includes('moderator')) roles.add('moderator');
+  if (tags.vip === '1' || badges.includes('vip')) roles.add('vip');
+  if (tags.subscriber === '1' || badges.includes('subscriber') || badges.includes('founder')) roles.add('subscriber');
+  return roles;
+}
+
+function handleIrcLine(line) {
+  const m = parseIrc(line);
+  switch (m.command) {
+    case 'PING':
+      ws.send('PONG :' + (m.params[0] || 'tmi.twitch.tv'));
+      break;
+    case 'RECONNECT':
+      log('warn', 'Twitch requested a reconnect');
+      ws.close();
+      break;
+    case 'ROOMSTATE':
+      if (m.tags['room-id'] && m.tags['room-id'] !== state.roomId) {
+        state.roomId = m.tags['room-id'];
+        state.chat = 'ok'; reconnectDelay = 1000; renderStatus();
+        log('ok', `Chat connected: #${CONFIG.twitch.channel} (ID ${state.roomId})`);
+        loadThirdPartyEmotes();
+      } else if (m.tags['room-id']) {
+        state.chat = 'ok'; reconnectDelay = 1000; renderStatus();
+      }
+      break;
+    case 'PRIVMSG':
+    case 'USERNOTICE': {
+      let text = m.params[1];
+      if (!text) return;
+      if (m.command === 'USERNOTICE' && !CONFIG.reading.readSubMessages) return;
+      const action = text.match(/^\u0001ACTION (.*)\u0001$/);   // "/me dances" → "Bob dances"
+      if (action) text = action[1];
+      const login = m.tags.login || m.prefix.split('!')[0];
+      handleChatMessage({
+        login, displayName: m.tags['display-name'] || login, userId: m.tags['user-id'] || login,
+        text, tags: m.tags, roles: rolesFromTags(m.tags, login), id: m.tags.id, action: !!action,
+      });
+      break;
+    }
+    case 'CLEARCHAT':
+      if (!CONFIG.modCommands.skipOnTimeout) return;
+      if (m.tags['target-user-id']) removeWhere(it => it.userId === m.tags['target-user-id'], 'timeout/ban');
+      else clearQueue('chat cleared');
+      break;
+    case 'CLEARMSG':
+      if (!CONFIG.modCommands.skipOnTimeout) return;
+      removeWhere(it => it.msgId && it.msgId === m.tags['target-msg-id'], 'message deleted');
+      break;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  EMOTES: BTTV, FFZ, 7TV (Twitch emotes arrive directly with every message)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+async function getJson(url) {
+  // 'no-cache' = ask the server, but only download again if something changed (ETag → 304)
+  const res = await fetch(url, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(res.status + ' ' + url);
+  return res.json();
+}
+
+async function loadThirdPartyEmotes() {
+  const id = state.roomId;
+  if (!id) return;
+  const p = CONFIG.emotes.providers;
+  const sets = { bttv: new Set(), ffz: new Set(), seventv: new Set() };
+  const jobs = [];
+  const add = (set, list, key) => (list || []).forEach(e => e && e[key] && set.add(e[key]));
+
+  if (p.bttv) {
+    jobs.push(getJson('https://api.betterttv.net/3/cached/emotes/global').then(d => add(sets.bttv, d, 'code')));
+    jobs.push(getJson(`https://api.betterttv.net/3/cached/users/twitch/${id}`)
+      .then(d => { add(sets.bttv, d.channelEmotes, 'code'); add(sets.bttv, d.sharedEmotes, 'code'); }));
+  }
+  if (p.ffz) {
+    jobs.push(getJson('https://api.betterttv.net/3/cached/frankerfacez/emotes/global').then(d => add(sets.ffz, d, 'code')));
+    jobs.push(getJson(`https://api.betterttv.net/3/cached/frankerfacez/users/twitch/${id}`).then(d => add(sets.ffz, d, 'code')));
+  }
+  if (p.seventv) {
+    jobs.push(getJson('https://7tv.io/v3/emote-sets/global').then(d => add(sets.seventv, d.emotes, 'name')));
+    jobs.push(getJson(`https://7tv.io/v3/users/twitch/${id}`).then(d => add(sets.seventv, d.emote_set && d.emote_set.emotes, 'name')));
+  }
+  // 404 = the channel doesn't use that service → fine
+  const results = await Promise.allSettled(jobs);
+  results.filter(r => r.status === 'rejected' && !/^404/.test(r.reason.message))
+    .forEach(r => log('warn', 'Emotes not loaded:', r.reason.message));
+
+  state.thirdPartyEmotes = new Set([...sets.bttv, ...sets.ffz, ...sets.seventv]);
+  state.emoteCounts = { bttv: sets.bttv.size, ffz: sets.ffz.size, seventv: sets.seventv.size };
+  log('ok', `Emotes loaded: ${sets.bttv.size} BTTV, ${sets.ffz.size} FFZ, ${sets.seventv.size} 7TV`);
+  renderStatus();
+}
+
+// Twitch sends emote positions in Unicode code points: "25:0-4,12-16/1902:6-10"
+function twitchEmoteNames(text, emotesTag) {
+  const names = new Set();
+  if (!emotesTag) return names;
+  const chars = Array.from(text);
+  for (const group of emotesTag.split('/')) {
+    const ranges = group.split(':')[1];
+    if (!ranges) continue;
+    for (const r of ranges.split(',')) {
+      const [a, b] = r.split('-').map(Number);
+      names.add(chars.slice(a, b + 1).join(''));
+    }
+  }
+  return names;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  LANGUAGE DETECTION (offline, no external library)
+ *  1. writing system (Cyrillic, CJK, …)  2. typical words  3. special characters
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+const STOPWORDS = {
+  de: 'ich du er sie wir ihr die war mich dich mir dir uns euch sich mein meine dein deine seine ihre unser und oder aber denn nicht kein keine nichts ist bist sind seid waren wird werden wurde hab habe hast haben hatte kann kannst können muss musst müssen willst wollen soll sollte würde wäre das der den dem des ein eine einen einem einer wer wie wo wann warum wieso weshalb woher ja nein nee doch auch noch schon mal jetzt heute morgen gestern gut schlecht geil krass digga alter bitte danke hallo moin servus tschüss mit von zu zum zur für auf aus bei nach über unter vor ohne gegen wenn dann weil dass ob als sehr viel mehr weniger nur gibt geht gehts gerade grad echt halt eben wieder immer oft hier dort leute spiel spielen machen macht gemacht sagen weiß glaube finde schön richtig einfach ganz bisschen genau stimmt natürlich vielleicht ihn ihm habt seh sieht guten tag abend nacht',
+  en: 'i you he she it we they me my your his her our their them the and or but not yes yeah yep nope am are were be been being have has had do does did dont doesnt didnt cant wont isnt im ive youre its thats theres this that these those what who how where why which there here just now today tomorrow yesterday good bad great nice cool awesome please thanks thank thx hello hi bye with of to for on at from by about into if then because than very really much more less only too lol lmao lmfao omg wtf bro dude guys play playing game games gonna wanna gotta can could would should know think love like get got go going see look make want need right time',
+  fr: 'je tu il elle nous vous ils elles moi toi le les une du et ou ne pas plus rien est suis sommes êtes sont était été avoir ai avons avez ont fait faire ce cet cette ces ça cela qui que quoi quel quelle comment où pourquoi quand oui ouais aussi encore déjà maintenant aujourd demain bien bonne merci bonjour bonsoir salut coucou avec pour sur dans par alors parce très trop beaucoup mon ma mes ton ta tes sa ses notre votre leur cest jai nest quil jsuis mdr ptdr jeu',
+  es: 'yo tú él ella nosotros ellos usted los las el una unos unas y pero sí soy eres somos está estoy estás están fue ser estar hemos han hay tengo tiene tienen hacer hace qué quién cómo dónde donde cuándo cuando porque muy mucho más menos también ya ahora hoy mañana ayer bien bueno buena gracias hola adiós para sobre en del mis tus sus nuestro jaja jajaja vamos juego eso esto',
+  it: 'io lui lei noi voi loro ci gli uno ma non è sono sei siamo siete ho hai abbiamo hanno fare fatto che chi dove quando perché cosa anche già ora adesso oggi domani ieri bene buono grazie ciao salve per nel nella della dei delle alla mio mia tuo tua suo molto più meno troppo questo questa quello quella cè sì allora quindi però gioco ragazzi',
+  pt: 'eu você voce vocês ele ela nós eles elas os as uma umas ou mas não sim é sou somos são estou estão foi tenho tem temos têm fazer faz quem onde porque muito mais também já agora hoje amanhã ontem bem bom boa obrigado obrigada olá oi tchau com pra em do dos das meu minha seu sua isso isto aquilo aqui ali kkk kkkk rs galera jogo',
+  nl: 'ik jij hij zij wij jullie mij mijn jouw zijn haar ons onze het de een en of maar niet geen wel is ben bent waren heb hebt heeft hebben wat hoe waar wanneer waarom nee ook nog nu vandaag gisteren goed mooi leuk dank bedankt hoi doei met van voor op uit bij naar over dan omdat dat dit deze heel veel meer alleen toch even gewoon echt spel jongens',
+  pl: 'ty ona ono my wy oni mnie cię go jej nas im mój moja twój twoja jest są był była było być mam masz ma mamy macie mają tak ale lub albo że co kto jak gdzie kiedy dlaczego czemu też już teraz dzisiaj dziś jutro wczoraj dobrze dobry dobra dzięki dziękuję cześć siema elo we od po przez dla bez ten tego bardzo dużo więcej mniej tylko jeszcze może można trzeba gra xd',
+  tr: 'sen biz siz onlar beni seni bana sana bu şu bir ve veya ama değil evet hayır yok mı mu mü kim nasıl nerede neden niye çünkü ki ile için gibi çok daha az sadece şimdi bugün yarın dün iyi güzel teşekkürler teşekkür sağol merhaba selam naber abi kanka oyun yap olur oldu',
+};
+const STOPWORD_SETS = Object.fromEntries(Object.entries(STOPWORDS).map(([k, v]) => [k, new Set(v.split(' '))]));
+
+const CHAR_HINTS = [
+  ['de', /[äöüß]/gi, 2], ['tr', /[şğı]/gi, 3], ['pl', /[ąęłńśźżć]/gi, 3],
+  ['es', /[ñ¿¡]/gi, 3], ['es', /[áíóú]/gi, 1], ['pt', /[ãõ]/gi, 3], ['pt', /[âêôç]/gi, 1],
+  ['fr', /[èêëîïûœàç]/gi, 1], ['it', /[ìòù]/gi, 2], ['it', /[àè]/gi, 1],
+];
+
+function detectLanguage(text) {
+  const count = re => (text.match(re) || []).length;
+  // Fast path: pure ASCII text can only contain Latin script
+  const scripts = /^[\x00-\x7f]*$/.test(text) ? { latin: count(/[a-z]/gi) } : {
+    latin: count(/\p{Script=Latin}/gu), cyrillic: count(/\p{Script=Cyrillic}/gu),
+    hangul: count(/\p{Script=Hangul}/gu), kana: count(/[\p{Script=Hiragana}\p{Script=Katakana}]/gu),
+    han: count(/\p{Script=Han}/gu), greek: count(/\p{Script=Greek}/gu), arabic: count(/\p{Script=Arabic}/gu),
+    hebrew: count(/\p{Script=Hebrew}/gu), thai: count(/\p{Script=Thai}/gu), devanagari: count(/\p{Script=Devanagari}/gu),
+  };
+  const top = Object.entries(scripts).sort((a, b) => b[1] - a[1])[0];
+  if (!top || top[1] === 0) return null;
+
+  switch (top[0]) {
+    case 'cyrillic': return /[іїєґ]/i.test(text) ? 'uk' : 'ru';
+    case 'hangul': return 'ko';
+    case 'kana': return 'ja';
+    case 'han': return scripts.kana > 0 ? 'ja' : 'zh';
+    case 'greek': return 'el';
+    case 'arabic': return 'ar';
+    case 'hebrew': return 'he';
+    case 'thai': return 'th';
+    case 'devanagari': return 'hi';
+  }
+
+  // Latin script → count typical words
+  const words = text.toLowerCase().replace(/['’`]/g, '').split(/[^\p{L}]+/u).filter(Boolean);
+  const scores = Object.fromEntries(Object.keys(STOPWORD_SETS).map(k => [k, 0]));
+  for (const w of words) for (const k in STOPWORD_SETS) if (STOPWORD_SETS[k].has(w)) scores[k] += 1;
+  const bonus = {};
+  for (const [lang, re, weight] of CHAR_HINTS) bonus[lang] = (bonus[lang] || 0) + count(re) * weight;
+  for (const lang in bonus) scores[lang] += Math.min(bonus[lang], 4);
+
+  const ranked = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  const [best, second] = ranked;
+  if (best[1] < 1 || best[1] === second[1]) return null;   // not sure
+  return best[0];
+}
+
+function chooseLanguage(text, login) {
+  const now = Date.now();
+  const detected = detectLanguage(text);
+  if (detected) {
+    state.userLang.set(login, { lang: detected, t: now });
+    return { lang: detected, how: 'detected' };
+  }
+  const mem = state.userLang.get(login);
+  if (mem && now - mem.t < CONFIG.language.rememberUserMinutes * 60000) return { lang: mem.lang, how: 'remembered' };
+  return { lang: CONFIG.language.default, how: 'default' };
+}
+
+// Returns the language name for VCP ("German", …) or "Auto"
+function vcpLanguage(lang) {
+  const entry = CONFIG.language.languages[lang];
+  const name = entry && entry.vcp;
+  const supported = name && (!state.serverLanguages || state.serverLanguages.has(name.toLowerCase()));
+  if (supported) return name;
+  const fb = CONFIG.language.unsupported;
+  if (fb && fb !== 'auto' && fb !== lang) return vcpLanguage(fb);
+  return 'Auto';
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  TEXT CLEANUP
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+const segmenter = typeof Intl.Segmenter === 'function' ? new Intl.Segmenter(undefined, { granularity: 'grapheme' }) : null;
+const EMOJI_RE = /\p{Extended_Pictographic}|\p{Regional_Indicator}|^[#*0-9]\uFE0F?\u20E3$/u;
+const LINK_RE = /^(https?:\/\/|www\.)\S+|^[\p{L}\d-]+(\.[\p{L}\d-]+)*\.(com|net|org|de|at|ch|tv|gg|io|ru|ua|uk|fr|es|it|nl|pl|tr|eu|info|me|co|ly|be|app|dev|xyz|link|live|shop|online|site|store|club|fm|to|cc|us|ca|jp|cn|kr|br|pt)(\/\S*)?$/iu;
+const EMOTE_ALIASES = new Map(Object.entries(CONFIG.emotes.aliases).map(([k, v]) => [k.toLowerCase(), v]));
+
+function graphemes(str) {
+  return segmenter ? Array.from(segmenter.segment(str), s => s.segment) : Array.from(str);
+}
+
+function emojiWord(g, lang) {
+  const plain = g.replace(/[\uFE0F\u{1F3FB}-\u{1F3FF}]/gu, '');
+  const entry = EMOJI_WORDS[plain] || EMOJI_WORDS[Array.from(plain)[0]];
+  const idx = EMOJI_WORD_LANGS.indexOf(lang);
+  return entry && idx >= 0 ? entry[idx] : '';
+}
+
+function emoteSpoken(name) {
+  const alias = EMOTE_ALIASES.get(name.toLowerCase());
+  if (alias !== undefined) return alias;
+  if (!/\p{L}/u.test(name)) return '';
+  if (!CONFIG.emotes.splitWords) return name;
+  return name
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+    .replace(/(\d)(\p{L})/gu, '$1 $2')
+    .replace(/[_:]+/g, ' ')
+    .trim();
+}
+
+function spokenName(login, displayName) {
+  const alias = CONFIG.names.aliases[login.toLowerCase()];
+  if (alias) return alias;
+  let name = displayName || login;
+  if (CONFIG.names.cleanup) {
+    const cleaned = name.replace(/[_\-.]+/g, ' ').replace(/\d+$/g, '').trim();
+    if (/\p{L}/u.test(cleaned)) name = cleaned;
+  }
+  return name;
+}
+
+function collapseRepeats(s) {
+  return s
+    .replace(/[!?]{2,}/g, m => (m.includes('?') ? '?' : '!'))
+    .replace(/,{2,}/g, ',')
+    .replace(/\.{4,}/g, '...')
+    .replace(/(\p{L}{2,4}?)\1{2,}/giu, '$1$1')
+    .replace(/(\p{L})\1{2,}/gu, '$1');
+}
+
+// Replacement rules are built only once per language and then reused
+const replacementCache = new Map();
+function replacementRules(lang) {
+  let rules = replacementCache.get(lang);
+  if (!rules) {
+    rules = [CONFIG.text.replacements.all, CONFIG.text.replacements[lang]].filter(Boolean)
+      .flatMap(map => Object.entries(map).map(([from, to]) =>
+        [new RegExp(`(?<![\\p{L}\\p{N}])${escapeRegex(from)}(?![\\p{L}\\p{N}])`, 'giu'), to]));
+    replacementCache.set(lang, rules);
+  }
+  return rules;
+}
+
+function applyReplacements(s, lang) {
+  for (const [re, to] of replacementRules(lang)) s = s.replace(re, to);
+  return s;
+}
+
+const BLOCKED_RES = CONFIG.text.blockedWords.filter(Boolean).map(w => new RegExp(escapeRegex(w), 'giu'));
+
+/**
+ * Splits a chat message into parts: text, emotes, emojis, links, mentions.
+ * Also returns the "plain" text used for language detection.
+ */
+function analyzeMessage(text, msg) {
+  // Twitch emote positions always refer to the original text
+  const twitchEmotes = twitchEmoteNames(msg.text, msg.tags.emotes);
+  const hasBits = !!msg.tags.bits;
+  const parts = [];
+  let emoteTokens = 0, otherTokens = 0, hasLink = false;
+
+  for (const token of text.split(/\s+/).filter(Boolean)) {
+    if (twitchEmotes.has(token) || state.thirdPartyEmotes.has(token)) {
+      parts.push({ kind: 'emote', value: token }); emoteTokens++; continue;
+    }
+    otherTokens++;
+    if (hasBits && /^[a-z]+\d+$/i.test(token)) continue;                        // cheermotes
+    if (LINK_RE.test(token)) { parts.push({ kind: 'link' }); hasLink = true; continue; }
+    const mention = token.match(/^@([\p{L}\p{N}_]+)([^\p{L}\p{N}_]*)$/u);
+    if (mention) { parts.push({ kind: 'mention', value: mention[1], tail: mention[2] }); continue; }
+
+    // Fast path: a pure ASCII word contains no emojis
+    if (/^[\x00-\x7f]+$/.test(token)) { parts.push({ kind: 'text', value: token }); continue; }
+
+    // Split off emojis inside a word ("hello😂")
+    let buf = '';
+    for (const g of graphemes(token)) {
+      if (EMOJI_RE.test(g)) {
+        if (buf) { parts.push({ kind: 'text', value: buf }); buf = ''; }
+        parts.push({ kind: 'emoji', value: g });
+      } else buf += g;
+    }
+    if (buf) parts.push({ kind: 'text', value: buf });
+  }
+
+  const plainText = parts.filter(p => p.kind === 'text').map(p => p.value).join(' ');
+  return { parts, plainText, emoteOnly: emoteTokens > 0 && otherTokens === 0, hasLink };
+}
+
+/** Builds the text to speak from the parts, in the detected language. */
+function renderSpeech(analysis, lang) {
+  const L = CONFIG.language.languages[lang] || CONFIG.language.languages[CONFIG.language.default] || {};
+  const seenEmotes = new Set(), seenEmojis = new Set();
+  const pieces = [];   // {sym: bool, text}
+  let emoteCount = 0, emojiCount = 0;
+
+  for (const p of analysis.parts) {
+    if (p.kind === 'text') { pieces.push({ sym: false, text: p.value }); continue; }
+    if (p.kind === 'link') {
+      if (CONFIG.text.links === 'replace' && L.link && pieces.at(-1)?.text !== L.link) pieces.push({ sym: false, text: L.link });
+      continue;
+    }
+    if (p.kind === 'mention') {
+      if (CONFIG.text.mentions === 'name') pieces.push({ sym: false, text: spokenName(p.value, p.value) + p.tail });
+      continue;
+    }
+    if (p.kind === 'emote') {
+      const mode = CONFIG.emotes.mode;
+      if (mode === 'remove') continue;
+      if (mode === 'keep') { pieces.push({ sym: false, text: p.value }); continue; }
+      const key = p.value.toLowerCase();
+      if (seenEmotes.has(key) || emoteCount >= CONFIG.emotes.maxPerMessage) continue;
+      seenEmotes.add(key);
+      const spoken = emoteSpoken(p.value);
+      if (spoken) { pieces.push({ sym: true, text: spoken }); emoteCount++; }
+      continue;
+    }
+    if (p.kind === 'emoji') {
+      const mode = CONFIG.emojis.mode;
+      if (mode === 'keep') { pieces.push({ sym: false, text: p.value }); continue; }
+      if (mode !== 'describe') continue;
+      const word = emojiWord(p.value, lang);
+      if (!word || seenEmojis.has(word) || emojiCount >= CONFIG.emojis.maxPerMessage) continue;
+      seenEmojis.add(word);
+      pieces.push({ sym: true, text: word }); emojiCount++;
+    }
+  }
+
+  // Separate emote/emoji words with commas → more natural pauses
+  let out = '';
+  pieces.forEach((piece, i) => {
+    if (i > 0) out += (piece.sym || pieces[i - 1].sym) ? ', ' : ' ';
+    out += piece.text;
+  });
+
+  if (CONFIG.text.collapseRepeats) out = collapseRepeats(out);
+  if (CONFIG.text.fixShouting) {
+    const letters = out.match(/\p{L}/gu) || [];
+    const upper = out.match(/\p{Lu}/gu) || [];
+    if (letters.length >= 8 && upper.length / letters.length > 0.7) out = out.toLowerCase();
+  }
+  out = applyReplacements(out, lang);
+
+  for (const re of BLOCKED_RES) {
+    re.lastIndex = 0;   // a global RegExp remembers its last position otherwise
+    if (!re.test(out)) continue;
+    if (CONFIG.text.blockedMode === 'skip') return null;
+    out = out.replace(re, L.beep || 'beep');
+  }
+
+  out = out.replace(/\s+/g, ' ').replace(/\s+([,.!?])/g, '$1').replace(/([.!?…:;]),/g, '$1')
+    .replace(/^[\s,.;:!?-]+/, '').trim();
+  if (out.length > CONFIG.reading.maxChars) {
+    // prefer cutting at a sentence end, otherwise at a comma, otherwise at a word boundary
+    const max = CONFIG.reading.maxChars;
+    const cut = out.slice(0, max);
+    const sentence = Math.max(...['. ', '! ', '? ', '… '].map(p => cut.lastIndexOf(p)));
+    const clause = Math.max(cut.lastIndexOf(', '), cut.lastIndexOf('; '));
+    if (sentence >= max * 0.5) out = cut.slice(0, sentence + 1);
+    else if (clause >= max * 0.6) out = cut.slice(0, clause) + ' …';
+    else out = cut.slice(0, Math.max(cut.lastIndexOf(' '), max * 0.6)).trim() + ' …';
+  }
+  return /[\p{L}\p{N}]/u.test(out) ? out : null;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  FILTER MESSAGES & QUEUE THEM
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+function hasRole(roles, allowed) { return allowed.some(r => roles.has(r)); }
+
+function handleModCommand(msg) {
+  const mc = CONFIG.modCommands;
+  if (!mc.enabled || !hasRole(msg.roles, mc.roles)) return false;
+  const [cmd, arg] = msg.text.trim().split(/\s+/);
+  const c = (cmd || '').toLowerCase();
+  if (c === mc.skip) skipCurrent(msg.displayName);
+  else if (c === mc.clear) clearQueue(msg.displayName);
+  else if (c === mc.pause) { state.paused = true; log('warn', `TTS paused by ${msg.displayName}`); }
+  else if (c === mc.resume) { state.paused = false; wakeWorker(); log('ok', `TTS resumed by ${msg.displayName}`); }
+  else if (c === mc.volume && arg) { state.volume = clamp(Number(arg) / 100, 0, 1); if (state.current?.gain) state.current.gain.gain.value = state.volume; if (state.current?.audio) state.current.audio.volume = state.volume; log('ok', `Volume ${Math.round(state.volume * 100)} %`); }
+  else if (c === mc.mute && arg) { state.muted.add(arg.replace('@', '').toLowerCase()); saveStored(); log('warn', `muted: ${arg}`); removeWhere(it => state.muted.has(it.login), 'muted'); }
+  else if (c === mc.unmute && arg) { state.muted.delete(arg.replace('@', '').toLowerCase()); saveStored(); log('ok', `unmuted: ${arg}`); }
+  else return false;
+  renderStatus();
+  return true;
+}
+
+function handleChatMessage(msg) {
+  const r = CONFIG.reading;
+  const login = msg.login.toLowerCase();
+  if (handleModCommand(msg)) return;
+
+  if (msg.tags['custom-reward-id']) log('info', `Channel points reward ID: ${msg.tags['custom-reward-id']}`);
+  if (r.rewardId && msg.tags['custom-reward-id'] !== r.rewardId) return;
+  if (r.ignoreUsers.includes(login) || state.muted.has(login)) return;
+  if (r.ignoreBroadcaster && msg.roles.has('broadcaster')) return;
+
+  let text = msg.text.trim();
+  if (r.mode === 'command') {
+    const cmd = r.command.toLowerCase();
+    if (!text.toLowerCase().startsWith(cmd + ' ')) return;
+    text = text.slice(cmd.length).trim();
+  } else if (r.mode === 'privileged' && !hasRole(msg.roles, r.allowedRoles)) {
+    return;
+  }
+  if (r.mode !== 'command' && r.ignorePrefixes.some(p => text.startsWith(p))) return;
+
+  const now = Date.now();
+  if (r.userCooldownSec > 0) {
+    const last = state.userLastMsg.get(login) || 0;
+    if (now - last < r.userCooldownSec * 1000) return;
+  }
+
+  const analysis = analyzeMessage(text, msg);
+  if (analysis.hasLink && CONFIG.text.links === 'skip') return;
+  if (analysis.emoteOnly && CONFIG.emotes.skipEmoteOnly) return;
+
+  const { lang, how } = chooseLanguage(analysis.plainText, login);
+  const speech = renderSpeech(analysis, lang);
+  if (!speech) return;
+
+  state.userLastMsg.set(login, now);
+  // Voice & VCP language name are determined only at playback time (then the voice pool is surely loaded)
+  const item = {
+    msgId: msg.id, userId: msg.userId, login,
+    name: spokenName(login, msg.displayName),
+    lang, langHow: how, speech, original: msg.text, displayName: msg.displayName, action: !!msg.action,
+  };
+  log('info', `${msg.displayName}: "${msg.text}"  →  language ${lang} (${how})`);
+
+  state.queue.push(item);
+  while (state.queue.length > r.maxQueue) {
+    const dropped = state.queue.shift();
+    log('warn', `Queue full – dropped: ${dropped.name}`);
+  }
+  renderStatus();
+  wakeWorker();
+}
+
+function removeWhere(pred, reason) {
+  const before = state.queue.length;
+  state.queue = state.queue.filter(it => !pred(it));
+  if (before !== state.queue.length) log('warn', `${before - state.queue.length} message(s) removed (${reason})`);
+  if (state.current && pred(state.current)) skipCurrent(reason);
+  renderStatus();
+}
+
+function clearQueue(by) {
+  state.queue = [];
+  skipCurrent(by);
+  log('warn', `Queue cleared (${by})`);
+  renderStatus();
+}
+
+function skipCurrent(by) {
+  const cur = state.current;
+  if (!cur) return;
+  log('warn', `skipped (${by}): ${cur.name}`);
+  cur.abort.abort();
+  if (cur.audio) { cur.audio.pause(); cur.audio.removeAttribute('src'); cur.audio.load(); }
+  vcpFetch('/api/v1/generation/stop', { method: 'POST' }).catch(() => {});
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  VOICES
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+function findVoice(nameOrId) {
+  if (!nameOrId) return null;
+  const k = String(nameOrId).toLowerCase();
+  return state.voicePool.find(v => v.id.toLowerCase() === k || v.name.toLowerCase() === k)
+      || state.allVoices?.find(v => v.id.toLowerCase() === k || v.name.toLowerCase() === k)
+      || { id: nameOrId, name: nameOrId };   // unknown → send to VCP as is
+}
+
+function pickVoice(login, userId, lang) {
+  const v = CONFIG.voices;
+  if (v.users[login]) return findVoice(v.users[login]);
+  if (v.mode === 'perUserLanguage') {
+    // same role (index) in every language → a viewer sounds "the same" in all languages
+    const pool = state.langPools[lang] || state.langPools[v.fallbackPoolLanguage] || state.voicePool;
+    if (pool.length) return pool[hash(String(userId || login)) % pool.length];
+  }
+  if (v.mode === 'perUser' && state.voicePool.length) {
+    return state.voicePool[hash(String(userId || login)) % state.voicePool.length];
+  }
+  if (v.mode === 'perLanguage' && CONFIG.language.languages[lang]?.voice) return findVoice(CONFIG.language.languages[lang].voice);
+  return findVoice(v.default);   // null → VCP default voice
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  VOICE CREATOR PRO – REST API
+ *  Docs: https://voicecreator.pro/api-docs
+ *  The API key is sent as ?api_key=… (also works for audio streams).
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+class VcpError extends Error {
+  constructor(status, message) { super(message); this.status = status; }
+}
+
+function vcpUrl(path, extra = {}) {
+  const url = new URL(CONFIG.vcp.baseUrl.replace(/\/+$/, '') + path);
+  for (const [k, v] of Object.entries(extra)) url.searchParams.set(k, v);
+  if (CONFIG.vcp.apiKey) url.searchParams.set('api_key', CONFIG.vcp.apiKey);
+  return url.toString();
+}
+
+async function vcpFetch(path, { method = 'GET', body, query, timeoutSec = CONFIG.vcp.requestTimeoutSec, signal } = {}) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutSec * 1000);
+  const onAbort = () => ctrl.abort();
+  signal?.addEventListener('abort', onAbort);
+  try {
+    const res = await fetch(vcpUrl(path, query), {
+      method,
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+      signal: ctrl.signal,
+    });
+    const raw = await res.text();
+    let data = null;
+    try { data = JSON.parse(raw); } catch { /* not JSON */ }
+    if (!res.ok) {
+      let detail = data?.detail ?? data?.error ?? raw.slice(0, 200);
+      if (Array.isArray(detail)) detail = detail.map(d => d.msg || JSON.stringify(d)).join('; ');
+      throw new VcpError(res.status, `HTTP ${res.status}: ${detail}`);
+    }
+    return data;
+  } catch (err) {
+    if (ctrl.signal.aborted && !signal?.aborted) throw new TypeError(`timeout after ${timeoutSec} s`);
+    throw err;
+  } finally {
+    clearTimeout(timer);
+    signal?.removeEventListener('abort', onAbort);
+  }
+}
+
+function scheduleVcpInit(delayMs) {
+  clearTimeout(state.vcpRetryTimer);
+  state.vcpRetryTimer = setTimeout(initVcp, delayMs);
+}
+
+/** Startup diagnosis: reachable? CORS ok? key ok? Load voices & languages. */
+async function initVcp() {
+  clearTimeout(state.vcpRetryTimer);
+  try {
+    await vcpFetch('/api/v1/health', { timeoutSec: 5 });
+  } catch (err) {
+    state.vcp = 'err';
+    state.warmedUp = false;   // after a VCP restart the model has to be loaded again
+    // Distinguish: server not reachable at all vs. reachable but blocked by CORS
+    let reachable = false;
+    try {
+      await fetch(CONFIG.vcp.baseUrl.replace(/\/+$/, '') + '/api/v1/health', { mode: 'no-cors', signal: AbortSignal.timeout(5000) });
+      reachable = true;
+    } catch { /* not reachable */ }
+    state.vcpInfo = reachable ? 'CORS blocked' : 'not reachable';
+    log('err', reachable
+      ? `VCP answers, but the browser blocks the response (CORS). See readme.html → Troubleshooting.`
+      : `VCP not reachable at ${CONFIG.vcp.baseUrl} (${err.message}). Is the app running, HTTP API enabled, port correct, firewall open? Retrying in 30 s.`);
+    renderStatus();
+    scheduleVcpInit(30000);
+    return;
+  }
+
+  try {
+    const ver = await vcpFetch('/api/v1/system/version').catch(() => null);
+    const voices = await vcpFetch('/api/v1/voices');
+    state.allVoices = (voices?.voices || []).map(v => ({ id: v.id, name: v.name || v.id }));
+
+    if (CONFIG.vcp.endpoint === 'tts') {
+      const sp = await vcpFetch('/api/v1/tts/speakers', { query: CONFIG.vcp.model ? { model_family: CONFIG.vcp.model } : {} });
+      state.allVoices = (sp?.speakers || []).map(s => ({ id: s.id, name: s.name || s.id }));
+    }
+
+    const ex = CONFIG.voices.exclude.map(s => s.toLowerCase());
+    const allowed = v => !ex.includes(v.id.toLowerCase()) && !ex.includes(v.name.toLowerCase());
+    const byName = (a, b) => a.name.localeCompare(b.name, undefined, { numeric: true });
+    state.voicePool = (CONFIG.voices.pool.length ? CONFIG.voices.pool.map(findVoice) : state.allVoices)
+      .filter(allowed).sort(byName);
+
+    // Language pools based on the name prefix ("TTS-de …", "TTS-en …", …)
+    state.langPools = {};
+    if (CONFIG.voices.mode === 'perUserLanguage') {
+      for (const code of Object.keys(CONFIG.language.languages)) {
+        const prefix = CONFIG.voices.languagePrefix.replace('{lang}', code).toLowerCase();
+        const pool = state.allVoices.filter(v => allowed(v) && v.name.toLowerCase().startsWith(prefix)).sort(byName);
+        if (pool.length) state.langPools[code] = pool;
+      }
+      const pooled = Object.values(state.langPools).flat();
+      if (pooled.length) state.voicePool = pooled;
+      else log('warn', `No voices with prefix "${CONFIG.voices.languagePrefix}" found – using all voices.`);
+      log('info', 'Language pools: ' + (Object.entries(state.langPools).map(([k, p]) => `${k}: ${p.map(v => v.name).join(', ')}`).join(' | ') || '–'));
+    }
+
+    if (CONFIG.vcp.checkLanguagesOnServer) {
+      const langs = await vcpFetch('/api/v1/tts/languages').catch(() => null);
+      if (langs?.languages?.length) {
+        state.serverLanguages = new Set(langs.languages.flatMap(l => [l.id, l.name]).filter(Boolean).map(s => String(s).toLowerCase()));
+        log('info', 'VCP languages: ' + langs.languages.map(l => l.id).join(', '));
+      }
+    }
+
+    const mcp = await vcpFetch('/api/v1/settings/mcp').catch(() => null);
+    if (mcp) log('info', 'VCP agent settings: ' + JSON.stringify(mcp));
+
+    state.vcp = 'ok';
+    state.vcpInfo = ver?.version ? 'v' + ver.version : 'connected';
+    log('ok', `VCP connected (${state.vcpInfo}). Voices in pool: ${state.voicePool.map(v => v.name).join(', ') || '– (VCP default voice)'}`);
+    warmUpVcp();
+  } catch (err) {
+    state.vcp = 'err';
+    state.vcpInfo = err.status === 401 || err.status === 403 ? 'wrong API key' : 'error';
+    log('err', `VCP setup failed: ${err.message}`);
+    scheduleVcpInit(30000);
+  }
+  renderStatus();
+}
+
+/** Silently generates a short phrase once, so VCP loads the model before the first chat message. */
+async function warmUpVcp() {
+  if (state.warmedUp || !CONFIG.vcp.warmup || CONFIG.vcp.endpoint !== 'speak' || CONFIG.vcp.playOn === 'vcp-pc') return;
+  state.warmedUp = true;
+  const t0 = performance.now();
+  try {
+    const body = { text: 'Hello.', language: vcpLanguage(CONFIG.language.default), deliver: 'url' };
+    const voice = findVoice(CONFIG.voices.default);
+    if (voice?.id) body.voice = voice.id;
+    if (CONFIG.vcp.model) body.model = CONFIG.vcp.model;
+    const res = await vcpFetch('/api/v1/speak', { method: 'POST', body, timeoutSec: 120 });
+    await fetch(vcpUrl(`/api/v1/streaming/${encodeURIComponent(res.session_id)}/audio`)).then(r => r.arrayBuffer());
+    log('ok', `VCP warmed up (${((performance.now() - t0) / 1000).toFixed(1)} s)`);
+  } catch (err) {
+    state.warmedUp = false;
+    log('warn', `Warm-up failed: ${err.message}`);
+  }
+}
+
+/* Web Audio instead of <audio>: VCP's WAV stream declares a placeholder length (~2 GB),
+   which the <audio> element doesn't handle reliably. So we read the stream ourselves
+   and play the PCM data piece by piece as soon as it arrives. */
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) {
+    // Same sample rate as VCP (24 kHz) → the browser resamples only ONCE at the output
+    // instead of every single audio chunk (that caused noise at the chunk borders).
+    try { audioCtx = new AudioContext({ sampleRate: CONFIG.vcp.sampleRate, latencyHint: 'playback' }); }
+    catch { audioCtx = new AudioContext({ latencyHint: 'playback' }); }
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+  return audioCtx;
+}
+// Normal browsers only allow audio after a click (not needed in OBS)
+['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => getAudioCtx(), { capture: true }));
+
+/** Reads the WAV header. Returns null while bytes are still missing. */
+function parseWavHeader(bytes) {
+  if (bytes.length < 12) return null;
+  const dv = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tag = o => String.fromCharCode(bytes[o], bytes[o + 1], bytes[o + 2], bytes[o + 3]);
+  if (tag(0) !== 'RIFF' || tag(8) !== 'WAVE') throw new Error('VCP did not deliver a WAV');
+  let off = 12, fmt = null;
+  while (off + 8 <= bytes.length) {
+    const id = tag(off), size = dv.getUint32(off + 4, true);
+    if (id === 'fmt ') {
+      if (off + 24 > bytes.length) return null;
+      fmt = { channels: dv.getUint16(off + 10, true), rate: dv.getUint32(off + 12, true), bits: dv.getUint16(off + 22, true) };
+    } else if (id === 'data') {
+      if (!fmt) throw new Error('WAV without fmt chunk');
+      return { ...fmt, dataStart: off + 8 };
+    }
+    off += 8 + size + (size & 1);
+  }
+  return null;
+}
+
+// 16-bit PCM → float. Fast path: direct Int16 view on the bytes (WAV and x86 are both little-endian)
+const LITTLE_ENDIAN = new Uint8Array(new Uint16Array([1]).buffer)[0] === 1;
+function pcm16ToFloat(bytes, usable) {
+  const out = new Float32Array(usable / 2);
+  if (LITTLE_ENDIAN) {
+    const src = bytes.byteOffset % 2 === 0 ? bytes : bytes.slice(0, usable);
+    const ints = new Int16Array(src.buffer, src.byteOffset, usable / 2);
+    for (let i = 0; i < ints.length; i++) out[i] = ints[i] / 32768;
+  } else {
+    const dv = new DataView(bytes.buffer, bytes.byteOffset, usable);
+    for (let i = 0; i < out.length; i++) out[i] = dv.getInt16(i * 2, true) / 32768;
+  }
+  return out;
+}
+
+/** Plays the PCM stream of a VCP session. Returns true if audio was played.
+ *  onDownloaded is called as soon as VCP has finished generating (playback still runs). */
+async function playPcmStream(item, url, onDownloaded) {
+  const ctx = getAudioCtx();
+  if (ctx.state !== 'running') log('warn', 'Audio is blocked by the browser – click into the page once (not needed in OBS).');
+  const gain = ctx.createGain();
+  gain.gain.value = state.volume;
+  gain.connect(ctx.destination);
+  item.gain = gain;
+
+  const stop = new AbortController();
+  const onAbort = () => stop.abort();
+  item.abort.signal.addEventListener('abort', onAbort, { once: true });
+
+  const FADE = 96;   // ~4 ms soft fade in/out against clicks
+  const maxSec = CONFIG.reading.maxSecondsPerMessage;
+  const sources = new Set();
+  let fmt = null, head = new Uint8Array(0), carry = null, lastSrc = null;
+  let pending = [], pendingFrames = 0, started = false, nextTime = 0, playedSec = 0, firstBlock = true;
+
+  // Bigger blocks = fewer transitions. If the buffer runs low, data is added immediately.
+  const schedule = (final = false) => {
+    if (!pendingFrames) return;
+    const buf = ctx.createBuffer(fmt.channels, pendingFrames, fmt.rate);
+    for (let ch = 0; ch < fmt.channels; ch++) {
+      const out = buf.getChannelData(ch);
+      let o = 0;
+      if (fmt.channels === 1) for (const block of pending) { out.set(block, o); o += block.length; }   // mono: block copy
+      else for (const block of pending) for (let i = ch; i < block.length; i += fmt.channels) out[o++] = block[i];
+      if (firstBlock) for (let i = 0; i < Math.min(FADE, out.length); i++) out[i] *= i / FADE;
+      if (final) for (let i = 0; i < Math.min(FADE, out.length); i++) out[out.length - 1 - i] *= i / FADE;
+    }
+    firstBlock = false;
+    pending = []; pendingFrames = 0;
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(gain);
+    if (nextTime < ctx.currentTime + 0.02) nextTime = ctx.currentTime + 0.08;   // start or dropout
+    src.start(nextTime);
+    nextTime += buf.duration;
+    playedSec += buf.duration;
+    sources.add(src);
+    lastSrc = src;
+    src.onended = () => sources.delete(src);
+  };
+
+  try {
+    const res = await fetch(url, { signal: stop.signal, cache: 'no-store' });
+    if (!res.ok || !res.body) throw new Error(`Audio stream: HTTP ${res.status}`);
+    const reader = res.body.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      let bytes = value;
+      if (!fmt) {
+        const merged = new Uint8Array(head.length + bytes.length);
+        merged.set(head); merged.set(bytes, head.length);
+        head = merged;
+        fmt = parseWavHeader(head);
+        if (!fmt) { if (head.length > 8192) throw new Error('WAV header not found'); continue; }
+        if (fmt.bits !== 16) throw new Error(`Only 16-bit PCM is supported (stream: ${fmt.bits} bit)`);
+        bytes = head.subarray(fmt.dataStart);
+      }
+      if (carry) {
+        const merged = new Uint8Array(carry.length + bytes.length);
+        merged.set(carry); merged.set(bytes, carry.length);
+        bytes = merged; carry = null;
+      }
+      const frameBytes = 2 * fmt.channels;
+      const usable = bytes.length - (bytes.length % frameBytes);
+      if (usable < bytes.length) carry = bytes.slice(usable);
+      if (!usable) continue;
+      const block = pcm16ToFloat(bytes, usable);
+      pending.push(block);
+      pendingFrames += block.length / fmt.channels;
+
+      if (!started && pendingFrames >= fmt.rate * CONFIG.vcp.prebufferSec) started = true;
+      const ahead = nextTime - ctx.currentTime;   // this much is already scheduled
+      if (started && (pendingFrames >= fmt.rate * 0.5 || ahead < 0.3)) schedule();
+      if (playedSec + pendingFrames / fmt.rate >= maxSec) { log('warn', `Time limit (${maxSec} s) reached – the rest is not read`); break; }
+    }
+    if (fmt) schedule(true);
+    onDownloaded?.();
+    // End = when the last piece has REALLY finished playing (not by wall-clock time –
+    // the audio clock in OBS can run slightly differently, which used to cut off long messages)
+    if (lastSrc) {
+      await new Promise(resolve => {
+        lastSrc.addEventListener('ended', resolve, { once: true });
+        stop.signal.addEventListener('abort', resolve, { once: true });
+        setTimeout(resolve, Math.max(0, nextTime - ctx.currentTime) * 2000 + 5000);   // emergency brake
+      });
+    }
+    return playedSec > 0;
+  } catch (err) {
+    if (stop.signal.aborted) return true;   // skipped
+    throw err;
+  } finally {
+    item.abort.signal.removeEventListener('abort', onAbort);
+    stop.abort();
+    // fade out softly instead of cutting hard (on skip), then clean up
+    const t = ctx.currentTime;
+    gain.gain.cancelScheduledValues(t);
+    gain.gain.setValueAtTime(gain.gain.value, t);
+    gain.gain.linearRampToValueAtTime(0, t + 0.03);
+    setTimeout(() => {
+      for (const src of sources) { try { src.stop(); } catch { /* already ended */ } }
+      gain.disconnect();
+    }, 60);
+  }
+}
+
+/** Alternative: download the whole message and play it with the normal audio element. */
+async function playBufferedWav(item, url, onDownloaded) {
+  const res = await fetch(url, { signal: item.abort.signal, cache: 'no-store' });
+  if (!res.ok) throw new Error(`Audio stream: HTTP ${res.status}`);
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  onDownloaded?.();
+  if (bytes.length <= 44) return false;
+  // Replace the placeholder lengths in the WAV header with the real ones
+  const fmt = parseWavHeader(bytes);
+  const dv = new DataView(bytes.buffer);
+  dv.setUint32(4, bytes.length - 8, true);
+  dv.setUint32(fmt.dataStart - 4, bytes.length - fmt.dataStart, true);
+  const blobUrl = URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' }));
+  try { return await playUrl(item, blobUrl); } finally { URL.revokeObjectURL(blobUrl); }
+}
+
+/** Plays a complete audio file (endpoint 'tts' and playback 'buffered'). */
+function playUrl(item, url) {
+  return new Promise(resolve => {
+    const audio = new Audio();
+    item.audio = audio;
+    audio.preload = 'auto';
+    audio.volume = state.volume;
+    let finished = false, played = false;
+    const done = ok => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(limit);
+      item.abort.signal.removeEventListener('abort', onAbort);
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+      resolve(ok);
+    };
+    const onAbort = () => done(true);
+    const limit = setTimeout(() => { log('warn', 'Time limit reached – stopped'); done(true); }, CONFIG.reading.maxSecondsPerMessage * 1000);
+    item.abort.signal.addEventListener('abort', onAbort);
+    audio.addEventListener('timeupdate', () => { if (audio.currentTime > 0.05) played = true; });
+    audio.addEventListener('ended', () => done(played));
+    audio.addEventListener('error', () => done(played));
+    audio.src = url;
+    audio.play().catch(err => {
+      if (err.name === 'NotAllowedError') log('err', 'The browser blocks autoplay – click into the page once (not needed in OBS).');
+      done(false);
+    });
+  });
+}
+
+function speakBody(item, deliver) {
+  const body = { text: item.text, language: item.vcpLang, deliver };
+  if (item.voice?.id) body.voice = item.voice.id;
+  if (CONFIG.vcp.model) body.model = CONFIG.vcp.model;
+  return body;
+}
+
+/** Starts the generation at VCP and returns the stream session ID. */
+async function startSpeakSession(item, signal) {
+  const res = await vcpFetch('/api/v1/speak', { method: 'POST', body: speakBody(item, 'url'), signal });
+  // Always build the stream URL from our base address (VCP may return 127.0.0.1)
+  const sid = res?.session_id || (res?.stream_url || '').match(/streaming\/([^/?]+)/)?.[1];
+  if (!sid) throw new Error('VCP did not return a stream session: ' + JSON.stringify(res));
+  return sid;
+}
+
+/** Generates the next message in advance while the current one is still playing. */
+function prefetchNext() {
+  const next = state.queue[0];
+  if (!CONFIG.vcp.prefetch || state.paused || !next || next.prefetch) return;
+  if (CONFIG.vcp.endpoint !== 'speak' || CONFIG.vcp.playOn === 'vcp-pc') return;
+  prepareItem(next, state.current?.login);
+  next.prefetch = startSpeakSession(next).catch(() => null);   // on error: try normally later
+}
+
+/* VCP quirk: a voice newly created via the API only streams via /speak after it has been
+   cloned normally once (VCP builds its voice prompt cache then). Before that: "Generation failed". */
+const primedVoices = new Set();
+async function primeVoice(voice, language, signal) {
+  primedVoices.add(voice.id);
+  log('warn', `Voice "${voice.name}" is being prepared once …`);
+  await vcpFetch('/api/v1/generation/clone', {
+    method: 'POST', query: { sync: 'true' }, signal, timeoutSec: 120,
+    body: { voice_id: voice.id, target_text: 'Test.', language },
+  });
+}
+
+async function speakViaSpeakEndpoint(item, retried = false) {
+  if (CONFIG.vcp.playOn === 'vcp-pc') {
+    await vcpFetch('/api/v1/speak', {
+      method: 'POST', body: speakBody(item, 'play'), signal: item.abort.signal,
+      timeoutSec: CONFIG.reading.maxSecondsPerMessage + 30,
+    });
+    return;
+  }
+  const sid = (!retried && item.prefetch && await item.prefetch) || await startSpeakSession(item, item.abort.signal);
+  if (item.abort.signal.aborted) return;
+  const player = CONFIG.vcp.playback === 'buffered' ? playBufferedWav : playPcmStream;
+  const ok = await player(item, vcpUrl(`/api/v1/streaming/${encodeURIComponent(sid)}/audio`, { format: 'wav' }), prefetchNext);
+  if (ok || item.abort.signal.aborted) return;
+  const info = await vcpFetch(`/api/v1/streaming/${encodeURIComponent(sid)}`).catch(() => null);
+  if (!retried && item.voice?.id && !primedVoices.has(item.voice.id) && /generation failed/i.test(info?.error || '')) {
+    await primeVoice(item.voice, item.vcpLang, item.abort.signal);
+    if (!item.abort.signal.aborted) await speakViaSpeakEndpoint(item, true);
+    return;
+  }
+  throw new Error(info?.error ? 'VCP: ' + info.error : 'VCP delivered no audio');
+}
+
+async function speakViaTtsEndpoint(item) {
+  const body = {
+    text: item.text,
+    speaker: item.voice?.id || state.voicePool[0]?.id,
+    language: item.vcpLang,
+  };
+  if (CONFIG.vcp.model) body.model_family = CONFIG.vcp.model;
+  if (!body.speaker) throw new Error('No built-in speaker found (GET /api/v1/tts/speakers was empty)');
+  const res = await vcpFetch('/api/v1/tts/generate', {
+    method: 'POST', body, query: { sync: 'true' }, signal: item.abort.signal,
+    timeoutSec: CONFIG.reading.maxSecondsPerMessage + 60,
+  });
+  if (!res?.success || !res.audio_base64) throw new Error(`VCP: ${res?.error_code || res?.status || 'no audio'}`);
+  if (item.abort.signal.aborted) return;
+  await playUrl(item, 'data:audio/wav;base64,' + res.audio_base64);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  PLAYBACK LOOP (one message after the other)
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+function wakeWorker() { if (state.wake) { state.wake(); state.wake = null; } }
+
+/** Determines text (with/without name), voice and VCP language. prevLogin = who spoke last. */
+function prepareItem(item, prevLogin) {
+  if (item.prepared) return;
+  item.prepared = true;
+  const announce = CONFIG.names.announce === 'always'
+    || (CONFIG.names.announce === 'onChange' && prevLogin !== item.login);
+  const tpl = item.action ? '{user} {msg}' : (CONFIG.language.languages[item.lang]?.say || '{user}: {msg}');
+  item.text = (announce || item.action) ? tpl.replace('{user}', () => item.name).replace('{msg}', () => item.speech) : item.speech;
+  item.voice = pickVoice(item.login, item.userId, item.lang);
+  item.vcpLang = vcpLanguage(item.lang);
+}
+
+async function worker() {
+  for (;;) {
+    if (state.paused || state.queue.length === 0) {
+      await new Promise(r => { state.wake = r; });
+      continue;
+    }
+    const item = state.queue.shift();
+    item.abort = new AbortController();
+    state.current = item;
+    renderStatus();
+
+    // Name only on speaker change / always / never (after a longer silence with name again)
+    const recent = Date.now() - state.lastSpoken.t <= CONFIG.names.onChangeResetSec * 1000;
+    prepareItem(item, recent ? state.lastSpoken.user : null);
+    log('say', `▶ [${item.vcpLang} · ${item.voice?.name || 'VCP default voice'}${item.prefetch ? ' · prefetched' : ''}] ${item.text}`);
+
+    try {
+      if (CONFIG.vcp.endpoint === 'tts') await speakViaTtsEndpoint(item);
+      else await speakViaSpeakEndpoint(item);
+      state.lastSpoken = { user: item.login, t: Date.now() };
+    } catch (err) {
+      if (!item.abort.signal.aborted) {
+        log('err', `Speaking failed: ${err.message}`);
+        if (err instanceof TypeError) {
+          state.vcp = 'err'; state.vcpInfo = 'connection lost';
+          scheduleVcpInit(2000);
+        }
+        if (err.status === 400) log('err', 'Tip: set a default agent voice in the VCP settings or set CONFIG.voices.default.');
+      }
+    }
+    state.current = null;
+    renderStatus();
+    await sleep(CONFIG.reading.pauseBetweenMs);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+ *  START
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+// For tests in the browser console:  ttvTts.say('Hello world', 'Max')
+window.ttvTts = {
+  say: (text, user = 'Console') => handleChatMessage({ login: user.toLowerCase(), displayName: user, userId: 'test-' + user.toLowerCase(), text, tags: {}, roles: new Set(['everyone']) }),
+  skip: () => skipCurrent('console'),
+  clear: () => clearQueue('console'),
+  detect: detectLanguage,
+  state,
+};
+
+setupDebugPanel();
+if (!CONFIG.twitch.channel || CONFIG.twitch.channel === 'your_channel_name') {
+  log('err', 'Please enter your Twitch channel in CONFIG.twitch.channel (top of this file).');
+}
+log('info', `Start · channel #${CONFIG.twitch.channel} · VCP ${CONFIG.vcp.baseUrl}${window.obsstudio ? ' · OBS ' + window.obsstudio.pluginVersion : ''}`);
+connectChat();
+initVcp();
+worker();
+setInterval(loadThirdPartyEmotes, Math.max(1, CONFIG.emotes.refreshMinutes) * 60000);
+
+// Keep memory lean: remove old entries of viewers who haven't written for a long time
+setInterval(() => {
+  const now = Date.now();
+  const langTtl = CONFIG.language.rememberUserMinutes * 60000;
+  for (const [login, v] of state.userLang) if (now - v.t > langTtl) state.userLang.delete(login);
+  const cooldown = CONFIG.reading.userCooldownSec * 1000;
+  for (const [login, t] of state.userLastMsg) if (now - t > cooldown) state.userLastMsg.delete(login);
+}, 5 * 60000);
+</script>
+</body>
+</html>

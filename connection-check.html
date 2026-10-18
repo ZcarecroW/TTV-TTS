@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VCP Connection Check</title>
+<!-- TTV-TTS pack · connection-check.html · by ZcarecroW (twitch.tv/zcarecrow) · MIT License
+     Open this file in your normal browser (Chrome/Edge/Firefox) on the PC that runs OBS.
+     It checks every link of the chain: browser → Voice Creator Pro → voices → Twitch chat. -->
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --fg: #1d2129; --muted: #667085; --line: #e4e7ec;
+    --accent: #5b4cf0; --accent-fg: #ffffff; --ok: #12805c; --warn: #b54708; --err: #c4320a;
+    --ok-bg: #e7f6ef; --warn-bg: #fdf3e7; --err-bg: #fdecea; --code: #f2f4f7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1115; --card: #171a21; --fg: #e6e8ee; --muted: #98a2b3; --line: #2a2f3a;
+      --accent: #8b7dff; --accent-fg: #0f1115; --ok: #3ccf91; --warn: #f5b546; --err: #ff7a6b;
+      --ok-bg: #12261f; --warn-bg: #2a2114; --err-bg: #2c1714; --code: #1f232c;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 28px 16px 64px; }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 0 0 12px; }
+  p.lead { color: var(--muted); margin: 0 0 20px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; margin-bottom: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  input, select, textarea { width: 100%; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  textarea { min-height: 64px; resize: vertical; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+  button { font: inherit; font-weight: 600; border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+  button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+  button:disabled { opacity: .55; cursor: default; }
+  .check { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+  .check:first-child { border-top: 0; }
+  .badge { flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 13px; background: var(--code); color: var(--muted); }
+  .badge.ok { background: var(--ok-bg); color: var(--ok); } .badge.warn { background: var(--warn-bg); color: var(--warn); } .badge.err { background: var(--err-bg); color: var(--err); }
+  .check b { display: block; }
+  .detail { color: var(--muted); font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+  .fix { margin-top: 4px; font-size: 14px; }
+  code { background: var(--code); border-radius: 5px; padding: 1px 5px; font: 13px ui-monospace, Consolas, monospace; }
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 12px; }
+  .metric { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }
+  .metric span { display: block; font-size: 12px; color: var(--muted); }
+  .metric strong { font-size: 18px; }
+  .small { font-size: 13px; color: var(--muted); }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>VCP Connection Check</h1>
+  <p class="lead">Checks the whole chain step by step: your browser → Voice Creator Pro → voices → Twitch chat. Open this page on the PC that runs OBS. Details: <a href="readme.html#troubleshooting">readme → Troubleshooting</a>.</p>
+
+  <section class="card">
+    <h2>1 · Connection settings</h2>
+    <div class="grid">
+      <div><label for="url">VCP base URL</label><input id="url" placeholder="http://127.0.0.1:8100" value="http://127.0.0.1:8100"></div>
+      <div><label for="key">API key (empty if none)</label><input id="key" type="password" autocomplete="off"></div>
+      <div><label for="channel">Twitch channel (optional)</label><input id="channel" placeholder="your_channel_name"></div>
+    </div>
+    <div class="row">
+      <button class="primary" id="run">Run all checks</button>
+      <label class="small" style="display:flex;gap:6px;align-items:center;margin:0"><input type="checkbox" id="remember" style="width:auto"> remember in this browser</label>
+    </div>
+    <p class="small">Same PC as VCP: <code>http://127.0.0.1:8100</code> · Second PC: <code>http://&lt;IP of the VCP PC&gt;:8101</code> (after running <code>vcp-lan-setup.ps1</code> there).</p>
+  </section>
+
+  <section class="card">
+    <h2>2 · Results</h2>
+    <div id="checks"><p class="small">Press “Run all checks”.</p></div>
+  </section>
+
+  <section class="card">
+    <h2>3 · Speech test</h2>
+    <div class="grid">
+      <div><label for="voice">Voice</label><select id="voice"><option value="">(VCP default agent voice)</option></select></div>
+      <div><label for="lang">Language</label><select id="lang"><option>Auto</option></select></div>
+    </div>
+    <div style="margin-top:12px"><label for="text">Text</label><textarea id="text">Hello! This is a quick test of the text to speech connection.</textarea></div>
+    <div class="row">
+      <button class="primary" id="speak" disabled>Speak</button>
+      <button id="prime" disabled title="Fixes 'Generation failed' for voices created via the API">Prepare (prime) voice</button>
+      <span class="small" id="speakState"></span>
+    </div>
+    <div class="metrics" id="metrics" hidden>
+      <div class="metric"><span>Request → first audio</span><strong id="mFirst">–</strong></div>
+      <div class="metric"><span>Generation finished after</span><strong id="mDone">–</strong></div>
+      <div class="metric"><span>Audio length</span><strong id="mLen">–</strong></div>
+      <div class="metric"><span>Speed (gen. time / audio)</span><strong id="mRtf">–</strong></div>
+    </div>
+  </section>
+</main>
+
+<script>
+'use strict';
+const $ = id => document.getElementById(id);
+const STORE = 'ttv-tts-tools';
+
+// ---------- settings (optional: remembered in this browser) ----------
+try {
+  const s = JSON.parse(localStorage.getItem(STORE) || 'null');
+  if (s) { $('url').value = s.url || $('url').value; $('key').value = s.key || ''; $('channel').value = s.channel || ''; $('remember').checked = true; }
+} catch { /* storage not available */ }
+function saveSettings() {
+  try {
+    if ($('remember').checked) localStorage.setItem(STORE, JSON.stringify({ url: base(), key: $('key').value.trim(), channel: $('channel').value.trim() }));
+    else localStorage.removeItem(STORE);
+  } catch { /* ignore */ }
+}
+
+const base = () => $('url').value.trim().replace(/\/+$/, '');
+function url(path, q = {}) {
+  const u = new URL(base() + path);
+  for (const [k, v] of Object.entries(q)) u.searchParams.set(k, v);
+  const key = $('key').value.trim();
+  if (key) u.searchParams.set('api_key', key);
+  return u.toString();
+}
+async function api(path, { method = 'GET', body, query, timeout = 15000 } = {}) {
+  const res = await fetch(url(path, query), { method, headers: body ? { 'Content-Type': 'application/json' } : undefined, body: body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(timeout) });
+  const text = await res.text(); let data = null; try { data = JSON.parse(text); } catch { /* not JSON */ }
+  if (!res.ok) { const e = new Error(`HTTP ${res.status}: ${(data && (data.detail || data.error)) || text.slice(0, 160)}`); e.status = res.status; throw e; }
+  return data;
+}
+
+// ---------- result rows ----------
+function addCheck(title) {
+  const el = document.createElement('div');
+  el.className = 'check';
+  el.innerHTML = '<div class="badge">…</div><div><b></b><div class="detail"></div><div class="fix"></div></div>';
+  el.querySelector('b').textContent = title;
+  $('checks').append(el);
+  return {
+    set(status, detail = '', fix = '') {
+      const b = el.querySelector('.badge');
+      b.className = 'badge ' + status;
+      b.textContent = { ok: '✓', warn: '!', err: '✕' }[status] || '…';
+      el.querySelector('.detail').textContent = detail;
+      el.querySelector('.fix').innerHTML = fix;
+    },
+  };
+}
+
+// ---------- the checks ----------
+async function runChecks() {
+  saveSettings();
+  $('checks').innerHTML = '';
+  $('run').disabled = true; $('speak').disabled = true; $('prime').disabled = true;
+  try { await checks(); } finally { $('run').disabled = false; }
+}
+
+async function checks() {
+  // 1. URL format
+  const c1 = addCheck('URL format');
+  let u;
+  try { u = new URL(base()); if (!/^https?:$/.test(u.protocol)) throw new Error('must start with http://'); c1.set('ok', base()); }
+  catch (e) { c1.set('err', e.message, 'Enter something like <code>http://127.0.0.1:8100</code>.'); return; }
+
+  // 2. reachable at all? (no-cors probe works even if CORS were missing)
+  const c2 = addCheck('Server reachable');
+  try {
+    await fetch(base() + '/api/v1/health', { mode: 'no-cors', signal: AbortSignal.timeout(5000) });
+    c2.set('ok', `${u.host} answers.`);
+  } catch {
+    c2.set('err', `No answer from ${u.host} within 5 s.`,
+      '• Is Voice Creator Pro running and the HTTP API enabled (VCP settings)? Is the port right?<br>' +
+      '• Two PCs: run <code>vcp-lan-setup.ps1</code> on the VCP PC and use port <code>8101</code> here.<br>' +
+      '• Firewall: Malwarebytes Windows Firewall Control deletes unknown rules – see <a href="readme.html#firewall">readme → Firewall</a>.');
+    return;
+  }
+
+  // 3. CORS + health
+  const c3 = addCheck('API answers (CORS ok)');
+  try { const h = await api('/api/v1/health', { timeout: 5000 }); c3.set('ok', `health: ${JSON.stringify(h)}`); }
+  catch (e) { c3.set('err', e.message, 'The server answers, but not like VCP. Check that the URL/port really points to Voice Creator Pro (VCP sends CORS headers for every origin).'); return; }
+
+  // 4. version (no key needed)
+  const c4 = addCheck('Voice Creator Pro version');
+  try { const v = await api('/api/v1/system/version'); c4.set('ok', 'v' + v.version); } catch (e) { c4.set('warn', e.message); }
+
+  // 5. API key
+  const c5 = addCheck('API key');
+  let voices = [];
+  try {
+    voices = (await api('/api/v1/voices')).voices || [];
+    c5.set('ok', $('key').value.trim() ? 'Key accepted.' : 'No key needed (VCP has no key set).');
+  } catch (e) {
+    if (e.status === 401 || e.status === 403) { c5.set('err', 'VCP rejected the key.', 'Copy the key exactly as set in the VCP settings (no spaces). Empty field = no key.'); return; }
+    c5.set('err', e.message); return;
+  }
+
+  // 6. model, quality, languages
+  const c6 = addCheck('TTS model & languages');
+  let langs = [];
+  try {
+    const m = await api('/api/v1/models/active');
+    const q = await api('/api/v1/settings/model-quality').catch(() => null);
+    langs = ((await api('/api/v1/tts/languages')).languages || []).map(l => l.id);
+    const streaming = m.supports_streaming ? 'streaming ✓' : 'NO streaming';
+    c6.set(m.supports_streaming ? 'ok' : 'warn',
+      `${m.display_name || m.model_family} (${m.model_family}) · ${streaming} · quality: ${q ? q.current : '?'}\nLanguages: ${langs.join(', ')}`,
+      m.supports_streaming ? '' : 'ttv-tts uses /api/v1/speak, which needs a streaming-capable model (e.g. Qwen3, VoxCPM). Switch the model in VCP.');
+  } catch (e) { c6.set('warn', e.message); }
+  $('lang').innerHTML = ['Auto', ...langs.filter(l => l !== 'Auto')].map(l => `<option>${l}</option>`).join('');
+
+  // 7. agent defaults (used when no voice is given)
+  const c7 = addCheck('Default agent voice / model');
+  try {
+    const s = await api('/api/v1/settings/mcp');
+    const dv = voices.find(v => v.id === s.default_voice);
+    if (s.default_voice) c7.set('ok', `voice: ${dv ? dv.name : s.default_voice} · model: ${s.default_model || '(active model)'}`);
+    else c7.set('warn', 'No default agent voice set.', 'Not needed if ttv-tts uses voice pools, but recommended: set a default agent/MCP voice in the VCP settings.');
+  } catch (e) { c7.set('warn', e.message); }
+
+  // 8. voices & language pools
+  const c8 = addCheck('Voices & language pools');
+  const pools = {};
+  for (const v of voices) { const m = /^TTS-([a-z]{2}) /i.exec(v.name); if (m) (pools[m[1].toLowerCase()] ||= []).push(v.name); }
+  const poolText = Object.entries(pools).map(([k, p]) => `${k}: ${p.length}`).join(' · ');
+  const sizes = new Set(Object.values(pools).map(p => p.length));
+  if (!voices.length) c8.set('warn', 'No saved voices.', 'Create voices in VCP or with <code>voice-lab.html</code>.');
+  else if (!Object.keys(pools).length) c8.set('warn', `${voices.length} voices, but none named "TTS-xx …".`, 'With voices.mode \'perUserLanguage\' ttv-tts needs voices named like <code>TTS-en 1 Emma</code> – create them with <code>voice-lab.html</code>, or use voices.mode \'perUser\'.');
+  else c8.set(sizes.size > 1 ? 'warn' : 'ok', `${voices.length} voices · pools: ${poolText}`, sizes.size > 1 ? 'Pools have different sizes – roles are only consistent across languages if every language has the same number of voices.' : '');
+  $('voice').innerHTML = '<option value="">(VCP default agent voice)</option>' + voices.map(v => `<option value="${v.id}">${v.name.replace(/</g, '&lt;')}</option>`).join('');
+  $('speak').disabled = false; $('prime').disabled = false;
+
+  // 9. Twitch chat (anonymous) + emotes
+  const channel = $('channel').value.trim().toLowerCase().replace(/^#/, '');
+  if (!channel) { addCheck('Twitch chat').set('warn', 'Skipped – no channel entered.'); return; }
+  const c9 = addCheck(`Twitch chat #${channel}`);
+  const roomId = await new Promise(resolve => {
+    const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+    const t = setTimeout(() => { ws.close(); resolve(null); }, 8000);
+    ws.onopen = () => { ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands'); ws.send('PASS SCHMOOPIIE'); ws.send('NICK justinfan' + (10000 + Math.floor(Math.random() * 80000))); ws.send('JOIN #' + channel); };
+    ws.onmessage = e => { const m = /room-id=(\d+)/.exec(e.data); if (m && /ROOMSTATE/.test(e.data)) { clearTimeout(t); ws.close(); resolve(m[1]); } };
+    ws.onerror = () => { clearTimeout(t); resolve(null); };
+  });
+  if (!roomId) { c9.set('err', 'Could not join the chat within 8 s.', 'Check the channel name (lower case, no #) and your internet connection.'); return; }
+  c9.set('ok', `Joined anonymously · channel ID ${roomId}`);
+
+  const c10 = addCheck('Emotes (BTTV / FFZ / 7TV)');
+  const get = u => fetch(u).then(r => (r.ok ? r.json() : null)).catch(() => null);
+  const [bg, bu, fg, fu, sg, su] = await Promise.all([
+    get('https://api.betterttv.net/3/cached/emotes/global'), get(`https://api.betterttv.net/3/cached/users/twitch/${roomId}`),
+    get('https://api.betterttv.net/3/cached/frankerfacez/emotes/global'), get(`https://api.betterttv.net/3/cached/frankerfacez/users/twitch/${roomId}`),
+    get('https://7tv.io/v3/emote-sets/global'), get(`https://7tv.io/v3/users/twitch/${roomId}`),
+  ]);
+  const n = x => (Array.isArray(x) ? x.length : 0);
+  const bttvCh = bu ? n(bu.channelEmotes) + n(bu.sharedEmotes) : 0, ffzCh = n(fu), stvCh = n(su?.emote_set?.emotes);
+  c10.set('ok', `BTTV: ${n(bg)} global + ${bttvCh} channel · FFZ: ${n(fg)} global + ${ffzCh} channel · 7TV: ${n(sg?.emotes)} global + ${stvCh} channel`,
+    bttvCh + ffzCh + stvCh === 0 ? 'Your channel has no own BTTV/FFZ/7TV emotes – words like “KEKW” are then read as normal text (that\'s expected).' : '');
+}
+
+// ---------- speech test ----------
+async function speak() {
+  $('speak').disabled = true; $('speakState').textContent = 'generating …';
+  $('metrics').hidden = false; ['mFirst', 'mDone', 'mLen', 'mRtf'].forEach(id => ($(id).textContent = '…'));
+  const t0 = performance.now();
+  try {
+    const body = { text: $('text').value.trim() || 'Hello!', language: $('lang').value || 'Auto', deliver: 'url' };
+    if ($('voice').value) body.voice = $('voice').value;
+    const s = await api('/api/v1/speak', { method: 'POST', body, timeout: 120000 });
+    const rd = (await fetch(url(`/api/v1/streaming/${encodeURIComponent(s.session_id)}/audio`))).body.getReader();
+    const parts = []; let total = 0, first = null;
+    for (;;) { const { done, value } = await rd.read(); if (done) break; if (first === null && total + value.length > 44) first = performance.now() - t0; parts.push(value); total += value.length; }
+    const doneMs = performance.now() - t0;
+    if (total <= 44) {
+      const info = await api(`/api/v1/streaming/${encodeURIComponent(s.session_id)}`).catch(() => ({}));
+      throw new Error((info.error || 'VCP delivered no audio') + (/generation failed/i.test(info.error || '') ? ' → press “Prepare (prime) voice” once, then try again.' : ''));
+    }
+    const all = new Uint8Array(total); let o = 0; for (const p of parts) { all.set(p, o); o += p.length; }
+    const dv = new DataView(all.buffer); dv.setUint32(4, total - 8, true); dv.setUint32(40, total - 44, true);   // real lengths
+    const rate = dv.getUint32(24, true), audioSec = (total - 44) / (rate * 2);
+    $('mFirst').textContent = (first / 1000).toFixed(2) + ' s';
+    $('mDone').textContent = (doneMs / 1000).toFixed(2) + ' s';
+    $('mLen').textContent = audioSec.toFixed(2) + ' s';
+    $('mRtf').textContent = ((doneMs - first) / 1000 / audioSec).toFixed(2) + '×';
+    const audio = new Audio(URL.createObjectURL(new Blob([all], { type: 'audio/wav' })));
+    await audio.play();
+    $('speakState').textContent = `playing (${s.voice_name || 'default voice'}, ${body.language})`;
+    audio.onended = () => ($('speakState').textContent = 'done ✓');
+  } catch (e) {
+    $('speakState').textContent = '✕ ' + e.message;
+  } finally { $('speak').disabled = false; }
+}
+
+async function prime() {
+  const id = $('voice').value;
+  if (!id) { $('speakState').textContent = 'Choose a voice first.'; return; }
+  $('prime').disabled = true; $('speakState').textContent = 'preparing voice (can take ~20 s) …';
+  try {
+    const r = await api('/api/v1/generation/clone', { method: 'POST', query: { sync: 'true' }, body: { voice_id: id, target_text: 'Test.', language: $('lang').value || 'Auto' }, timeout: 180000 });
+    $('speakState').textContent = r.success ? 'voice prepared ✓ – try “Speak” again' : '✕ ' + (r.error_code || r.status);
+  } catch (e) { $('speakState').textContent = '✕ ' + e.message; } finally { $('prime').disabled = false; }
+}
+
+$('run').onclick = runChecks;
+$('speak').onclick = speak;
+$('prime').onclick = prime;
+$('remember').onchange = saveSettings;
+</script>
+</body>
+</html>

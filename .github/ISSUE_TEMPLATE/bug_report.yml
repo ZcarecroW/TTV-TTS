@@ -1,0 +1,43 @@
+name: Bug report
+description: Something doesn't work as described in the guide
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please run **connection-check.html** first. It finds most setup problems and suggests a fix.
+        **Never paste your API key or your configured `ttv-tts.html`.** Remove `api_key=...` from logs before posting.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+  - type: textarea
+    id: log
+    attributes:
+      label: Debug log / connection check result
+      description: Open `ttv-tts.html?debug` in a browser and copy the relevant lines, or copy the results of connection-check.html.
+      render: text
+  - type: dropdown
+    id: setup
+    attributes:
+      label: Setup
+      options:
+        - One PC (VCP and OBS on the same PC)
+        - Two PCs (VCP on a second PC)
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      placeholder: TTV-TTS 1.0.0 · Voice Creator Pro x.y · OBS 32 · Windows 11 · model Qwen3-TTS 1.7B

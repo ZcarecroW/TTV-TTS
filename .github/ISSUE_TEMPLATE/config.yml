@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Full guide & troubleshooting
+    url: https://zcarecrow.github.io/ttv-tts/readme.html#troubleshooting
+    about: Most setup problems (firewall, OBS audio, voices) are covered here.

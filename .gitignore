@@ -1,0 +1,11 @@
+# OS junk
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Release builds
+dist/
+*.zip
+
+# Your personal, configured copy (contains your API key) - never commit it
+*.local.html

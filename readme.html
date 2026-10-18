@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TTV-TTS Guide</title>
+<meta name="description" content="Setup guide and reference for TTV-TTS – a Twitch chat reader for OBS powered by Voice Creator Pro.">
+<style>
+  :root {
+    --bg: #f7f7fa; --surface: #ffffff; --fg: #1b1f27; --muted: #5f6b7a; --line: #e3e6ec;
+    --accent: #5b4cf0; --accent-soft: #eeecff; --code-bg: #f1f3f7; --code-fg: #1b1f27;
+    --tip: #0f7b5f; --tip-bg: #e8f6f0; --warn: #9a5b00; --warn-bg: #fdf4e4; --bad: #b42318; --bad-bg: #fdecea;
+    --box: #ffffff; --box-line: #c9cedb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1015; --surface: #151922; --fg: #e5e8ef; --muted: #9aa4b5; --line: #262c38;
+      --accent: #8f83ff; --accent-soft: #221f3d; --code-bg: #1b2030; --code-fg: #e5e8ef;
+      --tip: #47d6a3; --tip-bg: #10251e; --warn: #f2b84b; --warn-bg: #2a2112; --bad: #ff8a7a; --bad-bg: #2b1513;
+      --box: #1b2030; --box-line: #39425a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1015; --surface: #151922; --fg: #e5e8ef; --muted: #9aa4b5; --line: #262c38;
+    --accent: #8f83ff; --accent-soft: #221f3d; --code-bg: #1b2030; --code-fg: #e5e8ef;
+    --tip: #47d6a3; --tip-bg: #10251e; --warn: #f2b84b; --warn-bg: #2a2112; --bad: #ff8a7a; --bad-bg: #2b1513;
+    --box: #1b2030; --box-line: #39425a;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); max-width: 1320px; margin: 0 auto; }
+  nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 24px 18px; border-right: 1px solid var(--line); }
+  nav.toc .brand { font-weight: 800; font-size: 18px; letter-spacing: -0.01em; }
+  nav.toc .brand span { color: var(--accent); }
+  nav.toc .ver { color: var(--muted); font-size: 13px; margin-bottom: 14px; }
+  nav.toc input { width: 100%; font: inherit; font-size: 14px; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; margin-bottom: 12px; }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: toc; }
+  nav.toc li a { display: block; padding: 4px 8px; border-radius: 6px; color: var(--fg); text-decoration: none; font-size: 14px; }
+  nav.toc li a:hover { background: var(--accent-soft); }
+  nav.toc li a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  nav.toc .theme { margin-top: 16px; font-size: 13px; }
+  main { padding: 32px 40px 80px; max-width: 920px; }
+  header.hero h1 { font-size: 34px; line-height: 1.2; margin: 0 0 8px; letter-spacing: -0.02em; }
+  header.hero p { color: var(--muted); font-size: 18px; margin: 0 0 18px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+  .chip { display: inline-block; padding: 5px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--fg); text-decoration: none; font-size: 14px; font-weight: 600; }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  section { padding-top: 12px; margin-bottom: 28px; border-top: 1px solid var(--line); }
+  section:first-of-type { border-top: 0; }
+  h2 { font-size: 26px; margin: 18px 0 10px; letter-spacing: -0.01em; }
+  h3 { font-size: 19px; margin: 26px 0 8px; }
+  h4 { font-size: 16px; margin: 18px 0 6px; }
+  p, li { max-width: 78ch; }
+  a { color: var(--accent); }
+  code { background: var(--code-bg); color: var(--code-fg); border-radius: 5px; padding: 1px 5px; font: 0.88em ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  .code { position: relative; margin: 10px 0 16px; }
+  .code pre { margin: 0; background: var(--code-bg); color: var(--code-fg); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; overflow-x: auto; font: 13.5px/1.55 ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  .code button { position: absolute; top: 8px; right: 8px; font: 600 12px system-ui, sans-serif; border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+  .code button:hover { color: var(--accent); border-color: var(--accent); }
+  .table-wrap { overflow-x: auto; margin: 10px 0 18px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+  th, td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  th { font-size: 13px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .03em; }
+  td code { white-space: nowrap; }
+  .callout { border-radius: 10px; padding: 12px 16px; margin: 14px 0; border-left: 4px solid; }
+  .callout b:first-child { display: block; margin-bottom: 2px; }
+  .tip { background: var(--tip-bg); border-color: var(--tip); }
+  .warn { background: var(--warn-bg); border-color: var(--warn); }
+  .bad { background: var(--bad-bg); border-color: var(--bad); }
+  .steps { counter-reset: step; list-style: none; padding: 0; }
+  .steps > li { position: relative; padding-left: 40px; margin: 12px 0; }
+  .steps > li::before { counter-increment: step; content: counter(step); position: absolute; left: 0; top: 0; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; display: grid; place-items: center; }
+  .diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin: 14px 0; }
+  .diagram svg { width: 100%; height: auto; display: block; }
+  .muted { color: var(--muted); }
+  kbd { font: 12px ui-monospace, Consolas, monospace; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--surface); }
+  .hidden-by-filter { display: none; }
+  .nomatch { display: none; color: var(--muted); }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 16px; }
+    nav.toc ol { columns: 2; column-gap: 12px; }
+    main { padding: 20px 16px 64px; }
+    header.hero h1 { font-size: 28px; }
+  }
+  @media (max-width: 520px) { nav.toc ol { columns: 1; } }
+  @media print { nav.toc, .code button { display: none; } .layout { display: block; } main { max-width: none; } }
+</style>
+</head>
+<body>
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <div class="brand">TTV<span>-</span>TTS</div>
+  <div class="ver">Guide &amp; reference · v1.0 · by ZcarecroW</div>
+  <input id="filter" type="search" placeholder="Filter sections (e.g. firewall)" aria-label="Filter sections">
+  <ol id="tocList">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#pack">What's in the pack</a></li>
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#requirements">Requirements</a></li>
+    <li><a href="#quickstart">Quick start</a></li>
+    <li><a href="#vcp">Voice Creator Pro setup</a></li>
+    <li><a href="#voices">Voices</a></li>
+    <li><a href="#network">Network: one or two PCs</a></li>
+    <li><a href="#firewall">Firewall</a></li>
+    <li><a href="#obs">OBS setup</a></li>
+    <li><a href="#config">Configuration reference</a></li>
+    <li><a href="#chat">Chat features in detail</a></li>
+    <li><a href="#audio">Audio, latency &amp; quality</a></li>
+    <li><a href="#ai">AI assistants (Claude, MCP)</a></li>
+    <li><a href="#tools">The helper tools</a></li>
+    <li><a href="#debug">Debug mode</a></li>
+    <li><a href="#troubleshooting">Troubleshooting</a></li>
+    <li><a href="#performance">Performance</a></li>
+    <li><a href="#security">Security &amp; privacy</a></li>
+    <li><a href="#api">VCP API cheat sheet</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#credits">Credits &amp; license</a></li>
+  </ol>
+  <p class="nomatch" id="nomatch">No section matches.</p>
+  <div class="theme">Theme: <a href="#" data-theme-set="auto">auto</a> · <a href="#" data-theme-set="light">light</a> · <a href="#" data-theme-set="dark">dark</a></div>
+</nav>
+
+<main>
+<header class="hero">
+  <h1>TTV-TTS — Twitch chat read aloud by your own AI voices</h1>
+  <p>An invisible OBS browser source that reads your Twitch chat in the viewer's language, with natural voices from <b>Voice Creator Pro</b> running locally on your GPU. No cloud, no subscription, no login.</p>
+  <div class="chips">
+    <a class="chip" href="#quickstart">Quick start</a>
+    <a class="chip" href="#network">Two-PC setup</a>
+    <a class="chip" href="#voices">Create voices</a>
+    <a class="chip" href="#config">All options</a>
+    <a class="chip" href="#troubleshooting">Troubleshooting</a>
+  </div>
+</header>
+
+<!-- ───────────────────────────── OVERVIEW ───────────────────────────── -->
+<section id="overview">
+  <h2>Overview</h2>
+  <p>TTV-TTS is a single HTML file you add to OBS as a browser source. It listens to your Twitch chat, cleans up every message, detects its language, picks a voice and lets Voice Creator Pro (VCP) speak it. The audio plays inside the browser source, so it goes through the OBS mixer into your stream and recording.</p>
+  <h3>Features</h3>
+  <ul>
+    <li><b>Anonymous chat connection</b> – no Twitch login, token or bot account needed.</li>
+    <li><b>Language detection per message</b> – English, German, Russian, Ukrainian, French, Spanish, Italian, Portuguese, Dutch, Polish, Turkish, Japanese, Chinese, Korean (and more scripts). Unclear short messages use the viewer's last language.</li>
+    <li><b>Voice per viewer</b> – every viewer keeps a fixed “role” (e.g. young woman, elderly man) that is spoken by a native voice in each language.</li>
+    <li><b>Emotes</b> – Twitch, BetterTTV, FrankerFaceZ and 7TV emotes are recognized; each emote is read once (“KEKW KEKW KEKW” → “kek”) or removed.</li>
+    <li><b>Emojis</b> – common emojis become words (“😂” → “laughing”) instead of being spelled out.</li>
+    <li><b>Smart text cleanup</b> – links, @mentions, letter spam (“sooooo”), ALL CAPS, abbreviations (“gg”, “brb”), blocked words, cheermotes.</li>
+    <li><b>Name announcements</b> – “Max says: …” only when the speaker changes.</li>
+    <li><b>Low latency</b> – first sound after ~0.7–0.9 s; the next message is generated while the current one plays.</li>
+    <li><b>Moderation</b> – mod commands (<code>!skip</code>, <code>!ttsclear</code>, <code>!ttsmute</code> …); timeouts, bans and deleted messages are removed from the queue automatically.</li>
+    <li><b>Robust</b> – auto-reconnect, warm-up after VCP restarts, self-healing for new voices, clear error messages in debug mode.</li>
+  </ul>
+</section>
+
+<!-- ───────────────────────────── PACK ───────────────────────────── -->
+<section id="pack">
+  <h2>What's in the pack</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>File</th><th>What it is</th><th>Where you use it</th></tr></thead>
+    <tbody>
+      <tr><td><code>ttv-tts.html</code></td><td>The chat reader. Configuration at the top of the file.</td><td>OBS browser source on the streaming PC</td></tr>
+      <tr><td><code>readme.html</code></td><td>This guide.</td><td>Any browser</td></tr>
+      <tr><td><code>connection-check.html</code></td><td>Step-by-step test of the whole chain incl. a speech test with timing.</td><td>Browser on the streaming PC</td></tr>
+      <tr><td><code>voice-lab.html</code></td><td>Creates and verifies a consistent set of role voices in VCP (6 roles × your languages).</td><td>Any browser that can reach VCP</td></tr>
+      <tr><td><code>vcp-lan-setup.ps1</code></td><td>Makes VCP reachable from a second PC – permanently (port proxy, firewall rule, autostart task, status report).</td><td>The PC running VCP (two-PC setups only)</td></tr>
+      <tr><td><code>LICENSE.txt</code></td><td>MIT license.</td><td>–</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn"><b>Never share your configured ttv-tts.html</b>Once you've entered your API key and IP, keep that copy private. Share the original pack instead.</div>
+</section>
+
+<!-- ───────────────────────────── HOW ───────────────────────────── -->
+<section id="how">
+  <h2>How it works</h2>
+  <div class="diagram" role="img" aria-label="Data flow: Twitch chat and emote APIs feed the OBS browser source, which asks Voice Creator Pro for speech and plays it into the OBS mixer.">
+    <svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif" font-size="14">
+      <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)"/></marker></defs>
+      <g fill="var(--box)" stroke="var(--box-line)" stroke-width="1.5">
+        <rect x="20" y="30" width="190" height="64" rx="10"/>
+        <rect x="20" y="140" width="190" height="64" rx="10"/>
+        <rect x="310" y="70" width="240" height="110" rx="12" stroke="var(--accent)" stroke-width="2"/>
+        <rect x="650" y="30" width="190" height="84" rx="10"/>
+        <rect x="650" y="170" width="190" height="64" rx="10"/>
+      </g>
+      <g fill="var(--fg)" text-anchor="middle">
+        <text x="115" y="58" font-weight="700">Twitch chat</text><text x="115" y="78" fill="var(--muted)" font-size="12">anonymous IRC WebSocket</text>
+        <text x="115" y="168" font-weight="700">Emote lists</text><text x="115" y="188" fill="var(--muted)" font-size="12">BTTV · FFZ · 7TV</text>
+        <text x="430" y="100" font-weight="700">ttv-tts.html</text><text x="430" y="120" fill="var(--muted)" font-size="12">OBS browser source</text>
+        <text x="430" y="142" fill="var(--muted)" font-size="12">clean → detect language</text><text x="430" y="160" fill="var(--muted)" font-size="12">→ pick voice → queue</text>
+        <text x="745" y="58" font-weight="700">Voice Creator Pro</text><text x="745" y="78" fill="var(--muted)" font-size="12">REST API · GPU</text><text x="745" y="96" fill="var(--muted)" font-size="12">same PC or 2nd PC</text>
+        <text x="745" y="198" font-weight="700">OBS mixer</text><text x="745" y="218" fill="var(--muted)" font-size="12">→ stream &amp; recording</text>
+      </g>
+      <g stroke="var(--muted)" stroke-width="1.6" fill="none" marker-end="url(#arr)">
+        <path d="M210 62 L306 100"/><path d="M210 172 L306 150"/>
+        <path d="M550 98 L646 70"/><path d="M646 92 L554 118" stroke-dasharray="5 4"/>
+        <path d="M550 160 L646 196"/>
+      </g>
+      <g fill="var(--muted)" font-size="12">
+        <text x="575" y="66">POST /speak</text><text x="566" y="130">WAV stream</text><text x="572" y="196">audio</text>
+      </g>
+    </svg>
+  </div>
+  <ol>
+    <li>The page joins your chat anonymously and loads the emote lists of your channel.</li>
+    <li>For every message: filters (bots, commands, muted users) → split into words, emotes, emojis, links, mentions → language detection → cleanup → optional name announcement.</li>
+    <li>The page asks VCP to speak the text (<code>POST /api/v1/speak</code>) with the chosen voice and language. VCP starts generating immediately and returns a stream ID.</li>
+    <li>The page reads the WAV stream and plays it through Web Audio while VCP is still generating. The audio goes into the OBS mixer.</li>
+    <li>As soon as VCP has finished generating the current message, the next one is already requested (prefetch) – so there is hardly any gap between messages.</li>
+  </ol>
+</section>
+
+<!-- ───────────────────────────── REQUIREMENTS ───────────────────────────── -->
+<section id="requirements">
+  <h2>Requirements</h2>
+  <ul>
+    <li><b>Voice Creator Pro desktop app</b> (Windows or macOS) with its HTTP API enabled. A dedicated GPU with ~8 GB VRAM is recommended (tested on an RTX 3070 8 GB).</li>
+    <li><b>OBS Studio</b> with the built-in browser source (OBS 30+ recommended; tested with OBS 32).</li>
+    <li>A streaming model in VCP for <code>/api/v1/speak</code> – <b>Qwen3-TTS</b> recommended (also streaming-capable: VoxCPM, Gepard).</li>
+    <li>Internet access on the OBS PC (Twitch chat and emote lists). VCP itself runs offline.</li>
+    <li>Optional: a second PC for VCP so the TTS load doesn't touch your gaming PC.</li>
+  </ul>
+</section>
+
+<!-- ───────────────────────────── QUICK START ───────────────────────────── -->
+<section id="quickstart">
+  <h2>Quick start</h2>
+  <h3>A · Everything on one PC</h3>
+  <ol class="steps">
+    <li>Install and start <b>Voice Creator Pro</b>, download the Qwen3 model, and enable the <b>HTTP API</b> in its settings (default port <code>8100</code>). Optionally set an API key. → <a href="#vcp">details</a></li>
+    <li>Create voices: open <code>voice-lab.html</code>, pick your languages and press <b>Start</b> (or set a default agent voice in VCP and use <code>voices.mode: 'single'</code>). → <a href="#voices">details</a></li>
+    <li>Open <code>ttv-tts.html</code> in a text editor and set at least:
+      <div class="code"><pre>twitch: { channel: 'your_channel_name' },
+vcp: { baseUrl: 'http://127.0.0.1:8100', apiKey: 'YOUR_KEY_OR_EMPTY', … },
+language: { default: 'en', … },</pre></div></li>
+    <li>Open <code>connection-check.html</code>, enter URL, key and channel, press <b>Run all checks</b> and try the speech test.</li>
+    <li>In OBS add a <b>Browser</b> source → tick <b>Local file</b> → choose <code>ttv-tts.html</code> → tick <b>Control audio via OBS</b> → untick <b>Shutdown source when not visible</b>. → <a href="#obs">details</a></li>
+    <li>Write something in your chat. Done.</li>
+  </ol>
+  <h3>B · VCP on a second PC</h3>
+  <ol class="steps">
+    <li>Do step 1 above on the VCP PC.</li>
+    <li>If you use <b>Malwarebytes Windows Firewall Control</b> on the VCP PC: add the authorized group <code>VCP</code> first (Security tab). → <a href="#firewall">details</a></li>
+    <li>On the VCP PC, right-click <code>vcp-lan-setup.ps1</code> → <b>Run with PowerShell</b> and confirm the admin prompt. It prints the <code>baseUrl</code> to use. → <a href="#network">details</a></li>
+    <li>On the OBS PC continue with steps 2–6 above, using <code>baseUrl: 'http://&lt;IP of the VCP PC&gt;:8101'</code>.</li>
+  </ol>
+</section>
+
+<!-- ───────────────────────────── VCP ───────────────────────────── -->
+<section id="vcp">
+  <h2>Voice Creator Pro setup</h2>
+  <p>Voice Creator Pro is a local text-to-speech, voice-cloning and voice-design studio. It runs entirely on your machine and ships a full REST API (docs: <a href="https://voicecreator.pro/api-docs" target="_blank" rel="noopener">voicecreator.pro/api-docs</a>).</p>
+
+  <h3>1 · Install &amp; models</h3>
+  <ul>
+    <li>Get the desktop app (Windows: Microsoft Store or itch.io · macOS: Mac App Store) from <a href="https://voicecreator.pro" target="_blank" rel="noopener">voicecreator.pro</a>.</li>
+    <li>On first start the app installs its backend and downloads models. For TTV-TTS you need <b>Qwen3-TTS</b>: it supports streaming, voice design, cloning and 10 languages (English, German, Russian, French, Spanish, Italian, Portuguese, Japanese, Chinese, Korean). OmniVoice covers far more languages but does not stream.</li>
+  </ul>
+
+  <h3>2 · Enable the HTTP API</h3>
+  <ul>
+    <li>In the VCP settings, enable the <b>HTTP API</b>. The default port is <code>8100</code>; you can change it in the settings or start the app with <code>--api-port &lt;port&gt;</code>. A port change needs an app restart.</li>
+    <li>The API listens on <code>127.0.0.1</code> only (this PC). For access from another PC see <a href="#network">Network</a>.</li>
+    <li>Test: open <code>http://127.0.0.1:8100/api/v1/health</code> in a browser on the VCP PC – it should show <code>{"status":"ok"}</code>.</li>
+  </ul>
+
+  <h3>3 · API key (recommended in a LAN)</h3>
+  <p>Without a key anyone who can reach the port can use the API. Set a key in the VCP settings (or start with <code>--api-key &lt;key&gt;</code>). VCP accepts it as <code>X-API-Key</code> header, <code>Authorization: Bearer</code> header or <code>?api_key=</code> URL parameter. TTV-TTS uses the URL parameter because it also works for audio streams. <code>/api/v1/health</code> and <code>/api/v1/system/version</code> never need a key.</p>
+
+  <h3>4 · Default agent voice &amp; model</h3>
+  <p>VCP has a “default agent voice” and “default agent model” (MCP / agent voice settings). <code>/api/v1/speak</code> uses them when no voice/model is given. TTV-TTS uses them for the warm-up and as fallback when no voice pool exists. Set one – it avoids <code>HTTP 400 No voice resolved</code>.</p>
+
+  <h3>5 · Quality tier</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Qwen3 tier</th><th>VRAM</th><th>First audio*</th><th>Generation speed*</th></tr></thead>
+    <tbody>
+      <tr><td>Faster (0.6B)</td><td>~1.7 GB</td><td>~0.7–0.8 s</td><td>~0.40 × real time</td></tr>
+      <tr><td>Higher quality (1.7B)</td><td>~3.9 GB</td><td>~0.7–0.9 s</td><td>~0.47 × real time</td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">* measured on an RTX 3070 8 GB with “low VRAM” mode on, model warm. Both tiers are more than twice as fast as real time, so <b>1.7B is the better choice</b> on an 8 GB card. Switching the tier unloads the model and clears VCP's voice cache once.</p>
+
+  <h3>6 · Warm-up after a VCP restart</h3>
+  <p>The very first generation after VCP starts takes <b>~20–30 s</b> (the model is loaded into the GPU). TTV-TTS sends a silent warm-up request as soon as it connects (<code>vcp.warmup</code>), so your first viewer doesn't wait. Best practice: start VCP before OBS and leave it running.</p>
+</section>
+
+<!-- ───────────────────────────── VOICES ───────────────────────────── -->
+<section id="voices">
+  <h2>Voices</h2>
+
+  <h3>Saved voices vs. built-in speakers</h3>
+  <ul>
+    <li><b>Saved voices</b> (clones and designed voices in your VCP library) are used via <code>/api/v1/speak</code> – streaming, lowest latency. This is the default (<code>vcp.endpoint: 'speak'</code>).</li>
+    <li><b>Built-in speakers</b> of Qwen3 (Vivian, Serena, Uncle_Fu, Eric, Ryan, Aiden, Ono_Anna, Sohee) are used via <code>/api/v1/tts/generate</code> with <code>vcp.endpoint: 'tts'</code> – no streaming, the whole message is generated first.</li>
+  </ul>
+
+  <h3>Voice modes (<code>voices.mode</code>)</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Mode</th><th>Behaviour</th><th>Good for</th></tr></thead>
+    <tbody>
+      <tr><td><code>perUserLanguage</code> (default)</td><td>Every viewer gets a fixed role; the role is spoken by the native voice of the detected language.</td><td>Multilingual chats – everyone sounds native, a viewer keeps “their” character across languages.</td></tr>
+      <tr><td><code>perUser</code></td><td>Every viewer gets a fixed voice from one pool, regardless of language.</td><td>One-language chats, or voices that handle all your languages well.</td></tr>
+      <tr><td><code>perLanguage</code></td><td>One voice per language (<code>language.languages.xx.voice</code>).</td><td>A consistent “narrator” per language.</td></tr>
+      <tr><td><code>single</code></td><td>Always <code>voices.default</code> (or VCP's default agent voice).</td><td>Simplest setup.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Fixed voices for specific viewers (e.g. yourself or a mod) go into <code>voices.users</code> and override every mode.</p>
+
+  <h3>Naming convention for <code>perUserLanguage</code></h3>
+  <p>Voices are grouped into language pools by their name prefix <code>voices.languagePrefix</code> (default <code>TTS-{lang} </code>). Inside a pool they are sorted by name, so the number defines the role:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>#</th><th>Role</th><th>English</th><th>German</th><th>Russian</th><th>…</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>young woman</td><td><code>TTS-en 1 Emma</code></td><td><code>TTS-de 1 Lena</code></td><td><code>TTS-ru 1 Anya</code></td><td></td></tr>
+      <tr><td>2</td><td>young man</td><td><code>TTS-en 2 Jake</code></td><td><code>TTS-de 2 Jonas</code></td><td><code>TTS-ru 2 Dima</code></td><td></td></tr>
+      <tr><td>3</td><td>woman ~40</td><td><code>TTS-en 3 Rachel</code></td><td><code>TTS-de 3 Sabine</code></td><td><code>TTS-ru 3 Olga</code></td><td></td></tr>
+      <tr><td>4</td><td>man ~40</td><td><code>TTS-en 4 Michael</code></td><td><code>TTS-de 4 Thomas</code></td><td><code>TTS-ru 4 Igor</code></td><td></td></tr>
+      <tr><td>5</td><td>elderly woman</td><td><code>TTS-en 5 Margaret</code></td><td><code>TTS-de 5 Helga</code></td><td><code>TTS-ru 5 Galina</code></td><td></td></tr>
+      <tr><td>6</td><td>elderly man</td><td><code>TTS-en 6 Arthur</code></td><td><code>TTS-de 6 Klaus</code></td><td><code>TTS-ru 6 Viktor</code></td><td></td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li>A viewer is mapped to a role by a stable hash of their Twitch user ID. <b>Keep all pools the same size</b> – then the same viewer gets the same role in every language.</li>
+    <li>Languages without their own pool (e.g. French when you only created en/de/ru) use <code>voices.fallbackPoolLanguage</code> (default <code>en</code>) but are still spoken in their own language.</li>
+    <li>Changing the number of voices in a pool re-shuffles the roles of your viewers once.</li>
+    <li>Voices without the prefix (your other VCP voices) are ignored in this mode.</li>
+  </ul>
+
+  <h3>Creating voices with the Voice Lab</h3>
+  <p><code>voice-lab.html</code> automates the whole process for any of the 10 Qwen3 languages:</p>
+  <ol>
+    <li><b>Design</b> – VCP creates each voice from an English description (“A woman around forty with a warm, calm and confident voice…”) plus a native-accent hint, speaking a neutral 6–8 s reference sentence in the target language.</li>
+    <li><b>Check</b> – VCP's speech recognition transcribes the sample; it must match the sentence (default ≤ 12 % word errors), be recognized as the right language and be 3–10 s long. Failed takes are redesigned automatically.</li>
+    <li><b>Save</b> – the sample becomes a saved voice named after the template (<code>TTS-{lang} {n} {name}</code>).</li>
+    <li><b>Prime</b> – one normal clone generation (see quirk below).</li>
+    <li><b>Verify</b> – a short <code>/speak</code> stream test.</li>
+  </ol>
+  <p>Use <b>Dry run</b> first to listen to the samples without saving anything. Existing names are skipped, nothing is ever deleted. Timing on an RTX 3070: ~3 s per design, ~5 s per check, ~20 s per priming.</p>
+  <div class="callout tip"><b>Creating voices by hand</b>You can also design or clone voices in the VCP app and simply name them following the convention. A good reference clip is 3–10 s of clean speech with an exact transcript.</div>
+
+  <h3 id="priming">VCP quirk: “Generation failed” for brand-new voices</h3>
+  <p>A voice that was <b>saved through the API</b> only streams via <code>/api/v1/speak</code> after it has been cloned normally once (VCP builds its voice prompt cache then). Before that, the stream is empty and the session reports <code>Generation failed. Please try again.</code></p>
+  <ul>
+    <li><code>ttv-tts.html</code> handles this automatically: it primes the voice once (<code>POST /api/v1/generation/clone?sync=true</code>) and retries – the first message with that voice takes ~20 s longer.</li>
+    <li><code>voice-lab.html</code> primes every new voice right after saving.</li>
+    <li><code>connection-check.html</code> has a “Prepare (prime) voice” button.</li>
+    <li>The cache survives VCP restarts.</li>
+  </ul>
+
+  <h3>Tips</h3>
+  <ul>
+    <li>Cloned voices can speak other languages, but they keep the accent of their reference clip – that's why <code>perUserLanguage</code> uses one native voice per language.</li>
+    <li>Voices created with another model (e.g. OmniVoice) also work with Qwen3 via <code>/speak</code>; VCP does not switch models for them.</li>
+    <li>Avoid cloning real people's voices for your stream unless you have their permission.</li>
+  </ul>
+</section>
+
+<!-- ───────────────────────────── NETWORK ───────────────────────────── -->
+<section id="network">
+  <h2>Network: one or two PCs</h2>
+
+  <h3>One PC</h3>
+  <p>Use <code>baseUrl: 'http://127.0.0.1:8100'</code>. No firewall changes needed. VCP and OBS share the GPU – fine for most setups, but heavy games may notice it.</p>
+
+  <h3>Two PCs (VCP on a second machine)</h3>
+  <p>VCP's API only listens on <code>127.0.0.1</code>, so other PCs can't reach port 8100 directly. The solution is a Windows <b>port proxy</b> on the VCP PC: it accepts connections on <code>0.0.0.0:8101</code> and forwards them to <code>127.0.0.1:8100</code>. Three things must be in place:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Piece</th><th>Why</th><th>Survives a reboot?</th></tr></thead>
+    <tbody>
+      <tr><td>Port proxy <code>0.0.0.0:8101 → 127.0.0.1:8100</code></td><td>Makes VCP reachable from the LAN</td><td>Yes (stored in the registry)</td></tr>
+      <tr><td>“IP Helper” service (<code>iphlpsvc</code>) running</td><td>It is the program that runs the port proxy</td><td>Only if its start type is Automatic</td></tr>
+      <tr><td>Inbound firewall rule for TCP 8101</td><td>Otherwise Windows drops all connections</td><td>Yes – unless a firewall manager deletes it (see <a href="#firewall">Firewall</a>)</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Automatic: <code>vcp-lan-setup.ps1</code> (recommended)</h3>
+  <p>Run it on the VCP PC: right-click → <b>Run with PowerShell</b>. It requests admin rights by itself, sets up all three pieces, registers a scheduled task <b>“VCP LAN Access”</b> that re-checks them at every startup and logon, and prints a status report with the <code>baseUrl</code> to use.</p>
+  <div class="code"><pre>powershell -ExecutionPolicy Bypass -File .\vcp-lan-setup.ps1            # install / repair
+powershell -ExecutionPolicy Bypass -File .\vcp-lan-setup.ps1 -Check     # status report only
+powershell -ExecutionPolicy Bypass -File .\vcp-lan-setup.ps1 -Uninstall # remove everything
+powershell -ExecutionPolicy Bypass -File .\vcp-lan-setup.ps1 -ListenPort 8201 -VcpPort 8200</pre></div>
+
+  <h3>Manual (what the script does)</h3>
+  <p>In PowerShell <b>as administrator</b> on the VCP PC:</p>
+  <div class="code"><pre>netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=8101 connectaddress=127.0.0.1 connectport=8100
+Set-Service iphlpsvc -StartupType Automatic; Start-Service iphlpsvc
+New-NetFirewallRule -Name 'VCP-API-Proxy' -DisplayName 'Voice Creator Pro API Proxy' -Group 'VCP' -Direction Inbound -Protocol TCP -LocalPort 8101 -Action Allow -Profile Any
+netsh interface portproxy show v4tov4</pre></div>
+  <div class="callout warn"><b>Pasting multi-line commands</b>Some terminals paste multiple lines in the wrong order or one by one, which breaks blocks like <code>if { … }</code> or here-strings (<code>@' … '@</code>) with strange parser errors. Prefer the <code>.ps1</code> file, or paste single-line commands one at a time.</div>
+
+  <h3>Testing the connection</h3>
+  <ul>
+    <li>On the VCP PC: <code>http://127.0.0.1:8101/api/v1/health</code> → <code>{"status":"ok"}</code> means the proxy works.</li>
+    <li>On the OBS PC: <code>connection-check.html</code>, or in PowerShell:</li>
+  </ul>
+  <div class="code"><pre>Test-NetConnection 192.168.1.50 -Port 8101</pre></div>
+  <p>A timeout (no answer) almost always means a firewall on the VCP PC drops the packets. “Connection refused” means nothing listens on 8101 (proxy or IP Helper missing).</p>
+
+  <h3>Tips</h3>
+  <ul>
+    <li><b>Fixed IP:</b> give the VCP PC a DHCP reservation in your router, otherwise its address may change and the <code>baseUrl</code> breaks.</li>
+    <li><b>Excluded ports:</b> Hyper-V, WSL or Docker can reserve port ranges at boot (<code>netsh int ipv4 show excludedportrange protocol=tcp</code>). If 8101 is inside one, use another port (the script warns you).</li>
+    <li><b>VCP listening on all interfaces?</b> If <code>Get-NetTCPConnection -LocalPort 8100 -State Listen</code> shows <code>0.0.0.0</code>, you don't need the proxy – just a firewall rule for 8100.</li>
+    <li><b>macOS VCP:</b> the script is Windows-only. On a Mac a TCP forwarder like <code>socat TCP-LISTEN:8101,fork,reuseaddr TCP:127.0.0.1:8100</code> (Homebrew) does the same job; allow it in the macOS firewall. (Not tested by the author.)</li>
+    <li><b>Never</b> forward these ports in your router to the internet.</li>
+  </ul>
+</section>
+
+<!-- ───────────────────────────── FIREWALL ───────────────────────────── -->
+<section id="firewall">
+  <h2>Firewall</h2>
+
+  <h3>Windows Defender Firewall</h3>
+  <p>Inbound connections are blocked by default on all profiles. The rule <code>VCP-API-Proxy</code> (TCP 8101, profile Any) opens exactly the proxy port. Your network profile (Public/Private) doesn't matter with <code>-Profile Any</code>; for a home network “Private” is the sensible classification anyway:</p>
+  <div class="code"><pre>Get-NetConnectionProfile
+Set-NetConnectionProfile -InterfaceAlias 'Ethernet' -NetworkCategory Private</pre></div>
+
+  <h3>Malwarebytes Windows Firewall Control (WFC)</h3>
+  <p>WFC sits on top of the Windows firewall. With <b>Security → Secure Rules → “Delete unauthorized rules”</b> enabled, it deletes every firewall rule that is not in one of its <b>authorized groups</b> – including rules you create with PowerShell. Typical symptom: <b>everything works for a while, then suddenly stops</b> (e.g. the next morning), and re-creating the rule only helps for seconds.</p>
+  <ol class="steps">
+    <li>Open WFC → <b>Security</b>.</li>
+    <li>In “Define here a new authorized group” type <code>VCP</code> and click <b>+</b>. <code>VCP</code> appears under “Authorized groups”.</li>
+    <li>Run <code>vcp-lan-setup.ps1</code> (it creates the rule in group <code>VCP</code>). The rule now survives.</li>
+  </ol>
+  <p>Alternative: create the inbound rule (TCP, local port 8101, allow) inside WFC itself – rules made there automatically belong to an authorized group. Leave “Secure Rules” on; it is a useful protection.</p>
+
+  <h3>How to find out who deletes or changes rules</h3>
+  <p>Windows logs every firewall rule change. In PowerShell (admin) on the VCP PC:</p>
+  <div class="code"><pre>Get-WinEvent -LogName 'Microsoft-Windows-Windows Firewall With Advanced Security/Firewall' -MaxEvents 3000 |
+  Where-Object { $_.Message -match 'Voice Creator|VCP-API-Proxy' } | Select-Object -First 5 |
+  ForEach-Object { "==== {0}  ID {1}" -f $_.TimeCreated, $_.Id; $_.Message }</pre></div>
+  <p>Event IDs (newer / older Windows builds): rule added <b>2097</b> / 2004 · rule modified <b>2099</b> / 2005 · rule deleted <b>2052</b> / 2006 · all rules deleted 2033. The full message names the modifying application and user. A rule that is “modified” right after it was added, or that disappears overnight, points to a firewall manager like WFC.</p>
+
+  <h3>Other security suites</h3>
+  <p>Norton, Kaspersky, ESET, Bitdefender, Avast, Comodo, GlassWire, simplewall, TinyWall, Portmaster and similar tools may use their own firewall or rule enforcement. Allow inbound <b>TCP 8101</b> (or the program <code>svchost.exe</code> hosting the IP Helper service) in their settings. <code>vcp-lan-setup.ps1 -Check</code> lists third-party firewalls that are registered in Windows Security Center.</p>
+</section>
+
+<!-- ───────────────────────────── OBS ───────────────────────────── -->
+<section id="obs">
+  <h2>OBS setup</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Browser source setting</th><th>Value</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Local file</td><td>✔ → <code>ttv-tts.html</code></td><td>Loads the page from disk.</td></tr>
+      <tr><td>Width / Height</td><td>e.g. 10 × 10</td><td>The page is invisible; size only matters for debug mode.</td></tr>
+      <tr><td><b>Control audio via OBS</b></td><td><b>✔ on</b></td><td>Routes the audio into the OBS mixer (and stream). Without it the stream hears nothing.</td></tr>
+      <tr><td>Use custom frame rate</td><td>✔, 1 FPS</td><td>Nothing is drawn, so 1 FPS saves rendering work. If audio stutters, go back to 30.</td></tr>
+      <tr><td><b>Shutdown source when not visible</b></td><td><b>✘ off</b></td><td>Otherwise TTS stops when you switch scenes.</td></tr>
+      <tr><td>Refresh browser when scene becomes active</td><td>✘ off</td><td>A refresh clears the queue and reconnects.</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><b>Every scene:</b> put the source into a group/nested scene that you add to all scenes, or into a scene that is always active – it must stay “visible” somewhere.</li>
+    <li><b>Hearing it yourself:</b> Advanced Audio Properties → Audio Monitoring → “Monitor and Output”. Careful: if a desktop audio capture records the monitoring device, you get an echo.</li>
+    <li><b>5.1 / 7.1 audio:</b> only the first two level meters (front left / right) move – that's correct for a stereo source.</li>
+    <li><b>After editing the config:</b> source properties → <b>Refresh cache of current page</b> (or toggle the source).</li>
+    <li><b>Crackles or beeps:</b> set <code>vcp.playback: 'buffered'</code> and/or raise <code>vcp.prebufferSec</code>.</li>
+    <li><b>Browser source hardware acceleration</b> (Settings → Advanced → Sources) mainly matters for visual browser sources like chat overlays; enabling it moves their rendering to the GPU.</li>
+  </ul>
+</section>
+
+<!-- ───────────────────────────── CONFIG ───────────────────────────── -->
+<section id="config">
+  <h2>Configuration reference</h2>
+  <p>All options live in <code>const CONFIG = { … }</code> at the top of <code>ttv-tts.html</code>. Edit with any text editor (VS Code, Notepad++, Notepad), save, refresh the OBS source.</p>
+
+  <h3>twitch</h3>
+  <div class="table-wrap"><table><thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+    <tr><td><code>channel</code></td><td><code>'your_channel_name'</code></td><td>Your channel login, lower case, without <code>#</code>.</td></tr>
+  </tbody></table></div>
+
+  <h3>vcp</h3>
+  <div class="table-wrap"><table><thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+    <tr><td><code>baseUrl</code></td><td><code>'http://127.0.0.1:8100'</code></td><td>Address of the VCP API. Second PC: <code>'http://&lt;IP&gt;:8101'</code>.</td></tr>
+    <tr><td><code>apiKey</code></td><td><code>''</code></td><td>The key set in VCP; empty if none.</td></tr>
+    <tr><td><code>endpoint</code></td><td><code>'speak'</code></td><td><code>'speak'</code> = saved voices, streaming · <code>'tts'</code> = built-in speakers, no streaming.</td></tr>
+    <tr><td><code>playOn</code></td><td><code>'obs'</code></td><td><code>'obs'</code> = audio in the browser source · <code>'vcp-pc'</code> = VCP plays on its own speakers.</td></tr>
+    <tr><td><code>model</code></td><td><code>null</code></td><td>Force a model family (<code>'qwen3-tts'</code>, …); <code>null</code> = VCP's default agent model.</td></tr>
+    <tr><td><code>playback</code></td><td><code>'stream'</code></td><td><code>'stream'</code> = play while generating (Web Audio) · <code>'buffered'</code> = download first, then play with an audio element.</td></tr>
+    <tr><td><code>prebufferSec</code></td><td><code>2.0</code></td><td>Audio buffered before playback starts (stream mode). Lower = faster start (0.5 works on fast setups), higher = safer against dropouts.</td></tr>
+    <tr><td><code>sampleRate</code></td><td><code>24000</code></td><td>Sample rate of VCP's streams (Qwen3: 24 kHz). The audio engine runs at this rate.</td></tr>
+    <tr><td><code>warmup</code></td><td><code>true</code></td><td>Silent warm-up request on connect, so the first message isn't delayed by model loading.</td></tr>
+    <tr><td><code>prefetch</code></td><td><code>true</code></td><td>Generate the next message while the current one plays.</td></tr>
+    <tr><td><code>requestTimeoutSec</code></td><td><code>20</code></td><td>Timeout for API calls.</td></tr>
+    <tr><td><code>checkLanguagesOnServer</code></td><td><code>true</code></td><td>Ask VCP which languages the model supports; others are sent as <code>Auto</code>.</td></tr>
+  </tbody></table></div>
+
+  <h3>voices</h3>
+  <div class="table-wrap"><table><thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+    <tr><td><code>mode</code></td><td><code>'perUserLanguage'</code></td><td>See <a href="#voices">Voice modes</a>.</td></tr>
+    <tr><td><code>languagePrefix</code></td><td><code>'TTS-{lang} '</code></td><td>Name prefix that defines the language pools.</td></tr>
+    <tr><td><code>fallbackPoolLanguage</code></td><td><code>'en'</code></td><td>Pool used for languages without their own pool.</td></tr>
+    <tr><td><code>pool</code></td><td><code>[]</code></td><td>For <code>perUser</code>: voice names/IDs; empty = all saved voices.</td></tr>
+    <tr><td><code>exclude</code></td><td><code>[]</code></td><td>Voices never assigned automatically.</td></tr>
+    <tr><td><code>default</code></td><td><code>null</code></td><td>Fallback voice; <code>null</code> = VCP default agent voice.</td></tr>
+    <tr><td><code>users</code></td><td><code>{}</code></td><td>Fixed voices: <code>{ 'login': 'voice name or ID' }</code>.</td></tr>
+  </tbody></table></div>
+
+  <h3>reading</h3>
+  <div class="table-wrap"><table><thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+    <tr><td><code>mode</code></td><td><code>'all'</code></td><td><code>'all'</code> · <code>'command'</code> (only <code>!tts text</code>) · <code>'privileged'</code> (only <code>allowedRoles</code>).</td></tr>
+    <tr><td><code>command</code></td><td><code>'!tts'</code></td><td>Command for mode <code>'command'</code>.</td></tr>
+    <tr><td><code>allowedRoles</code></td><td>broadcaster, moderator, vip, subscriber</td><td>Roles for mode <code>'privileged'</code>.</td></tr>
+    <tr><td><code>rewardId</code></td><td><code>''</code></td><td>Only read messages from this channel-points reward (“highlight my message”-style rewards with text). The ID appears in the debug log.</td></tr>
+    <tr><td><code>ignoreBroadcaster</code></td><td><code>false</code></td><td>Don't read your own messages.</td></tr>
+    <tr><td><code>ignoreUsers</code></td><td>common bots</td><td>Logins that are never read.</td></tr>
+    <tr><td><code>ignorePrefixes</code></td><td><code>['!']</code></td><td>Messages starting with these are ignored (bot commands).</td></tr>
+    <tr><td><code>readSubMessages</code></td><td><code>true</code></td><td>Read the text attached to subs/resubs.</td></tr>
+    <tr><td><code>maxChars</code></td><td><code>999</code></td><td>Longer messages are shortened, preferably at a sentence end (Twitch's own limit is 500). Lower it (e.g. 300) to keep chat spam short.</td></tr>
+    <tr><td><code>maxSecondsPerMessage</code></td><td><code>99</code></td><td>Hard limit for one message's audio.</td></tr>
+    <tr><td><code>userCooldownSec</code></td><td><code>0</code></td><td>Minimum gap between two read messages of the same viewer.</td></tr>
+    <tr><td><code>maxQueue</code></td><td><code>15</code></td><td>Max. waiting messages; the oldest is dropped on overflow.</td></tr>
+    <tr><td><code>pauseBetweenMs</code></td><td><code>350</code></td><td>Pause between messages.</td></tr>
+    <tr><td><code>volume</code></td><td><code>1.0</code></td><td>0–1, on top of the OBS fader (changeable live with <code>!ttsvol</code>).</td></tr>
+  </tbody></table></div>
+
+  <h3>names</h3>
+  <div class="table-wrap"><table><thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+    <tr><td><code>announce</code></td><td><code>'onChange'</code></td><td><code>'onChange'</code> · <code>'always'</code> · <code>'never'</code>.</td></tr>
+    <tr><td><code>onChangeResetSec</code></td><td><code>90</code></td><td>After this much silence the name is announced again.</td></tr>
+    <tr><td><code>cleanup</code></td><td><code>true</code></td><td><code>max_power123</code> → “max power”.</td></tr>
+    <tr><td><code>aliases</code></td><td><code>{}</code></td><td>Pronunciation: <code>{ 'xx_sniper_xx': 'Sniper' }</code>.</td></tr>
+  </tbody></table></div>
+
+  <h3>language</h3>
+  <div class="table-wrap"><table><thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+    <tr><td><code>default</code></td><td><code>'en'</code></td><td>Language for unclear messages (“ok”, “gg”) of viewers without a remembered language.</td></tr>
+    <tr><td><code>unsupported</code></td><td><code>'auto'</code></td><td>What to send for detected but unsupported languages: <code>'auto'</code> or a code like <code>'en'</code>.</td></tr>
+    <tr><td><code>rememberUserMinutes</code></td><td><code>15</code></td><td>How long a viewer's last detected language is remembered.</td></tr>
+    <tr><td><code>languages.xx.vcp</code></td><td>e.g. <code>'German'</code></td><td>Language name VCP expects (<code>null</code> = unsupported).</td></tr>
+    <tr><td><code>languages.xx.say</code></td><td>e.g. <code>'{user} says: {msg}'</code></td><td>Template for name announcements.</td></tr>
+    <tr><td><code>languages.xx.link</code> / <code>.beep</code></td><td>e.g. <code>'link'</code> / <code>'beep'</code></td><td>Word for links / blocked words.</td></tr>
+    <tr><td><code>languages.xx.voice</code></td><td><code>null</code></td><td>Voice for mode <code>perLanguage</code>.</td></tr>
+  </tbody></table></div>
+
+  <h3>emotes</h3>
+  <div class="table-wrap"><table><thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+    <tr><td><code>mode</code></td><td><code>'once'</code></td><td><code>'once'</code> (each emote once) · <code>'remove'</code> · <code>'keep'</code>.</td></tr>
+    <tr><td><code>maxPerMessage</code></td><td><code>3</code></td><td>Max. different emotes read per message.</td></tr>
+    <tr><td><code>splitWords</code></td><td><code>true</code></td><td><code>PepeLaugh</code> → “Pepe Laugh”.</td></tr>
+    <tr><td><code>skipEmoteOnly</code></td><td><code>false</code></td><td>Skip messages consisting only of emotes.</td></tr>
+    <tr><td><code>providers</code></td><td>all on</td><td>Load BTTV / FFZ / 7TV emotes.</td></tr>
+    <tr><td><code>refreshMinutes</code></td><td><code>10</code></td><td>Reload the emote lists (new emotes).</td></tr>
+    <tr><td><code>aliases</code></td><td>KEKW → kek, …</td><td>Pronunciation of emotes; <code>''</code> = silent.</td></tr>
+  </tbody></table></div>
+
+  <h3>emojis · text · modCommands · debug</h3>
+  <div class="table-wrap"><table><thead><tr><th>Key</th><th>Default</th><th>Meaning</th></tr></thead><tbody>
+    <tr><td><code>emojis.mode</code></td><td><code>'describe'</code></td><td><code>'describe'</code> (dictionary <code>EMOJI_WORDS</code>, de/en/ru) · <code>'remove'</code> · <code>'keep'</code>.</td></tr>
+    <tr><td><code>emojis.maxPerMessage</code></td><td><code>2</code></td><td>Max. emoji words per message.</td></tr>
+    <tr><td><code>text.links</code></td><td><code>'replace'</code></td><td><code>'replace'</code> (“link”) · <code>'remove'</code> · <code>'skip'</code> (drop message).</td></tr>
+    <tr><td><code>text.mentions</code></td><td><code>'name'</code></td><td><code>@max</code> → “max”, or <code>'remove'</code>.</td></tr>
+    <tr><td><code>text.collapseRepeats</code></td><td><code>true</code></td><td>“sooooo” → “so”, “!!!!” → “!”, “hahahaha” → “haha”.</td></tr>
+    <tr><td><code>text.fixShouting</code></td><td><code>true</code></td><td>Mostly-uppercase messages are lower-cased (some models spell capitals).</td></tr>
+    <tr><td><code>text.replacements</code></td><td>gg, brb, idk …</td><td>Whole-word replacements per language (<code>all</code> = every language).</td></tr>
+    <tr><td><code>text.blockedWords</code> / <code>blockedMode</code></td><td><code>[]</code> / <code>'skip'</code></td><td>Partial-match word filter; <code>'skip'</code> drops the message, <code>'beep'</code> replaces the word.</td></tr>
+    <tr><td><code>modCommands.*</code></td><td>see below</td><td>Command names, roles, <code>skipOnTimeout</code>.</td></tr>
+    <tr><td><code>debug</code></td><td><code>false</code></td><td>Show the status panel (or open the file with <code>?debug</code>).</td></tr>
+  </tbody></table></div>
+</section>
+
+<!-- ───────────────────────────── CHAT ───────────────────────────── -->
+<section id="chat">
+  <h2>Chat features in detail</h2>
+
+  <h3>What is read</h3>
+  <ul>
+    <li>Normal messages, <code>/me</code> actions (“Bob dances”), replies (the leading <code>@name</code> becomes the name) and the text of sub/resub messages.</li>
+    <li>Not read: users in <code>ignoreUsers</code>, muted users, messages starting with <code>!</code>, cheermotes (<code>Cheer100</code>), and messages that end up empty after cleanup.</li>
+    <li>Timeouts, bans, <code>/clear</code> and deleted messages remove the affected messages from the queue – and stop them if they are playing.</li>
+  </ul>
+
+  <h3>Language detection</h3>
+  <ol>
+    <li><b>Writing system:</b> Cyrillic → Russian (Ukrainian if і/ї/є/ґ appear), Hangul → Korean, Kana → Japanese, Han → Chinese, plus Greek, Arabic, Hebrew, Thai, Devanagari.</li>
+    <li><b>Latin script:</b> counts typical words (en, de, fr, es, it, pt, nl, pl, tr) and special characters (ä ö ü ß, ñ ¿, ã õ, ą ł …).</li>
+    <li><b>Unsure</b> (e.g. “ok”, “gg”, a tie): the viewer's last detected language (for <code>rememberUserMinutes</code>), otherwise <code>language.default</code>.</li>
+    <li>Emotes, emojis, links and mentions are ignored for detection.</li>
+  </ol>
+  <p>Languages that VCP's model doesn't support are sent as <code>Auto</code> (Qwen3 has no Ukrainian, Dutch, Polish or Turkish – OmniVoice does).</p>
+
+  <h3>Emotes</h3>
+  <ul>
+    <li>Twitch emotes come with position tags in every message; BTTV, FFZ and 7TV emote names (global + your channel) are loaded via their public APIs and refreshed every 10 minutes.</li>
+    <li>Only words that <b>are</b> emotes in your channel count as emotes. If your channel doesn't have e.g. <code>KEKW</code> as a 7TV/BTTV emote, “KEKW” is read as a normal word. Add it as an emote, or add a replacement: <code>text.replacements.all: { 'KEKW': 'kek' }</code>.</li>
+  </ul>
+
+  <h3>Emojis</h3>
+  <p>With <code>'describe'</code>, known emojis become words in German, English or Russian (dictionary <code>EMOJI_WORDS</code>, easy to extend), each word once, max. 2 per message, separated by commas for natural pauses. Unknown emojis and emojis in other languages are removed.</p>
+
+  <h3>Mod commands</h3>
+  <div class="table-wrap"><table><thead><tr><th>Command</th><th>Effect</th></tr></thead><tbody>
+    <tr><td><code>!skip</code></td><td>Stop the current message.</td></tr>
+    <tr><td><code>!ttsclear</code></td><td>Clear the queue (and stop the current message).</td></tr>
+    <tr><td><code>!ttspause</code> / <code>!ttsresume</code></td><td>Pause / resume reading (messages keep queueing).</td></tr>
+    <tr><td><code>!ttsvol 50</code></td><td>Volume 0–100 %, applies immediately.</td></tr>
+    <tr><td><code>!ttsmute name</code> / <code>!ttsunmute name</code></td><td>Mute / unmute a viewer (remembered by the browser source).</td></tr>
+  </tbody></table></div>
+  <p>Allowed for <code>modCommands.roles</code> (broadcaster and moderators by default). All command names are configurable.</p>
+</section>
+
+<!-- ───────────────────────────── AUDIO ───────────────────────────── -->
+<section id="audio">
+  <h2>Audio, latency &amp; quality</h2>
+  <h3>Why Web Audio?</h3>
+  <p>VCP streams a WAV file whose header declares a placeholder length (~2 GB) because the final length isn't known yet. Browser <code>&lt;audio&gt;</code> elements don't handle that reliably (cut-offs, silence). TTV-TTS therefore reads the stream itself and schedules the PCM data with Web Audio:</p>
+  <ul>
+    <li>The audio engine runs at the stream's sample rate (24 kHz) – resampling happens once at the output, not per chunk.</li>
+    <li>Data is played in blocks of ≥ 0.5 s with tiny fades – no clicks at block borders.</li>
+    <li>The end of a message is detected when the last block has really finished playing (not by wall-clock time – OBS's audio clock may differ slightly).</li>
+  </ul>
+  <p><code>playback: 'buffered'</code> downloads the whole message first, fixes the WAV header and plays it with a normal audio element – the most conservative mode. Thanks to prefetch only the first message after a silence waits longer.</p>
+
+  <h3>Typical latency</h3>
+  <div class="table-wrap"><table><thead><tr><th>Situation</th><th>Time to first sound</th></tr></thead><tbody>
+    <tr><td>Message while idle, <code>prebufferSec: 0.5</code></td><td>~0.8–1.0 s</td></tr>
+    <tr><td>Message while idle, <code>prebufferSec: 2.0</code></td><td>~2–2.6 s</td></tr>
+    <tr><td>Next message in the queue (prefetched)</td><td>~0.4 s gap after the previous one</td></tr>
+    <tr><td>First message after VCP start without warm-up</td><td>20–30 s (model loading)</td></tr>
+    <tr><td>First message with a brand-new API voice</td><td>+ ~20 s once (priming)</td></tr>
+  </tbody></table></div>
+</section>
+
+<!-- ───────────────────────────── AI ───────────────────────────── -->
+<section id="ai">
+  <h2>AI assistants (Claude, MCP)</h2>
+  <p>VCP can be used directly by AI assistants – to speak notifications, read texts in your voices, transcribe audio, or to automate VCP through its REST API.</p>
+
+  <h3>VCP's MCP server</h3>
+  <p>VCP ships a <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">Model Context Protocol</a> server at <code>http://127.0.0.1:8100/mcp</code> (streamable HTTP). Tools:</p>
+  <div class="table-wrap"><table><thead><tr><th>Tool</th><th>Arguments</th><th>What it does</th></tr></thead><tbody>
+    <tr><td><code>vcp_speak</code></td><td><code>text</code>, <code>voice?</code>, <code>model?</code>, <code>language?</code>, <code>deliver?</code> (<code>'play'</code>/<code>'url'</code>)</td><td>Speaks text in a saved voice – on the VCP PC's speakers (<code>play</code>) or as a stream URL.</td></tr>
+    <tr><td><code>vcp_list_voices</code></td><td>–</td><td>Lists saved voices (names and IDs).</td></tr>
+    <tr><td><code>vcp_transcribe</code></td><td><code>audio_base64</code>, <code>language?</code></td><td>Speech-to-text with VCP's local ASR model.</td></tr>
+  </tbody></table></div>
+  <div class="callout warn"><b>MCP only works on the VCP PC itself</b>The MCP endpoint has DNS-rebinding protection and only accepts requests addressed to <code>127.0.0.1</code>/<code>localhost</code>. Through the LAN port proxy you get <code>421 Misdirected Request</code>. Run the AI client on the VCP PC – or use the REST API from other PCs (it works through the proxy).</div>
+
+  <h3>Claude Code</h3>
+  <p>On the VCP PC (key as URL parameter, available in all your projects):</p>
+  <div class="code"><pre>claude mcp add --transport http --scope user vcp "http://127.0.0.1:8100/mcp?api_key=YOUR_KEY"</pre></div>
+  <p>Alternatively with a header (VCP accepts <code>X-API-Key</code>):</p>
+  <div class="code"><pre>claude mcp add --transport http --scope user vcp http://127.0.0.1:8100/mcp --header "X-API-Key: YOUR_KEY"</pre></div>
+  <p>Check with <code>claude mcp list</code> or <code>/mcp</code> inside a session; remove with <code>claude mcp remove vcp</code>. Then just ask, e.g. “Say ‘build finished’ in the voice TTS-en 4 Michael” or “List my VCP voices”.</p>
+
+  <h3>Claude Desktop</h3>
+  <p>Claude Desktop starts local MCP servers from <code>claude_desktop_config.json</code> (Windows: <code>%APPDATA%\Claude\claude_desktop_config.json</code>, macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>). The bridge <code>mcp-remote</code> (needs Node.js) connects it to VCP's HTTP endpoint:</p>
+  <div class="code"><pre>{
+  "mcpServers": {
+    "vcp": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "http://127.0.0.1:8100/mcp?api_key=YOUR_KEY", "--allow-http"]
+    }
+  }
+}</pre></div>
+  <p>Restart Claude Desktop afterwards. Without an API key, drop the <code>?api_key=…</code> part.</p>
+
+  <h3>OpenAI-compatible endpoint</h3>
+  <p>Tools that support OpenAI's text-to-speech API can use VCP as a drop-in: base URL <code>http://127.0.0.1:8100/v1</code>, endpoint <code>POST /v1/audio/speech</code> with <code>input</code>, <code>voice</code> (a saved VCP voice name) and <code>response_format</code> (<code>mp3</code>/<code>wav</code>); the key goes into <code>Authorization: Bearer</code>. Unknown OpenAI voice/model names fall back to VCP's default agent voice/model.</p>
+
+  <h3>Let an AI build automations</h3>
+  <p>The REST API is fully documented as OpenAPI: <a href="https://voicecreator.pro/api-docs" target="_blank" rel="noopener">voicecreator.pro/api-docs</a> (raw spec: <code>https://voicecreator.pro/openapi-v2.json</code>). Give that link to an AI coding assistant and describe what you want – the Voice Lab in this pack is exactly such an automation (design → transcribe → save → clone → speak). Useful hints for the AI: authenticate with <code>?api_key=</code>, use <code>?sync=true</code> for blocking calls, use <code>/api/v1/speak</code> with <code>deliver: 'url'</code> and read <code>/api/v1/streaming/{id}/audio</code> for low latency, and prime new voices once.</p>
+</section>
+
+<!-- ───────────────────────────── TOOLS ───────────────────────────── -->
+<section id="tools">
+  <h2>The helper tools</h2>
+  <h3><code>connection-check.html</code></h3>
+  <p>Open it in Chrome/Edge/Firefox on the OBS PC. It checks: URL format → server reachable → API/CORS → VCP version → API key → model, quality &amp; languages → default agent voice → voices &amp; language pools → Twitch chat (anonymous join) → emote lists. Every failed step comes with a fix. The speech test plays a sentence in any voice/language and shows time to first audio, generation time, audio length and speed. Settings can be remembered in the browser (shared with the Voice Lab).</p>
+  <h3><code>voice-lab.html</code></h3>
+  <p>See <a href="#voices">Voices → Creating voices with the Voice Lab</a>. Select languages and roles, optionally edit the role descriptions, press <b>Show plan</b> to see what would be created, use <b>Dry run</b> to listen first, then <b>Start</b>. Results show length, error rate, what the recognizer heard and a ▶ button per sample.</p>
+  <h3><code>vcp-lan-setup.ps1</code></h3>
+  <p>See <a href="#network">Network</a>. Parameters: <code>-ListenPort</code> (8101), <code>-VcpPort</code> (8100), <code>-FirewallGroup</code> (VCP), <code>-Check</code>, <code>-Uninstall</code>, <code>-NoPause</code>. Files it creates: <code>C:\ProgramData\VCP-LAN\ensure.ps1</code> and the scheduled task “VCP LAN Access”.</p>
+</section>
+
+<!-- ───────────────────────────── DEBUG ───────────────────────────── -->
+<section id="debug">
+  <h2>Debug mode</h2>
+  <p>Open <code>ttv-tts.html</code> in a normal browser with <code>?debug</code> appended (e.g. <code>file:///C:/TTS/ttv-tts.html?debug</code>) or set <code>debug: true</code>. A panel shows chat status, VCP status and version, emote counts, voice pools and the queue, plus a live log of every message: detected language, voice, final text, warnings and errors. Type a test message with any user name and press <b>Speak</b>. Click into the page once – browsers only allow audio after a user interaction (OBS doesn't need that).</p>
+  <p>Browser console helpers:</p>
+  <div class="code"><pre>ttvTts.say('Hello chat, how are you?', 'TestUser')   // simulate a chat message
+ttvTts.detect('Привет всем')                          // → 'ru'
+ttvTts.skip(); ttvTts.clear()                          // like !skip / !ttsclear
+ttvTts.state                                           // queue, voice pools, …</pre></div>
+  <div class="callout tip"><b>Seeing OBS's own log of the page</b>OBS doesn't write the page's console to its log. Use debug mode in a normal browser, or temporarily set <code>debug: true</code> and enlarge the source in OBS to see the panel.</div>
+</section>
+
+<!-- ───────────────────────────── TROUBLESHOOTING ───────────────────────────── -->
+<section id="troubleshooting">
+  <h2>Troubleshooting</h2>
+  <p>Start with <code>connection-check.html</code> – it pinpoints most problems. Then:</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Symptom</th><th>Likely cause</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td>Debug: <b>VCP not reachable</b></td><td>VCP closed, HTTP API off, wrong port/IP, firewall</td><td>Start VCP, enable the API, check <code>baseUrl</code>. Two PCs: <code>vcp-lan-setup.ps1 -Check</code> on the VCP PC.</td></tr>
+      <tr><td>Two PCs: <b>worked yesterday, not today</b></td><td>Firewall rule deleted (Malwarebytes WFC “Secure Rules”), IP Helper stopped, IP changed</td><td>Authorize group <code>VCP</code> in WFC, run <code>vcp-lan-setup.ps1</code>, give the VCP PC a fixed IP. See <a href="#firewall">Firewall</a>.</td></tr>
+      <tr><td>Port test times out, ping works</td><td>A firewall drops the packets</td><td>Check the rule, the network profile and third-party firewalls.</td></tr>
+      <tr><td>Debug: <b>CORS blocked</b></td><td>The URL points to something that isn't VCP (VCP allows every origin)</td><td>Check host and port.</td></tr>
+      <tr><td>Debug: <b>wrong API key</b> / HTTP 401</td><td>Key mismatch</td><td>Copy the key from VCP exactly; empty if VCP has none.</td></tr>
+      <tr><td>HTTP 400 “No voice resolved”</td><td>No voice given and no default agent voice set</td><td>Set a default agent voice in VCP, or create voice pools / set <code>voices.default</code>.</td></tr>
+      <tr><td>“Generation failed” / silence with new voices</td><td>Voice saved via API, not primed yet</td><td>Automatic in ttv-tts (first message +20 s); or “Prepare voice” in the connection check. See <a href="#priming">quirk</a>.</td></tr>
+      <tr><td>Log shows ▶ lines but the stream is silent</td><td>“Control audio via OBS” off, source muted/not in an active scene, fader down</td><td>Fix the source settings; check the OBS mixer.</td></tr>
+      <tr><td>TTS stops after a scene switch</td><td>“Shutdown source when not visible” is on</td><td>Turn it off; keep the source in every scene (nested scene).</td></tr>
+      <tr><td>Crackling, beeps, stutter</td><td>Audio hand-over under load</td><td><code>playback: 'buffered'</code>, raise <code>prebufferSec</code>, keep 30 FPS on the source.</td></tr>
+      <tr><td>Long messages cut off</td><td><code>maxChars</code> / <code>maxSecondsPerMessage</code> too low</td><td>Raise them (cuts happen at sentence ends where possible).</td></tr>
+      <tr><td>First message after start takes 20–30 s</td><td>Model loading in VCP</td><td>Keep <code>warmup: true</code>, start VCP before OBS, leave it running.</td></tr>
+      <tr><td>Everything has a long delay (~2–3 s)</td><td>High <code>prebufferSec</code></td><td>Try <code>0.5</code>.</td></tr>
+      <tr><td>Voices have a foreign accent</td><td>Voice from another language used</td><td>Use <code>perUserLanguage</code> with native voices per language (Voice Lab).</td></tr>
+      <tr><td>Short messages in the wrong language</td><td>“ok”, “gg”, “lol” are ambiguous</td><td>Set <code>language.default</code> to your main chat language; per-viewer memory handles the rest.</td></tr>
+      <tr><td>“KEKW” read as “cake …”</td><td>Not an emote in your channel</td><td>Add it on 7TV/BTTV, or <code>text.replacements.all: { 'KEKW': 'kek' }</code>.</td></tr>
+      <tr><td>Bots are read</td><td>Bot not in the list</td><td>Add its login to <code>reading.ignoreUsers</code>.</td></tr>
+      <tr><td>Only 2 of 8 meters move (5.1/7.1)</td><td>Stereo source</td><td>Nothing to fix – that's correct.</td></tr>
+      <tr><td>Chat never connects</td><td>Wrong channel name, no internet</td><td>Lower-case login without <code>#</code>; check the connection check.</td></tr>
+      <tr><td>A viewer's voice changed</td><td>Pool size changed (voices added/removed)</td><td>Expected once; keep pools stable or pin with <code>voices.users</code>.</td></tr>
+      <tr><td>MCP: 421 Misdirected Request</td><td>MCP accessed via LAN/proxy</td><td>Use MCP on the VCP PC (<code>127.0.0.1</code>).</td></tr>
+      <tr><td>PowerShell: odd parser errors when pasting</td><td>Lines pasted out of order</td><td>Use the <code>.ps1</code> file or single-line commands.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ───────────────────────────── PERFORMANCE ───────────────────────────── -->
+<section id="performance">
+  <h2>Performance</h2>
+  <ul>
+    <li>All AI work happens in VCP. In the browser source, processing one chat message takes ~0.013 ms and converting one second of audio ~0.08 ms; memory stays around 10 MB.</li>
+    <li>Without debug mode the page only logs warnings and errors (every console line is sent to OBS's main process).</li>
+    <li>Regex rules are compiled once, emote lists are re-validated with ETags, per-viewer data is pruned every 5 minutes.</li>
+    <li>The audio context keeps running while idle on purpose: restarting audio streams in OBS can make OBS increase its global audio buffering.</li>
+    <li>Biggest levers in OBS: 1 FPS for this invisible source; browser source hardware acceleration for visual overlays; a second PC for VCP if your game needs the whole GPU.</li>
+  </ul>
+</section>
+
+<!-- ───────────────────────────── SECURITY ───────────────────────────── -->
+<section id="security">
+  <h2>Security &amp; privacy</h2>
+  <ul>
+    <li><b>Your configured ttv-tts.html contains your API key and IP.</b> Don't share it or show it on stream.</li>
+    <li>Set an API key in VCP as soon as the API is reachable from the LAN. It protects all endpoints, including settings and app shutdown.</li>
+    <li><b>Never</b> expose ports 8100/8101 to the internet (router port forwarding). There is no TLS.</li>
+    <li>The firewall rule uses profile “Any” for reliability. On a laptop that joins foreign networks, use <code>-Profile Private</code> and classify your home network as Private.</li>
+    <li>Twitch access is anonymous and read-only (<code>justinfan</code> login) – no token, the page can't write to your chat.</li>
+    <li>External requests: Twitch chat (WebSocket) and the public emote lists of BTTV, FFZ and 7TV. Nothing else, no tracking. Your chat text only goes to your own VCP.</li>
+  </ul>
+</section>
+
+<!-- ───────────────────────────── API ───────────────────────────── -->
+<section id="api">
+  <h2>VCP API cheat sheet</h2>
+  <p>Endpoints used by this pack (base <code>http://127.0.0.1:8100</code>, key as <code>?api_key=</code>):</p>
+  <div class="table-wrap"><table><thead><tr><th>Method &amp; path</th><th>Used for</th></tr></thead><tbody>
+    <tr><td><code>GET /api/v1/health</code></td><td>Reachability (no key needed)</td></tr>
+    <tr><td><code>GET /api/v1/system/version</code></td><td>App version (no key needed)</td></tr>
+    <tr><td><code>GET /api/v1/voices</code></td><td>Saved voices (id, name, type …)</td></tr>
+    <tr><td><code>POST /api/v1/voices</code></td><td>Save a voice: <code>name</code>, <code>audio_base64</code>, <code>transcript</code>, <code>ref_text</code>, <code>voice_type</code></td></tr>
+    <tr><td><code>GET /api/v1/tts/languages</code></td><td>Languages of the active model</td></tr>
+    <tr><td><code>GET /api/v1/models/active</code></td><td>Active model, capabilities, variants</td></tr>
+    <tr><td><code>GET /api/v1/settings/model-quality</code></td><td>Quality tier (<code>faster</code> / <code>higher_quality</code>)</td></tr>
+    <tr><td><code>GET /api/v1/settings/mcp</code></td><td>Default agent voice &amp; model</td></tr>
+    <tr><td><code>POST /api/v1/speak</code></td><td>Speak: <code>text</code>, <code>voice</code>, <code>language</code>, <code>model</code>, <code>deliver</code> (<code>url</code> → returns <code>session_id</code>)</td></tr>
+    <tr><td><code>GET /api/v1/streaming/{id}/audio</code></td><td>Progressive WAV stream (PCM16 mono, 24 kHz)</td></tr>
+    <tr><td><code>GET /api/v1/streaming/{id}</code></td><td>Session status / error</td></tr>
+    <tr><td><code>POST /api/v1/generation/clone?sync=true</code></td><td>Clone with <code>voice_id</code> (used to prime new voices)</td></tr>
+    <tr><td><code>POST /api/v1/generation/design?sync=true</code></td><td>Design a voice: <code>instruct_text</code>, <code>target_text</code>, <code>language</code></td></tr>
+    <tr><td><code>POST /api/v1/transcription/start?sync=true</code></td><td>Speech-to-text (Voice Lab check)</td></tr>
+    <tr><td><code>POST /api/v1/generation/stop</code></td><td>Cancel generation (on <code>!skip</code>)</td></tr>
+    <tr><td><code>POST /api/v1/tts/generate?sync=true</code></td><td>Built-in speakers (<code>endpoint: 'tts'</code>)</td></tr>
+  </tbody></table></div>
+</section>
+
+<!-- ───────────────────────────── FAQ ───────────────────────────── -->
+<section id="faq">
+  <h2>FAQ</h2>
+  <h4>Does it cost anything per message?</h4>
+  <p>No. VCP runs locally with unlimited generations; the emote and chat services are free.</p>
+  <h4>Can I use it without a second PC?</h4>
+  <p>Yes – one PC is the simplest setup. A second PC only helps if your game needs all of your GPU.</p>
+  <h4>Can viewers choose their voice?</h4>
+  <p>Not by command (yet). You can pin voices per viewer in <code>voices.users</code>.</p>
+  <h4>Only read channel-point redemptions?</h4>
+  <p>Create a reward that requires text, enable debug mode, redeem it once and copy the reward ID from the log into <code>reading.rewardId</code>.</p>
+  <h4>Can it run on macOS / Linux?</h4>
+  <p>ttv-tts.html runs in any OBS browser source. VCP exists for Windows and macOS. The LAN script is Windows-only (see the macOS note in <a href="#network">Network</a>).</p>
+  <h4>Can I use another TTS engine?</h4>
+  <p>The page talks to VCP's API. Other engines would need an adapter that offers the same endpoints.</p>
+</section>
+
+<!-- ───────────────────────────── CREDITS ───────────────────────────── -->
+<section id="credits">
+  <h2>Credits &amp; license</h2>
+  <p>TTV-TTS by <b>ZcarecroW</b> – <a href="https://twitch.tv/zcarecrow" target="_blank" rel="noopener">twitch.tv/zcarecrow</a>. Released under the MIT license (see <code>LICENSE.txt</code>): use it, change it, share it – keep the copyright notice.</p>
+  <p>Source code, updates and bug reports: <a href="https://github.com/ZcarecroW/ttv-tts" target="_blank" rel="noopener">github.com/ZcarecroW/ttv-tts</a> (new versions under <a href="https://github.com/ZcarecroW/ttv-tts/releases/latest" target="_blank" rel="noopener">Releases</a>).</p>
+  <p>Uses: <a href="https://voicecreator.pro" target="_blank" rel="noopener">Voice Creator Pro</a> (REST API &amp; MCP), Twitch chat, <a href="https://betterttv.com" target="_blank" rel="noopener">BetterTTV</a>, <a href="https://www.frankerfacez.com" target="_blank" rel="noopener">FrankerFaceZ</a>, <a href="https://7tv.app" target="_blank" rel="noopener">7TV</a>. Not affiliated with any of them; their own terms apply.</p>
+  <h3>Changelog</h3>
+  <ul>
+    <li><b>v1.0</b> – first public release: streaming Web Audio playback at 24 kHz, prefetch, warm-up, voice priming, per-viewer roles per language, emote/emoji handling, mod commands, connection check, Voice Lab, LAN setup script.</li>
+  </ul>
+</section>
+</main>
+</div>
+
+<script>
+  // copy buttons for code blocks
+  document.querySelectorAll('.code').forEach(block => {
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.textContent = 'Copy';
+    btn.onclick = async () => {
+      try { await navigator.clipboard.writeText(block.querySelector('pre').innerText); btn.textContent = 'Copied ✓'; }
+      catch { btn.textContent = 'Select & copy'; }
+      setTimeout(() => (btn.textContent = 'Copy'), 1500);
+    };
+    block.append(btn);
+  });
+
+  // section filter
+  const sections = [...document.querySelectorAll('main section')];
+  const links = [...document.querySelectorAll('#tocList a')];
+  document.getElementById('filter').addEventListener('input', e => {
+    const q = e.target.value.trim().toLowerCase();
+    let shown = 0;
+    sections.forEach(s => {
+      const hit = !q || s.textContent.toLowerCase().includes(q);
+      s.classList.toggle('hidden-by-filter', !hit);
+      links.find(a => a.getAttribute('href') === '#' + s.id)?.parentElement.classList.toggle('hidden-by-filter', !hit);
+      if (hit) shown++;
+    });
+    document.getElementById('nomatch').style.display = shown ? 'none' : 'block';
+  });
+
+  // highlight current section in the table of contents
+  const spy = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + en.target.id));
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  sections.forEach(s => spy.observe(s));
+
+  // theme switch (auto / light / dark)
+  const applyTheme = t => { if (t === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t); };
+  try { applyTheme(localStorage.getItem('ttv-tts-readme-theme') || 'auto'); } catch { /* storage not available */ }
+  document.querySelectorAll('[data-theme-set]').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault(); const t = a.dataset.themeSet; applyTheme(t);
+    try { localStorage.setItem('ttv-tts-readme-theme', t); } catch { /* ignore */ }
+  }));
+</script>
+</body>
+</html>

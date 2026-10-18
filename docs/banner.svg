@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 360" role="img" aria-labelledby="t d">
+  <title id="t">TTV-TTS</title>
+  <desc id="d">Your Twitch chat, read aloud by your own AI voices. OBS browser source powered by Voice Creator Pro.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b0d12"/>
+      <stop offset="1" stop-color="#17133a"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="1040" cy="180" r="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8f83ff" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#8f83ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="wave" x1="860" y1="0" x2="1216" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8f83ff"/>
+      <stop offset="1" stop-color="#4fd1c5"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="360" rx="18" fill="url(#bg)"/>
+  <rect width="1280" height="360" rx="18" fill="url(#glow)"/>
+  <g font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif">
+    <text x="72" y="172" font-size="104" font-weight="800" letter-spacing="-3" fill="#f2f3f7">TTV<tspan fill="#8f83ff">-</tspan>TTS</text>
+    <text x="76" y="228" font-size="27" font-weight="600" fill="#e5e8ef">Your Twitch chat, read aloud by your own AI voices.</text>
+    <text x="76" y="276" font-size="18" fill="#9aa4b5" letter-spacing="0.4">OBS browser source · Voice Creator Pro · local GPU · no cloud</text>
+  </g>
+  <g fill="url(#wave)">
+    <rect x="860" y="172" width="6" height="16" rx="3"/>
+    <rect x="870" y="167" width="6" height="26" rx="3"/>
+    <rect x="880" y="160" width="6" height="40" rx="3"/>
+    <rect x="890" y="163" width="6" height="34" rx="3"/>
+    <rect x="900" y="151" width="6" height="58" rx="3"/>
+    <rect x="910" y="140" width="6" height="80" rx="3"/>
+    <rect x="920" y="153" width="6" height="54" rx="3"/>
+    <rect x="930" y="128" width="6" height="104" rx="3"/>
+    <rect x="940" y="142" width="6" height="76" rx="3"/>
+    <rect x="950" y="114" width="6" height="132" rx="3"/>
+    <rect x="960" y="132" width="6" height="96" rx="3"/>
+    <rect x="970" y="101" width="6" height="158" rx="3"/>
+    <rect x="980" y="121" width="6" height="118" rx="3"/>
+    <rect x="990" y="92" width="6" height="176" rx="3"/>
+    <rect x="1000" y="111" width="6" height="138" rx="3"/>
+    <rect x="1010" y="85" width="6" height="190" rx="3"/>
+    <rect x="1020" y="105" width="6" height="150" rx="3"/>
+    <rect x="1030" y="95" width="6" height="170" rx="3"/>
+    <rect x="1040" y="114" width="6" height="132" rx="3"/>
+    <rect x="1050" y="87" width="6" height="186" rx="3"/>
+    <rect x="1060" y="124" width="6" height="112" rx="3"/>
+    <rect x="1070" y="100" width="6" height="160" rx="3"/>
+    <rect x="1080" y="133" width="6" height="94" rx="3"/>
+    <rect x="1090" y="110" width="6" height="140" rx="3"/>
+    <rect x="1100" y="140" width="6" height="80" rx="3"/>
+    <rect x="1110" y="119" width="6" height="122" rx="3"/>
+    <rect x="1120" y="147" width="6" height="66" rx="3"/>
+    <rect x="1130" y="129" width="6" height="102" rx="3"/>
+    <rect x="1140" y="152" width="6" height="56" rx="3"/>
+    <rect x="1150" y="137" width="6" height="86" rx="3"/>
+    <rect x="1160" y="158" width="6" height="44" rx="3"/>
+    <rect x="1170" y="145" width="6" height="70" rx="3"/>
+    <rect x="1180" y="163" width="6" height="34" rx="3"/>
+    <rect x="1190" y="154" width="6" height="52" rx="3"/>
+    <rect x="1200" y="168" width="6" height="24" rx="3"/>
+    <rect x="1210" y="163" width="6" height="34" rx="3"/>
+  </g>
+</svg>

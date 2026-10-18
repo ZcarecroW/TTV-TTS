@@ -1,0 +1,16 @@
+name: Feature request
+description: An idea to make TTV-TTS better
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+      description: Describe the feature and how it would help on stream.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Workarounds you tried
+      description: Optional. Is there a config option that almost does it?
