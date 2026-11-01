@@ -83,6 +83,7 @@ await nav("live");
 await page.waitForTimeout(300);
 const live = await page.locator("main").innerText();
 check(live.includes("Mikey_TV") && /ignored user/.test(live), "live page shows the current message and filtered ones with a reason");
+check(/(raid|Raid)/.test(await page.locator("main [data-event]").first().innerText().catch(() => "")), "announcements are marked in the history");
 check((await page.locator("main [data-replay]").count()) >= 1, "spoken messages can be played again", String(await page.locator("main [data-replay]").count()));
 check(/(joy|Freude) \(normal\)/.test(await page.locator("main [data-emotion]").first().innerText()), "the current message shows its emotion", await page.locator("main [data-emotion]").first().innerText());
 check(/Hallo zusammen, welches Spiel ist das\?/.test(await page.locator("main [data-translation]").first().innerText()), "translated messages show the translation", await page.locator("main [data-translation]").first().innerText());
@@ -130,6 +131,14 @@ check(/(Computed|Berechnet): de 41 · en 30/.test(prof), "profile shows how much
   await tc.getByRole("button", { name: /^(Translate|Übersetzen)$/ }).click();
   await page.waitForTimeout(900);
   check(/Hallo zusammen! · 0\.5 s/.test(await tc.locator("[data-tried]").innerText().catch(() => "")), "a translation can be tried in the profile", await tc.locator("[data-tried]").innerText().catch(() => "none"));
+}
+{
+  const ev = page.locator("main [data-events]");
+  check(/Announcements|Ansagen/.test(await ev.innerText()) && /Gifted subs|Verschenkte Abos/.test(await ev.innerText()), "announcements can be set per profile");
+  await ev.locator("summary").click();
+  await ev.locator("[data-try-event=raid]").click();
+  await page.waitForTimeout(300);
+  check(/The example is in the queue|Das Beispiel ist in der Warteschlange/.test(await page.locator("body").innerText()), "an example announcement can be heard");
 }
 check(/System voice when the voice host is down|Systemstimme, wenn der Stimmen-Host ausfällt/.test(prof), "a system voice can stand in when the voice host is down");
 check(/Emotions from chat|Gefühle aus dem Chat/.test(prof) && /At most|Höchstens/.test(prof) && /(strong|stark)/.test(prof), "emotions from chat can be switched and capped per profile");

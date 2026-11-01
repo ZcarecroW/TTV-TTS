@@ -117,6 +117,8 @@ pub struct ItemView {
     pub intensity: Option<String>,
     /// "Translate for me": the message in the streamer's language.
     pub translation: Option<String>,
+    /// An event announcement: sub, resub, subgift, submysterygift, raid, bits.
+    pub event: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
@@ -473,6 +475,7 @@ fn view_of(state: &AppState, m: &ChatMessage, speech: String, lang: &str, s: Ite
         emotion: None,
         intensity: None,
         translation: None,
+        event: None,
     }
 }
 
@@ -481,6 +484,9 @@ fn on_message(state: &Arc<AppState>, m: ChatMessage) {
     remember_viewer(state, &p.id, &m);
     if m.kind == Kind::Chat && mod_command(state, &p, &m) {
         return;
+    }
+    if let Some((kind, text)) = crate::announce::for_message(&p.events, &m, langs::intern(&p.language.default)) {
+        queue_event(state, &p, &m, kind, text);
     }
     let r = &p.reading;
     if m.kind == Kind::Notice && (!r.read_sub_messages || m.text.trim().is_empty()) {
@@ -715,6 +721,84 @@ pub fn set_paused(state: &Arc<AppState>, on: bool) {
     publish(state);
 }
 
+/// An event announcement goes straight into the queue (no approval needed),
+/// read with joy by the announcer voice.
+fn queue_event(state: &Arc<AppState>, p: &crate::profile::Profile, m: &ChatMessage, kind: &str, text: String) {
+    let mut view = view_of(state, m, text, langs::intern(&p.language.default), ItemState::Queued, None);
+    view.event = Some(kind.to_string());
+    view.emotion = Some("joy".into());
+    view.intensity = Some("mild".into());
+    let item = Item {
+        cue: Some(text::emotion::Cue { emotion: "joy", intensity: "mild" }),
+        name: m.display_name.clone(),
+        action: false,
+        profile: p.id.clone(),
+        user_id: format!("event-{}", m.user_id),
+        msg_id: m.id.clone(),
+        cancel: Arc::new(AtomicBool::new(false)),
+        view,
+    };
+    record(state, item.view.clone());
+    state.reader.queue.lock().push_back(item);
+    state.reader.wake.notify_waiters();
+    publish(state);
+}
+
+/// An example announcement, to hear how it sounds.
+pub fn test_event(state: &Arc<AppState>, profile: &str, kind: &str) -> Result<(), String> {
+    if !crate::announce::KINDS.contains(&kind) {
+        return Err(format!("unknown event {kind}"));
+    }
+    let p = state.reader.store.read().profiles.iter().find(|x| x.id == profile).cloned().ok_or("unknown profile")?;
+    let channel = p.channels.first().cloned().ok_or("Add a channel to this profile first.")?;
+    let params: &[(&str, &str)] = match kind {
+        "resub" => &[("cumulative-months", "12")],
+        "subgift" => &[("recipient-display-name", "TestViewer")],
+        "submysterygift" => &[("mass-gift-count", "5")],
+        "raid" => &[("displayName", "TestRaider"), ("viewerCount", "42")],
+        _ => &[],
+    };
+    let m = ChatMessage {
+        channel,
+        room_id: String::new(),
+        id: format!("test-event-{}", state.reader.seq.load(Ordering::Relaxed)),
+        login: "testuser".into(),
+        display_name: "TestUser".into(),
+        user_id: "test-testuser".into(),
+        text: String::new(),
+        action: false,
+        roles: Default::default(),
+        emotes: String::new(),
+        bits: if kind == "bits" { 500 } else { 0 },
+        reward_id: None,
+        first_message: false,
+        kind: if kind == "bits" { Kind::Chat } else { Kind::Notice },
+        notice_type: (kind != "bits").then(|| kind.to_string()),
+        system_msg: None,
+        color: None,
+        notice_params: params.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect(),
+    };
+    // the example is read even while announcements are off
+    let events = crate::profile::Announcements { enabled: true, subs: true, gifts: true, raids: true, bits: true, min_bits: 1, min_raid: 1, ..p.events.clone() };
+    let (k, text) = crate::announce::for_message(&events, &m, langs::intern(&p.language.default)).ok_or("unknown event")?;
+    queue_event(state, &p, &m, k, text);
+    Ok(())
+}
+
+/// The announcer's voice: the one set in the profile, else the fallback voice.
+fn announcer(state: &AppState, p: &crate::profile::Profile) -> Option<Picked> {
+    let vc = state.reader.voices.read();
+    let find = |key: &str| {
+        let k = key.to_lowercase();
+        vc.all.iter().find(|v| v.id.to_lowercase() == k || v.name.to_lowercase() == k).map(|v| Picked::from((v.id.clone(), v.name.clone())))
+    };
+    (!p.events.voice.is_empty())
+        .then(|| find(&p.events.voice))
+        .flatten()
+        .or_else(|| p.voices.default_voice.as_deref().and_then(find))
+        .or_else(|| vc.default_voice.as_deref().and_then(|d| find(d).or_else(|| Some((d.to_string(), d.to_string()).into()))))
+}
+
 /// Feeds a test message through the whole pipeline (as if typed in chat).
 pub fn test_message(state: &Arc<AppState>, channel: &str, user: &str, text: &str) {
     let login = user.to_ascii_lowercase().replace(' ', "_");
@@ -738,6 +822,7 @@ pub fn test_message(state: &Arc<AppState>, channel: &str, user: &str, text: &str
             notice_type: None,
             system_msg: None,
             color: None,
+            notice_params: Default::default(),
         },
     );
 }
@@ -1069,8 +1154,9 @@ async fn generator(state: Arc<AppState>) {
         // translate for me: chat in a language the streamer doesn't speak
         let tr = &p.translate;
         let into = langs::intern(if tr.into.is_empty() { &p.language.default } else { &tr.into });
+        let event = item.view.event.is_some();
         let mut translated = None;
-        if tr.enabled && item.view.lang != into && !tr.mine.contains(&item.view.lang) && !item.view.speech.trim().is_empty() {
+        if tr.enabled && !event && item.view.lang != into && !tr.mine.contains(&item.view.lang) && !item.view.speech.trim().is_empty() {
             let email = state.cfg.read().translate_email.clone();
             let deepl = state.secrets.get(crate::secrets::DEEPL_KEY);
             let host = state.vcp();
@@ -1091,15 +1177,19 @@ async fn generator(state: Arc<AppState>) {
             _ => (item.view.lang.clone(), item.view.speech.clone(), None),
         };
         let l = langs::get(&lang);
-        let text = if item.action {
+        let text = if event {
+            body
+        } else if item.action {
             format!("{} {}", item.name, body)
         } else if announce {
             l.map(|l| l.say).unwrap_or("{user}: {msg}").replace("{user}", &item.name).replace("{msg}", &body)
         } else {
             body
         };
-        *state.reader.last.lock() = Some((item.view.login.clone(), Instant::now()));
-        let voice = pick_voice(&state, &p, &item.user_id, &item.view.login, &lang);
+        if !event {
+            *state.reader.last.lock() = Some((item.view.login.clone(), Instant::now()));
+        }
+        let voice = if event { announcer(&state, &p) } else { pick_voice(&state, &p, &item.user_id, &item.view.login, &lang) };
         item.view.voice = voice.as_ref().map(|v| v.name.clone());
         let vcp_lang = {
             let vc = state.reader.voices.read();

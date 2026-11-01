@@ -11,6 +11,7 @@ mod library;
 mod logbuf;
 mod monitor;
 mod friends_cmds;
+mod announce;
 pub mod fx;
 #[cfg(desktop)]
 mod hotkeys;
@@ -118,6 +119,7 @@ pub fn run() {
             commands::reader_replay,
             commands::set_hotkey,
             commands::test_message,
+            commands::test_event,
             commands::mute_viewer,
             commands::list_viewers,
             commands::set_viewer_role,

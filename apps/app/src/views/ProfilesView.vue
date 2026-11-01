@@ -7,9 +7,9 @@ import UiSegmented from "@ttv-tts/ui/components/UiSegmented.vue";
 import UiTags from "@ttv-tts/ui/components/UiTags.vue";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
-import { Devices, Gear, Globe, Lock, Plus, Sparkle, Trash, Waveform } from "@ttv-tts/ui/icons";
-import { api, reader, TIERS, type Profile, type Role, type Voice } from "../api";
-import { run, store } from "../store";
+import { Devices, Gear, Globe, Lock, Play, Plus, Sparkle, Trash, Waveform } from "@ttv-tts/ui/icons";
+import { api, EVENT_KINDS, EVENT_TEXTS, reader, TIERS, type Profile, type Role, type Voice } from "../api";
+import { run, store, toast } from "../store";
 
 const { t } = useI18n();
 const profiles = computed(() => store.reader!.store.profiles);
@@ -18,6 +18,12 @@ const p = ref<Profile | null>(null);
 const voices = ref<Voice[]>([]);
 const replLang = ref("all");
 
+const eventText = (kind: string) => EVENT_TEXTS[kind]![p.value?.language.default === "de" ? 1 : 0];
+async function tryEvent(kind: string) {
+  if (!p.value) return;
+  const ok = await run("event", () => reader.testEvent(p.value!.id, kind).then(() => true));
+  if (ok) toast("ok", t("profiles.eventsQueued"));
+}
 const tryText = ref("");
 const tried = ref("");
 async function tryIt() {
@@ -302,6 +308,41 @@ const defaultVoice = computed({
               </span>
               <UiPairs v-model="replMap" lower-keys :key-label="t('profiles.replaceFrom')" :value-label="t('profiles.replaceTo')" :add-label="t('profiles.add')" />
             </div>
+          </div>
+        </section>
+
+        <section class="card p-5" data-events>
+          <div class="card-head"><Sparkle />{{ t("profiles.eventsTitle") }}<UiTip :text="t('tips.events')" /></div>
+          <div class="space-y-4">
+            <UiToggle v-model="p.events.enabled" :label="t('profiles.eventsOn')" />
+            <template v-if="p.events.enabled">
+              <div class="grid grid-cols-2 gap-2">
+                <UiToggle v-model="p.events.subs" :label="t('profiles.eventsSubs')" />
+                <UiToggle v-model="p.events.gifts" :label="t('profiles.eventsGifts')" />
+                <UiToggle v-model="p.events.raids" :label="t('profiles.eventsRaids')" />
+                <UiToggle v-model="p.events.bits" :label="t('profiles.eventsBits')" />
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <UiField :label="t('profiles.eventsMinBits')"><input v-model.number="p.events.min_bits" type="number" min="1" class="input" /></UiField>
+                <UiField :label="t('profiles.eventsMinRaid')"><input v-model.number="p.events.min_raid" type="number" min="1" class="input" /></UiField>
+              </div>
+              <UiField :label="t('profiles.eventsVoice')" :tip="t('tips.eventsVoice')">
+                <select v-model="p.events.voice" class="input">
+                  <option value="">{{ t("profiles.eventsVoiceDefault") }}</option>
+                  <option v-for="v in voices" :key="v.id" :value="v.id">{{ v.name }}</option>
+                </select>
+              </UiField>
+              <details>
+                <summary class="cursor-pointer text-sm text-muted">{{ t("profiles.eventsTexts") }}<UiTip :text="t('tips.eventsTexts')" /></summary>
+                <div class="mt-2 space-y-2">
+                  <div v-for="k in EVENT_KINDS" :key="k" class="flex items-center gap-2">
+                    <span class="w-28 shrink-0 text-xs text-muted">{{ t(`events.kinds.${k}`) }}</span>
+                    <input class="input h-8 flex-1 text-sm" :value="p.events.texts[k] ?? ''" :placeholder="eventText(k)" @change="p.events.texts[k] = ($event.target as HTMLInputElement).value" />
+                    <button class="btn btn-ghost btn-sm btn-icon" :aria-label="t('profiles.eventsTry')" :data-tip="t('profiles.eventsTry')" :data-try-event="k" @click="tryEvent(k)"><Play :size="14" /></button>
+                  </div>
+                </div>
+              </details>
+            </template>
           </div>
         </section>
 

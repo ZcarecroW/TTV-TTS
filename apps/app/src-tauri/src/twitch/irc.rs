@@ -3,7 +3,7 @@
 //! of channels can change at any time (JOIN/PART), and the connection comes
 //! back by itself after drops (backoff 1 s … 30 s).
 
-use std::collections::{BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::time::Duration;
 
 use futures_util::{SinkExt, StreamExt};
@@ -52,6 +52,9 @@ pub struct ChatMessage {
     /// Twitch's own description of the event ("X subscribed for 12 months").
     pub system_msg: Option<String>,
     pub color: Option<String>,
+    /// USERNOTICE details (`msg-param-*` without the prefix): months,
+    /// recipient-display-name, mass-gift-count, viewerCount, …
+    pub notice_params: BTreeMap<String, String>,
 }
 
 #[derive(Debug, Clone)]
@@ -319,6 +322,7 @@ fn to_message(m: &IrcLine, rooms: &HashMap<String, String>) -> Option<ChatMessag
         notice_type: if notice { tag("msg-id") } else { None },
         system_msg: if notice { tag("system-msg") } else { None },
         color: tag("color"),
+        notice_params: if notice { m.tags.iter().filter_map(|(k, v)| k.strip_prefix("msg-param-").map(|k| (k.to_string(), v.clone()))).collect() } else { BTreeMap::new() },
         channel,
     })
 }

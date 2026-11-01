@@ -449,6 +449,12 @@ pub fn set_hotkey(app: tauri::AppHandle, state: St, action: String, accel: Optio
     Ok(view(&state))
 }
 
+/// An example event announcement (sub, resub, subgift, submysterygift, raid, bits).
+#[tauri::command]
+pub fn test_event(state: St, profile: String, kind: String) -> Result<(), String> {
+    crate::reader::test_event(&state, &profile, &kind)
+}
+
 /// Sends a test message through the pipeline of a profile's first channel.
 #[tauri::command]
 pub fn test_message(state: St, profile: String, user: String, text: String) -> Result<(), String> {

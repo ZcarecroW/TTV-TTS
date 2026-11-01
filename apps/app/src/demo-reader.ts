@@ -40,6 +40,7 @@ export const baseProfile: Profile = {
   mod_commands: { enabled: true, roles: ["broadcaster", "moderator"], skip: "!skip", clear: "!ttsclear", pause: "!ttspause", resume: "!ttsresume", volume: "!ttsvol", mute: "!ttsmute", unmute: "!ttsunmute", skip_on_timeout: true },
   voices: { mode: "preset", preset: "cinematic", preset_voices: 30, prefix: "TTS-{lang} ", fallback_language: "en", exclude: [], default_voice: null, per_language: {}, users: {}, emotions: true, emotion_strength: "normal", effects: true, os_fallback: false },
   translate: { enabled: true, into: "", mine: ["en"], read: "both", provider: "mymemory" },
+  events: { enabled: true, subs: true, gifts: true, raids: true, bits: true, min_bits: 100, min_raid: 1, voice: "", texts: {} },
   muted: [],
 };
 
@@ -63,6 +64,7 @@ function item(display: string, original: string, speech: string, lang: string, v
     emotion: null,
     intensity: null,
     translation: null,
+    event: null,
   };
 }
 
@@ -81,6 +83,7 @@ export const readerState: ReaderView = {
     replayable: [],
   },
   history: [
+    { ...item("BigStreamer", "", "BigStreamer raidet mit 250 Zuschauern!", "de", "fem_ger_wow", "spoken", null, "#9146FF"), event: "raid" },
     { ...item("Pablo_Juega", "hola a todos, ¿qué juego es este?", "Pablo Juega dice: hola a todos, ¿qué juego es este?", "es", "TTS-es 04 Diego (Abenteurer)", "spoken", null, "#FF7F50"), translation: "Hallo zusammen, welches Spiel ist das?" },
     item("nightbot", "Follow on Twitter!", "", "", null, "filtered", "ignored user (bot)"),
     item("Anya_ru", "Привет всем! 🔥", "Anya ru пишет: Привет всем, огонь", "ru", "TTS-ru 16 Anastasia (Agentin)", "spoken", null, "#FF4500"),
@@ -146,6 +149,11 @@ export function readerCommand(cmd: string, args: Record<string, unknown>, emit: 
       if (cmd === "reader_approve") readerState.status.queue.push({ ...it!, state: "queued" });
       emit("app://reader", structuredClone(readerState.status));
       return v(true);
+    }
+    case "test_event": {
+      const it = item("TestRaider", "", "TestRaider raidet mit 42 Zuschauern!", "de", "fem_ger_wow", "spoken");
+      emit("app://history", { ...it, event: String(args.kind) });
+      return v(undefined);
     }
     case "test_message": {
       const user = String(args.user || "TestUser");

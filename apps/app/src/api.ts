@@ -313,6 +313,7 @@ export interface Profile {
     os_fallback: boolean;
   };
   translate: { enabled: boolean; into: string; mine: string[]; read: "translation" | "both" | "show"; provider: "mymemory" | "deepl" | "vcp" };
+  events: { enabled: boolean; subs: boolean; gifts: boolean; raids: boolean; bits: boolean; min_bits: number; min_raid: number; voice: string; texts: Record<string, string> };
   muted: string[];
 }
 
@@ -335,6 +336,8 @@ export interface ItemView {
   emotion: string | null;
   intensity: string | null;
   translation: string | null;
+  /** An event announcement: sub, resub, subgift, submysterygift, raid, bits. */
+  event: string | null;
 }
 
 export interface ReaderStatus {
@@ -368,6 +371,7 @@ export const reader = {
   reject: (id: number | null) => invoke<boolean>("reader_reject", { id }),
   replay: (id: number | null) => invoke<void>("reader_replay", { id }),
   test: (profile: string, user: string, text: string) => invoke<void>("test_message", { profile, user, text }),
+  testEvent: (profile: string, kind: string) => invoke<void>("test_event", { profile, kind }),
   mute: (profile: string, login: string, on: boolean) => invoke<ReaderView>("mute_viewer", { profile, login, on }),
 };
 
@@ -649,6 +653,17 @@ export const presets = {
 export const DESIGN_LANGS = ["en", "de", "ru", "fr", "es", "it", "pt", "ja", "zh", "ko"] as const;
 /** Tiers of the built-in presets: their first 30, 60, 120 or all 240 voices. */
 export const TIERS = [30, 60, 120, 240] as const;
+
+/** Event announcements and their built-in sentences (as in announce.rs). */
+export const EVENT_KINDS = ["sub", "resub", "subgift", "submysterygift", "raid", "bits"] as const;
+export const EVENT_TEXTS: Record<string, [string, string]> = {
+  sub: ["{user} just subscribed!", "{user} hat gerade abonniert!"],
+  resub: ["{user} subscribed for {months} months!", "{user} ist seit {months} Monaten dabei!"],
+  subgift: ["{user} gifted a sub to {recipient}!", "{user} verschenkt ein Abo an {recipient}!"],
+  submysterygift: ["{user} gifted {count} subs to the community!", "{user} verschenkt {count} Abos an die Community!"],
+  raid: ["{user} is raiding with {viewers} viewers!", "{user} raidet mit {viewers} Zuschauern!"],
+  bits: ["{user} cheered {bits} bits!", "{user} hat {bits} Bits gespendet!"],
+};
 
 /** What a global hotkey can do (same order as the backend). */
 export const HOTKEY_ACTIONS = ["skip", "pause", "clear", "replay", "approve", "reject"] as const;

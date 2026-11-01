@@ -109,6 +109,7 @@ async function sendTest() {
         <div v-if="status.current" class="rounded-xl bg-accent-soft p-4">
           <div class="flex items-center gap-2 text-sm">
             <b :style="status.current.color ? { color: status.current.color } : undefined">{{ status.current.display }}</b>
+            <span v-if="status.current.event" class="badge badge-accent">{{ t(`events.kinds.${status.current.event}`) }}</span>
             <span class="text-muted">#{{ status.current.channel }} · {{ status.current.lang }}</span>
           </div>
           <p class="mt-1.5 text-lg leading-snug">{{ status.current.speech }}</p>
@@ -168,6 +169,7 @@ async function sendTest() {
             <div class="flex flex-wrap items-center gap-x-2">
               <b :style="h.color ? { color: h.color } : undefined">{{ h.display }}</b>
               <span class="badge" :class="stateCls[h.state]">{{ t(`live.states.${h.state}`) }}</span>
+              <span v-if="h.event" class="badge badge-accent" data-event>{{ t(`events.kinds.${h.event}`) }}</span>
               <span v-if="h.emotion" class="badge" data-emotion :data-tip="t('tips.emotionBadge')">{{ t(`emotions.${h.emotion}`) }} · {{ t(`emotions.levels.${h.intensity}`) }}</span>
               <span v-if="h.reason" class="text-xs text-muted">{{ h.reason }}</span>
             </div>

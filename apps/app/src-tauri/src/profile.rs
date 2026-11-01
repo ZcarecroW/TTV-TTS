@@ -369,8 +369,37 @@ pub struct Profile {
     pub mod_commands: ModCommands,
     pub voices: VoiceRules,
     pub translate: TranslateRules,
+    /// Event announcements (subs, gifts, raids, cheers).
+    pub events: Announcements,
     /// Viewers muted with !ttsmute or in the app.
     pub muted: Vec<String>,
+}
+
+/// Event announcements, read by an announcer voice (off by default – chat
+/// bots often announce already).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Announcements {
+    pub enabled: bool,
+    pub subs: bool,
+    pub gifts: bool,
+    pub raids: bool,
+    pub bits: bool,
+    /// Cheers with fewer bits aren't announced.
+    pub min_bits: u32,
+    /// Raids with fewer viewers aren't announced.
+    pub min_raid: u32,
+    /// VCP voice (name or id) of the announcer; "" = the profile's fallback voice.
+    pub voice: String,
+    /// Own sentences per event kind (sub, resub, subgift, submysterygift,
+    /// raid, bits) with {user}, {months}, {recipient}, {count}, {viewers}, {bits}.
+    pub texts: BTreeMap<String, String>,
+}
+
+impl Default for Announcements {
+    fn default() -> Self {
+        Self { enabled: false, subs: true, gifts: true, raids: true, bits: true, min_bits: 100, min_raid: 1, voice: String::new(), texts: BTreeMap::new() }
+    }
 }
 
 /// "Translate for me": chat in languages the streamer doesn't speak.
@@ -410,6 +439,7 @@ impl Default for Profile {
             mod_commands: ModCommands::default(),
             voices: VoiceRules::default(),
             translate: TranslateRules::default(),
+            events: Announcements::default(),
             muted: Vec::new(),
         }
     }
