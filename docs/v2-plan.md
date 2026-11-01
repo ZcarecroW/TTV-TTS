@@ -40,7 +40,13 @@ Decisions come from the interview of 2026-11-01 (see the project notes); this fi
 - ✅ Best of 1–3 takes; long-job warnings
 - ✅ Voice design names gender and age first ("A 35-year-old man. …"): fixed the pitch of 3 of 4 off voices in a test on the VCP PC
 - ✅ Hardened after the first real run: a take VCP could not transcribe is never saved unchecked (broken speech recognition retries the batch); every new voice is primed until VCP reports its clone prompt (the first voice after a checkpoint swap lost it); a voice VCP can't speak with is deleted again; failed batches back off up to 10 min; progress inside a batch (phase step/steps); "Check voices" removes voices deleted in VCP and re-primes voices without clone prompt; engine tests against a fake VCP (`crates/engine/tests/fake_vcp.rs`)
-- ✅ Lossless sample backup (FLAC) on the computing PC; export/import of computed packs ⏳
+- ✅ Lossless sample backup (FLAC) on the computing PC
+- ✅ Quality check (optional per job): loudness, YIN pitch vs gender/age (description words allow intended traits), pauses, pace (per-language rates measured on 420 real voices), noise, clipping, how the voice speaks a new sentence (ASR), languages compared; review list with listening (new sentence / original sample), keep, design again, improve (replace only if better), check existing voices; automatic improvement; take selection by plausibility. Real run: same 33 of 120 Cinematic voices flagged as offline
+- ✅ Classic adoption builds descriptions/gender/age from the 1.x role names; old adoptions are migrated (re-keyed, nothing changes in VCP)
+- ✅ Voice packs (.ttvpack: zip with manifest + FLAC): share a preset's voices or selected ones, import packs (checked, limits); live round trip on the real VCP
+- ✅ Ready-made voices: catalog + packs on the release "voice-packs", download + SHA-256 + import in the app; `scripts/build-voice-packs.mjs` builds them (first wave: 30 voices × de+en of all 20 presets, computing on the VCP PC)
+- ✅ Friends over the internet: guest API on its own port, one-time invites with pinned certificate, quotas, host first, DuckDNS, reachability test, guide (FRITZ!Box, DS-Lite, Tailscale), join with a code, guest mode; e2e security script
+- ⏳ Proxy window page for internet access (the main app manages it today)
 - ✅ Update the proxy from the app (check + install now)
 
 ## M6 – Extras ⏳
