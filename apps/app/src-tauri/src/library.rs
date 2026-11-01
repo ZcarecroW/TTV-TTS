@@ -442,6 +442,8 @@ pub async fn local_events(state: Arc<AppState>) {
         match ev {
             ttv_engine::EngineEvent::Job(j) => VoiceLibrary::on_job(&state, &j),
             ttv_engine::EngineEvent::Library(c) => state.library.on_change(&state, c),
+            // VCP on this PC hangs: the app can't restart it, the job shows the error
+            ttv_engine::EngineEvent::Stuck(why) => log::warn!("Voice Creator Pro hangs: {why}"),
         }
     }
 }

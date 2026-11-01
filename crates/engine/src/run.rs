@@ -173,6 +173,10 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
                 }
                 Err(e) => {
                     log::warn!("design {}: {e}", label(it));
+                    // VCP hangs: don't wait for every take of the batch
+                    if e.contains("timed out") {
+                        return Err(format!("design: {e}"));
+                    }
                     last_error = Some(e);
                 }
             }

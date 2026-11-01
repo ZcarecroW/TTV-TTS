@@ -39,6 +39,10 @@ pub(crate) const ATTEMPTS: u32 = 3;
 pub(crate) const MAX_WER: f32 = 0.15;
 pub(crate) const MAX_WER_CJK: f32 = 0.25;
 
+/// A design, check or prime takes seconds (a cold start ~25 s, a checkpoint
+/// swap ~20 s, chat in between). Much longer means VCP hangs.
+pub(crate) const STUCK: Duration = Duration::from_secs(180);
+
 /// When somebody else (chat TTS, listening tests) last used VCP.
 pub type Activity = Arc<dyn Fn() -> Option<Instant> + Send + Sync>;
 
@@ -46,6 +50,9 @@ pub type Activity = Arc<dyn Fn() -> Option<Instant> + Send + Sync>;
 pub enum EngineEvent {
     Job(JobView),
     Library(LibraryChange),
+    /// VCP's API answers, but its work requests time out: it hangs. The
+    /// proxy restarts it (at most every 30 minutes).
+    Stuck(String),
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -571,7 +578,7 @@ pub(crate) fn instruct(def: &ttv_link::VoiceDef) -> String {
 
 pub(crate) async fn design(vcp: &ttv_vcp::Client, description: &str, l: &langs::DesignLang) -> Result<Vec<u8>, String> {
     let body = serde_json::json!({ "instruct_text": format!("{} {}", description.trim(), l.accent), "target_text": l.text, "language": l.vcp });
-    let r: GenerationResult = vcp.post("/api/v1/generation/design?sync=true", &body, Duration::from_secs(600)).await.map_err(|e| e.to_string())?;
+    let r: GenerationResult = vcp.post("/api/v1/generation/design?sync=true", &body, STUCK).await.map_err(|e| e.to_string())?;
     decode_result(r)
 }
 
@@ -621,7 +628,7 @@ impl From<&str> for Trouble {
 
 pub(crate) async fn transcribe(vcp: &ttv_vcp::Client, wav: &[u8], l: &langs::DesignLang) -> Result<String, Trouble> {
     let body = serde_json::json!({ "audio_base64": base64::engine::general_purpose::STANDARD.encode(wav), "language": l.vcp });
-    let t: Transcript = vcp.post("/api/v1/transcription/start?sync=true", &body, Duration::from_secs(300)).await?;
+    let t: Transcript = vcp.post("/api/v1/transcription/start?sync=true", &body, STUCK).await?;
     if !t.success {
         return Err(Trouble::Failed(t.error.unwrap_or_else(|| "speech recognition failed".into())));
     }
@@ -638,7 +645,7 @@ pub(crate) struct Spoken {
 /// VCP couldn't speak with it.
 pub(crate) async fn prime(vcp: &ttv_vcp::Client, voice_id: &str, l: &langs::DesignLang) -> Result<Spoken, Trouble> {
     let body = serde_json::json!({ "voice_id": voice_id, "target_text": l.verify, "language": l.vcp });
-    let r: GenerationResult = vcp.post("/api/v1/generation/clone?sync=true", &body, Duration::from_secs(600)).await?;
+    let r: GenerationResult = vcp.post("/api/v1/generation/clone?sync=true", &body, STUCK).await?;
     let wav = decode_result(r)?;
     let (samples, rate) = audio::decode(&wav).ok_or("unreadable audio")?;
     if (samples.len() as f32) < rate as f32 * 0.8 {
@@ -723,6 +730,9 @@ async fn worker(inner: Arc<Inner>) {
             Ok(()) => failures = 0,
             Err(e) => {
                 log::warn!("job {id}: {e}");
+                if e.contains("timed out") {
+                    let _ = inner.events.send(EngineEvent::Stuck(e.clone()));
+                }
                 inner.update(&id, |j| j.view.error = Some(e));
                 inner.save_jobs();
                 failures += 1;

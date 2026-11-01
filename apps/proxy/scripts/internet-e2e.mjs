@@ -9,7 +9,7 @@ import tls from "node:tls";
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 process.removeAllListeners("warning");
 
-const [lan = "127.0.0.1:8110", key = "", voice = ""] = process.argv.slice(2);
+const [lan = "127.0.0.1:8110", key = "", voiceArg = ""] = process.argv.slice(2);
 const lanBase = `https://${lan}`;
 let failed = 0;
 const ok = (cond, name, extra = "") => {
@@ -39,7 +39,8 @@ ok(st.status === 200 && st.body.enabled, "internet access switched on over the L
 await new Promise((r) => setTimeout(r, 800));
 st = await call(lanBase, "/ttv/v1/internet", { token: key });
 ok(st.body?.listening === true, "the internet port listens", `port ${st.body?.port}`);
-const net = `https://127.0.0.1:${st.body.port}`;
+const lanHost = lan.split(":")[0];
+const net = `https://${lanHost}:${st.body.port}`;
 ok((await call(lanBase, "/ttv/v1/internet")).status === 401, "managing internet access needs the key");
 
 // the code needs a public address: the test service finds it
@@ -50,7 +51,7 @@ ok(t.status === 200 && typeof t.body.reachable === "boolean", "reachability test
 const inv = await call(lanBase, "/ttv/v1/internet/invites", { token: key, method: "POST", body: { name: "E2E friend", days: 1, chars_per_day: 2000 } });
 ok(inv.status === 200 && inv.body.code.startsWith("ttv1:"), "an invite code is made", inv.body?.code?.slice(0, 24));
 const decoded = JSON.parse(Buffer.from(inv.body.code.slice(5), "base64url").toString());
-const fp = await fingerprintOf("127.0.0.1", st.body.port);
+const fp = await fingerprintOf(lanHost, st.body.port);
 ok(decoded.fingerprint === fp, "the code pins the internet port's certificate");
 ok(!JSON.stringify(st.body).includes(decoded.secret), "the secret isn't in the status (stored hashed)");
 
@@ -78,7 +79,8 @@ ok((await call(net, "/ttv/v1/library", { token: key })).status === 401, "the hos
 ok((await call(lanBase, "/ttv/v1/status", { token: g })).status === 401, "a guest token doesn't work on the LAN port");
 ok((await call(net, "/ttv/v1/library")).status === 401, "no token, no library");
 
-// 6. speaking
+// 6. speaking (a library voice: given, or the first one)
+const voice = voiceArg || (await call(lanBase, "/ttv/v1/library", { token: key })).body?.entries?.[0]?.voice_id || "";
 const notShared = await call(net, "/api/v1/generation/clone", { token: g, method: "POST", body: { voice_id: "voice_00000000", target_text: "Hallo" } });
 ok(notShared.status === 403, "only library voices can be used");
 const tooLong = await call(net, "/api/v1/generation/clone", { token: g, method: "POST", body: { voice_id: voice, target_text: "a".repeat(601) } });
@@ -96,7 +98,7 @@ if (voice) {
 // 7. revoke and clean up
 const list = await call(lanBase, "/ttv/v1/internet", { token: key });
 const me = list.body.guests.find((x) => x.name === "E2E friend");
-ok(!!me && me.last_address === "127.0.0.1", "the host sees the guest and where they connect from");
+ok(!!me && !!me.last_address, "the host sees the guest and where they connect from", me?.last_address);
 await call(lanBase, `/ttv/v1/internet/guests/${me.id}/revoke`, { token: key, method: "POST" });
 ok((await call(net, "/ttv/v1/library", { token: g })).status === 401, "a revoked guest is out at once");
 await call(lanBase, "/ttv/v1/internet", { token: key, method: "POST", body: { enabled: false } });
