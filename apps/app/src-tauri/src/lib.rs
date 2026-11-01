@@ -82,6 +82,7 @@ pub fn run() {
             commands::watch_host_system,
             commands::proxy_vcp_action,
             commands::wake_host,
+            commands::proxy_update,
             commands::set_audio,
             commands::list_voices,
             commands::speak_test,

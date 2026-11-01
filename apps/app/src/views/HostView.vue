@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import UiStat from "@ttv-tts/ui/components/UiStat.vue";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
-import { Bolt, Link, Microchip, Play, Power, Ram, Refresh, Server, Temperature, Waveform } from "@ttv-tts/ui/icons";
+import { Bolt, Download, Link, Microchip, Play, Power, Ram, Refresh, Server, Temperature, Waveform } from "@ttv-tts/ui/icons";
 import { bytes } from "@ttv-tts/ui/format";
 import { api } from "../api";
 import HostSetup from "../components/HostSetup.vue";
@@ -40,6 +40,15 @@ async function vcpAction(a: "start" | "restart") {
 async function wake() {
   if ((await run("wake", () => api.wakeHost())) !== undefined) toast("info", t("host.wakeSent"));
 }
+// TTV-TTS Proxy updates itself when idle; this does it right now.
+const proxyUpdate = computed(() => h.value.proxy?.update ?? null);
+async function checkProxy() {
+  const u = await run("proxyUpdate", () => api.proxyUpdate("check"));
+  if (u) toast(u.available ? "info" : "ok", u.available ? t("host.proxyUpdateFound", { version: u.available }) : t("host.proxyUpToDate"));
+}
+async function installProxy() {
+  if ((await run("proxyUpdate", () => api.proxyUpdate("install"))) !== undefined) toast("info", t("host.proxyUpdating"));
+}
 async function forget() {
   if (!confirm(t("host.forgetConfirm"))) return;
   await apply(await run("forget", () => api.forgetHost()));
@@ -68,10 +77,24 @@ async function forget() {
             <div class="flex justify-between gap-3"><dt class="muted">{{ h.kind === "proxy" ? t("host.proxy") : t("host.direct") }}</dt><dd class="font-medium">{{ cfg.kind === "proxy" ? cfg.name : "" }}</dd></div>
             <div class="flex justify-between gap-3"><dt class="muted">{{ t("host.address") }}</dt><dd class="font-mono text-xs">{{ cfg.kind === "proxy" ? cfg.address : cfg.kind === "direct" ? cfg.url : "" }}</dd></div>
             <div v-if="certShort" class="flex justify-between gap-3"><dt class="muted">{{ t("host.certificate") }}<UiTip :text="t('tips.certificate')" /></dt><dd class="font-mono text-xs">{{ certShort }}</dd></div>
+            <div v-if="h.proxy" class="flex items-center justify-between gap-3">
+              <dt class="muted">{{ t("host.proxyVersion") }}</dt>
+              <dd class="flex items-center gap-2 font-medium">
+                {{ h.proxy.info.version }}
+                <span v-if="proxyUpdate?.available" class="badge badge-accent">{{ t("host.proxyNew", { version: proxyUpdate.available }) }}</span>
+              </dd>
+            </div>
           </dl>
+          <p v-if="proxyUpdate?.phase === 'error' && proxyUpdate.error" class="hint text-err">{{ proxyUpdate.error }}</p>
           <p v-if="h.error && !h.connected" class="notice notice-err mt-3 text-sm">{{ h.error }}</p>
           <div class="mt-4 flex flex-wrap gap-2">
             <button v-if="h.kind === 'proxy' && !h.connected" class="btn btn-primary btn-sm" :data-tip="t('tips.wake')" @click="wake"><Power :size="15" />{{ t("host.wake") }}</button>
+            <template v-if="h.kind === 'proxy' && h.connected">
+              <button v-if="proxyUpdate?.available" class="btn btn-primary btn-sm" :disabled="store.busy === 'proxyUpdate' || proxyUpdate.phase === 'downloading' || proxyUpdate.phase === 'installing'" :data-tip="t('tips.proxyUpdate')" @click="installProxy">
+                <Download :size="15" />{{ proxyUpdate.phase === "downloading" || proxyUpdate.phase === "installing" ? t("host.proxyInstalling") : t("host.proxyInstall") }}
+              </button>
+              <button v-else class="btn btn-sm" :disabled="store.busy === 'proxyUpdate'" @click="checkProxy"><Refresh :size="15" />{{ t("host.proxyCheck") }}</button>
+            </template>
             <button class="btn btn-sm" @click="changing = true">{{ t("host.change") }}</button>
             <button class="btn btn-danger btn-sm" @click="forget">{{ t("host.forget") }}</button>
           </div>

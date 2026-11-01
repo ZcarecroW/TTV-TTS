@@ -71,6 +71,7 @@ const state: AppView = {
           devices: [{ id: "demo", name: "GAMING-PC", last_seen: now() - 5 }],
           connections: 1,
           uptime_secs: 5 * 3600 + 720,
+          update: { available: null, phase: "idle", progress: null, error: null, channel: "stable" },
         },
       },
 };
@@ -155,6 +156,8 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
       return r("Voice Creator Pro is up after 31 s.");
     case "wake_host":
       return r(undefined);
+    case "proxy_update":
+      return r(args.action === "check" ? { available: null, phase: "idle", progress: null, error: null, channel: "stable" } : null);
     case "list_voices":
       return r(voices);
     case "speak_test":

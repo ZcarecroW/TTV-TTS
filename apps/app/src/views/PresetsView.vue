@@ -3,8 +3,8 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { duration } from "@ttv-tts/ui/format";
-import { Bolt, ClockRotate, Gauge, iconByName, Plus, Sparkle, Spinner } from "@ttv-tts/ui/icons";
-import { presets, type ClassicFound, type PresetView } from "../api";
+import { Bolt, ClockRotate, Gauge, iconByName, Plus, Sparkle, Spinner, Warning } from "@ttv-tts/ui/icons";
+import { api, presets, type ClassicFound, type PresetView } from "../api";
 import ComputeDialog from "../components/ComputeDialog.vue";
 import JobList from "../components/JobList.vue";
 import PresetDetailDialog from "../components/PresetDetailDialog.vue";
@@ -18,6 +18,13 @@ const editor = ref<{ id?: string } | null>(null);
 const classic = ref<ClassicFound | null>(null);
 
 const connected = computed(() => !!host.value?.connected);
+// A proxy from before presets (2.0.0-alpha.4) answers 404 to the engine.
+const tooOld = computed(() => host.value?.kind === "proxy" && /404|unknown ttv-tts proxy endpoint/i.test(store.engineError));
+async function updateProxy() {
+  const check = await run("proxyUpdate", () => api.proxyUpdate("check"));
+  if (check?.available && (await run("proxyUpdate", () => api.proxyUpdate("install"))) !== undefined) toast("info", t("host.proxyUpdating"));
+  else if (check) toast("info", t("host.proxyUpToDate"));
+}
 
 async function refresh() {
   await loadPresets();
@@ -64,6 +71,11 @@ function openEditor(id?: string) {
 <template>
   <div class="space-y-5">
     <p v-if="!connected" class="notice notice-warn text-sm">{{ t("presets.noHost") }}</p>
+    <div v-else-if="tooOld" class="notice notice-warn text-sm">
+      <Warning :size="18" />
+      <span class="flex-1">{{ t("presets.proxyTooOld", { version: host?.proxy?.info.version ?? "?" }) }}</span>
+      <button class="btn btn-primary btn-sm" :disabled="store.busy === 'proxyUpdate'" @click="updateProxy">{{ t("host.proxyInstall") }}</button>
+    </div>
 
     <div v-if="classic && classic.voices" class="notice notice-info text-sm">
       <ClockRotate :size="18" />

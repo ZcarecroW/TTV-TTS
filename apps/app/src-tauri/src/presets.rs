@@ -228,7 +228,7 @@ macro_rules! builtin {
 
 /// (id, text) – the files live in `src-tauri/presets/` (name, desc and
 /// icon in their header). Parsed once, on first use.
-const BUILTIN: &[(&str, &str)] = builtin!["cinematic"];
+const BUILTIN: &[(&str, &str)] = builtin!["cinematic", "fantasy-tavern", "starship-crew", "noir-city", "saturday-cartoons"];
 
 pub fn builtins() -> &'static [Preset] {
     static B: OnceLock<Vec<Preset>> = OnceLock::new();

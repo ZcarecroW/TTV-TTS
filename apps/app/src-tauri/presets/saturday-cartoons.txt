@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Saturday Cartoons
+desc: Zany heroes, goofy sidekicks, scheming villains and talking animals
+icon: Tv
+---
+Captain Zoom|m|35|Big, booming heroic baritone, over-the-top and fast, every line a triumphant announcement.
+Penny Pockets|f|10|Squeaky, super-fast little voice, giggly and bossy, a kid genius with a backpack of gadgets.
+Professor Gloom|m|62|Nasal, whiny villain tenor, slow evil laughs, dramatic and hilariously bitter.
+Granny Biscuit|f|81|Warbly, sweet elderly voice, slow and cheerful, secretly a kung-fu master.
+Wobble|n|8|Bubbly, high gurgling voice, giggly and slow, a jelly creature who loves hugs.
+Rex Rumble|m|28|Gruff, dopey baritone, slow and confused, a lovable muscle-bound sidekick.
+Dizzy Dot|f|24|Hyper, squealing soprano, ultra-fast and scatterbrained, a cartoon reporter.
+Sir Reginald Waddle|m|55|Pompous, plummy baritone, slow and huffy, a penguin aristocrat.
+Mama Meatball|f|60|Loud, warm alto, fast and fussy, a chef who feeds the whole town.
+Zap Zapperton|m|16|Cracking, excited teen voice, fast and boastful, a wannabe superhero.
+Queen Grumbelina|f|50|Shrill, theatrical soprano, slow and wicked, a villain queen who hates fun.
+Bonkers the Badger|m|40|Raspy, manic baritone, rapid and silly, laughing at his own jokes.
+Twinkle Toes|f|18|Breathy, sing-song soprano, dreamy and light, a dancing fairy.
+Uncle Barnaby|m|71|Wheezy, rambling old tenor, slow and absent-minded, an inventor with a talking shed.
+Sprocket|n|5|Tiny, beeping robot voice, chirpy and literal, a toaster that came to life.
+Lady Fluffington|f|45|Prissy, high-society soprano, slow and dramatic, a pampered poodle.
+Tank Thunderbolt|m|33|Deep, booming bass, loud and simple, a hero who punches first.
+Mimi Moonbeam|f|27|Soft, giggly mezzo, slow and spacey, an alien from the cheese moon.
+Grumpus Maximus|m|66|Grumbly, crusty bass, slow and sarcastic, a grouchy old troll under the bridge.
+Lulu Lightspeed|f|12|Rapid, chirpy young voice, breathless and brave, the fastest kid in the galaxy.
+Count Cuckoo|m|58|Wobbly, dramatic baritone, rolling and spooky, a vampire afraid of the dark.
+Sunny Side|f|35|Bright, sunny mezzo, cheerful and loud, a talking egg with a positive attitude.
+Doc Fizzlewick|m|48|Crackling, frantic tenor, fast and jittery, a mad scientist with too much coffee.
+Pip Squeak|n|9|Tiny, squeaky voice, rapid and nervous, a mouse with big dreams.
+Brutus Bonecrusher|m|42|Huge, slow growling bass, dim and grumpy, a henchman who loves puppies.
+Auntie Gale|f|69|Blustery, loud older alto, fast and windy, a weather witch.
+Tommy Tornado|m|11|Loud, hyper young voice, fast and wild, a kid who never stops spinning.
+Scarlet Sneer|f|38|Silky, slinky villain alto, slow and purring, a cat burglar cat.
+Old Man Pickles|m|84|Creaky, slow cranky voice, grumbling and funny, a neighbor who yells at clouds.
+Bibi Bloop|f|20|Gurgly, cheerful soprano, slow and dreamy, a mermaid with hiccups.
+General Fuzzbottom|m|57|Barking, loud baritone, clipped and pompous, a hamster army commander.
+Kiki Kazoo|f|15|Buzzy, rapid young voice, playful and loud, a girl who talks in rhymes.
+Moose McGee|m|30|Slow, dopey bass, friendly and goofy, a moose park ranger.
+Dame Dazzle|f|63|Grand, theatrical soprano, slow and dramatic, a retired superhero diva.
+Glitch|n|22|Stuttering, fast digital voice, chaotic and silly, a video game character escaped the screen.
+Sheriff Biscuit|m|52|Drawling, slow folksy baritone, kind and lazy, a hound dog sheriff.
+Cleo Catnap|f|30|Sleepy, slow purring mezzo, yawning and lazy, a cat who hates Mondays.
+Baron Von Bratwurst|m|61|Blustery, gravelly villain baritone, slow and dramatic, a sausage tyrant.
+Lily Lollipop|f|8|Sugary, tiny high voice, giggly and sweet, a candy princess.
+Captain Barnacle|m|70|Salty, gruff old baritone, slow and loud, a parrot pirate captain.
+Zippy Zee|f|25|Peppy, rapid soprano, fast and enthusiastic, a race-car driving squirrel.
+Dr. Dread|m|44|Deep, echoing villain baritone, slow and theatrical, monologuing about his plan.
+Nana Noodle|f|77|Wobbly, warm elderly voice, slow and sweet, a grandmother who knits superhero capes.
+Bolt Bolton|m|19|Cocky, quick young tenor, loud and silly, a skateboarding lightning kid.
+Duchess Dragonfly|f|47|Airy, fluttery soprano, quick and posh, a dragonfly socialite.
+Hamlet Ham|m|39|Overdramatic, booming baritone, slow and theatrical, a pig actor.
+Taffy Twister|f|13|Giggly, rapid young voice, sticky-sweet and fast, a candy-shop kid.
+Gooberfield|n|35|Slow, goofy, droopy voice, confused and kind, a blob from planet Snooze.
+Mayor Muttonchops|m|65|Pompous, wheezy baritone, slow and blustering, a mayor who loves ribbon cutting.
+Rosie Rocket|f|22|Bold, quick mezzo, fearless and loud, a girl astronaut.
+Snort McSnortington|m|27|Snorting, nasal tenor, fast and giggly, a warthog prankster.
+Witch Hazelnut|f|74|Cackling, raspy older voice, quick and mischievous, a witch who bakes cursed cookies.
+Ace Avalanche|m|32|Smooth, cool baritone, slow and cocky, a snowboarding yeti.
+Bella Bluebell|f|17|Sweet, clear young soprano, kind and singing, a flower fairy.
+Clank|m|50|Clunky, slow robot baritone, polite and literal, a butler robot that rusts in the rain.
+Momo Mochi|f|9|Soft, squishy little voice, slow and shy, a talking rice cake.
+King Kerfuffle|m|68|Blustering, loud bass, slow and confused, a king who forgot where he put his crown.
+Lightning Lizzy|f|29|Snappy, fast alto, sarcastic and bold, a lizard detective.
+Ziggy Zoom|n|14|Fast, buzzy voice, excitable and silly, a bug courier.
+Wally Waffles|m|36|Buttery, slow baritone, sleepy and kind, a breakfast-loving bear.
+Madame Mystique|f|56|Throaty, spooky alto, slow and dramatic, a fortune-telling owl.
+Biff Brawnstein|m|24|Loud, dumb jock tenor, slow and cheerful, a gym bro hero.
+Polly Puzzle|f|11|Quick, curious little voice, clever and bossy, a kid who solves every mystery.
+Grizzle Grimtooth|m|73|Deep, gravelly old bass, growling and slow, a dragon who lost his fire.
+Fifi Frou-Frou|f|41|Fussy, high soprano, quick and posh, a hairdresser poodle.
+Turbo Tortoise|m|90|Very slow, ancient voice, calm and wise, a tortoise who wins every race.
+Sasha Sparkle|f|23|Glittery, bright soprano, bubbly and loud, a pop star unicorn.
+Noodle Noggin|m|20|Spacey, slow tenor, dreamy and silly, a kid who thinks with his hair.
+Agent Sprinkle|f|34|Cool, quick spy alto, whispery and dramatic, a secret agent cupcake.
+Fuzzy Wuzz|n|6|Tiny, fluffy, giggly voice, slow and sweet, a pom-pom creature.
+Lord Lumpkin|m|59|Sneering, nasal villain tenor, slow and petty, a pumpkin lord.
+Peggy Pegasus|f|19|Airy, bright young voice, fast and adventurous, a flying horse girl.
+Rusty Bucket|m|45|Creaky, slow baritone, rattling and friendly, a junkyard robot.
+Grandma Gizmo|f|80|Crackly, fast older voice, clever and spunky, an inventor granny on a rocket scooter.
+Chomp Chompers|m|26|Growly, fast tenor, hungry and goofy, a shark who wants to be a vegetarian.
+Tilly Tumbleweed|f|28|Drawling, slow mezzo, dusty and funny, a cowgirl tumbleweed.
+Professor Hoot|m|67|Hooting, slow older baritone, wise and pompous, an owl teacher.
+Bitsy Byte|f|10|Beepy, fast little voice, nerdy and excited, a computer chip girl.
+Rocko Rockface|m|38|Grinding, slow bass, stony and kind, a rock monster who loves flowers.
+Dolly Doodle|f|14|Scribbly, quick young voice, artsy and dreamy, a girl whose drawings come alive.
+Marvelous Marvin|m|49|Booming, showman baritone, fast and grand, a magician who always fails.
+Velvet Vixen|f|36|Sultry, slow villain mezzo, sly and amused, a fox jewel thief.
+Bubba Bubblegum|m|31|Chewy, slow tenor, blowing bubbles while talking, a laid-back hippo.
+Gigi Galaxy|n|40|Echoing, dreamy voice, slow and cosmic, a star spirit.
+Officer Doughnut|m|53|Jolly, round baritone, slow and kind, a cop who loves sprinkles.
+Skippy Skunk|f|16|Sassy, quick young voice, cheeky and smelly, a skunk with attitude.
+Mister Moustache|m|64|Twirly, dramatic baritone, slow and villainous, a top-hatted scoundrel.
+Sugar Plum|f|33|Sweet, lilting soprano, slow and dreamy, a candy fairy godmother.
+Bruno Bulldozer|m|41|Rumbling, loud bass, slow and destructive, a construction robot villain.
+Tiny Tess|f|7|Super squeaky voice, quick and bossy, the smallest knight in the kingdom.
+Otto Octopus|m|47|Gurgling, quick baritone, multitasking and frantic, an octopus chef.
+Duchess Drizzle|f|58|Gloomy, slow soprano, dramatic and sighing, a raincloud queen.
+Spike Spinny|m|13|Hyper, fast young voice, loud and competitive, a top-spinning champion.
+Lola Llama|f|27|Drawling, slow mezzo, unbothered and cool, a llama who spits sass.
+Dr. Doohickey|m|56|Excitable, fast tenor, rambling and nerdy, an inventor of useless gadgets.
+Petunia Puff|f|65|Sweet, high older voice, slow and fussy, a cloud lady.
+Zorbo the Great|n|99|Booming, echoing voice, slow and grand, a giant floating head from space.
+Billy Bounce|m|9|Bouncy, high little voice, fast and giggly, a kid on a pogo stick.
+Marigold Muffin|f|44|Warm, cheerful alto, quick and kind, a baker hen.
+Major Crunchbolt|m|46|Loud, roaring baritone, fast and boastful, a cereal superhero.
+Wiggles Worm|n|18|Squiggly, slow, soft voice, shy and sweet, a bookworm.
+Princess Peony|f|21|Bright, polite soprano, kind and brave, a princess who fights dragons.
+Sludge|m|34|Gloopy, slow gurgling bass, gross and friendly, a swamp monster.
+Bessie Barnyard|f|52|Mooing, slow alto, motherly and calm, a cow who runs the farm.
+Jumpin' Jack|m|23|Springy, fast tenor, energetic and silly, a kangaroo boxer.
+Vex Villainova|f|39|Cackling, sharp villain soprano, fast and dramatic, a supervillain with a ray gun.
+Gramps Gadget|m|79|Rattling, slow old baritone, grumbly and clever, a grandpa with robot arms.
+Cookie Crumble|f|12|Crumbly, sweet little voice, giggly and fast, a cookie scout.
+Rumbletummy|m|29|Deep, hungry baritone, slow and dopey, an ogre who loves snacks.
+Shimmer Shade|n|30|Whispery, shimmering voice, quick and sneaky, a shadow creature.
+Mrs. Mopsworth|f|61|Brisk, bossy older voice, fast and stern, a robot nanny.
+Tadpole Ted|m|8|Tiny, bubbly voice, slow and curious, a baby frog.
+Diva Delphina|f|42|Grand, singing soprano, slow and dramatic, a dolphin opera star.
+Big Bad Barry|m|51|Huffing, gravelly villain baritone, slow and blustery, a wolf who can't blow anything down.
+Pixie Pop|f|16|Popping, bubbly young voice, rapid and excited, a pixie DJ.
+Commander Comet|m|37|Heroic, resonant baritone, bold and fast, a space ranger.
+Granny Gumdrop|f|86|Very old, sweet and slow voice, giggly and kind, the candy village elder.
+Fizzbang|n|25|Crackling, explosive voice, fast and wild, a firework spirit.
+Mumbles McGraw|m|60|Mumbling, slow baritone, hard to follow and funny, a sleepy watchman.
+Dotty Dalmatian|f|24|Spotty, quick soprano, cheerful and loud, a firefighter dog.
+Sir Snooze-a-lot|m|72|Yawning, slow old voice, drowsy and kind, a knight who falls asleep mid-sentence.
+Jinx Jellybean|f|15|Mischievous, quick young voice, sneaky and giggly, a prankster girl.
+Hector Hammerhead|m|43|Clunky, loud baritone, blunt and funny, a hammerhead shark builder.
+Lady Lavender|f|70|Gentle, fragrant older soprano, slow and dreamy, a garden witch.
+Bongo Bananas|m|21|Manic, fast tenor, silly and loud, a monkey drummer.
+Olive Oddball|f|31|Quirky, quick mezzo, weird and lovable, a girl who collects socks.
+Thunderhoof|m|58|Booming, slow bass, proud and loud, a buffalo chief.
+Ripple|n|11|Watery, soft voice, slow and gentle, a puddle spirit.
+Frankie Fang|m|30|Hissing, slick tenor, slow and sly, a snake salesman.
+Babs Banjo|f|49|Twangy, quick older alto, cheerful and folksy, a banjo-playing goose.
+Turbo Tim|m|10|Revving, fast little voice, loud and excited, a kid race car.
+Celestia Starglow|f|37|Radiant, airy soprano, slow and wise, a star guardian.
+Grub Grubbington|m|55|Slurpy, slow baritone, gross and cheerful, a garbage monster with good manners.
+Penelope Prim|f|26|Proper, clipped soprano, quick and fussy, a librarian cat.
+Rascal Raccoon|m|17|Scratchy, fast young voice, sneaky and funny, a trash-can bandit.
+Momma Moose|f|53|Deep, warm alto, slow and comforting, a moose mom.
+Sparky Plug|n|20|Zappy, quick voice, nervous and bright, an electric spark.
+Colonel Crumpet|m|69|Stiff, plummy old baritone, slow and proper, a tea-loving walrus.
+Winnie Whirlwind|f|19|Breezy, fast young voice, chaotic and cheerful, a tornado girl.
+Glob Gloopston|m|38|Gloopy, slow, bubbly voice, friendly and gross, a slime janitor.
+Duchess Darling|f|64|Sugary, slow older voice, fake-sweet and sly, a villainous cat lady.
+Pogo Penguin|m|14|Waddling, quick young voice, clumsy and cheerful, a penguin kid.
+Stella Starfish|f|32|Sparkly, bright mezzo, cheerful and slow, a starfish lifeguard.
+Mortimer Moth|m|47|Fluttery, nervous tenor, quick and twitchy, a moth who loves lamps.
+Echo|n|28|Repeating, airy voice, quick and playful, a canyon spirit.
+Big Momma Bear|f|58|Booming, warm alto, slow and protective, a bear mom.
+Zeke Zigzag|m|22|Twitchy, fast tenor, chaotic and funny, a lightning rabbit.
+Queenie Bee|f|46|Buzzy, bossy alto, quick and regal, a bee queen.
+Sir Galahop|m|31|Noble, bouncy baritone, brave and silly, a frog knight.
+Tootsie Twirl|f|9|Spinning, giggly little voice, fast and dizzy, a ballerina kid.
+Grumblestump|m|77|Crusty, slow old bass, grumpy and kind, a tree stump wizard.
+Lacey Lightbulb|f|23|Bright, quick soprano, idea-filled and excited, a lightbulb inventor.
+Snoozles|n|45|Very slow, sleepy voice, yawning and sweet, a cloud sheep.
+Captain Whiskercape|m|40|Heroic, goofy baritone, loud and confident, a cat superhero in a cape.
+Fanny Flapjack|f|67|Warm, quick older alto, chatty and sweet, a pancake diner owner.
+Bozo Boomer|m|26|Loud, boomy tenor, silly and fast, a clown cannon.
+Rhonda Rhino|f|50|Thick, slow alto, tough and gruff, a rhino construction boss.
+Bolt the Robot Dog|m|12|Beeping, quick young voice, loyal and excited, a robot puppy.
+Mystic Marge|f|72|Spooky, quavering older voice, slow and dramatic, a crystal-ball grandma.
+Dash Dingo|m|18|Fast, cheeky young voice, adventurous and loud, a desert racer.
+Bloom|n|16|Soft, flowery voice, slow and kind, a sprout spirit.
+Gruff McGruffin|m|63|Rough, growly old baritone, slow and grumpy, a goat with a beard.
+Cinnamon Swirl|f|29|Warm, sweet mezzo, slow and cozy, a bakery owner bunny.
+Tickles|m|7|Giggling, tiny high voice, can't stop laughing, a feather creature.
+Lady Luna|f|55|Silvery, slow soprano, mysterious and calm, the moon herself.
+Boomer Boots|m|34|Stomping, loud baritone, clumsy and kind, a giant who wears tiny boots.
+Prissy Pearl|f|20|Snooty, high young voice, quick and spoiled, an oyster princess.
+Cosmo Comet|n|33|Zooming, bright voice, fast and cheerful, a comet courier.
+Grandpa Gears|m|88|Clicky, slow old voice, wise and creaky, a clockwork grandpa.
+Fiona Flame|f|27|Fiery, quick mezzo, hot-tempered and funny, a dragon girl.
+Waldo Wobblebottom|m|44|Wobbly, slow baritone, clumsy and sweet, a jelly policeman.
+Trudy Toadstool|f|61|Croaky, slow older voice, grumpy and funny, a toad landlady.
+Scoot Scooter|m|15|Zippy, fast young voice, cheeky and cool, a delivery kid on a scooter.
+Vera Vortex|f|36|Swirling, dramatic alto, fast and theatrical, a time-travel villain.
+Mudpie|n|9|Squishy, giggly voice, slow and messy, a mud puppy.
+Barnaby Bigbelly|m|57|Round, jolly bass, slow and laughing, a giant who loves soup.
+Dizzy Daisy|f|17|Spacey, quick young voice, forgetful and sweet, a daisy fairy.
+Thorny Thistle|m|49|Prickly, sarcastic baritone, slow and grumpy, a cactus sheriff.
+Jolene Jukebox|f|42|Twangy, bright alto, singing and cheerful, a talking jukebox.
+Blip|n|5|Tiny, chirping alien voice, slow and curious, a baby alien.
+Admiral Anchovy|m|66|Fishy, gruff older baritone, slow and proud, a sardine navy admiral.
+Ruby Rollerskate|f|21|Fast, cheerful mezzo, sporty and loud, a roller derby girl.
+Gonzo Gizzard|m|36|Squawky, fast baritone, wild and silly, a chicken stuntman.
+Matilda Mustache|f|74|Raspy, funny older voice, slow and proud, a grandma with a magnificent mustache.
+Ziggy Starpaws|m|25|Groovy, slow tenor, laid-back and cool, a rock-star cat.
+Holly Hopper|f|13|Bouncy, quick young voice, cheerful and kind, a bunny scout.
+Grimgor the Gruesome|m|61|Monstrous, slow growl, scary and silly, a monster afraid of bubbles.
+Petal Pumpernickel|f|38|Soft, sweet alto, slow and caring, a bread fairy.
+Zigby|n|19|Glitchy, fast voice, playful and odd, a pixel sprite.
+Desmond Dynamo|m|11|Fast, nerdy little voice, excited and bossy, a boy inventor.
+Gloria Gumball|f|57|Bubbly, loud older soprano, fast and funny, a candy machine lady.
+Bruiser Boulderman|m|39|Rocky, slow bass, tough and gentle, a stone wrestler.
+Twiggy Twigs|f|25|Thin, quick soprano, nervous and kind, a stick insect.
+Professor Paradox|m|76|Echoing, slow older tenor, confusing and wise, a time scientist.
+Coco Cocoa|f|31|Chocolatey, warm mezzo, slow and sweet, a hot-chocolate barista.
+Rumble Tumble|n|10|Rolling, giggly voice, fast and clumsy, a tumbleweed pup.
+Lord Spiffington|m|52|Snobby, plummy baritone, slow and vain, a peacock lord.
+Mabel Marmalade|f|83|Sweet, slow elderly voice, warm and dotty, a jam-making grandma.
+Ricky Rocket|m|20|Brash, fast tenor, loud and boastful, a rocket-boot hero.
+Scootie Snail|f|45|Very slow, sleepy mezzo, calm and polite, a snail mail carrier.
+Hank Honker|m|48|Honking, loud baritone, silly and fast, a goose cab driver.
+Jazzy Jules|f|34|Smooth, jazzy alto, slow and cool, a saxophone cat.
+Boris Bagel|m|59|Thick, warm baritone, slow and jolly, a bagel baker bear.
+Clara Clockwork|f|28|Ticking, precise soprano, quick and exact, a clockwork girl.
+Umbra|n|50|Deep, dark voice, slow and sneaky, a villainous shadow.
+Pete Pickaxe|m|62|Rugged, slow old baritone, folksy and kind, a mole miner.
+Lucy Lemonade|f|11|Zesty, quick little voice, bright and bossy, a lemonade stand kid.
+Captain Cardboard|m|9|Proud, squeaky little voice, brave and loud, a kid in a box spaceship.
+Felicity Feathers|f|40|Fluttery, warm soprano, quick and kind, a bird nurse.
+Grumbles the Gargoyle|m|80|Stony, slow old bass, grumpy and loyal, a castle gargoyle.
+Nibbles|f|6|Tiny, nibbling voice, shy and sweet, a hamster kid.
+Tex Thunderpants|m|43|Drawling, booming baritone, loud and funny, a cowboy superhero.
+Ginger Snapdragon|f|52|Sharp, snappy older alto, quick and sarcastic, a dragon librarian.
+Pudding|n|5|Squishy, babbling, giggly voice, very slow, a baby blob.
+Max Mayhem|m|27|Chaotic, fast tenor, wild and laughing, a prankster villain.
+Opal Oyster|f|69|Pearly, slow older soprano, posh and kind, an oyster grandmother.
+Sergeant Sizzle|m|50|Barking, sizzling baritone, loud and fast, a bacon drill sergeant.
+Bunny Bubblesworth|f|18|Bubbly, quick young voice, giggly and sweet, a bath-time bunny.
+Barnstorm Betty|f|35|Loud, daring mezzo, fast and fearless, a stunt-flying chicken pilot.
+Mister Whiskers|m|58|Grand, slow baritone, theatrical and vain, a cat magician with a top hat.
+Fluffernutter|f|12|Sticky-sweet little voice, quick and giggly, a marshmallow scout.
+Gus Gearbox|m|41|Clanky, loud baritone, cheerful and fast, a robot mechanic.
+Tallulah Tutu|f|66|Grand, warbly older soprano, slow and dramatic, a retired ballet hippo.
+Sprout Sprocket|m|10|Bright, squeaky little voice, curious and fast, a robot seedling.
+Wendy Wand|f|29|Sparkly, quick mezzo, flustered and kind, a fairy whose spells go wrong.
+Chester Cheddar|m|54|Smooth, cheesy baritone, slow and corny, a mouse game show host.
+Marvella Moonpie|f|47|Dreamy, slow alto, sweet and spacey, a lunar bakery owner.
+Kip Kazoo|m|16|Buzzy, fast young voice, silly and loud, a kid band leader.
+Hortensia Hex|f|79|Croaky, slow older voice, cackling and kind, a witch who only curses broccoli.
+Dudley Dumpling|m|33|Round, soft baritone, slow and shy, a dumpling who wants to be brave.
+Sassafras Sue|f|21|Twangy, quick young voice, sassy and bold, a cowgirl squirrel.
+Archibald Antler|m|70|Stately, slow older baritone, proud and kind, a deer mayor.
+Pinky Paws|f|8|Tiny, giggly little voice, quick and sweet, a kitten detective.
+Boogie Bob|m|38|Groovy, rhythmic tenor, fast and funky, a dancing robot.
+Delilah Doom|f|44|Dramatic, purring villain alto, slow and sneaky, a villain who monologues too long.
+Teddy Thunder|m|25|Booming, goofy tenor, loud and sweet, a teddy bear superhero.
+Lavinia Lollipop|f|56|Syrupy, slow older soprano, fake-sweet and sly, a candy villainess.
+Rufus Rattletrap|m|62|Rattling, cranky old baritone, slow and funny, a rusty car.
+Zuzu Zephyr|f|19|Breezy, quick young voice, carefree and light, a wind fairy.
+Flicker|n|13|Flickering, quick voice, nervous and bright, a candle flame sprite.

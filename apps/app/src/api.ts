@@ -40,6 +40,15 @@ export interface ProxyStatus {
   devices: { id: string; name: string; last_seen: number | null }[];
   connections: number;
   uptime_secs: number;
+  update: ProxyUpdateState | null;
+}
+
+export interface ProxyUpdateState {
+  available: string | null;
+  phase: "idle" | "checking" | "downloading" | "installing" | "error";
+  progress: number | null;
+  error: string | null;
+  channel: string;
 }
 
 export interface HostStatus {
@@ -163,6 +172,7 @@ export const api = {
   watchHostSystem: (on: boolean) => invoke<void>("watch_host_system", { on }),
   proxyVcpAction: (action: "start" | "stop" | "restart") => invoke<string>("proxy_vcp_action", { action }),
   wakeHost: () => invoke<void>("wake_host"),
+  proxyUpdate: (action: "check" | "install") => invoke<ProxyUpdateState | null>("proxy_update", { action }),
   setAudio: (patch: { device?: string | null; volume?: number; gap_ms?: number }) => invoke<AppView>("set_audio", { patch }),
   voices: () => invoke<Voice[]>("list_voices"),
   speakTest: (utterance: Utterance) => invoke<SayReport>("speak_test", { utterance }),

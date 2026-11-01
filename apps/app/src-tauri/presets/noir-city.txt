@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Noir City
+desc: Rain-soaked detectives, lounge singers, mobsters and informants of a 1940s city
+icon: TopHat
+---
+Vic Malone|m|52|Gravelly baritone, slow and dry, tired cynicism and long pauses, a private eye after midnight.
+Lola Fine|f|31|Velvety low alto, unhurried and teasing, a smile in every word, a nightclub singer.
+Eddie Sparks|m|23|Quick, nasal young tenor, jumpy and talkative, a newsboy who hears everything.
+Mrs. Agnes Beaumont|f|67|Cultured, brittle older soprano, slow and icy, a widow hiding the truth.
+Sal Moretti|m|58|Thick, raspy bass, slow and polite, a mob boss who never raises his voice.
+Ruby Lane|f|26|Bright, brassy mezzo, fast and sassy, a cigarette girl with attitude.
+Lt. Frank Dolan|m|46|Hard, clipped baritone, short and impatient, a homicide lieutenant.
+Vera Quill|f|39|Cool, precise alto, quiet and clever, a secretary who runs the agency.
+Smokey Jones|n|44|Husky, smoky androgynous voice, slow and laid-back, a jazz pianist at the bar.
+Nicky Two-Times|m|35|Fast, wiseguy tenor, sly and slippery, a small-time hustler.
+Dolores Vane|f|48|Sultry, slow contralto, dangerous and calm, a femme fatale with a past.
+Pops Henley|m|74|Wheezy, kind older baritone, slow and rambling, a newsstand owner.
+Kitty Shaw|f|19|Breathy, nervous young soprano, quick and scared, a witness on the run.
+Augustus Crane|m|63|Smooth, plummy baritone, slow and condescending, a crooked city councilman.
+Irene Dupont|f|33|Smoky, soft alto, unhurried and melancholy, a lounge chanteuse singing in the rain.
+Benny the Rat|m|41|Squeaky, wheedling tenor, rapid and nervous, an informant who sells anyone.
+Harriet Cole|f|55|Gruff, brisk alto, no-nonsense and fast, a diner waitress who's seen it all.
+Jimmy Callahan|m|28|Earnest, warm tenor, clean-cut and eager, a rookie reporter.
+Madame Odile|f|71|Throaty, slow older alto, theatrical and knowing, a fortune teller in a back room.
+Mack Riordan|m|50|Booming, rough baritone, loud and blustering, a dirty beat cop.
+Celeste Marlowe|f|29|Silky, slow mezzo, distant and sad, a heiress looking for her brother.
+Louie Fingers|m|66|Hoarse, conspiratorial baritone, whispery and quick, a safecracker.
+Dottie Pratt|f|24|Chirpy, rapid soprano, gum-snapping and nosy, a switchboard operator.
+Dr. Walter Sloane|m|59|Calm, clinical baritone, slow and cold, a coroner with dark humor.
+Margo Steele|f|42|Hard, dry alto, clipped and tough, a rival private detective.
+Shadow|n|36|Low, whispered androgynous voice, slow and eerie, a mysterious caller on the phone.
+Tommy Gallo|m|31|Cocky, smooth baritone, fast and charming, a mobster's driver.
+Edna Krupp|f|78|Shrill, sharp older voice, quick and gossipy, a landlady who listens at doors.
+Johnny Blue|m|38|Mellow, velvet tenor, slow and wistful, a trumpet player with debts.
+Grace Holloway|f|36|Warm, steady mezzo, kind and guarded, a nurse at the city hospital.
+Rocco Bruno|m|45|Heavy, slow bass, menacing and simple, a mob enforcer.
+Pearl Delacroix|f|62|Rich, honeyed older alto, slow and regal, the owner of the hottest club in town.
+Archie Finch|m|18|Cracking, breathless young voice, scared and quick, a bellhop who saw too much.
+Constance Ward|f|51|Prim, crisp soprano, cold and proper, a society matron.
+Nolan Grey|m|56|Weary, low baritone, slow and decent, an honest cop near retirement.
+Bettie Hayes|f|22|Bubbly, quick mezzo, flirty and bold, a chorus girl.
+Silvio Marchetti|m|69|Soft, raspy old voice, slow and paternal, a retired don.
+Lenore Black|f|45|Cool, controlled alto, slow and unreadable, a district attorney.
+Jack Morrow|m|34|Rough, quiet baritone, short and brooding, a boxer who threw a fight.
+Fay Delaney|f|27|Husky, soft young alto, sad and slow, a singer who wants out.
+Lefty O'Shea|m|60|Gravelly, cheerful baritone, quick and crafty, a bookie in a cigar shop.
+Hazel Morgan|f|33|Brisk, smart mezzo, quick and witty, a crime reporter.
+Ignatius Bell|m|72|Dusty, slow tenor, polite and strange, a pawnbroker who knows everyone.
+Mona Sterling|f|38|Purring, slow alto, seductive and cold, a gangster's moll.
+Ray Kowalski|m|29|Plain, earnest baritone, slow and honest, a cab driver.
+Opal Fitzgerald|f|59|Warm, raspy older voice, slow and motherly, a speakeasy owner.
+Danny Boyle|m|16|High, cheeky young voice, fast and streetwise, a shoeshine boy.
+Evelyn Cross|f|41|Crisp, cool soprano, measured and precise, a forensic chemist.
+Max Fischer|m|48|Precise, dry tenor, slow and calculating, a crooked accountant.
+Sister Mary Clare|f|66|Gentle, firm older voice, slow and kind, a nun at the mission.
+Vinnie Russo|m|37|Loud, fast baritone, hot-headed and rough, a dock union boss.
+Trixie Monroe|f|24|Sassy, nasal mezzo, rapid and sharp, a taxi dancer.
+Harold Pemberton|m|81|Thin, slow old voice, tired and refined, a fading film star.
+Rita Valdez|f|35|Fiery, quick alto, passionate and blunt, a club dancer.
+Dutch Van Horn|m|53|Cold, flat baritone, slow and threatening, a rival gang leader.
+Gwen Archer|f|30|Calm, clear mezzo, steady and smart, a lawyer's assistant.
+Murray Klein|m|64|Nasal, quick older tenor, fussy and kind, a tailor on Fifth Street.
+Ivy St. Clair|f|20|Soft, innocent soprano, slow and hopeful, a girl new to the city.
+Cornelius Shade|n|57|Hollow, slow androgynous voice, cold and formal, a funeral director.
+Joe Patrone|m|42|Smooth, friendly baritone, slow and easy, a bartender who listens.
+Marlene Voss|f|47|Throaty, slow alto, worldly and dry, a spy in a fur coat.
+Charlie Ng|m|26|Quick, clever tenor, upbeat and sharp, a photographer for the papers.
+Bea Whitaker|f|73|Crackling, sharp older voice, quick and funny, a retired burlesque star.
+Hank Doyle|m|39|Gruff, tired baritone, slow and sarcastic, a night watchman.
+Lila Carmichael|f|28|Bright, nervous soprano, quick and fragile, a socialite in trouble.
+Gus Petrakis|m|55|Warm, rough baritone, slow and generous, a diner owner.
+Simone Laurent|f|34|Low, sultry mezzo, slow and mysterious, a cabaret star.
+Eli Rosen|m|70|Soft, wise older baritone, slow and sad, a jeweler who was robbed.
+Penny Marsh|f|17|Squeaky, fast young voice, curious and brave, a paper girl.
+Lucius Vane|m|44|Silky, cold baritone, slow and elegant, a nightclub owner with secrets.
+Carlotta Ricci|f|61|Loud, warm older alto, quick and dramatic, a mob mother.
+Floyd Haskins|m|33|Dull, slow tenor, sleepy and slow-witted, a hired thug.
+Noelle Frost|f|39|Icy, slow soprano, controlled and sharp, a con woman.
+Moe Kaplan|m|58|Gravelly, quick baritone, funny and shrewd, a fight promoter.
+Whisper|n|27|Barely audible androgynous voice, slow and creepy, an anonymous tipster.
+Victor Lang|m|36|Charming, warm baritone, slow and confident, a hotel detective.
+Ella Brooks|f|52|Rich, soulful alto, slow and warm, a blues singer.
+Patrick Quinn|m|24|Bright, earnest tenor, quick and idealistic, a law student.
+Thelma Burke|f|69|Raspy, slow older alto, bitter and dry, a pawnshop widow.
+Big Al Fontaine|m|61|Huge, booming bass, slow and jovial, a club bouncer.
+Jean Mercer|f|25|Clear, quick mezzo, brave and smart, a girl detective in training.
+Osgood Brown|m|50|Florid, theatrical tenor, slow and grand, a playwright with a grudge.
+Rosalind Hart|f|44|Steady, warm mezzo, calm and caring, a social worker on the waterfront.
+Sid Feldman|m|47|Fast, raspy tenor, nervous and shady, a crooked lawyer.
+Mae Delacourt|f|32|Breathy, slow soprano, dreamy and lost, a starlet who vanished.
+Cliff Hughes|m|27|Rough, cocky young baritone, quick and reckless, a getaway driver.
+Agatha Pierce|f|83|Thin, sharp elderly voice, slow and observant, a witness from her window.
+Theo Marlowe|m|40|Low, dry baritone, slow and haunted, a detective who lost his partner.
+Olive Kendall|f|21|Quick, shy young mezzo, polite and nervous, a typist at the precinct.
+Rufus Kane|m|67|Rumbling, slow bass, intimidating and old, a newspaper baron.
+Dora Lemaire|f|46|Smooth, quiet alto, slow and sad, a pianist's widow.
+Mickey Shaw|m|21|Chatty, bright young tenor, quick and funny, a messenger boy.
+Ginger Malloy|f|37|Brassy, loud mezzo, fast and fun, a nightclub hostess.
+Leopold Sinclair|m|55|Refined, slow baritone, polite and threatening, an art dealer.
+Harper Quinlan|n|31|Cool, husky androgynous voice, slow and clever, a forger.
+Sam Delgado|m|43|Warm, quick baritone, loyal and street-smart, a detective's partner.
+Violet Hargrove|f|58|Prim, shrill older voice, quick and nosy, a church gossip.
+Billy Two-Hats|m|30|Fast, joking tenor, slippery and light, a card player.
+Josephine Clay|f|26|Low, warm young alto, calm and steady, a jazz singer starting out.
+Walter Briggs|m|75|Creaky, slow baritone, grumpy and kind, a retired cop.
+Lorraine Vance|f|43|Clipped, posh alto, cold and quick, a socialite blackmailer.
+Frankie Lucca|m|19|Hoarse, eager young voice, quick and boastful, a wannabe gangster.
+Bernadette Faye|f|35|Warm, husky mezzo, slow and sad, a woman who wants her husband back.
+Ezra Cobb|m|62|Dry, sarcastic baritone, slow and sly, a hotel night manager.
+Dahlia Brooks|f|29|Silky, quick soprano, playful and dangerous, a jewel thief.
+Wally Simmons|m|52|Bumbling, friendly baritone, slow and kind, a doorman.
+Sylvia Tate|f|64|Soft, refined older soprano, slow and ghostly, a retired opera singer.
+Raymond Cho|m|38|Calm, precise tenor, polite and careful, a coroner's assistant.
+Bonnie Blake|f|23|Fast, tough young voice, sarcastic and bold, a gang girl.
+Cyrus Thorne|m|71|Cold, papery old baritone, slow and cruel, a tycoon.
+Judith Rourke|f|50|Steady, low alto, calm and stern, a police matron.
+Marty Sharp|m|35|Quick, smooth tenor, salesy and fake, a used car dealer.
+Odessa Grant|f|40|Rich, velvety alto, slow and proud, a club owner's sister.
+Ambrose Kitt|m|46|Soft, nervous baritone, quiet and guilty, a bank clerk.
+Cleo Marchand|f|31|Smoky, slow mezzo, alluring and calm, a lounge singer with a gun in her purse.
+Teddy Flynn|m|14|High, squeaky young voice, quick and excited, a kid who found a clue.
+Winifred Ames|f|76|Gentle, slow elderly voice, sad and kind, a mother of a missing man.
+Spike Malone|m|32|Rough, short baritone, hostile and quick, a dockworker.
+Ramona Cruz|f|28|Warm, quick mezzo, lively and sharp, a cigarette factory girl.
+Barnaby Hale|m|57|Plummy, slow baritone, pompous and nervous, a museum curator.
+Fern Gallagher|f|45|Tired, flat alto, slow and dry, a night-shift operator.
+Lucky Lou|n|52|Raspy, quick androgynous voice, cheerful and shady, a numbers runner.
+Grant Holloway|m|41|Firm, clear baritone, steady and brave, a federal agent.
+Myrtle Pickens|f|70|Chirpy, quick older voice, scatterbrained and sweet, a flower seller.
+Otto Kranz|m|49|Heavy, slow baritone, cold and exact, a hired killer.
+Daisy Fairbanks|f|19|Light, giggly young soprano, naive and bright, an actress hopeful.
+Leon Baptiste|m|60|Deep, soulful bass, slow and warm, a blues club elder.
+Adele Moreau|f|37|Elegant, slow mezzo, mysterious and sad, a pianist's lover.
+Rocky Ferraro|m|26|Hoarse, cocky young voice, loud and tough, a prizefighter.
+Gertrude Holm|f|61|Stern, clipped older alto, quick and cold, a reform school warden.
+Felix Dunmore|m|34|Elegant, slow tenor, sly and amused, a con man in a tuxedo.
+Clara Bishop|f|48|Warm, honest mezzo, steady and kind, a widow running a boarding house.
+Abe Weissman|m|79|Soft, raspy elderly voice, slow and wise, a retired judge.
+Stella Ray|f|25|Bright, sassy mezzo, quick and fun, a radio show singer.
+Hugo Brandt|m|45|Clipped, cold baritone, slow and precise, a foreign agent who never blinks.
+Lottie Banks|f|33|Quick, practical alto, sharp and busy, a beauty parlor owner.
+Duke Harrington|m|54|Smooth, booming baritone, slow and charming, a bandleader.
+Ione Saxon|n|40|Cool, slow androgynous voice, calm and enigmatic, a nightclub magician.
+Paulie Esposito|m|22|Fast, eager young tenor, loud and silly, a delivery boy.
+Mildred Rhodes|f|56|Tired, warm older alto, slow and patient, a diner cook.
+Conrad Vail|m|63|Low, slow baritone, ominous and calm, a man in the back booth.
+Junie Carter|f|18|Breathless, quick young voice, excited and scared, a runaway.
+Sterling Hayes|m|39|Polished, quick baritone, slick and smiling, a press agent.
+Beatrice Okafor|f|42|Strong, warm alto, slow and dignified, a church choir leader.
+Aldo Capelli|m|68|Rough, slow older bass, gruff and proud, a fish market boss.
+Nina Petrova|f|30|Low, smoky alto, slow and guarded, a refugee bar singer.
+Ollie Tremaine|m|27|Nervous, quick tenor, apologetic and soft, a junior clerk who stole files.
+Rosemary Kline|f|39|Crisp, quick mezzo, clever and dry, a newspaper editor.
+Leroy Washington|m|50|Warm, rich baritone, slow and dignified, a jazz club doorman.
+Ada Whitcomb|f|85|Very slow, brittle elderly voice, refined and sad, a lady of a ruined family.
+Jake Mulligan|m|44|Rough, loud baritone, blunt and quick, a desk sergeant.
+Florence Dumas|f|27|Bright, quick soprano, cheerful and sharp, a hat check girl.
+Ivan Volkov|m|57|Deep, slow bass, cold and patient, a mysterious collector.
+Peggy Sue Marlow|f|22|Sweet, high soprano, quick and chatty, a soda fountain girl.
+Raven Cole|n|29|Smoky, low androgynous voice, slow and mysterious, a club card dealer.
+Desmond Pike|m|36|Weary, smooth baritone, slow and resigned, a crooked cop who wants out.
+Hattie Bloom|f|65|Loud, warm older voice, fast and funny, a cook at the mission.
+Rex Calloway Jr.|m|20|Entitled, nasal young tenor, quick and sneering, a rich man's son.
+Margaret Doyle|f|53|Quiet, sad alto, slow and careful, a cop's wife.
+Lionel Banks|m|73|Slow, scratchy old baritone, kind and tired, a jazz club janitor.
+Viola Sinclair|f|36|Elegant, silky mezzo, slow and cool, a gallery owner.
+Butch Kelly|m|47|Gruff, simple baritone, slow and loud, a bartender bouncer.
+Elsie Mae Turner|f|31|Warm, lilting mezzo, quick and kind, a nightclub coat girl.
+Morty Goldberg|m|58|Fast, nasal baritone, joking and shrewd, a theater agent.
+Cordelia Fane|f|49|Throaty, slow alto, haughty and bored, a rich divorcee.
+Kid Lightning|m|17|Fast, cocky young voice, boastful and loud, a teenage boxer.
+Prudence Webb|f|60|Precise, cold older soprano, slow and suspicious, a bank manager.
+Vince Delmar|m|33|Smooth, flirty baritone, slow and charming, a lounge lizard.
+Tallulah Grace|f|44|Rich, theatrical alto, loud and dramatic, a stage actress.
+Eugene Platt|m|51|Mousy, soft tenor, quiet and anxious, a museum guard.
+Iris Fontaine|f|24|Breathy, slow soprano, wistful and dreamy, a model.
+Mac McGee|m|66|Folksy, rough baritone, slow and stubborn, a tugboat captain.
+Loretta Vance|f|57|Smoky, low older alto, slow and cynical, a nightclub widow.
+Jasper Quill|n|48|Dry, precise androgynous voice, slow and knowing, a records clerk.
+Bobby Rinaldi|m|25|Quick, cheerful tenor, friendly and loud, a pizza shop boy.
+Henrietta Lowe|f|72|Brisk, sharp elderly voice, quick and fussy, a hat maker.
+Ned Calloway|m|38|Low, easygoing baritone, slow and dry, a jazz bassist.
+Sapphire Jones|f|35|Silky, rich alto, slow and sultry, a headlining singer.
+Augie Sparks|m|61|Raspy, quick older baritone, funny and shady, a racetrack tout.
+Marjorie Bell|f|29|Clear, quick soprano, smart and determined, a girl reporter.
+Mr. Nobody|n|50|Distorted, slow, deep androgynous voice, menacing and calm, a voice on a phone line.
+Dino Castellano|m|42|Velvety, slow baritone, romantic and sly, a crooner with mob ties.
+Patience Grey|f|67|Tired, kind older alto, slow and sad, a landlady.
+Gil Hardesty|m|30|Sharp, quick tenor, ambitious and smug, a young prosecutor.
+Lucille Ray|f|52|Warm, soulful alto, slow and strong, a gospel singer.
+Toby Wexler|m|15|Thin, quick young voice, nervous and honest, an orphan witness.
+Veronica Ashe|f|38|Cool, slow mezzo, distant and lovely, a mystery woman in a red dress.
+Bruno Kessler|m|55|Heavy, slow bass, sad and gentle, a mob muscle with a soft heart.
+Kay Holliday|f|26|Quick, warm mezzo, playful and bright, a photographer's assistant.
+Horace Wendt|m|80|Very slow, wheezing old voice, polite and frail, a retired butler.
+Sadie Cohen|f|47|Warm, loud alto, fast and funny, a deli owner.
+Roy Delano|m|35|Quiet, rough baritone, slow and sad, a war veteran detective.
+Bridget Malloy|f|20|Lilting, bright young voice, quick and cheerful, a maid in a mansion.
+Clifford Ames|m|64|Pompous, slow baritone, arrogant and loud, a police commissioner.
+Coco Laval|f|33|Playful, husky soprano, quick and flirty, a burlesque dancer.
+Arnold Price|m|29|Plain, clipped tenor, nervous and fast, a bank teller.
+Esther Grimes|f|79|Creaky, slow elderly voice, sharp and grumpy, a newsstand widow.
+Stan Kowal|m|48|Gruff, slow baritone, honest and dull, a steelworker.
+Mimi La Rue|f|27|Bright, giggly soprano, quick and silly, a showgirl.
+Lazarus Finch|m|53|Hollow, slow baritone, eerie and calm, a man everyone thought was dead.
+Anita Morales|f|41|Warm, steady alto, brave and calm, a union organizer.
+Cal Brody|m|23|Brash, quick tenor, cocky and funny, a bellboy with ambitions.
+Rosalie Dubois|f|63|Soft, slow older soprano, faded and kind, a former torch singer.
+Quincy Adams-Hart|n|35|Smooth, quick androgynous voice, charming and clever, a society columnist.
+Frank Mancuso|m|69|Gravelly, slow bass, nostalgic and warm, an old jazz drummer.
+Ethel Briggs|f|44|Flat, tired alto, slow and dry, a coroner's secretary.
+Gabe Rivers|m|31|Smooth, warm baritone, slow and kind, a piano player who knows the case.
+Lydia Thorne|f|23|Clear, quick young soprano, determined and brave, a cop's daughter.
+Silas Mortimer|m|76|Dry, slow older baritone, grim and patient, a gravedigger.
+Wendell Price|m|58|Soft, defeated baritone, slow and apologetic, a bookkeeper who cooked the books.
+Arlene Shaw|f|26|Fast, snappy mezzo, sarcastic and bright, a stenographer at the courthouse.
+Marco Bellini|m|34|Warm, sly baritone, slow and charming, a restaurant owner with a back room.
+Hope Delaney|f|19|Soft, trembling young voice, quiet and brave, a girl who saw the shooting.
+Ruben Ortiz|m|45|Steady, warm baritone, calm and loyal, a cab company dispatcher.
+Gloria Vane|f|55|Brittle, haughty older soprano, slow and cold, a society queen.
+Skip Doolan|m|22|Quick, cheeky young tenor, fast and funny, a racetrack stable boy.
+Winona Briggs|f|68|Gravelly, slow older alto, tough and dry, a bar owner on the docks.
+Basil Thorpe|m|50|Precise, nasal baritone, slow and sneering, a city hall clerk.
+Nadia Kovac|f|34|Low, husky alto, slow and wary, a seamstress hiding refugees.
+Earl Dawson|m|71|Slow, rough older baritone, tired and gentle, a night elevator operator.
+Ruthie Lang|f|23|Bright, chirpy soprano, quick and kind, a diner waitress on the late shift.
+Felix Kemper|m|39|Smooth, nervous tenor, quick and polite, a jeweler's assistant.
+Dolores Reyes|f|46|Warm, rich alto, slow and proud, a cantina singer.
+Hal Brennan|m|53|Gruff, quick baritone, sarcastic and loud, a newspaper night editor.
+Celia Mott|f|30|Silky, slow mezzo, secretive and calm, a hotel switchboard girl.
+Johnny Nails|m|28|Rough, quick tenor, mean and fast, a street punk.
+Marguerite Ash|f|62|Soft, refined older alto, slow and grieving, a widow at the funeral.
+Ozzie Klein|m|17|High, quick young voice, nervous and eager, a delivery boy for the mob.
+Lenora Price|f|38|Cool, quiet alto, slow and clever, a pianist who memorizes conversations.
+Walt Kincaid|m|65|Deep, weathered baritone, slow and sad, a retired detective who can't let go.
+Sunny Delmar|f|21|Bubbly, quick young mezzo, cheerful and naive, a nightclub flower girl.
+Cecil Barnes|m|44|Cultured, quiet tenor, polite and cold, a butler who knows the family's secrets.
+Irma Schultz|f|74|Crackly, slow elderly voice, grumpy and sharp, a ticket booth lady.
+Nate Rourke|m|31|Low, steady baritone, calm and guarded, an undercover cop.
+Bettina Cruz|f|43|Fast, fiery alto, loud and passionate, a laundry owner who fights back.
+Gordon Hale|m|60|Smooth, slow baritone, polished and cold, a bank president.
+Fanny Lark|f|29|Breathy, quick soprano, nervous and sweet, a singer's understudy.
+Stu Rinaldi|m|37|Fast, jokey tenor, cheerful and loud, a stage comedian.
+Maude Kessler|f|51|Plain, firm alto, slow and suspicious, a police dispatcher.
+Grey Sloane|n|33|Calm, smoky androgynous voice, slow and dry, a private investigator's rival.

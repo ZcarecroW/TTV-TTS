@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Fantasy Tavern
+desc: Innkeepers, bards, adventurers, wizards and odd regulars by the fire
+icon: BeerMug
+---
+Borin Ashbeard|m|63|Deep, barrel-chested bass with a gravelly rumble, slow and hearty, every sentence ending in a chuckle.
+Maribel Thistle|f|34|Bright, bustling alto of a tavern keeper, quick and warm, used to shouting over a crowd.
+Pip Underbough|m|19|Light, chirpy tenor, fast and eager, words tumbling over each other with excitement.
+Elowyn Starfrost|f|58|Silvery, airy soprano with a slow, floating cadence, serene and ancient-sounding.
+Gorrik Stonefist|m|45|Rough, booming baritone, short and blunt, a mercenary who hates small talk.
+Wren Fairweather|f|22|Clear, playful mezzo of a traveling bard, rhythmic and teasing, almost singing.
+Thaddeus Quillfeather|m|74|Reedy, absent-minded old tenor, rambling and slow, losing the thread mid-sentence.
+Brunhild Ironhide|f|47|Strong, resonant alto, loud and proud, laughs like a warhorn.
+Sorrel Mistvale|n|31|Soft, breathy androgynous voice, calm and mysterious, a wandering druid.
+Cedric Ravenmoor|m|38|Smooth, low baritone with a sly edge, quiet and confident, a rogue counting coins.
+Hilda Barleycorn|f|69|Warm, crackly older voice, slow and motherly, a cook who feeds everyone.
+Ansel Brightwater|m|26|Earnest, clear tenor of a young paladin, steady and polite, a little naive.
+Isolde Nightbloom|f|41|Velvety, hushed contralto, slow and enchanting, a witch who knows too much.
+Gruff Hollowmug|m|55|Husky, slurred baritone, slow and cheerful, three ales past sensible.
+Fenna Quickstep|f|17|Squeaky, rapid young voice, breathless and nosy, a serving girl full of gossip.
+Aldric Grimsbane|m|66|Cold, measured bass, slow and grave, a retired monster hunter.
+Tamsin Ember|f|29|Raspy, energetic mezzo, fiery and quick, a fire mage with a short temper.
+Bramble Hob|n|52|Creaky, nasal voice, quick and mischievous, giggling between words, a house spirit.
+Orsin Copperpot|m|42|Jovial, round baritone, bubbly and fast, a merchant selling anything.
+Liriel Moonwhisper|f|36|Gentle, lilting soprano, slow and dreamy, an elven healer.
+Dagna Flintbrow|f|61|Gruff, low alto, short and practical, a dwarven smith with no patience.
+Kestrel Vane|m|24|Sharp, quick tenor, cocky and restless, a young archer showing off.
+Wilhelmina Hearth|f|80|Thin, warm elderly voice, slow and sweet, telling the old legends.
+Torvald Frostmane|m|50|Huge, rolling bass, proud and slow, a northern raider telling sagas.
+Nimue Willowmere|f|27|Soft, clear mezzo, shy and careful, a young enchantress.
+Hamish Burrowdeep|m|71|Thick, burbling old baritone, slow and cozy, a gnome inventor.
+Selka Driftwood|f|44|Salty, husky alto, dry and amused, a sea captain on shore leave.
+Quill Mossmantle|n|19|Bright, curious androgynous young voice, quick and full of questions.
+Rodrik Hale|m|33|Warm, steady mid-baritone, honest and calm, a caravan guard.
+Agatha Grimble|f|77|Croaky, cackling old voice, quick and sly, a hedge witch.
+Barnaby Tallow|m|48|Oily, wheedling tenor, fast and flattering, a candle seller hiding something.
+Rosalind Vey|f|32|Crisp, noble mezzo, measured and proud, a knight errant.
+Garrick Thorne|m|58|Deep, dusty baritone, slow and haunted, an old soldier by the fire.
+Meadow Lark|f|20|Sing-song, bubbly soprano, cheerful and quick, a flower seller.
+Osric Blackbriar|m|39|Hissing, quiet baritone, slow and menacing, a dark warlock.
+Tilda Cobblestone|f|52|Brisk, sturdy alto, quick and bossy, the innkeeper's sister.
+Fennick Sparrow|m|16|Cracking, excitable young voice, fast and boastful, a stable boy.
+Ysolde Embervale|f|66|Rich, regal older alto, slow and commanding, an exiled queen.
+Ash Wanderwind|n|43|Low, husky androgynous voice, laconic and dry, a ranger who prefers the woods.
+Corwin Greaves|m|61|Hoarse, booming baritone, loud and theatrical, an old minstrel.
+Bryony Fernsby|f|25|Warm, bright mezzo, quick and kind, a herbalist's apprentice.
+Magnar Oakhelm|m|79|Ancient, rumbling bass, very slow, words like falling stones.
+Saffron Vale|f|38|Silky, low alto, teasing and slow, a fortune teller.
+Hob Nettle|m|30|Scratchy, quick tenor, nervous and twitchy, a thief on the run.
+Gwendolyn Brask|f|46|Loud, cheerful alto, hearty laugh, a farmer selling her wares.
+Thorne Duskwalker|m|35|Brooding, whispery baritone, slow and sparse, a vampire hunter.
+Elsbeth Pennywhistle|f|72|Tremulous, chirpy older soprano, quick and fussy, a retired governess.
+Runa Shieldsong|f|28|Clear, strong mezzo, bold and rhythmic, a shieldmaiden.
+Percival Dunmore|m|54|Pompous, plummy baritone, slow and self-important, a minor lord.
+Tibbs Mudfoot|n|24|Bright, rough voice, cheeky and rapid, a goblin courier.
+Morwen Ashgrove|f|57|Deep, smoky alto, slow and knowing, a retired assassin.
+Ewan Brightforge|m|21|Warm, eager baritone, a bit loud, an apprentice smith.
+Clementia Fogg|f|64|Breathy, wavering voice, slow and dreamy, a seer.
+Duncan Mallory|m|43|Gritty, low baritone, steady and dry, a bounty hunter.
+Pernilla Snow|f|19|Quiet, crystal-clear soprano, timid and polite, a novice priestess.
+Grimwald Hask|m|68|Snarling, raspy bass, short and grumpy, a troll bridge keeper.
+Lavender Sweetbriar|f|33|Honeyed, gentle mezzo, slow and soothing, a baker of magical pies.
+Jory Quickfingers|m|27|Smooth, fast-talking tenor, charming and slippery, a card sharp.
+Hesper Graycloak|n|60|Calm, resonant androgynous voice, slow and wise, a keeper of maps.
+Ulric Bloodaxe|m|40|Hoarse, roaring baritone, loud and wild, a berserker.
+Maelis Dawnsong|f|26|Radiant, soaring soprano, bright and hopeful, a temple singer.
+Ignatius Pumble|m|81|Wheezy, high old tenor, slow and pedantic, an alchemist.
+Ottilie Brack|f|49|Low, flat alto, dry and suspicious, a tax collector.
+Sten Hammerfall|m|56|Gravelly, warm bass, slow and kind, a dwarven miner.
+Faye Bramblewood|f|18|Breathy, quick young voice, giggly and wild, a forest sprite.
+Lucan Silverthorn|m|37|Silky, elegant baritone, slow and aloof, an elven ambassador.
+Greta Underhill|f|73|Warm, rattling older voice, slow and chatty, a halfling grandmother.
+Brannoc Fell|m|31|Low, quiet tenor, gloomy and sparse, a gravedigger.
+Iselda Crane|f|42|Precise, cool soprano, crisp and clever, a court mage.
+Wynn Hollowell|n|36|Mellow, soft voice, slow and gentle, a shepherd of strange beasts.
+Gideon Barrow|m|62|Rough, raspy baritone, slow and spooky, a ghost story teller.
+Pippa Larkspur|f|23|Peppy, quick mezzo, chatty and loud, a messenger on a pony.
+Oswin Tarn|m|47|Calm, deep baritone, steady and slow, a ferryman.
+Belladonna Rook|f|39|Sultry, low mezzo, slow and dangerous, a poisoner.
+Edric Wolfsbane|m|20|Hoarse, restless young baritone, intense and short, a cursed boy.
+Marta Kettleby|f|60|Bright, chatty older alto, quick and nosy, a laundry woman.
+Alaric Stormcrow|m|70|Booming, theatrical bass, slow and grand, a storm wizard.
+Linnea Frost|f|30|Cool, clear mezzo, calm and distant, an ice sorceress.
+Tobin Ale|m|35|Cheerful, bubbly tenor, fast and silly, a brewer tasting his work.
+Sigrun Halvard|f|54|Strong, steady alto, slow and stern, a clan elder.
+Nix Thimble|n|28|High, quick voice, impish and squeaky, a pixie trickster.
+Hector Grimm|m|44|Clipped, cold baritone, efficient and dry, a city watch captain.
+Dorothea Puddle|f|67|Warm, bubbly older soprano, quick and giggly, a pond witch.
+Callum Reed|m|23|Gentle, soft tenor, shy and slow, a young poet.
+Ingrid Vossberg|f|35|Gruff, husky alto, short and tough, a caravan leader.
+Mortimer Quell|m|75|Dry, whispering old baritone, slow and creepy, a crypt keeper.
+Evangeline Thorn|f|21|Sweet, clear soprano, earnest and brave, a runaway princess.
+Bartholomew Crust|m|52|Thick, floury baritone, slow and jolly, a baker.
+Aurelie Swift|f|40|Quick, sharp mezzo, witty and fast, a spy in a tavern apron.
+Grub Ironpot|m|38|Rough, gurgling tenor, quick and greedy, an orc cook.
+Celandine Moss|f|85|Very old, soft and thin voice, slow and peaceful, a forest hermit.
+Riven Shadowmere|n|27|Cold, low androgynous voice, quiet and clipped, an assassin for hire.
+Fergus Beck|m|65|Warm, burly baritone, slow and folksy, a retired adventurer.
+Odette Plume|f|31|Theatrical, bright soprano, dramatic and quick, a traveling actress.
+Wendell Gray|m|58|Soft, kind baritone, slow and patient, a librarian of spells.
+Rhosyn Hale|f|16|Bright, quick young voice, daring and loud, a squire.
+Bastian Krell|m|46|Slick, oily baritone, smooth and slow, a smuggler of potions.
+Petronella Duck|f|62|High, quacky older voice, quick and comic, a poultry farmer.
+Leif Ravensong|m|29|Warm, melodic tenor, relaxed and dreamy, a lute player.
+Imelda Crow|f|50|Raspy, low alto, slow and ominous, a raven keeper.
+Garth Tollbridge|m|41|Bored, flat baritone, slow and dull, a gatekeeper.
+Sunniva Brightmoor|f|24|Warm, sunny mezzo, cheerful and lively, a farm girl adventurer.
+Ezekiel Dross|m|83|Cracked, whistling old voice, slow and confused, a forgotten king.
+Talwyn Ashe|n|48|Deep, smoky androgynous voice, slow and calm, a fire priest.
+Rowena Gale|f|43|Breezy, quick mezzo, adventurous and loud, a sky sailor.
+Milo Pickering|m|14|Squeaky, high young voice, nervous and polite, a kitchen boy.
+Agnes Hollyhock|f|78|Sweet, wobbly older voice, slow and loving, a village midwife.
+Viktor Grau|m|53|Low, controlled baritone, stern and slow, a mercenary captain.
+Calla Rainfeather|f|28|Soft, flowing soprano, calm and lyrical, a water nymph.
+Horace Bumble|m|60|Bumbling, fuzzy baritone, slow and kind, a beekeeper.
+Freya Coldbrook|f|37|Cool, firm alto, efficient and dry, a scout.
+Davin Crowley|m|25|Raspy, cocky tenor, quick and loud, a pit fighter.
+Mirabel Lantern|f|55|Warm, glowing alto, slow and comforting, a lamplighter.
+Silas Wick|m|34|Smoky, low baritone, slow and sly, a candle mage.
+Oona Fenwick|f|20|Lilting, playful voice, quick and mischievous, a fae changeling.
+Balthazar Grimm|m|76|Grand, sonorous old bass, slow and commanding, an archmage.
+Kit Hollis|n|21|Quick, rough androgynous voice, streetwise and sharp, a pickpocket.
+Henrietta Slate|f|48|Precise, prim alto, quick and judgmental, a guild accountant.
+Bjorn Alesson|m|36|Loud, rumbling baritone, happy and singing, a drinking song leader.
+Elara Silverbrook|f|33|Clear, warm mezzo, gentle and wise, a moon priestess.
+Cuthbert Yarrow|m|67|Nasal, high old tenor, quick and fussy, a herbalist.
+Mabyn Tide|f|26|Husky, low young voice, slow and moody, a sea witch's daughter.
+Osgood Fairbairn|m|44|Mellow, friendly baritone, relaxed and kind, a stable master.
+Theodora Vex|f|59|Cutting, crisp alto, slow and cold, a sorceress queen.
+Ralf Turnip|m|32|Simple, cheerful tenor, slow and good-natured, a turnip farmer.
+Lysandra Gold|f|45|Rich, honeyed mezzo, slow and persuasive, a merchant princess.
+Urthos Deepdelver|m|90|Ancient, very slow rumbling bass, deep as a mountain.
+Rue Bracken|f|17|Sharp, quick young voice, defiant and wild, a wolf girl.
+Emeric Fawkes|m|50|Booming, dramatic baritone, loud and grand, a fireworks wizard.
+Sable Thornwood|n|39|Smooth, cool androgynous voice, slow and flirtatious, a gambler.
+Gilda Pewter|f|63|Clanking, loud older alto, cheerful and fast, a tavern dishwasher.
+Ronan Ashford|m|28|Steady, warm baritone, earnest and calm, a young ranger.
+Primrose Tuck|f|35|Sweet, soft mezzo, slow and kind, a tea mistress.
+Haldor Rune|m|57|Low, chanting bass, slow and rhythmic, a rune carver.
+Vesper Nightingale|f|27|Velvet, smoky soprano, slow and melancholy, a lounge bard.
+Ambrose Pike|m|71|Crackling, cheerful old baritone, slow and jolly, a fisherman.
+Juniper Ash|f|41|Earthy, warm alto, calm and steady, a forest warden.
+Fitz Whistler|m|22|Breezy, quick tenor, whistling between words, a courier.
+Hazel Cogsworth|f|52|Brisk, clicky alto, quick and clever, a clockwork tinkerer.
+Grimbald Stout|m|45|Thick, slurring bass, slow and grumpy, a drunk dwarf.
+Ilse Brightwell|f|69|Clear, kind older soprano, slow and gentle, a well keeper.
+Peregrine Holt|n|56|Light, airy androgynous voice, slow and wistful, a falconer.
+Daxton Crane|m|33|Charming, smooth tenor, flirty and quick, a dashing duelist.
+Winifred Gorse|f|81|Brittle, sharp old voice, quick and grumbling, a goat herder.
+Caspar Vandermeer|m|39|Polished, cultured baritone, slow and precise, a scholar.
+Lottie Brambles|f|15|High, bubbly young voice, rapid and giggly, a farm kid.
+Thrain Coalbeard|m|64|Smoky, gravel bass, slow and proud, a forge master.
+Eira Snowdrift|f|30|Quiet, cool soprano, slow and calm, a mountain guide.
+Lemuel Twigg|m|51|Thin, reedy tenor, slow and anxious, a scribe.
+Bronwen Hale|f|44|Lilting, warm mezzo, quick and friendly, a weaver.
+Ozzy Fumble|m|26|Clumsy, cheerful tenor, quick and apologetic, a wizard's apprentice.
+Gertrude Stonebridge|f|73|Firm, gravelly older alto, slow and strict, a matron.
+Fable Thistlewick|n|33|Warm, storytelling androgynous voice, rhythmic and calm, a chronicler.
+Magnus Holloway|m|48|Rich, polished baritone, smooth and slow, an inn owner.
+Anwen Brook|f|22|Soft, sweet mezzo, quiet and dreamy, a stargazer.
+Rufus Grindle|m|79|Croaky, rasping old voice, slow and grumpy, a miller.
+Delphine Ashcroft|f|36|Elegant, cool alto, slow and clever, a noble detective.
+Brick Haldane|m|29|Heavy, slow baritone, simple and loyal, a strongman.
+Mildred Toadflax|f|66|Gurgling, comic older voice, quick and silly, a potion seller.
+Lorcan Mist|m|42|Soft, misty baritone, slow and haunting, a ghost of the inn.
+Tessaly Wren|f|19|Bright, quick voice, cheeky and smart, a thief's apprentice.
+Ivar Longstride|m|58|Deep, calm bass, slow and measured, a giant's interpreter.
+Clover Pudding|n|46|Round, jolly androgynous voice, bubbly and warm, a halfling cook.
+Augustin Wilde|m|35|Exuberant, loud tenor, dramatic and fast, a mad inventor.
+Rosamund Pell|f|57|Warm, theatrical older soprano, slow and grand, a retired opera star.
+Esk Darkwater|m|27|Low, dripping baritone, slow and cold, a swamp hunter.
+Matilda Crumb|f|84|Tiny, soft and wavering voice, slow and kind, a tavern's oldest regular.
+Galen Sorrow|m|40|Melancholic, soft baritone, slow and poetic, a widowed knight.
+Kaia Stormborn|f|25|Fierce, loud mezzo, quick and bold, a storm caller.
+Ebenezer Tightfist|m|69|Pinched, nasal old tenor, slow and stingy, a moneylender.
+Marigold Finch|f|31|Chirpy, quick soprano, bird-like and cheerful, a bird tamer.
+Doran Steelhand|m|52|Metallic, firm baritone, short and steady, a veteran with an iron arm.
+Lyra Featherlight|f|18|Airy, dreamy young voice, soft and slow, a cloud dancer.
+Hollis Graves|n|64|Dry, papery androgynous voice, slow and dusty, an archivist of the dead.
+Bram Hollowtree|m|31|Earthy, warm baritone, slow and easy, a woodcutter.
+Seraphine Lux|f|47|Radiant, warm mezzo, slow and bright, a sun priestess.
+Pomfrey Dibble|m|73|Wobbly, high old voice, quick and anxious, a retired jester.
+Ottoline Vane|f|39|Sharp, quick alto, sarcastic and dry, a tavern bouncer.
+Erwin Sandglass|m|86|Very slow, papery old voice, calm and timeless, a keeper of hours.
+Gisela Brandt|f|29|Strong, loud young alto, cheerful and blunt, a mead brewer.
+Sebastian Lute|m|24|Smooth, romantic tenor, slow and longing, a lovesick bard.
+Honora Thrush|f|62|Clear, singing older soprano, slow and sweet, a choir mother.
+Alastair Grey|m|46|Measured, warm baritone, wise and kind, a guild master.
+Wilda Fen|f|53|Low, earthy alto, slow and secretive, a bog witch.
+Tamberlane Oake|m|38|Proud, resonant baritone, slow and noble, a fallen prince.
+Mossy Pebble|n|15|Tiny, squeaky voice, quick and curious, a young rock spirit.
+Cordelia Ashby|f|42|Firm, motherly mezzo, steady and warm, a healer of the guard.
+Roderick Bale|m|59|Thick, gravelly baritone, slow and stubborn, a farmer who saw a dragon.
+Evie Merriweather|f|23|Laughing, lively mezzo, quick and warm, a dancing girl.
+Godfrey Pellam|m|65|Booming, slow bass, kindly and grand, a town crier.
+Nell Brightpenny|f|47|Cheery, quick alto, practical and busy, a shopkeeper.
+Lark Halloway|m|18|Light, airy tenor, playful and fast, a young acrobat.
+Ysabeau Moreau|f|51|Silky, rich alto, slow and worldly, a traveling courtesan.
+Benedikt Haus|m|43|Plain, warm baritone, steady and calm, a carpenter.
+Philippa Quail|f|76|Fluttery, high older voice, quick and timid, a birdwatcher.
+Drogo Thatch|m|34|Rustic, slow tenor, sleepy and kind, a thatcher.
+Isadora Mirrin|f|28|Glassy, clear soprano, cool and precise, a mirror mage.
+Thane Cormac|m|60|Commanding, deep baritone, slow and firm, a highland chief.
+Sage Greenleaf|n|58|Calm, breathy androgynous voice, slow and patient, an old treant's voice.
+Matthias Corn|m|21|Earnest, plain young tenor, slow and honest, a farm hand.
+Adelaide Frost|f|45|Icy, crisp mezzo, slow and controlled, a mountain baroness.
+Cornelius Dapple|m|54|Polite, plummy tenor, quick and fussy, a tailor.
+Ilona Vasz|f|34|Dark, husky alto, slow and mysterious, a traveling mystic.
+Torin Ashbrook|m|26|Bright, steady baritone, hopeful and clear, a new guard recruit.
+Beatrix Tumble|f|58|Booming, jolly older alto, loud and fast, a circus ringmaster.
+Rook Blackfeather|m|49|Raspy, low baritone, dry and clever, a raven-masked spy.
+Caraway Mint|f|20|Fresh, quick soprano, cheerful and bubbly, a spice seller.
+Osbert Dimble|m|82|Thin, sleepy old voice, very slow, dozing between words.
+Valka Brightspear|f|38|Commanding, strong alto, loud and proud, a cavalry captain.
+Florin Gale|n|30|Light, musical androgynous voice, quick and bright, a wind spirit.
+Edmund Hearthstone|m|57|Warm, crackling baritone, slow and cozy, the fireplace storyteller.
+Tansy Brook|f|26|Soft, dreamy mezzo, slow and kind, a river guide.
+Garrow Pike|m|37|Hard, clipped baritone, short and suspicious, a toll guard.
+Leontyne Bell|f|70|Rich, ringing older soprano, slow and dignified, a bell ringer.
+Quentin Dross|m|30|Sneering, nasal tenor, quick and arrogant, a noble's son.
+Ophira Sand|f|41|Warm, dusty alto, slow and wise, a desert caravan mistress.
+Hagen Stormhold|m|72|Deep, weathered bass, slow and stern, a retired general.
+Lumi Ashlight|f|19|Bright, glowing young soprano, quick and curious, a light mage.
+Barty Plonk|m|44|Goofy, bouncy baritone, fast and silly, a juggler.
+Rhiannon Teague|f|56|Lilting, warm older alto, slow and musical, a harpist.
+Corvus Hale|m|32|Cool, quiet baritone, slow and watchful, a crow tamer.
+Aster Wynd|n|25|Clear, gentle androgynous voice, calm and kind, a young cleric.
+Bess Marrow|f|64|Rough, hearty older voice, loud and blunt, a butcher.
+Erasmus Volt|m|50|Crackling, energetic baritone, fast and jittery, a lightning tinkerer.
+Gwyneth Oak|f|33|Steady, warm alto, calm and grounded, a ranger captain.
+Fennimore Ruck|m|23|Brash, loud tenor, quick and reckless, a dragon chaser.
+Delia Wicks|f|49|Smoky, slow alto, wry and patient, a candlemaker.
+Hargrim Boulder|m|77|Rumbling, very deep bass, slow and gentle, a stone giant.
+Nessa Quickbrook|f|30|Fast, bubbly mezzo, chatty and warm, a river ferry girl.
+Wystan Mallow|m|41|Soft, round baritone, slow and sleepy, a night porter who yawns mid-sentence.
+Elodie Brambleton|f|24|Crisp, quick mezzo, bookish and earnest, a map maker's apprentice.
+Grendel Oakshield|m|68|Gruff, booming old bass, short and stubborn, a dwarf who won't stop arguing.
+Mirela Dusk|f|37|Hushed, velvety alto, slow and secretive, a dealer of forbidden scrolls.
+Tam Pockets|m|17|Cracking, fast young voice, sly and giggly, a boy pickpocket.
+Philomena Wrenwood|f|61|Kindly, warbling older soprano, slow and gentle, a songbird keeper.
+Cador Brightshield|m|33|Bold, clear baritone, heroic and loud, a knight telling his own legend.
+Saoirse Kettlewell|f|50|Warm, lilting alto, quick and witty, the tavern's best storyteller.
+Jasper Flint|m|56|Dry, crackling baritone, slow and sardonic, a retired treasure hunter.
+Wilma Hearthrug|f|19|Shy, warm young voice, slow and sweet, the innkeeper's daughter.
+Moth Lantern|n|44|Soft, flickering androgynous voice, slow and dreamy, a night spirit drawn to the fire.

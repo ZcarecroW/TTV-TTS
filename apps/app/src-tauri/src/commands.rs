@@ -161,6 +161,24 @@ pub async fn proxy_vcp_action(state: St<'_>, action: String) -> Result<String, S
     if ack.ok { Ok(ack.message.unwrap_or_default()) } else { Err(ack.message.unwrap_or_default()) }
 }
 
+/// Updates TTV-TTS Proxy from here: "check" looks for a newer version,
+/// "install" installs it now (the proxy restarts, ~10 s).
+#[tauri::command]
+pub async fn proxy_update(state: St<'_>, action: String) -> Result<Option<ttv_link::UpdateState>, String> {
+    if !matches!(state.cfg.read().host, HostConfig::Proxy { .. }) {
+        return Err("Only a TTV-TTS Proxy can be updated from here.".into());
+    }
+    let vcp = state.vcp().ok_or("no voice host")?;
+    match action.as_str() {
+        "check" => vcp.post("/ttv/v1/update/check", &serde_json::json!({}), Duration::from_secs(60)).await.map(Some).map_err(|e| e.to_string()),
+        "install" => {
+            let _: ttv_link::Ack = vcp.post("/ttv/v1/update/install", &serde_json::json!({}), Duration::from_secs(30)).await.map_err(|e| e.to_string())?;
+            Ok(None)
+        }
+        _ => Err(format!("unknown action {action}")),
+    }
+}
+
 /// Wake-on-LAN for the proxy PC (MAC learned from the proxy's status).
 #[tauri::command]
 pub async fn wake_host(state: St<'_>) -> Result<(), String> {

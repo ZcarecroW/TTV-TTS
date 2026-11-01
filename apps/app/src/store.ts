@@ -31,6 +31,8 @@ export const store = reactive({
   presets: [] as PresetView[],
   engine: null as EngineStatus | null,
   library: null as LibraryNotice | null,
+  /** Why jobs can't be loaded (e.g. a proxy too old for presets). */
+  engineError: "" as string,
   view: "live" as View,
   toast: null as { kind: "ok" | "err" | "info"; text: string } | null,
   busy: "" as string,
@@ -83,8 +85,10 @@ export async function loadPresets() {
 export async function loadEngine() {
   try {
     store.engine = await presets.engine();
-  } catch {
+    store.engineError = "";
+  } catch (e) {
     store.engine = null;
+    store.engineError = errText(e);
   }
 }
 

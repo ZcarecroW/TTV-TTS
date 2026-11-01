@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Starship Crew
+desc: Captains, pilots, engineers, ship computers and aliens of a far-future crew
+icon: Rocket
+---
+Captain Idris Vale|m|52|Calm, resonant baritone with absolute authority, measured pace, every order quiet and final.
+Lieutenant Mara Quell|f|31|Crisp, fast alto of a helm officer, clipped and focused, reading out vectors under pressure.
+Ensign Toby Reyes|m|22|Bright, eager tenor, quick and slightly nervous, always reporting a little too loudly.
+Dr. Hanne Solberg|f|58|Warm, precise older alto, slow and reassuring, a ship's doctor who has seen everything.
+AURA|n|40|Smooth, perfectly even synthetic voice, gentle and polite, a ship computer with flawless diction.|fx=robot
+Chief Rourke Calder|m|47|Gravelly, loud baritone of an engineer, fast and grumbling, shouting over machinery.
+Nova Kim|f|24|Light, cheerful soprano, quick and playful, a hotshot shuttle pilot.
+Admiral Teodor Vance|m|67|Deep, slow bass, grave and deliberate, a fleet admiral weighing every word.
+Sela Okonkwo|f|39|Rich, steady mezzo, calm and diplomatic, a first-contact specialist.
+Zix Ral|n|30|Clicking, high androgynous voice, rapid and curious, an alien science officer.
+Commander Lena Hart|f|44|Firm, resonant alto, controlled and brisk, a first officer who runs the ship.
+Kade Orlov|m|28|Low, relaxed baritone, drawling and cocky, a smuggler turned navigator.
+Grandmother Esi|f|79|Thin, wise elderly voice, slow and gentle, the eldest of a generation ship.
+Petty Officer Dex Malone|m|35|Gruff, quick baritone, sarcastic and dry, a cargo chief who hates paperwork.
+Iris Navarro|f|19|Soft, clear young voice, shy and precise, a cadet genius in cryptography.
+Professor Anselm Rook|m|71|Reedy, enthusiastic older tenor, rapid and rambling, a xenobiologist.
+Talia Brand|f|33|Husky, intense alto, short and fierce, a marine squad leader.
+Orrin Vask|m|56|Cold, metallic baritone, slow and menacing, an enemy fleet commander on the viewscreen.
+Juno Pryce|f|27|Breezy, upbeat mezzo, fast and witty, a communications officer.
+Unit 7|n|12|Small, bright synthetic voice, chirpy and literal, a maintenance robot.|fx=robot
+Marcus Thale|m|42|Warm, steady baritone, calm under fire, a tactical officer.
+Dr. Yuki Arden|f|36|Cool, analytical soprano, quick and exact, a quantum physicist.
+Bosun Grigor Haas|m|63|Booming, rough bass, loud and hearty, a deck master with a laugh like an engine.
+Lyra Kestrel|f|21|Breathless, excited voice, fast and bold, a rookie fighter pilot.
+Elder Vohm|n|88|Ancient, vibrating low voice, very slow, an alien ambassador speaking with care.
+Silas Crane|m|30|Smooth, quiet tenor, polite and secretive, an intelligence officer.
+Cora Lindqvist|f|50|Brisk, motherly alto, quick and organized, the quartermaster.
+Benji Takoda|m|17|Cracking, chatty young voice, quick and curious, a stowaway kid.
+Morgan Vey|f|46|Low, smoky alto, slow and wry, a veteran mercenary pilot.
+Hal Brennan|m|59|Folksy, warm baritone, slow and kind, the ship's cook.
+Astra Delacroix|f|29|Elegant, clear mezzo, measured and confident, a diplomatic attaché.
+Rygel Tarn|m|38|Deep, rolling baritone with a hum, slow and patient, an alien engineer.
+Nadia Osei|f|61|Steady, deep older alto, unhurried and wise, a retired captain as advisor.
+Quinn Halcyon|n|26|Calm, airy androgynous voice, gentle and precise, a sensor technician.
+Viktor Krane|m|45|Hard, clipped baritone, cold and efficient, a security chief.
+Elsie Marsh|f|23|Warm, giggly mezzo, chatty and bright, a botanist in the hydroponics bay.
+Captain Osric Bell|m|74|Raspy, commanding old baritone, slow and proud, a legendary captain out of retirement.
+Fenna Rask|f|35|Sharp, sarcastic alto, quick and dry, a hacker in the engine room.
+Tomas Ivers|m|25|Soft, earnest tenor, careful and kind, a junior medic.
+Vela Sorn|f|54|Haunting, low soprano, slow and dreamy, an alien telepath.
+ORACLE|n|50|Deep, resonant synthetic voice, slow and grand, an ancient alien AI.|fx=robot
+Reza Farahani|m|33|Warm, quick baritone, upbeat and clever, a navigator who loves stars.
+Brigid Shaw|f|42|Strong, warm alto with a hint of grit, firm and kind, the chief engineer's deputy.
+Jaxon Pike|m|20|Brash, loud young tenor, reckless and funny, a cadet pilot.
+Marguerite Solis|f|69|Gentle, precise older soprano, slow and caring, the ship's counselor.
+Garrus Thane|m|51|Gritty, low baritone, slow and loyal, a bodyguard of the captain.
+Kira Moss|f|28|Cool, steady mezzo, calm and focused, a weapons officer.
+Pell Abernath|m|80|Wavering, papery old voice, slow and curious, a stowaway historian.
+Saffi Lune|f|18|Bright, quick young soprano, cheerful and bold, a communications trainee.
+Drax Volkov|m|44|Booming, rough bass, angry and loud, a pirate warlord.
+Halley Brooks|f|37|Warm, clear alto, cheerful and steady, a ship's teacher for the crew's kids.
+Nix-4|n|20|Glitchy, fast synthetic voice, nervous and over-polite, an assistant drone.|fx=robot
+Arjun Mehta|m|40|Calm, kind baritone, measured and wise, a ship's chaplain.
+Dagny Holm|f|57|Gruff, quick older alto, short and blunt, a mining station chief.
+Corin Wylde|m|27|Smooth, playful tenor, charming and fast, a con artist passenger.
+Imara Volkonsky|f|48|Silky, cold alto, slow and calculating, a corporate inspector.
+Felix Andersen|m|15|High, curious young voice, excited and quick, a junior science cadet.
+Selene Marlowe|f|32|Velvety, low mezzo, unhurried and alluring, a lounge singer on a space liner.
+Thorvald Ek|m|62|Deep, weathered bass, slow and steady, an old cargo hauler.
+Ilse Kaur|f|26|Precise, rapid soprano, focused and serious, a medical researcher.
+Bram Coldwater|m|36|Hoarse, quick baritone, tense and alert, a scanner operator in a crisis.
+Ottavia Rhee|f|73|Firm, clear older voice, slow and dignified, a planetary governor.
+Sol Indigo|n|35|Warm, musical androgynous voice, slow and serene, an alien poet.
+Lucan Draeger|m|49|Velvet-dark baritone, slow and dangerous, a rogue admiral.
+Mina Petrakis|f|30|Bright, warm mezzo, quick and friendly, a station barkeeper.
+Calvin Ostrander|m|55|Dry, nasal tenor, slow and pedantic, a fleet bureaucrat.
+Rhea Valance|f|22|Breathy, nervous young voice, quick and hopeful, a refugee on board.
+Gunther Brask|m|66|Booming, cheerful bass, loud and jolly, a retired marine sergeant.
+Elara Voss|f|41|Commanding, clear alto, quick and decisive, captain of a rival ship.
+Ty Okafor|m|24|Laid-back, smooth baritone, slow and funny, a mechanic who naps in the vents.
+Zara Quill|f|34|Sharp, rapid mezzo, sarcastic and clever, an investigative journalist on board.
+Kepler|n|60|Gentle, slightly grainy synthetic voice, slow and kind, an old ship AI near retirement.|fx=robot
+Wendell Graves|m|70|Grumbling, raspy older baritone, slow and stubborn, a lighthouse station keeper.
+Asha Raman|f|29|Calm, warm soprano, measured and focused, a navigator during a jump.
+Leon Durand|m|31|Bright, theatrical tenor, quick and dramatic, an entertainment officer.
+Ingrid Maelstrom|f|52|Deep, stormy alto, slow and fierce, a battlecruiser captain.
+Ravi Kale|m|19|Soft, earnest young tenor, careful and polite, an engine room apprentice.
+Bettina Stroud|f|64|Brisk, cheery older voice, quick and fussy, the supply officer.
+Draven Kol|m|39|Low, hissing baritone, slow and threatening, an alien hunter.
+Opal Sinclair|f|25|Sweet, airy mezzo, dreamy and slow, a stargazing artist.
+Hector Vargas|m|47|Warm, booming baritone, energetic and proud, a fleet hero giving speeches.
+Nyx Arclight|n|23|Cool, quick androgynous voice, sly and confident, a black-market hacker.
+Marisol Teague|f|45|Steady, warm alto, calm and practical, a rescue coordinator.
+Augustin Fell|m|83|Very slow, cracked old voice, wistful and kind, a survivor of the first colony.
+Liv Andersson|f|20|Bright, bold young voice, quick and fearless, a test pilot.
+Jonah Merrick|m|34|Plain, steady baritone, honest and calm, a hydroponics farmer.
+Dr. Celeste Imogen|f|60|Cool, precise older soprano, slow and exact, a lead geneticist.
+Rusty|m|45|Rumbling, mechanical old-robot voice, slow and good-natured, a cargo loader bot.|fx=robot
+Sasha Volk|f|27|Husky, quick alto, tough and dry, a boarding party specialist.
+Emil Strand|m|58|Soft, careful baritone, slow and thoughtful, an archivist of star charts.
+Pria Solano|f|33|Lively, warm mezzo, upbeat and quick, a medic who jokes under pressure.
+Kaito Brenner|m|26|Precise, calm tenor, focused and quiet, a sniper on an away team.
+Delphine Ashmore|f|76|Frail, clear older soprano, slow and noble, a dying empress.
+Vector|n|18|Fast, bright synthetic voice, eager and literal, a newly booted AI.|fx=robot
+Malik Stone|m|50|Deep, warm baritone, slow and reassuring, a colony leader.
+Ronja Hale|f|38|Strong, clear alto, quick and decisive, an evacuation officer.
+Ezra Coil|m|29|Nasal, rapid tenor, nervous and techy, a sensor nerd.
+Agatha Strand|f|66|Dry, sharp older alto, slow and suspicious, a customs inspector.
+Bastian Rook|m|43|Velvet, slow baritone, polished and cold, a diplomat from a hostile empire.
+Tess Morrow|f|23|Raspy, quick young voice, rebellious and loud, a mechanic's daughter.
+Gideon Ash|m|61|Hoarse, slow baritone, weary and kind, a burned-out war veteran.
+Lumen|n|45|Soft, glowing synthetic voice, slow and soothing, a medical AI.|fx=robot
+Valentina Cruz|f|31|Passionate, quick mezzo, fiery and warm, a resistance leader.
+Hugo Lindgren|m|37|Calm, matter-of-fact baritone, slow and dry, a station traffic controller.
+Freya Solace|f|19|Gentle, quiet young voice, slow and hopeful, a colony kid seeing space for the first time.
+Barnaby Kwan|m|54|Chatty, bubbly baritone, quick and cheerful, a ship's tailor.
+Ophelia Draxis|f|47|Icy, crisp soprano, slow and imperious, a queen of a pirate fleet.
+Tycho Mbeki|m|28|Smooth, warm tenor, relaxed and curious, an astronomer.
+Rosalind Kerr|f|53|Brisk, commanding alto, quick and sharp, a carrier flight boss.
+Echo Starling|n|29|Light, echoing androgynous voice, slow and mysterious, a being from another dimension.
+Conrad Sykes|m|65|Gravelly, dry baritone, slow and ironic, an old smuggler captain.
+Nell Corrigan|f|36|Friendly, quick mezzo, practical and warm, a shuttle bay chief.
+Aldous Pryor|m|77|Thin, precise old tenor, slow and pedantic, a fleet historian.
+Mika Sato|f|24|Bright, rapid soprano, excited and clever, a drone pilot.
+Stellan Rourke|m|41|Charming, smooth baritone, slow and confident, a space casino owner.
+Hilde Brandvold|f|62|Strong, slow older alto, steady and stern, a mining guild elder.
+Patch|m|32|Scratchy, quick voice, cheeky and street-smart, a station scavenger.
+Seraphine Okoro|f|43|Rich, warm alto, slow and graceful, an alien queen's interpreter.
+Lex Aurora|n|38|Neutral, crisp androgynous voice, quick and businesslike, a fleet logistics AI.
+Damon Hale|m|21|Earnest, clear young baritone, brave and polite, a cadet on his first mission.
+Greta Voss|f|50|Gruff, rapid alto, sarcastic and loud, a dockmaster.
+Isaac Thornbury|m|69|Soft, deliberate older baritone, slow and kind, a retired fleet doctor.
+Leda Marsh|f|28|Cool, quiet mezzo, watchful and dry, a stealth pilot.
+Orion Blake|m|46|Deep, heroic baritone, bold and resonant, a famous explorer.
+Wilma Tran|f|74|Chirpy, quick older voice, nosy and kind, the station's oldest resident.
+Ferris Kade|m|35|Quick, wiry tenor, jittery and smart, a demolition expert.
+Anya Belova|f|40|Low, measured alto, calm and controlled, a negotiator with aliens.
+Glim|n|9|Tiny, chiming alien voice, bright and curious, a creature that learned to talk.
+Mateo Silva|m|30|Warm, lively tenor, friendly and fast, a cargo pilot singing to himself.
+Eira Lindholm|f|57|Clear, cool older soprano, slow and serene, a deep-space meditation guide.
+Rex Hammond|m|52|Booming, brash baritone, loud and boastful, a fleet recruiter.
+Pippa Lark|f|16|Squeaky, fast young voice, giggly and bold, a cabin girl.
+Sergei Antonov|m|60|Deep, slow bass, steady and grave, an old reactor engineer.
+Mireille Faure|f|35|Elegant, soft mezzo, slow and poised, a starliner hostess.
+Dalton Briggs|m|38|Hoarse, loud baritone, tense and urgent, a damage control officer.
+Cassia Rune|f|26|Mysterious, low young voice, slow and knowing, an alien oracle's apprentice.
+Xyr Tolan|n|70|Buzzing, layered alien voice, slow and formal, an insectoid diplomat.
+Wes Calloway|m|23|Drawling, easygoing tenor, slow and funny, a farm boy turned pilot.
+Bridget Kaine|f|49|Firm, sharp alto, quick and no-nonsense, a military prosecutor.
+Ambrose Vint|m|81|Rasping, cheerful old voice, slow and talkative, a retired star miner.
+Lara Novak|f|32|Steady, warm mezzo, clear and calm, a mission specialist.
+Kai Mendes|m|27|Bright, breathless tenor, fast and amazed, a tourist on a space station.
+Henrike Vos|f|68|Severe, crisp older alto, slow and exact, a fleet academy dean.
+Bolt|m|20|Loud, clunky robot voice, quick and enthusiastic, a combat droid.|fx=robot
+Simone Achebe|f|44|Rich, resonant alto, slow and inspiring, a revolutionary orator.
+Ruben Kask|m|48|Low, tired baritone, slow and sarcastic, a night-shift engineer.
+Tamsin Grey|f|21|Soft, nervous young mezzo, quiet and kind, a junior nurse.
+Sable|n|33|Smoky, slow androgynous voice, wry and calm, a mercenary ship AI with attitude.
+Elias Varga|m|57|Rumbling, warm baritone, slow and proud, a shipyard foreman.
+Neve Callahan|f|30|Bright, warm voice, quick and friendly, a station radio host.
+Atticus Pell|m|34|Precise, clipped tenor, stiff and formal, an admiral's aide.
+Dora Kepler|f|82|Thin, sharp elderly voice, quick and amused, a former test pilot legend.
+Ivo Rask|m|25|Raspy, edgy young voice, defiant and short, a prisoner in the brig.
+Celia Tamsin|f|39|Calm, cool alto, slow and deliberate, a bomb disposal expert.
+Magnus Holt|m|72|Heavy, slow bass, solemn and kind, a monastery abbot on a moon.
+Lio Fenwick|n|22|Bright, quick androgynous voice, curious and warm, an exchange student from a colony.
+Gavin Drummond|m|43|Steady, friendly baritone, relaxed and clear, a shuttle bus driver.
+Zelda Marchetti|f|54|Husky, warm older alto, quick and witty, a space bar owner.
+Ren Takahashi|m|31|Calm, soft tenor, polite and precise, a flight surgeon.
+Bianca Volta|f|25|Energetic, quick soprano, playful and loud, a zero-gravity athlete.
+Horatio Lux|m|64|Grand, theatrical baritone, slow and dramatic, a holo-theater director.
+Esther Mwangi|f|47|Warm, steady alto, wise and calm, a terraforming chief.
+Pax|n|55|Soft, steady synthetic voice, slow and peaceful, a peacekeeping AI.|fx=robot
+Cyrus Hale|m|39|Smooth, cool baritone, slow and confident, a space racing champion.
+Ottilie Brandt|f|71|Brittle, kind older soprano, slow and thoughtful, a retired ambassador.
+Jett Monroe|m|18|Loud, cocky young voice, quick and rebellious, a racing pilot.
+Ylva Strand|f|36|Clear, firm mezzo, calm and steady, a ship's lawyer.
+Ignatius Volk|m|55|Nasal, scheming tenor, quick and oily, a corrupt station official.
+Lark Okafor|f|29|Light, lilting voice, warm and kind, a xenolinguist.
+Brutus Kade|m|50|Heavy, slow bass, threatening and calm, a bounty hunter.
+Mei Lin Zhao|f|22|Bright, crisp young soprano, quick and smart, a navigation prodigy.
+Tobias Gray|m|76|Soft, slow, weathered baritone, a lighthouse beacon keeper at the edge of space.
+Nadine Okoye|f|51|Confident, rich alto, slow and commanding, a fleet intelligence director.
+Flick|n|15|Squeaky, rapid alien voice, excited and silly, a shipboard pet that talks.
+Rafael Montoya|m|42|Warm, rhythmic baritone, friendly and lively, a cargo trader.
+Svea Nilsson|f|63|Calm, clear older alto, slow and gentle, a greenhouse keeper.
+Dorian Ash|m|28|Brooding, soft baritone, quiet and sad, a clone looking for his origin.
+Kat Brennan|f|34|Sharp, quick mezzo, cocky and funny, a starfighter ace.
+Maximilian Thorne|m|47|Polished, aristocratic baritone, slow and condescending, a noble passenger.
+Wren Castellan|f|17|Clear, bold young voice, quick and brave, a cadet captain.
+Old Joe Harlan|m|86|Very slow, gravelly old voice, warm and rambling, a retired spacer at the bar.
+Aisha Rahman|f|38|Steady, warm mezzo, calm and kind, a ship's psychologist.
+Corvus|m|40|Cold, deep synthetic voice, slow and calculating, a rogue warship AI.|fx=robot
+Juniper Hale|f|26|Cheerful, bright soprano, quick and helpful, a supply runner.
+Thaddeus Moon|m|59|Dreamy, slow baritone, wistful and poetic, a planetarium keeper.
+Rhiannon Vey|f|45|Lilting, clear alto, quick and warm, an engineer who sings to her engines.
+Cosmo Barr|n|27|Laid-back, smooth androgynous voice, slow and amused, a space DJ.
+Viggo Hanssen|m|33|Firm, calm baritone, steady and brave, a rescue pilot.
+Matilda Croft|f|78|Warm, crackly elderly voice, slow and caring, a ship's grandmother figure.
+Desmond Okafor|m|24|Bright, quick tenor, nerdy and excited, a robotics student.
+Valeria Ionescu|f|41|Smoky, low alto, slow and secretive, a double agent.
+Grimm Barrow|m|67|Rough, crusty old baritone, slow and grumpy, a junkyard station owner.
+Pia Moreau|f|20|Soft, airy young soprano, slow and dreamy, a stowaway musician.
+Nikolai Brandt|m|45|Deep, controlled baritone, slow and grave, a submarine-style stealth captain.
+Sunita Rao|f|56|Brisk, warm older alto, quick and organized, the ship's purser.
+Kestrel|n|42|Sharp, clear synthetic voice, quick and witty, a fighter's onboard AI.|fx=robot
+Felix Osterman|m|38|Cheerful, warm tenor, bubbly and fast, a cook in the officers' mess.
+Clara Wynn|f|27|Steady, clear mezzo, calm and capable, a shuttle pilot in a storm.
+Bertram Hale|m|70|Booming, slow bass, proud and gruff, a retired fleet admiral at a reunion.
+Lucia Ferrante|f|33|Warm, expressive mezzo, quick and passionate, a colony doctor.
+Zeke Tanner|m|19|Twangy, quick young voice, cheeky and loud, a freighter deckhand.
+Ingeborg Lund|f|60|Low, firm older alto, slow and unflinching, a prison ship warden.
+Rho|n|65|Hollow, slow synthetic voice, ancient and calm, a derelict station's caretaker AI.|fx=robot
+Caspian Rye|m|31|Smooth, slightly bored baritone, slow and dry, a station security guard.
+Elodie Marchand|f|46|Elegant, warm mezzo, slow and diplomatic, an ambassador's wife who runs everything.
+Arlo Finnegan|m|16|Bright, nervous young voice, quick and earnest, a cadet who fakes confidence.
+Margit Haldor|f|85|Very soft, slow elderly voice, gentle and wise, the oldest pilot alive.
+Jonas Wilder|m|44|Weathered, warm baritone, slow and steady, a frontier marshal on a moon.
+Saskia Bloem|f|30|Bright, friendly alto, quick and practical, a ship's mechanic.
+Tiberius Quint|m|53|Imperious, booming baritone, slow and arrogant, an emperor's envoy.
+Nina Castro|f|23|Lively, quick mezzo, warm and funny, a cargo bay loader.
+Omega|n|99|Vast, slow, layered synthetic voice, almost godlike, the last AI of a dead civilization.|fx=robot
+Linus Ekberg|m|36|Soft, thoughtful baritone, slow and curious, a deep-space astronomer.
+Rosa Delgado|f|58|Warm, rich older alto, slow and comforting, a colony matriarch.
+Quentin Ash|m|26|Smooth, cocky tenor, quick and charming, a space race commentator.
+Admiral Sigrid Kael|f|64|Steely, slow older alto, cold and precise, an admiral who never repeats an order.
+Bao Tran|m|29|Quick, cheerful tenor, chatty and warm, a shuttle mechanic with a joke for everything.
+Yara Selvig|f|21|Clear, earnest young mezzo, quick and determined, a cadet on the bridge for the first time.
+Hollis Crane|m|58|Dry, gravelly baritone, slow and sardonic, a veteran of too many wars.
+Ines Calder|f|37|Smooth, measured mezzo, cool and analytical, a science officer reading alien data.
+Rook Ferreira|m|33|Low, quiet baritone, steady and watchful, an away team scout.
+Opaline|f|30|Silky, synthetic soprano, warm and flirtatious, a luxury liner's AI hostess.|fx=robot
+Tarik Haddad|m|46|Warm, rich baritone, slow and generous, a trader who shares his stories.
+Greer Lindqvist|f|52|Brisk, firm alto, efficient and dry, an orbital dock supervisor.
+Pim Vasquez|m|14|High, bouncy young voice, quick and fearless, a kid who fixes droids.
+Celestine Moreau|f|69|Graceful, slow older soprano, kind and wistful, a retired starship designer.
+Ivan Kostov|m|41|Heavy, slow baritone, calm and reliable, a reactor shift lead.
+Nell Okafor|f|19|Bright, rapid young voice, nerdy and excited, an astronomy intern.
+Bastion|m|60|Deep, booming synthetic voice, slow and protective, a defense platform AI.|fx=robot
+Rosamund Pike-Hale|f|45|Cultured, crisp alto, slow and clever, a counter-intelligence officer.
+Desh Kaur|m|27|Soft, careful tenor, polite and calm, a translator for alien guests.
+Marta Elling|f|74|Warm, steady older alto, slow and fond, a widow of a famous captain.
+Gale Ridley|m|35|Breezy, upbeat baritone, quick and confident, a racing yacht pilot.
+Solveig Arn|f|28|Cool, low young alto, quiet and focused, a long-range sensor watcher.
+Lazlo Ferenc|m|66|Theatrical, rolling older baritone, slow and dramatic, a space opera star.
+Juna Patel|f|33|Warm, quick mezzo, cheerful and organized, the ship's teacher.
+Mox Karriker|m|24|Raspy, loud young voice, brash and funny, a gunner.
+Evangeline Tor|f|56|Soft, measured older soprano, wise and calm, a peace envoy.
+Thane Okoro|m|49|Resonant, slow baritone, noble and calm, a colony governor.
+Wisp|n|25|Faint, airy alien voice, slow and gentle, a being made of light.
