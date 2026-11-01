@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: On Air
+desc: Radio DJs, news anchors, podcasters, weather presenters and late-night hosts
+icon: Microphone
+---
+Johnny Midnight|m|47|Smooth, honeyed baritone, slow and intimate, a late-night radio DJ talking to the lonely.
+Sandra Bright|f|38|Crisp, polished mezzo, measured and warm, an evening news anchor.
+DJ Rocket|m|26|Hyper, fast tenor, loud and punchy, a morning show DJ with sound effects in his voice.
+Margaret Ellsworth|f|64|Refined, slow older alto, calm and authoritative, a veteran documentary narrator.
+Ziggy Fresh|n|24|Laid-back, rhythmic androgynous voice, cool and playful, a hip radio host.
+Chuck Weathers|m|55|Cheerful, booming baritone, upbeat and corny, a weatherman who loves sunshine.
+Penny Chatterley|f|29|Bubbly, rapid soprano, giggly and chatty, a gossip podcast host.
+Dr. Harold Finch|m|68|Warm, slow older baritone, wise and patient, a call-in advice show host.
+Kat Morales|f|33|Husky, quick alto, edgy and witty, an alternative rock DJ.
+Brad Sterling|m|42|Deep, resonant baritone, smooth and confident, a voice-over artist for car commercials.
+Lily Song|f|21|Soft, sweet young voice, gentle and calm, a lo-fi music stream host.
+Rex Harland|m|60|Gravelly, punchy baritone, fast and opinionated, a talk radio provocateur.
+Nora Quinn|f|45|Steady, clear alto, serious and calm, a war correspondent reporting live.
+Benny Banter|m|31|Quick, nasal tenor, joking and fast, a comedy podcast cohost.
+Gloria Vance|f|57|Rich, theatrical older soprano, dramatic and slow, a radio drama narrator.
+Tim Tickers|m|36|Rapid, precise baritone, clipped and calm, a stock market reporter.
+Daisy Dawn|f|25|Bright, sunny mezzo, cheerful and fast, a breakfast TV presenter.
+Uncle Walt|m|79|Crackling, warm elderly voice, slow and kind, an old radio storyteller.
+Mia Torres|f|30|Warm, quick mezzo, friendly and lively, a traffic reporter in a helicopter.
+Static Steve|m|50|Raspy, slow baritone, conspiratorial and odd, a midnight conspiracy show host.
+Helena Marsh|f|52|Cool, measured alto, dry and sharp, an investigative journalist.
+Leo Lark|m|19|Cracking, eager young voice, quick and nervous, a college radio newbie.
+Celeste Moon|f|41|Velvety, slow soprano, dreamy and calm, an astrology show host.
+Hank Morrison|m|63|Folksy, slow baritone, warm and twangy, a country music DJ.
+Aurora Banks|f|35|Smooth, clear mezzo, elegant and composed, a fashion TV host.
+Frequency|n|40|Smooth, synthetic-sounding androgynous voice, even and calm, a station ID voice.
+Marty Gold|m|58|Fast, salesy baritone, loud and pushy, a shopping channel host.
+Grace Holloway|f|70|Gentle, slow elderly voice, kind and clear, a radio church hour host.
+Jake Ryder|m|28|Smooth, cool tenor, relaxed and flirty, a dating show host.
+Priya Raman|f|27|Quick, smart mezzo, curious and clear, a science podcast host.
+Walter Crane|m|66|Grave, slow baritone, solemn and steady, a news anchor reading a historic bulletin.
+Honey Delaine|f|48|Sultry, slow alto, smooth and teasing, a jazz radio host.
+Danny Dynamite|m|23|Explosive, fast young tenor, wild and loud, a gaming podcast host.
+Edith Pratt|f|74|Brisk, sharp older voice, quick and witty, a long-running quiz show host.
+Sid Saxon|m|44|Mellow, slow baritone, cool and smoky, a blues show DJ.
+Wendy Wavelength|f|32|Peppy, quick soprano, upbeat and silly, a kids' radio host.
+Mr. Reverb|m|37|Echoing, deep baritone, dramatic and slow, a horror podcast narrator.
+Natasha Petrova|f|39|Cool, precise alto, clear and controlled, a foreign news correspondent.
+Ollie Hart|m|16|Bright, quick young voice, excited and loud, a teen podcast host.
+Beverly Grant|f|59|Polished, slow older mezzo, glamorous and cool, a celebrity interviewer.
+Dusty Miller|m|71|Gravelly, slow old voice, folksy and slow, a rural radio host.
+Tara Flynn|f|24|Breezy, quick mezzo, friendly and funny, a podcast producer on the mic.
+Clive Bennett|m|53|Plummy, slow baritone, dry and witty, a classical music presenter.
+Jasmine Reyes|f|34|Warm, rhythmic alto, smooth and cool, an R&B night show host.
+Kenny Loops|m|29|Rhythmic, fast tenor, beatboxing between words, a hip-hop DJ.
+Agnes Weatherby|f|67|Calm, clear older voice, gentle and slow, the shipping forecast reader.
+Frankie Vox|m|40|Theatrical, booming baritone, loud and grand, a game show announcer.
+Rosie Pike|f|20|Bright, chatty young voice, quick and nerdy, an anime podcast host.
+Gordon Black|m|61|Deep, slow bass, serious and dark, a true crime narrator.
+Lucinda Grey|f|46|Soft, measured mezzo, calm and caring, a mental health podcast host.
+Pete Patterson|m|35|Plain, friendly baritone, steady and clear, a local news reporter.
+Vivian Lake|f|55|Cool, slow alto, elegant and mysterious, a radio mystery hour host.
+Eddie Echo|m|27|Fast, quirky tenor, playful and loud, a sound effects artist.
+Marjorie Klein|f|62|Brisk, warm older alto, practical and fast, a cooking show host.
+Ace Morrow|m|48|Gritty, quick baritone, hard and fast, a sports radio voice.
+Bianca Rossi|f|31|Lively, quick soprano, passionate and warm, a music festival reporter.
+Nigel Whitmore|m|70|Precise, slow old tenor, dry and pedantic, a radio history lecturer.
+Cassidy Blue|f|22|Soft, airy young voice, slow and dreamy, an ASMR podcast host.
+Jerome Hayes|m|45|Rich, deep baritone, warm and soulful, a gospel radio host.
+Fiona Bell|f|43|Quick, clever mezzo, witty and dry, a political satire host.
+Bob Bobbins|m|57|Jolly, round baritone, slow and corny, a local radio jingle singer.
+Ivy Chen|f|28|Clear, quick soprano, organized and calm, a tech news host.
+The Narrator|n|60|Deep, timeless androgynous voice, slow and even, a voice that reads audiobooks.
+Rick Vance|m|33|Cocky, quick baritone, loud and brash, a shock jock.
+Rosemary Hughes|f|80|Thin, warm elderly voice, slow and sweet, a radio grandmother reading bedtime stories.
+Tony Fusco|m|50|Fast, nasal baritone, joking and loud, a sports call-in host.
+Sophie Lane|f|26|Bright, quick mezzo, cheerful and clear, a weather presenter.
+Gary Glimmer|m|65|Smarmy, slow older baritone, smooth and fake, a late-night infomercial host.
+Hope Okafor|f|37|Warm, steady alto, uplifting and kind, a charity radio host.
+Max Lowell|m|30|Calm, quick tenor, clear and smart, a podcast editor.
+Delia Frost|f|50|Icy, crisp soprano, slow and serious, a news anchor reporting a scandal.
+Spinner|n|19|Fast, bouncy androgynous voice, playful and hyped, a teen radio mascot.
+Barry Bassline|m|39|Deep, rhythmic bass, slow and cool, a drum-and-bass DJ.
+Clara Winslow|f|61|Clear, gentle older soprano, slow and refined, an opera radio host.
+Dex Morgan|m|24|Smooth, quick young baritone, cool and flirty, a club radio host.
+Pearl Jones|f|72|Raspy, slow elderly voice, gossipy and funny, a radio granny with opinions.
+Ian McGregor|m|47|Lilting, warm baritone, friendly and steady, a folk music presenter.
+Megan Price|f|29|Fast, energetic mezzo, loud and funny, a morning show cohost.
+Theodore Blythe|m|76|Slow, dignified old baritone, proud and calm, a retired newsreader.
+Zara Mendez|f|36|Smooth, confident alto, quick and sharp, a business news anchor.
+Buzz Kelly|m|52|Raspy, enthusiastic baritone, loud and fast, a racing radio commentator.
+Wren Matthews|f|23|Shy, soft young mezzo, careful and kind, a poetry podcast host.
+Marcus Cole|m|41|Velvet, slow baritone, calm and soothing, a meditation app voice.
+Lola Ruiz|f|33|Bubbly, rapid soprano, giggly and loud, a reality TV recap host.
+Sam Whitfield|m|58|Measured, steady baritone, calm and clear, a public radio host.
+Betty Boom|f|44|Brassy, loud alto, cheerful and fast, a retro radio host.
+Oscar Nash|m|21|Quick, nerdy young tenor, excited and fast, a retro game podcast host.
+Dame Philippa Reed|f|77|Grand, slow elderly soprano, theatrical and warm, a radio theater legend.
+Nate Rivers|m|34|Calm, dry baritone, quiet and witty, a deadpan podcast host.
+Esther Moon|f|53|Soft, mysterious alto, slow and calm, a paranormal radio host.
+Kirk Thunder|m|46|Booming, heroic baritone, loud and dramatic, a movie trailer voice.
+Ginny Hale|f|27|Quick, cheerful mezzo, chatty and fun, a pop culture podcast host.
+Larry Lowdown|m|62|Gravelly, slow baritone, cynical and dry, a political commentator.
+Ruby Shaw|f|40|Warm, smooth alto, slow and calm, a quiet storm radio host.
+Echo Park|n|30|Echoing, cool androgynous voice, slow and artsy, an indie music show host.
+Simon Pryce|m|49|Smooth, slick baritone, slow and persuasive, a luxury ad narrator.
+Kelly Morgan|f|31|Steady, clear mezzo, calm and capable, an emergency broadcast announcer.
+Jimmy Jingles|m|38|Bright, singing tenor, cheerful and fast, a jingle composer.
+Harriet Cole|f|66|Firm, slow older alto, serious and wise, a radio court reporter.
+Rafael Santos|m|32|Warm, rolling baritone, passionate and fast, a salsa music DJ.
+Molly Fitz|f|19|Peppy, quick young voice, giggly and nervous, a student radio host.
+Victor Graves|m|73|Hollow, slow old baritone, spooky and slow, a ghost story radio host.
+Amara Nwosu|f|42|Rich, warm alto, slow and inspiring, a documentary narrator about nature.
+Dale Dawson|m|54|Twangy, quick baritone, cheerful and loud, a farm report host.
+Tiffany Sparkle|f|25|Sparkly, fast soprano, bubbly and excited, a beauty vlogger.
+Graham Holt|m|59|Plummy, quick older baritone, witty and posh, a panel show host.
+Nadia Farouk|f|35|Calm, clear alto, warm and precise, a world service news reader.
+Skip Tracer|m|43|Fast, jittery baritone, nervous and odd, a true crime podcaster who knows too much.
+Ellie Wade|f|30|Warm, laughing mezzo, quick and friendly, a parenting podcast host.
+Duke Sterling|m|67|Smooth, rich older baritone, slow and classy, a big band radio host.
+Joanna Lin|f|48|Precise, quick alto, efficient and sharp, a financial news anchor.
+Tommy Turntable|m|20|Quick, hyped young tenor, loud and silly, a scratch DJ.
+Opal Winters|f|58|Slow, wistful older soprano, gentle and nostalgic, an oldies radio host.
+Arnold Briggs|m|71|Gruff, slow old baritone, grumpy and funny, a listener who calls every day.
+Sunita Kapoor|f|39|Warm, quick mezzo, cheerful and clear, a film music radio host.
+Neil Barker|m|36|Deadpan, slow baritone, dry and sarcastic, a film critic.
+Daphne Rhodes|f|21|Breathy, slow young soprano, dreamy and soft, a poetry night host.
+Chester Bloom|m|55|Bumbling, cheerful baritone, slow and kind, a gardening show host.
+Riley Vox|n|27|Clear, quick androgynous voice, smart and friendly, a tech support podcast host.
+Patricia Glass|f|63|Crisp, clear older alto, precise and calm, a radio news editor.
+Logan Steele|m|31|Gritty, quick baritone, intense and loud, an extreme sports show host.
+Martha Kemp|f|75|Slow, warm elderly voice, chatty and kind, a radio recipe reader.
+Ricky Riviera|m|45|Flashy, fast baritone, loud and showy, a lottery draw host.
+Isla Fraser|f|28|Lilting, quick mezzo, warm and playful, a travel podcast host.
+Hugo Wells|m|52|Measured, warm baritone, curious and calm, a history podcast host.
+Babs Brennan|f|56|Loud, cheerful older alto, fast and funny, a bingo caller.
+Kai Storm|m|25|Laid-back, smooth tenor, chill and slow, a surf report host.
+Vera Kline|f|44|Cool, smoky alto, slow and witty, a late-night talk host.
+Dennis Pike|m|64|Slow, monotone baritone, dull and precise, a traffic news reader.
+Lucy Lovett|f|33|Warm, slow mezzo, romantic and soft, a love song request host.
+Ozzy Parks|m|18|Cracking, quick young voice, excited and loud, a gaming radio intern.
+Cordelia Vance|f|69|Brittle, slow older soprano, posh and amused, an etiquette radio host.
+Jamal Brooks|m|38|Smooth, rhythmic baritone, cool and confident, a hip-hop history host.
+Tessa Wilde|f|26|Fast, edgy mezzo, sarcastic and fun, a horror movie podcast host.
+Fergus Ogilvy|m|60|Rolling, warm baritone, chatty and kind, a golf radio host.
+Annika Berg|f|37|Calm, clear alto, steady and cool, a science radio host.
+Pop|n|15|Bright, squeaky androgynous voice, quick and silly, a kids' radio sidekick.
+Leonard Gray|m|80|Slow, crackling old voice, gentle and wise, a radio veteran's farewell show.
+Monique Laurent|f|46|Smooth, slow mezzo, elegant and warm, a wine show host.
+Brett Coleman|m|29|Bright, quick baritone, energetic and friendly, a fitness podcast host.
+Gertrude Pfeiffer|f|78|Shrill, quick elderly voice, nosy and loud, a radio gossip caller.
+Zane Mercer|m|35|Low, gravelly baritone, slow and cool, a rock radio host.
+Hailey Summers|f|22|Sunny, quick young mezzo, bubbly and loud, a summer radio host.
+Malcolm Reid|m|57|Warm, steady baritone, calm and wise, a radio counselor.
+Yasmin Hale|f|41|Smooth, quick alto, confident and clear, a political news anchor.
+Bert Bramble|m|69|Rustic, slow old baritone, folksy and kind, an agricultural radio host.
+Jolie Martin|f|32|Breezy, quick soprano, playful and warm, a celebrity news host.
+Alvin Fast|m|27|Very fast, nasal tenor, breathless and funny, a speed-reading disclaimer voice.
+Rosalind Burke|f|54|Rich, slow alto, dramatic and calm, an audiobook narrator.
+Hamish Grant|m|43|Lilting, quick baritone, friendly and funny, a sports panel cohost.
+Lacey Monroe|f|24|Soft, quick young mezzo, sweet and chatty, a K-pop radio host.
+Victor Stone|m|62|Deep, slow bass, commanding and dark, a political documentary narrator.
+Chloe Park|f|30|Clear, quick mezzo, organized and kind, a productivity podcast host.
+Freddie Flash|m|33|Flashy, fast tenor, loud and silly, a game show buzzer voice.
+Edna Bloom|f|71|Warm, slow elderly voice, gentle and cheerful, a garden radio host.
+Russell Crane|m|48|Calm, dry baritone, measured and wry, a radio quiz master.
+Mariana Silva|f|36|Warm, rolling mezzo, passionate and lively, a samba radio host.
+Wally Weather|m|66|Bouncy, cheerful older baritone, silly and corny, a retired weatherman.
+Brooke Tanner|f|28|Confident, quick alto, sharp and clear, a breaking news reporter.
+Ash Monroe|n|38|Smoky, slow androgynous voice, cool and intimate, an after-hours radio host.
+Julian Cross|m|40|Polished, smooth baritone, slow and calm, an airport announcement voice.
+Peggy Walsh|f|60|Warm, chatty older alto, quick and kind, a radio phone-in host.
+Dylan Rhys|m|23|Lilting, bright young tenor, quick and cheerful, a student DJ.
+Imogen Hartley|f|50|Precise, cool older soprano, slow and clear, a radio play director.
+Gus Kowalski|m|53|Gruff, quick baritone, loud and blunt, a hockey radio host.
+Nina Zhou|f|26|Clear, quick soprano, smart and calm, a language learning podcast host.
+Ronald Pratt|m|74|Slow, monotone old voice, dull and funny, a radio bingo announcer.
+Selena Cruz|f|34|Sultry, slow mezzo, smooth and warm, a slow jams host.
+Billy Banjo|m|45|Twangy, quick tenor, cheerful and folksy, a bluegrass radio host.
+Diane Archer|f|57|Steady, warm older alto, calm and sincere, a radio obituary reader.
+Ty Brooks|m|21|Rapid, hyped young voice, loud and funny, a sports meme show host.
+Magnolia Day|f|65|Sweet, slow older soprano, warm and folksy, a porch radio storyteller.
+Eugene Small|m|39|Nasal, quick tenor, nerdy and excited, a comic book podcast host.
+Harper Lane|f|29|Breezy, smart mezzo, quick and fun, a book club podcast host.
+Clifford Stone|m|77|Deep, slow old bass, solemn and warm, a radio sermon voice.
+Roxanne Rivers|f|42|Raspy, quick alto, wild and fun, a classic rock DJ.
+Miles Kerr|m|31|Calm, mellow tenor, slow and cool, a jazz streaming host.
+Bettina Groves|f|53|Brisk, quick older alto, efficient and dry, a radio traffic coordinator.
+Sparky Jones|m|16|Bright, quick young voice, excited and loud, a kid reporter.
+Olivia Hunt|f|38|Warm, clear mezzo, kind and steady, a children's audiobook narrator.
+Bernard Fox|m|68|Plummy, slow older baritone, witty and dry, a radio crossword host.
+Kayla Ross|f|23|Fast, quirky young voice, silly and smart, a science comedy podcast host.
+Jonas Lindgren|m|44|Calm, slow baritone, deep and steady, a nature documentary voice.
+Abigail Moss|f|31|Soft, quiet mezzo, slow and soothing, a sleep story narrator.
+Duncan Reeve|m|50|Firm, clear baritone, fast and precise, a breaking news anchor.
+Polly Parrot|f|47|Squawky, quick alto, loud and silly, a zoo radio host.
+Wade Harmon|m|58|Smooth, warm baritone, slow and cozy, a Sunday morning radio host.
+Tilly Cho|f|19|Bright, quick young soprano, cheerful and nerdy, a gaming radio cohost.
+Rex Royal|m|36|Grand, booming baritone, loud and theatrical, a wrestling podcast host.
+Bea Larkin|f|83|Very slow, crackly elderly voice, cheerful and proud, the oldest radio listener.
+Corey Vance|m|28|Laid-back, quick tenor, funny and casual, a podcast about nothing.
+Lydia Marsh|f|45|Cool, slow alto, serious and calm, a crime news reporter.
+Hollis Wynn|m|63|Slow, warm older baritone, folksy and wise, a radio farmer's almanac reader.
+Frankie Belle|f|27|Bubbly, quick mezzo, loud and fun, a karaoke show host.
+Elliot Ames|m|46|Measured, calm baritone, precise and clear, a radio science editor.
+Gwen Thomas|f|61|Lilting, warm older alto, friendly and slow, a radio choir presenter.
+Signal|n|50|Crisp, mechanical androgynous voice, flat and clear, a test broadcast voice.
+Tucker Grant|m|26|Cocky, fast baritone, loud and smug, a sports betting podcast host.
+Maisie Clark|f|15|Squeaky, quick young voice, excited and bold, a teen radio contest winner.
+Ambrose Teague|m|72|Gravelly, slow old voice, poetic and slow, a radio poet.
+Celia Ford|f|39|Polished, warm mezzo, slow and confident, an awards night presenter.
+Hal Boone|m|55|Rough, slow baritone, gruff and kind, a trucker radio host.
+Josie Wren|f|24|Cheerful, quick mezzo, kind and chatty, a podcast about pets.
+Felix Duval|m|42|Smooth, quick tenor, charming and lively, a food show presenter.
+Rhoda Fisk|f|68|Sharp, slow older voice, dry and funny, a radio complaint line host.
+Desmond Gale|m|51|Breezy, warm baritone, slow and relaxed, a sailing weather report voice.
+Tamara Voss|f|34|Crisp, quick alto, sharp and bold, a cyber-security news host.
+Benji Hoot|m|22|Goofy, quick young tenor, silly and loud, a prank call show host.
+Lorraine Peck|f|63|Gentle, slow older alto, kind and patient, a radio pen-pal show host.
+Clint Barrow|m|60|Gravelly, slow baritone, laconic and dry, a western audiobook narrator.
+Ingrid Sol|f|29|Cool, clear mezzo, slow and calm, a crime fiction podcast host.
+Marcel Dupré|m|47|Velvety, slow baritone, romantic and smooth, a chanson radio host.
+Holly Jett|f|21|Bright, quick young voice, chatty and cheerful, a festival radio intern.
+Terrence Gold|m|69|Rich, slow older baritone, classy and deep, a jazz legend hosting a tribute.
+Winona Starr|f|44|Smoky, quick alto, flirty and fun, a cabaret radio host.
+Abe Feldman|m|75|Raspy, quick old voice, witty and warm, a comedy radio veteran.
+Joy Adebayo|f|27|Warm, laughing mezzo, quick and upbeat, an afrobeats DJ.
+Graham Pike|m|38|Dry, measured baritone, slow and precise, a radio fact-checker.
+Moira Kelly|f|56|Lilting, warm older alto, quick and chatty, a folk music show host.
+Rusty Wheeler|m|33|Rough, quick baritone, loud and cheerful, a motor show host.
+Celine Marchetti|f|40|Elegant, slow mezzo, refined and calm, an art podcast host.
+Pip Squires|m|14|Squeaky, quick young voice, excited and nervous, a school radio reporter.
+Agatha Lowe|f|79|Brittle, slow elderly voice, proper and dry, a radio etiquette elder.
+Nico Valente|m|28|Smooth, quick tenor, charming and lively, a pop radio host.
+Frieda Holm|f|52|Firm, steady older alto, calm and clear, a weather service announcer.
+Lamar Price|m|41|Deep, rhythmic baritone, smooth and funny, a comedy hour host.
+Tansy Brook|f|18|Soft, quick young mezzo, shy and sweet, a book review vlogger.
+Horace Bell|m|64|Pompous, slow older baritone, grand and silly, a radio opera critic.
+Paloma Reyes|f|35|Warm, quick alto, lively and passionate, a flamenco radio host.
+Seth Rowan|m|26|Quiet, slow tenor, thoughtful and calm, a philosophy podcast host.
+Mabel Joyce|f|70|Cheerful, quick elderly voice, warm and loud, a radio talent show judge.
+Vince Marlow|m|44|Smooth, slow baritone, cool and dry, a noir radio play narrator.
+Erin Cho|f|30|Clear, quick soprano, cheerful and smart, a space news podcast host.
+Gregory Fenn|m|57|Calm, slow baritone, deep and warm, a radio advice uncle.
+Lottie Nash|f|25|Bubbly, quick mezzo, giggly and chatty, a dating podcast host.
+Otis Grant|m|73|Slow, soulful old baritone, warm and gravelly, a blues radio elder.
+Bea Hollis|f|49|Precise, quick alto, dry and witty, a radio panel show regular.
+Wavelength|n|33|Smooth, flowing androgynous voice, slow and calm, a radio station's night voice.
+Kit Ashby|n|26|Quick, clever androgynous voice, witty and warm, a queer culture podcast host.
+Juno Static|n|45|Crackly, slow androgynous voice, mysterious and odd, a pirate radio host.

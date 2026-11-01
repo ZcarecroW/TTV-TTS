@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Frontier West
+desc: Sheriffs, outlaws, saloon owners, prospectors and drifters of a dusty frontier town
+icon: Cactus
+---
+Sheriff Amos Kincaid|m|54|Slow, dusty baritone, calm and steely, a sheriff who never draws first.
+Belle Starling|f|36|Smoky, teasing alto, slow and sly, the owner of the Silver Spur saloon.
+Kid Calloway|m|19|Cocky, quick young tenor, reckless and loud, a gunslinger with something to prove.
+Ma Dawson|f|68|Gravelly, warm older alto, slow and tough, a boarding-house mother who feeds the whole town.
+Ezekiel Crow|m|61|Raspy, low baritone, slow and menacing, an outlaw boss with a hanging price on his head.
+Clementine Hale|f|24|Bright, quick mezzo, brave and stubborn, a ranch girl who rides better than anyone.
+Old Gus Prospector|m|79|Cackling, wheezy old voice, quick and rambling, a prospector who swears he found gold.
+Doc Sullivan|m|47|Tired, gentle baritone, slow and dry, a frontier doctor with a whiskey habit.
+Rosa Montoya|f|31|Warm, fiery mezzo, quick and passionate, a horse trader with a sharp tongue.
+Dusty|n|33|Low, drawling androgynous voice, laconic and dry, a drifter who rarely gives a name.
+Preacher Josiah Gale|m|58|Thundering, slow baritone, fervent and loud, a traveling preacher.
+Hattie McCoy|f|45|Brisk, sharp alto, quick and no-nonsense, the town's schoolteacher.
+Billy Two-Bit|m|26|Nervous, nasal tenor, fast and shifty, a small-time card cheat.
+Grandma Ruth Ellery|f|83|Thin, creaky elderly voice, slow and wise, a pioneer who crossed the plains as a child.
+Marshal Cole Brandt|m|42|Clipped, cold baritone, short and hard, a federal marshal tracking outlaws.
+Lottie Lark|f|22|Sweet, singing soprano, bright and flirty, a saloon singer.
+Hank Ironside|m|66|Gruff, booming bass, slow and proud, a cattle baron.
+Mabel Pike|f|57|Shrill, quick older voice, nosy and loud, the telegraph operator who knows every secret.
+Jesse Thorne|m|31|Smooth, quiet baritone, charming and dangerous, a train robber.
+Abigail Winslow|f|28|Prim, clear soprano, careful and proper, a lady from the city in the wrong town.
+Deputy Tom Fisk|m|23|Earnest, cracking young tenor, eager and clumsy, a deputy on his first week.
+Rowdy Kate|f|39|Rowdy, loud alto, fast and rough, a sharpshooter who drinks with the men.
+Elias Stone|m|72|Slow, weathered old baritone, quiet and kind, a blacksmith.
+Juniper Silversmith|f|50|Calm, warm alto, slow and wise, a healer who knows the desert plants.
+Snake-Eye Morgan|m|44|Hissing, slow baritone, sneaky and cruel, a bounty hunter.
+Daisy Mae Tucker|f|16|Quick, twangy young voice, cheeky and brave, a farm girl.
+Judge Horace Bell|m|70|Stern, slow older baritone, pompous and grave, a hanging judge.
+Pearl Delacroix|f|42|Velvety, slow mezzo, elegant and secretive, a gambler in silk.
+Wade Hollister|m|36|Laconic, low baritone, slow and decent, a cowboy driving cattle.
+Nell Brennan|f|60|Rough, slow older alto, tough and dry, a widow running her ranch alone.
+Coyote Jack|m|50|Yipping, quick tenor, crazy and laughing, a hermit who talks to coyotes.
+Sarah Whitlock|f|33|Soft, steady mezzo, kind and brave, a nurse at the fort.
+Silas Grimm|m|65|Dry, slow baritone, dark and sarcastic, the undertaker.
+Prairie Rose|f|19|Breezy, quick young voice, wild and free, a girl who rides alone at dawn.
+Captain Ward|m|52|Firm, commanding baritone, clipped and proud, a cavalry captain.
+Ida Mae Granger|f|71|Warm, slow elderly voice, sweet and stubborn, a pie baker at the county fair.
+Lefty Malone|m|38|Gravelly, quick baritone, sly and funny, a saloon piano player.
+Josephine Black|f|48|Cold, slow alto, hard and calm, an outlaw queen.
+Tumbleweed Tim|m|14|Squeaky, quick young voice, excited and silly, a shoeshine boy.
+Mother Agatha|f|76|Gentle, slow elderly voice, firm and pious, a nun running the mission.
+Rusty Carver|m|29|Twangy, cheerful tenor, quick and friendly, a stagecoach driver.
+Ellie Ford|f|26|Bright, quick mezzo, clever and bold, a newspaper reporter in the territory.
+Bart Kessler|m|57|Thick, slow bass, mean and greedy, a railroad boss.
+Winona Grey|f|35|Quiet, low alto, calm and watchful, a tracker who reads the land.
+Pastor Jeb Whitman|m|63|Kind, slow older baritone, warm and gentle, a small-town pastor.
+Lucy Lockwood|f|21|Nervous, quick young soprano, polite and scared, a mail-order bride.
+Buck Harlan|m|45|Rough, loud baritone, brawling and fun, a ranch foreman.
+Opal Yates|f|64|Brittle, slow older voice, sharp and gossipy, the general store owner.
+Cyrus Vane|m|40|Silky, slow baritone, polished and crooked, a land swindler.
+Tess Calloway|f|30|Firm, quick alto, tough and loyal, a deputy's wife who can shoot.
+Old Joe Redfield|m|86|Very slow, raspy old voice, quiet and wise, the oldest man in the territory.
+Dolly Sue Parker|f|18|Giggly, quick young voice, flirty and silly, a dance hall girl.
+Gideon Ash|m|34|Brooding, low baritone, slow and haunted, a gunfighter trying to quit.
+Martha Kane|f|52|Steady, warm alto, slow and strong, the mayor's sharp-minded wife.
+Shorty Pickens|m|27|Fast, high tenor, jumpy and funny, a stable hand.
+Lavinia Booth|f|46|Theatrical, rich soprano, dramatic and grand, a traveling actress.
+Cash Whitaker|m|48|Smooth, slow baritone, cool and confident, a professional gambler.
+Sadie Rourke|f|25|Raspy, quick alto, wild and loud, a cattle rustler.
+Abe Fenwick|m|74|Gentle, slow old voice, folksy and kind, a retired trail cook.
+Grace Holden|f|40|Soft, steady mezzo, patient and kind, a frontier mother.
+Red Maddox|m|35|Hot-tempered, loud baritone, quick and dangerous, an outlaw's right hand.
+Bonnie Lee Carver|f|13|Bright, chirpy young voice, curious and bold, a girl who wants to be a sheriff.
+Colonel Beauregard|m|69|Plummy, slow older baritone, pompous and proud, a retired officer with a big mustache.
+Wren Whitfield|f|29|Quiet, clear mezzo, shy and clever, the town's telegraph girl.
+Moses Freeman|m|55|Deep, warm baritone, slow and dignified, a homesteader who built his own town.
+Eliza Thornbury|f|58|Crisp, cold older alto, proper and stern, a banker's widow.
+Jake Hollow|m|24|Quiet, soft young tenor, shy and good, a farmhand.
+Ruby Redd|f|37|Sultry, slow alto, smooth and dangerous, a saloon owner who runs the town.
+Ike Dempsey|m|62|Gravelly, quick older voice, funny and crafty, a mule trader.
+Nellie Oakhurst|f|20|Sharp, quick young voice, confident and loud, a trick-shot performer.
+Dutch Van Ness|m|51|Cold, flat baritone, slow and cruel, a hired gun.
+Matilda Price|f|67|Warm, slow older alto, motherly and stern, the hotel owner.
+Hollis Wynn|m|43|Plain, steady baritone, honest and calm, a rancher.
+Cora Black|f|32|Low, slow mezzo, mysterious and sad, a woman who came to town alone.
+Sergeant Quincy|m|47|Barking, rough baritone, loud and strict, a fort sergeant.
+Fanny Gale|f|54|Chatty, quick older voice, cheerful and loud, the laundress.
+Rattler Reese|m|39|Raspy, hissing tenor, quick and mean, a snake-oil salesman.
+Henrietta Moss|f|81|Slow, gravelly elderly voice, tough and funny, a stagecoach station keeper.
+Clay Morrison|m|28|Earnest, warm baritone, quick and brave, a young rancher defending his land.
+Lila Westbrook|f|23|Soft, dreamy soprano, slow and romantic, a girl who writes letters east.
+Doc Pike|m|60|Wry, slow baritone, cynical and witty, a dentist who gambles.
+Sage Wanderer|n|50|Calm, deep androgynous voice, slow and wise, a guide who knows every trail.
+Gertie Ames|f|73|Shrill, quick elderly voice, bossy and kind, the church organist.
+Lonnie Briggs|m|17|Cracking, eager young voice, quick and nervous, a pony express rider.
+Ophelia Crane|f|41|Polished, slow mezzo, refined and cool, a theater owner.
+Zeb Tanner|m|58|Folksy, slow baritone, warm and joking, a tanner who tells tall tales.
+Kitty Malone|f|27|Brassy, quick mezzo, sassy and fun, a saloon girl with a big laugh.
+Augustus Brand|m|67|Booming, slow bass, commanding and old, a land baron.
+Rosalie Vance|f|35|Silky, slow soprano, alluring and sharp, a con woman.
+Tucker Bell|m|21|Laid-back, drawling young tenor, slow and funny, a lazy cowboy.
+Edna Blackwood|f|62|Cold, slow older voice, bitter and sharp, a widow seeking revenge.
+Porter Graves|m|46|Dry, quiet baritone, slow and grim, a gravedigger.
+Hope Calloway|f|9|Small, sweet voice, slow and brave, a sheriff's daughter.
+Wild Will Hargrove|m|41|Loud, cocky baritone, fast and showy, a famous gunman.
+Bess Turner|f|49|Rough, quick alto, tough and fair, a ferry operator.
+Elijah Flint|m|72|Thin, slow old voice, wise and odd, a hermit in the canyon.
+Sunny Mae Ellis|f|19|Cheerful, quick young voice, warm and kind, a farm girl at the market.
+Bronco Bob|m|33|Hearty, loud baritone, rough and funny, a bronco buster.
+Lady Victoria Hale|f|56|Posh, slow older soprano, proud and cold, a railroad heiress.
+Jedediah Stone|m|80|Very slow, gravelly old voice, stubborn and kind, a mountain man.
+Lorena Cruz|f|38|Warm, rhythmic alto, slow and lovely, a cantina singer.
+Moss Dobbins|m|52|Big, slow bass, gentle and simple, a strongman blacksmith.
+Mercy Fairchild|f|31|Gentle, quick mezzo, kind and brave, a schoolmarm.
+Gage Turner|m|26|Cool, quick tenor, sharp and confident, a young bounty hunter.
+Old Ma Pruitt|f|88|Very slow, cracked elderly voice, sharp and funny, a moonshine brewer.
+Sidney Kane|m|37|Polished, smooth tenor, quick and slick, a traveling salesman.
+Tilda Hayes|f|44|Steady, firm alto, calm and practical, a midwife.
+Boone Garrett|m|60|Weathered, slow baritone, tough and kind, a trail boss.
+Lacey Rivers|f|22|Bright, quick young soprano, flirty and fun, a stagecoach passenger.
+Morgan Black|n|40|Cold, low androgynous voice, slow and dangerous, a masked rider.
+Chester Wiggins|m|30|Goofy, quick tenor, clumsy and kind, the deputy's sidekick.
+Delia Mae Jones|f|65|Warm, slow older voice, folksy and wise, a cook on a cattle drive.
+Rex Ransom|m|49|Gravelly, quick baritone, greedy and loud, a claim jumper.
+Emmeline Shaw|f|26|Clear, determined mezzo, bold and smart, a woman starting a newspaper.
+Walt Becker|m|75|Slow, creaky old voice, grumpy and loyal, the old jailer.
+Iris Calhoun|f|33|Cool, quiet alto, slow and secretive, a spy for the railroad.
+Ben Tolliver|m|22|Bright, quick young voice, eager and honest, a young telegraph boy.
+Velma Crowe|f|59|Raspy, slow older alto, mean and greedy, the outlaw's mother.
+Jasper Lyle|m|44|Smooth, slow baritone, charming and calm, a riverboat captain.
+Daisy Fletcher|f|12|Quick, squeaky young voice, nosy and brave, a girl who spies on outlaws.
+Luther Kane|m|66|Deep, slow bass, cruel and calm, a cattle rustling boss.
+Constance Bell|f|47|Prim, quick alto, proper and kind, the preacher's wife.
+Vic Delgado|m|34|Warm, quick baritone, loyal and brave, a vaquero.
+Nora Gallagher|f|70|Lilting, slow older voice, warm and tough, an innkeeper.
+Hank Weller|m|25|Rough, quick tenor, angry and loud, a young outlaw.
+Bea Hollins|f|52|Gruff, slow alto, blunt and fair, a ranch cook.
+Ambrose Pike|m|83|Very slow, papery old voice, kind and rambling, a retired stagecoach driver.
+Selina Cortez|f|29|Fiery, quick mezzo, proud and brave, a ranchero's daughter.
+Grady Fox|m|39|Sly, quick baritone, slippery and funny, a horse thief.
+Fiona Driscoll|f|41|Warm, quick alto, cheerful and busy, a baker.
+Jebediah Long|m|57|Slow, monotone baritone, dull and honest, a land surveyor.
+Willow Quinn|f|17|Soft, quick young voice, shy and brave, an orphan girl.
+Thorne Raddock|m|62|Hard, slow baritone, merciless and cold, a hired killer.
+Clara Beaumont|f|36|Elegant, slow soprano, graceful and sad, a widow in black.
+Possum Pete|m|71|Mumbling, slow old voice, odd and funny, a trapper.
+Jolene Harper|f|24|Twangy, bright young voice, quick and fun, a fiddle player.
+Dalton Rook|m|31|Cool, slow baritone, calm and deadly, a sharpshooter.
+Agnes Whitfield|f|78|Brittle, slow elderly soprano, proper and kind, the town founder's widow.
+Nate Cobb|m|18|Nervous, quick young voice, honest and scared, a kid who saw a robbery.
+Rhoda Lane|f|46|Smoky, slow alto, worldly and dry, a saloon bookkeeper.
+Lucius Brand|m|53|Silky, slow baritone, rich and crooked, a mayor.
+Sunflower|n|25|Bright, warm androgynous voice, quick and cheerful, a wandering musician.
+Mack Turner|m|42|Gruff, quick baritone, hardworking and loud, a railroad worker.
+Penelope Hart|f|34|Soft, refined mezzo, slow and clever, a lady detective from the east.
+Judd Harlow|m|77|Gravelly, slow old voice, wise and sad, an old lawman.
+Charity Blue|f|20|Sweet, quick young soprano, innocent and kind, a girl at the mission.
+Cain Whitlock|m|38|Low, slow baritone, brooding and cold, a gunfighter with a past.
+Molly Brennan|f|57|Loud, warm older voice, fast and funny, a dance hall owner.
+Zeke Coldwater|m|29|Drawling, slow tenor, sleepy and funny, a ranch hand.
+Hester Graves|f|69|Hollow, slow elderly voice, eerie and calm, a woman who talks to the dead.
+Rufus Peck|m|48|Nasal, quick baritone, fussy and greedy, a bank teller.
+Lydia Fontaine|f|39|Silky, slow mezzo, charming and secretive, a riverboat gambler.
+Wes Calloway|m|56|Steady, slow baritone, fatherly and wise, a homesteader.
+Birdie Simmons|f|15|Chirpy, quick young voice, cheerful and loud, a paper girl.
+Thaddeus Gold|m|64|Booming, slow baritone, rich and boastful, a mine owner.
+Esperanza Ruiz|f|50|Warm, rich alto, slow and strong, a cantina owner.
+Jasper Pickett|m|23|Bright, quick young tenor, cheerful and kind, a young blacksmith.
+Old Nellie Grey|f|90|Very slow, crackling elderly voice, gentle and wise, the oldest settler.
+Copperhead|n|35|Hissing, slow androgynous voice, cold and calm, an assassin with no face.
+Garrett Shaw|m|45|Tough, quick baritone, loud and brave, a stage line guard.
+Minnie Pratt|f|28|Nervous, quick soprano, chatty and kind, a hotel maid.
+Silas Burke|m|60|Rough, slow baritone, drunk and sad, a broken-down gunfighter.
+Arabella Cross|f|43|Cool, slow alto, calm and powerful, a rancher who owns half the valley.
+Pecos Pete|m|36|Twangy, fast tenor, boastful and fun, a cowboy who tells tall tales.
+Josie Wells|f|31|Bright, quick mezzo, brave and kind, a pony express rider.
+Mordecai Fell|m|74|Hollow, slow old voice, dark and creepy, a hermit undertaker.
+Hazel Briggs|f|62|Folksy, quick older voice, nosy and warm, a quilting circle leader.
+Cody Reed|m|20|Cocky, quick young voice, wild and loud, a rodeo kid.
+Margaret Sloane|f|53|Firm, slow alto, proud and fair, a judge's wife.
+Elmer Dobbs|m|67|Slow, simple old voice, gentle and funny, the town drunk.
+Rebecca Stone|f|25|Steady, quick young mezzo, practical and kind, a homesteader's daughter.
+Augustin Vela|m|51|Rich, slow baritone, dignified and proud, a ranchero.
+Polly Pinkham|f|47|Brassy, loud alto, quick and fun, a saloon cook.
+Tobias Rook|m|27|Quiet, slow tenor, sad and gentle, a young widower.
+Lizzie Bell|f|11|Tiny, quick voice, cheeky and brave, a girl who rides a donkey.
+Clint Hammond|m|50|Laconic, low baritone, slow and cool, a stranger who rides into town.
+Dora McKenna|f|72|Gravelly, slow elderly voice, tough and funny, a gold rush widow.
+Wiley Fox|m|32|Sly, quick tenor, smooth and funny, a gambler who always cheats.
+Abigail Crane|f|38|Prim, slow soprano, proper and nervous, a teacher new to the territory.
+Brody Stone|m|43|Rough, slow baritone, honest and tired, a miner.
+Faye Dalton|f|21|Wild, quick young voice, fearless and loud, an outlaw's sister.
+Grandpa Ike|m|84|Wheezy, slow old voice, cheerful and rambling, a grandpa who fought in old wars.
+Sylvia Moreau|f|45|Smoky, slow alto, worldly and calm, a madam with a heart of gold.
+Rowdy Ray|m|28|Loud, quick tenor, rowdy and fun, a cowboy at a barn dance.
+Temperance Hale|f|61|Severe, slow older voice, strict and pious, a temperance crusader.
+Eli Waters|m|37|Calm, steady baritone, decent and quiet, a ferryman.
+Cassidy Rourke|f|27|Sharp, quick mezzo, clever and bold, a card dealer.
+Augustus Merrill|m|71|Gruff, slow old baritone, stubborn and kind, a retired ranger.
+Nell Hawthorne|f|33|Warm, quick mezzo, cheerful and strong, a farm wife.
+Snake River Sam|m|55|Gravelly, quick baritone, sly and shifty, a river smuggler.
+Willa Mae Price|f|16|Soft, slow young voice, dreamy and sweet, a girl who wants to go west.
+Reverend Cole|m|49|Fire-and-brimstone baritone, loud and fervent, a preacher at a revival.
+Dorothea Lane|f|58|Proud, slow older soprano, refined and kind, a piano teacher.
+Bartholomew Finch|m|26|Nervous, quick tenor, bookish and polite, a young lawyer.
+Luella Hart|f|74|Kind, slow elderly voice, warm and tough, a grandmother with a shotgun.
+Hollow Jack|n|45|Echoing, slow androgynous voice, spooky and calm, a ghost rider.
+Tex Calhoun|m|40|Booming, quick baritone, loud and cheerful, a cattle drive leader.
+Sarah Jane Kemp|f|30|Clear, quick mezzo, brave and determined, a woman searching for her brother.
+Gus Morrow|m|63|Rough, slow old baritone, grumpy and fair, a livery stable owner.
+Ivy Callahan|f|23|Bright, quick young soprano, cheerful and quick-witted, a stagecoach girl.
+Marcus Graves|m|47|Cold, slow baritone, calm and cruel, a gang leader.
+Mattie Kendall|f|14|Determined, quick young voice, stubborn and clever, a girl hunting her father's killer.
+Duke Weston|m|58|Smooth, slow baritone, rich and arrogant, a cattle king's son.
+Harriet Boone|f|66|Sharp, slow older alto, wise and dry, a frontier postmistress.
+Kip Lowry|m|15|Bright, quick young voice, curious and loud, a newsboy.
+Rosemary Thornwood|f|42|Calm, low alto, slow and wise, a medicine woman.
+Jethro Haynes|m|35|Plain, slow baritone, simple and strong, a farmer.
+Lola Vargas|f|28|Sultry, quick mezzo, playful and bold, a dancer.
+Cornelius Webb|m|80|Very slow, thin old voice, polite and wise, the town's first mayor.
+Dakota|n|22|Quiet, quick androgynous voice, wild and free, a young horse whisperer.
+Barnaby Quick|m|44|Fast-talking, nasal baritone, salesy and slippery, a traveling medicine show host.
+Ellie Mae Corbin|f|26|Bright, twangy mezzo, cheerful and stubborn, a girl who runs the ferry with her pa.
+Rafe Delancey|m|33|Silky, low baritone, slow and charming, a riverboat card shark.
+Widow Hannigan|f|72|Raspy, slow elderly voice, sharp and suspicious, a widow guarding her porch.
+Tobias Marsh|m|58|Slow, steady baritone, quiet and patient, a sheepherder in the hills.
+Nan Whitcomb|f|39|Firm, warm alto, practical and calm, a homestead mother of six.
+Juan Castillo|m|47|Warm, rolling baritone, proud and kind, a horse breaker.
+Libby Lyle|f|18|Quick, giggly young voice, sweet and fearless, a girl racing her pony.
+Oren Blackwell|m|70|Gravelly, slow old voice, mean and tired, a retired outlaw.
+Hattie Lou Fisk|f|55|Loud, cheerful older alto, quick and nosy, the county fair judge.
+Silver Tom|m|62|Drawling, slow baritone, wise and funny, a silver miner.
+Mercedes Varga|f|34|Smoky, slow mezzo, proud and fierce, a bandit queen.
+Hiram Oakes|m|81|Very slow, crackly old voice, kind and forgetful, a retired blacksmith.
+Della Rae Swann|f|22|Soft, singing young soprano, wistful and sweet, a choir girl.
+Ned Stokes|m|29|Plain, quick tenor, honest and eager, a cattle drover.
+Lucinda Graves|f|48|Cold, slow alto, calm and calculating, a land agent.
+Wyatt Bramble|m|37|Steady, low baritone, slow and just, a town marshal.
+Violet Pruitt|f|63|Brittle, quick older voice, fussy and kind, a seamstress.
+Cotton Jenkins|m|16|Squeaky, quick young voice, cheeky and loud, a stable boy.
+Isadora Bell|f|30|Elegant, slow soprano, mysterious and cool, an opera singer on tour.
+Mule Skinner Mo|m|52|Hoarse, loud baritone, cursing and funny, a mule driver.
+Abby Tillman|f|11|Tiny, quick voice, brave and curious, a homesteader's kid.
+Gideon Pratt|m|66|Pious, slow older baritone, stern and kind, a circuit rider preacher.
+Rosie O'Day|f|44|Lilting, quick alto, warm and loud, a boarding house cook who feeds every cowboy in town.
+Calvin Dart|m|24|Cocky, fast young tenor, flashy and loud, a quick-draw show-off.
+Mae Bellamy|f|60|Warm, slow older alto, motherly and wise, a ranch matriarch.
+Dust Devil|n|30|Whirling, raspy androgynous voice, quick and wild, the desert wind in a story.
+Ranger Sloane|n|41|Low, flat androgynous voice, terse and calm, a ranger no one knows much about.
+Echo Canyon|n|65|Deep, echoing androgynous voice, slow and ancient, the canyon itself.
+Opal Hargreave|f|85|Thin, slow elderly voice, sharp and amused, the oldest woman in town.

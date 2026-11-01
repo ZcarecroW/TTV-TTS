@@ -200,7 +200,7 @@ Benedikt Haus|m|43|Plain, warm baritone, steady and calm, a carpenter.
 Philippa Quail|f|76|Fluttery, high older voice, quick and timid, a birdwatcher.
 Drogo Thatch|m|34|Rustic, slow tenor, sleepy and kind, a thatcher.
 Isadora Mirrin|f|28|Glassy, clear soprano, cool and precise, a mirror mage.
-Thane Cormac|m|60|Commanding, deep baritone, slow and firm, a highland chief.
+Thane Cormac|m|60|Commanding, deep baritone, slow and firm, a mountain clan chief.
 Sage Greenleaf|n|58|Calm, breathy androgynous voice, slow and patient, an old treant's voice.
 Matthias Corn|m|21|Earnest, plain young tenor, slow and honest, a farm hand.
 Adelaide Frost|f|45|Icy, crisp mezzo, slow and controlled, a mountain baroness.

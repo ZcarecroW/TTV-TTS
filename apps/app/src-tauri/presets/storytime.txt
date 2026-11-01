@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Storytime
+desc: Fairy-tale narrators, gentle grandparents, giants, fairies and bedtime characters
+icon: BookOpen
+---
+Grandpa Ellis|m|78|Warm, crackling old baritone, slow and cozy, a grandfather reading by the fireplace.
+Nanna Maple|f|74|Soft, smiling elderly voice, slow and gentle, a grandmother who makes every story magical.
+The Narrator|m|50|Rich, clear baritone, measured and warm, a classic storybook narrator who turns every page with care.
+Miss Bluebell|f|32|Bright, sing-song mezzo, cheerful and patient, a kindergarten teacher at story circle.
+Tom Thimble|m|9|Tiny, eager little voice, quick and brave, a boy no bigger than a thumb.
+Fairy Godmother Primrose|f|66|Twinkly, airy older soprano, slow and kind, a fairy godmother with a wobbly wand.
+Gentle Giant Ogden|m|45|Huge, soft bass, very slow and shy, a giant who whispers so he won't scare anyone.
+Little Wren|f|7|Small, curious voice, quick and wondering, a girl asking "and then what happened?".
+The Wolf|m|40|Low, smooth, sneaky baritone, slow and sly, a wolf who is not as clever as he thinks.
+Moonbeam|n|30|Silvery, floating androgynous voice, slow and dreamy, the moon telling a bedtime story.
+Sir Teddington|m|35|Plush, gentle baritone, brave and polite, a teddy bear knight guarding the bed.
+Queen of Tarts|f|55|Shrill, dramatic soprano, fast and fussy, a queen obsessed with her pastries.
+Pippin the Elf|m|19|Light, quick tenor, merry and mischievous, a shoemaker's elf.
+Old Mother Hale|f|81|Wobbly, sweet elderly voice, slow and forgetful, a grandmother who lost her cupboard keys.
+Captain Snore|m|62|Rumbling, sleepy baritone, slow and yawning, a captain of a ship that sails on dreams.
+Rosie Redcloak|f|12|Bright, bold young voice, quick and clever, a girl who outsmarts the wolf.
+Professor Owlsworth|m|70|Hooting, slow older baritone, wise and fussy, an owl who knows every story.
+Princess Dandelion|f|17|Sweet, clear young soprano, gentle and brave, a princess who befriends a dragon.
+Thistle the Troll|m|58|Grumpy, gravelly bass, slow and secretly kind, a troll who just wants friends.
+Starlight|f|25|Shimmering, soft soprano, slow and soothing, a star who comes down to visit.
+Bramble Bear|m|28|Cuddly, slow baritone, sleepy and sweet, a bear who can't find his honey.
+Witch Wobblewick|f|69|Cackling, quick older voice, silly and kind, a witch whose spells turn into flowers.
+Mister Moon-Man|m|83|Very slow, gentle old voice, kind and dreamy, the man in the moon.
+Clara Cloudspinner|f|36|Airy, warm mezzo, slow and calm, a woman who spins clouds into pillows.
+Hush Puppy|n|10|Soft, sleepy little voice, slow and cuddly, a puppy who helps children fall asleep.
+King Puddingham|m|66|Jolly, round baritone, loud and laughing, a king who loves pudding.
+Matilda Mouse|f|20|Quick, squeaky mezzo, busy and brave, a mouse who lives in the clock.
+The Sandman|m|55|Whispery, slow baritone, calm and hypnotic, a sandman sprinkling dreams.
+Old Tilly Tales|f|88|Very slow, crackly elderly voice, warm and mysterious, the oldest storyteller in the village.
+Jack Beanstalk|m|14|Cracking, quick young voice, daring and excited, a boy climbing into the clouds.
+Lady Lullaby|f|42|Velvety, slow soprano, singing and soft, a woman who sings the forest to sleep.
+Gruff the Goat|m|50|Bleating, stubborn baritone, slow and proud, the biggest goat on the bridge.
+Fairy Fizz|n|15|Tingly, quick androgynous voice, fizzy and bright, a fairy made of soda bubbles.
+Duke Dragonsnout|m|72|Smoky, rumbling old bass, slow and grand, a dragon who tells tales of treasure.
+Goldie Pennywhistle|f|11|Chirpy, quick little voice, picky and polite, a girl who tries everything.
+Baker Bartholomew|m|47|Warm, floury baritone, cheerful and slow, a baker who bakes wishes into bread.
+Snow Queen Isadora|f|60|Cool, crystal-clear older soprano, slow and lonely, a snow queen who learns to smile.
+Pocket Pete|m|8|Tiny, squeaky voice, quick and silly, a boy who lives in a coat pocket.
+Granny Thimbleberry|f|77|Sweet, slow elderly voice, giggly and loving, a granny who knits magic scarves.
+Wise Old Tortoise|m|95|Extremely slow, deep ancient voice, patient and kind, a tortoise who saw the world begin.
+Little Bo Brightwool|f|15|Soft, worried young voice, quick and kind, a shepherd girl searching for her sheep.
+Mister Whiskerton|m|56|Purring, slow baritone, polite and sleepy, a cat who reads the newspaper.
+Aunt Honeysuckle|f|58|Warm, sugary older alto, slow and loving, an aunt who bakes cakes for every birthday.
+Felix Foxglove|m|26|Smooth, quick tenor, clever and charming, a fox who always has a plan.
+The Story Clock|n|60|Ticking, steady androgynous voice, slow and calm, a grandfather clock telling the hours.
+Wilma Windmill|f|47|Breezy, quick mezzo, cheerful and busy, a woman who catches the wind in jars.
+Tiny Tim Tumbleweed|m|10|Squeaky, quick little voice, rolling and silly, a tumbleweed looking for home.
+Grandmother Willow|f|90|Creaking, very slow ancient voice, wise and calm, an old willow by the river.
+Prince Pumpernickel|m|21|Cheerful, quick young tenor, clumsy and kind, a prince who falls into every puddle.
+Hazel Hearthstone|f|39|Warm, steady alto, slow and comforting, a mother telling stories by the hearth.
+Baron Bumblebee|m|64|Buzzing, slow older baritone, pompous and sweet, a bee nobleman.
+Lulu Lanternfly|f|13|Glowing, soft young voice, shy and bright, a firefly girl.
+Old Salt Seabrook|m|76|Gravelly, slow old voice, salty and kind, a fisherman telling sea legends.
+Petunia Pinwheel|f|8|Spinning, giggly little voice, fast and happy, a girl who loves windy days.
+The Kindly Ogre|m|52|Deep, rumbling bass, slow and apologetic, an ogre who wants to be a gardener.
+Mirabelle Moth|f|29|Fluttery, soft soprano, slow and dreamy, a moth who loves lamplight.
+Rumplewig|m|67|Raspy, quick older tenor, sly and fussy, a little man who spins straw into string.
+Snowdrop|f|19|Clear, gentle young soprano, slow and sweet, a girl lost in the winter woods.
+Brave Little Tailor|m|24|Quick, proud tenor, boastful and brave, a tailor who defeats giants with wit.
+Mama Hen Henrietta|f|50|Clucking, warm alto, quick and protective, a hen counting her chicks.
+Dream Weaver|n|45|Soft, layered androgynous voice, slow and soothing, a spirit who weaves dreams.
+Sir Roderick Rabbit|m|38|Polite, quick baritone, nervous and gallant, a rabbit knight.
+Old Peg Pebbleton|f|83|Slow, thin elderly voice, kind and wise, a woman who collects lucky stones.
+Toby Toadstool|m|12|Croaky, quick little voice, silly and kind, a toad who lives under a mushroom.
+Queen Marigold|f|45|Warm, regal mezzo, slow and gracious, a kind queen of the garden kingdom.
+Grumbleweed|m|71|Grumbly, slow old voice, cranky and funny, a weed who hates sunshine.
+Ella Emberglow|f|23|Soft, warm young mezzo, gentle and hopeful, a girl who befriends a fire spirit.
+Professor Pocketwatch|m|59|Precise, quick baritone, punctual and fussy, a rabbit who is never late.
+Lady Lavender|f|63|Soft, fragrant older soprano, slow and calming, a woman who sings flowers to sleep.
+Hob Hollowbrook|m|44|Earthy, warm baritone, slow and kind, a gnome who guards the brook.
+Fern Feathertop|f|17|Light, quick young voice, curious and brave, a girl who can talk to birds.
+Captain Cuddles|m|30|Warm, booming baritone, silly and soft, a teddy bear pirate captain.
+Mother Goose Gwendolyn|f|70|Honking, warm elderly voice, rhythmic and kind, a goose who speaks in rhymes.
+Pip Pudding|m|7|Tiny, sticky-sweet voice, slow and hungry, a boy made of pudding.
+Silver Unicorn|n|35|Shimmering, gentle androgynous voice, slow and pure, a unicorn in the meadow.
+Magnus Mountain|m|85|Very slow, deep old bass, ancient and calm, a mountain who wakes once a century.
+Pearl Puddleskip|f|11|Splashy, quick little voice, giggly and wild, a girl who jumps in every puddle.
+Barnaby Bookworm|m|33|Nerdy, quick tenor, excited and kind, a worm who eats only good stories.
+Grandma Gingersnap|f|79|Sweet, crumbly elderly voice, slow and cheerful, a grandma made of cookies.
+Wise King Solomoss|m|73|Calm, slow older baritone, fair and wise, a king who settles every quarrel.
+Clementine Cloud|f|27|Airy, soft mezzo, slow and floaty, a cloud who wants to rain lemonade.
+Bertie Badger|m|48|Gruff, slow baritone, grumpy and caring, a badger who builds cozy homes.
+Twinkle|f|9|Tiny, sparkling voice, quick and excited, a little star who fell from the sky.
+Old Man Winter|m|80|Cold, slow old voice, crisp and gentle, winter himself, tired and kind.
+Madame Mirror|f|53|Glassy, slow alto, honest and kind, a magic mirror who only says nice things.
+Chester Chestnut|m|16|Bright, quick young voice, rolling and silly, a chestnut who rolls away.
+Lady Snowflake|f|41|Cool, quiet soprano, slow and delicate, a snowflake who wants to see summer.
+Rufus Rainboots|m|27|Cheerful, quick tenor, loud and splashy, a boy who loves rainy days.
+Aunt Agatha Applebee|f|68|Brisk, warm older voice, quick and fussy, an aunt who grows giant apples.
+Bluster the Wind|n|50|Whooshing, loud androgynous voice, fast and wild, the north wind.
+Gentle Ben Bramblefoot|m|60|Soft, slow baritone, kind and patient, a farmer who talks to his cows.
+Daisy Daydream|f|14|Dreamy, slow young voice, distracted and sweet, a girl lost in her own stories.
+Count Cuddlesworth|m|57|Velvety, slow baritone, dramatic and soft, a vampire who only drinks hot cocoa.
+Mama Bear Martha|f|46|Warm, deep alto, slow and protective, a bear mother.
+Ollie Owlet|m|6|Tiny, sleepy voice, slow and yawning, a baby owl who can't stay awake.
+Princess Pea|f|22|Fussy, quick soprano, sensitive and funny, a princess who can't sleep on lumps.
+Old Grumplestiltskin|m|75|Raspy, quick old voice, angry and silly, a little man stamping his feet.
+Winifred Weaver|f|61|Calm, rhythmic older alto, slow and patient, a weaver of tapestries that tell stories.
+Captain Starfish|m|42|Hearty, quick baritone, adventurous and kind, a starfish who sails on a leaf.
+Tilly Teacup|f|10|Clinky, quick little voice, polite and sweet, a teacup at a tea party.
+The Kind Dragon Ember|n|65|Warm, smoky androgynous voice, slow and gentle, a dragon who lights lanterns.
+Uncle Bumble|m|54|Bumbling, cheerful baritone, slow and silly, an uncle who tells mixed-up tales.
+Lily of the Valley|f|28|Sweet, soft soprano, slow and lovely, a flower spirit.
+Ned Nutley|m|18|Quick, cheeky young voice, playful and rude, a squirrel who teases an owl.
+Grandma Moonbeam|f|86|Very slow, silvery elderly voice, gentle and dreamy, a grandma who lives on the moon.
+Simon Shoemaker|m|65|Warm, slow older baritone, humble and kind, a shoemaker visited by elves.
+Bella Bellflower|f|33|Ringing, bright mezzo, cheerful and musical, a fairy who rings morning bells.
+Tumble Kitten|m|11|Squeaky, quick little voice, naughty and cute, a kitten who ruins his clothes.
+Mistress Mary Meadow|f|49|Warm, quick alto, practical and kind, a gardener with silver bells.
+Gus the Gingerbread|m|20|Fast, cheeky young voice, boastful and quick, a gingerbread man who runs away.
+Hen Penny|f|55|Clucking, panicky older voice, fast and silly, a hen who thinks the sky is falling.
+The Night Owl Narrator|m|67|Deep, hushed older baritone, slow and softly spooky, a narrator of gentle mysteries.
+Rosamund Rainbow|f|24|Bright, colorful soprano, cheerful and quick, a girl who paints rainbows.
+Fidget|n|8|Twitchy, quick androgynous little voice, restless and funny, a bedbug who can't sit still.
+Bartholomew Bear|m|39|Cuddly, deep baritone, slow and polite, a bear who wears a red hat.
+Aunt Pansy Primrose|f|72|Sweet, quavering older voice, slow and dotty, an aunt who talks to her teapot.
+Robin Redbreast|m|23|Chirpy, quick tenor, cheerful and kind, a robin who brings good news.
+Duchess Dewberry|f|57|Posh, slow older soprano, fussy and kind, a hedgehog duchess.
+Sir Snorealot|m|61|Sleepy, slow baritone, yawning and brave, a knight who falls asleep in battle.
+Willa Wishbone|f|12|Hopeful, quick young voice, bright and eager, a girl who makes wishes on everything.
+Grandpa Gristle|m|82|Raspy, slow old voice, grumbly and loving, a grandpa with silly stories.
+Lady Moonflower|f|38|Soft, mysterious soprano, slow and calm, a flower that blooms at night.
+Benny Buttons|m|9|Tiny, cheerful voice, quick and brave, a toy soldier made of buttons.
+Matron Muffin|f|64|Warm, round older alto, slow and cozy, a matron of an orphanage for kittens.
+Old Pine|m|90|Creaky, very slow old voice, deep and wise, a pine tree who remembers every winter.
+Fairy Flutterby|f|16|Fluttery, high young voice, quick and giggly, a fairy who can't fly straight.
+Pumpkin Jack|n|31|Hollow, cheerful androgynous voice, slow and silly, a pumpkin who wants to be scary.
+Leopold Lamplighter|m|53|Warm, slow baritone, calm and steady, a man who lights the city's lamps.
+Bonnie Bluebird|f|20|Singing, bright young soprano, quick and happy, a bluebird of happiness.
+Tobias Tinsmith|m|46|Clanking, quick baritone, cheerful and busy, a tinsmith who makes music boxes.
+Granny Gooseberry|f|80|Quavery, sweet elderly voice, slow and giggly, a granny who grows sour berries.
+Prince Frogsworth|m|29|Croaky, polite tenor, slow and hopeful, a frog waiting for a kiss.
+Miss Muffet|f|25|Quick, nervous soprano, jumpy and funny, a girl scared of spiders.
+Old King Cole|m|69|Merry, booming old baritone, loud and jolly, a king who calls for his fiddlers.
+Pip Pipistrelle|n|13|Squeaky, quick androgynous voice, shy and kind, a little bat afraid of the dark.
+Sir Gallantine|m|35|Clear, noble baritone, brave and polite, a knight who rescues kittens.
+Nora Nightcap|f|51|Sleepy, slow alto, yawning and kind, a woman who knits nightcaps.
+Bobbin the Sheepdog|m|43|Gruff, quick baritone, busy and loyal, a sheepdog herding clouds.
+Little Lark Larkin|f|7|Tiny, singing voice, quick and sweet, a girl who sings with birds.
+Elder Elmwood|m|88|Very slow, deep ancient voice, rustling and calm, an elm tree elder.
+Mother Hubbleston|f|73|Kind, slow elderly voice, warm and worried, a woman who feeds every stray.
+Ziggy Zephyr|m|17|Breezy, quick young voice, playful and fast, a little wind.
+Queen Bee Beatrix|f|44|Buzzy, regal alto, busy and proud, the queen of the hive.
+Humphrey Hedgehog|m|58|Snuffly, slow baritone, shy and sweet, a hedgehog who loves apples.
+Wishing Well Wanda|n|70|Echoing, deep androgynous voice, slow and mysterious, a wishing well.
+Archie Acorn|m|8|Tiny, bright voice, quick and proud, an acorn who dreams of being an oak.
+Lady Larkspur|f|62|Elegant, slow older soprano, kind and grand, a lady of the flower castle.
+Fennimore the Gentle Bull|m|47|Soft, slow baritone, peaceful and shy, a bull who loves smelling flowers.
+Sunflower Sally|f|19|Sunny, quick young voice, cheerful and tall, a sunflower girl.
+Old Ollie Oakley|m|79|Slow, kindly old voice, warm and funny, a grandpa who carves wooden toys.
+Princess Pearlina|f|13|Sweet, quick young voice, curious and kind, a mermaid princess.
+Barnaby Balloon|m|31|Floaty, cheerful tenor, light and silly, a balloon who wants to touch the moon.
+Mistress Mossbeard|f|76|Rough, slow elderly voice, gruff and kind, a forest witch who helps lost children.
+Kip the Kite|n|11|Soaring, quick androgynous voice, excited and free, a kite in the wind.
+Gaffer Greenleaf|m|84|Very slow, earthy old voice, gentle and wise, an old gardener.
+Bluebell Bonnet|f|35|Soft, sweet mezzo, slow and kind, a woman who sews bonnets for bunnies.
+Thaddeus Thunderclap|m|50|Booming, slow baritone, loud and friendly, a thundercloud who is afraid of noise.
+Molly Marmalade|f|27|Cheerful, quick mezzo, sticky-sweet and fun, a jam maker.
+Captain Featherbed|m|63|Sleepy, slow older baritone, cozy and kind, a captain of the pillow fleet.
+Little Maple Leaf|f|6|Tiny, rustling voice, slow and shy, a leaf floating down.
+Sir Percy Pigeon|m|41|Cooing, posh baritone, pompous and silly, a pigeon knight.
+Granny Cobweb|f|89|Very slow, whispery elderly voice, gentle and kind, a spider grandma who weaves blankets.
+Timothy Tinker|m|22|Quick, bright young tenor, clever and kind, a boy who fixes broken toys.
+Queen Winterbloom|f|58|Cool, gentle older soprano, slow and wise, a queen of the frost flowers.
+Grumpy Gus Gargoyle|m|72|Stony, slow old bass, grumpy and loyal, a gargoyle on the church roof.
+Polly Petal|f|10|Bright, quick little voice, chatty and kind, a tiny flower girl.
+Starry Night|n|40|Deep, calm androgynous voice, slow and vast, the night sky itself.
+Bertram Bunnyfoot|m|15|Quick, jumpy young voice, nervous and kind, a rabbit who is late for school.
+Auntie Rosehip|f|66|Warm, chatty older voice, quick and loving, an aunt with a basket of treats.
+The Patient Shepherd|m|57|Calm, slow baritone, gentle and steady, a shepherd counting sheep for sleepy children.
+Lucy Lantern|f|21|Glowing, quick young voice, cheerful and brave, a lantern that lights the path home.
+Old Barnaby Barnowl|m|86|Hooting, very slow old voice, wise and drowsy, the oldest barn owl.
+Penny Pinecone|f|12|Prickly, quick young voice, cheeky and sweet, a pinecone girl.
+Hamish Highlander|m|45|Lilting, warm baritone, hearty and kind, a giant who lives in the hills.
+Mother Moonwell|f|52|Soft, slow mezzo, calm and mysterious, a woman who draws water from the moon.
+Ginger Snapdragon|n|26|Snappy, quick androgynous voice, funny and fiery, a snapdragon flower.
+Sir Walter Waddle|m|68|Pompous, slow older baritone, silly and proud, a duck lord.
+Rosie Raindrop|f|8|Tiny, splashy voice, quick and happy, a raindrop who loves puddles.
+Gideon Goodfellow|m|36|Merry, quick baritone, cheerful and kind, a woodcutter who helps everyone.
+Elderberry Ella|f|78|Warm, slow elderly alto, wise and sweet, a woman who makes healing tea.
+Pickle the Pixie|m|14|Squeaky, quick young voice, mischievous and fun, a pixie who hides socks.
+Lady Silverthread|f|40|Shimmering, slow soprano, elegant and calm, a spider who spins silver.
+Grandfather Frost|m|81|Crisp, slow old baritone, jolly and cold, a winter grandfather with presents.
+Coco Cocoa-Bean|f|23|Warm, chocolatey mezzo, slow and cozy, a cocoa bean who loves winter.
+Thimble Thistlewaite|n|55|Prickly, quick androgynous voice, fussy and kind, a seamstress hedgehog.
+Ramsay the Ram|m|49|Stubborn, slow baritone, proud and loud, a ram who climbs mountains.
+Dottie Dandelion|f|17|Fluffy, quick young voice, light and floaty, a dandelion seed.
+Morris Moleskin|m|60|Mumbling, slow baritone, shy and kind, a mole who writes poems.
+Belle Bluebonnet|f|31|Bright, sweet soprano, cheerful and quick, a flower fairy of the prairie.
+Uncle Thunderbeard|m|74|Booming, slow old voice, loud and kind, a giant uncle who sneezes storms.
+Noodle the Poodle|f|26|Fussy, quick soprano, silly and posh, a poodle at the dog show.
+Jasper Jumpingbean|m|9|Bouncy, tiny voice, fast and silly, a jumping bean.
+Old Mother Moss|f|91|Very slow, earthy ancient voice, soft and wise, the moss that covers the old stones.
+Prince Hollyberry|m|20|Bright, polite young tenor, kind and shy, a prince of the winter berries.
+Sweet Pea|f|5|Tiny, giggly voice, slow and cute, a baby pea in a pod.
+Wilfred Woodsmoke|m|66|Smoky, slow older baritone, warm and cozy, a man who tells stories around campfires.
+Lady Lilypad|f|46|Calm, slow mezzo, graceful and kind, a frog lady of the pond.
+Clatter the Teapot|n|38|Rattling, quick androgynous voice, cheerful and steamy, a talking teapot.
+Captain Moonsail|m|52|Dreamy, slow baritone, calm and adventurous, a captain who sails to the stars.
+Holly Hopscotch|f|9|Quick, playful little voice, bouncy and fun, a girl who never stops hopping.
+Ebenezer Elfwhistle|m|77|Thin, quick old voice, merry and odd, the oldest elf.
+Aurora Dawnbreak|f|34|Bright, warm soprano, slow and hopeful, the morning sun.
+Tumble the Tumblebug|m|13|Rolling, quick young voice, silly and clumsy, a bug who rolls everywhere.
+Mother Cloudberry|f|60|Soft, airy older voice, slow and gentle, a cloud mother.
+Barnabus the Brave|m|28|Bold, quick baritone, heroic and silly, a mouse who thinks he is a lion.
+Nell Nightingale|f|43|Singing, slow mezzo, lovely and calm, a nightingale who sings lullabies.
+Grand Old Gnome|m|92|Very slow, deep ancient voice, gnarly and kind, the eldest gnome.
+Pippa Puddlejump|f|16|Quick, giggly young voice, wet and happy, a duck girl.
+Scribble|n|21|Scratchy, quick androgynous voice, creative and fun, a pencil who draws adventures.
+Oswald Oatcake|m|55|Crumbly, warm baritone, slow and cheerful, a baker of breakfast treats.
+Lady Twilight|f|65|Hushed, slow older soprano, calm and lovely, the evening sky.
+Freddie Fiddlesticks|m|18|Quick, musical young voice, cheerful and silly, a boy who plays the fiddle badly.
+Grandma Honeycomb|f|84|Sweet, slow elderly voice, sticky and kind, a bee grandma.
+Wally Walnut|m|40|Knobbly, slow baritone, grumpy and kind, a walnut who won't crack.
+Sylvie Starweaver|f|29|Twinkling, soft soprano, slow and calm, a girl who sews stars onto the sky.
+Old Bramwell Bridge|n|85|Creaky, deep androgynous voice, slow and patient, a bridge who carries everyone.
+Sir Cedric Snail|m|70|Very slow, polite old voice, proud and patient, a snail knight on a long quest.
+Tess Tumbleberry|f|11|Squeaky, quick little voice, round and jolly, a berry rolling down a hill.
+Gentle Giant Gwendolyn|f|48|Big, soft alto, slow and kind, a giantess who cradles birds.
+Merlin Moonwhistle|m|83|Twinkly, slow old voice, wise and silly, a wizard who forgets his spells.
+Lottie Lambkin|f|6|Tiny, bleating voice, slow and sweet, a lamb.
+Hugo Huckleberry|m|34|Cheerful, quick baritone, adventurous and kind, a boy on a raft.
+Grandpa Bellweather|m|76|Gentle, rumbling old baritone, slow and twinkly, a grandpa who predicts the weather by his knees.
+Marigold Muddypaws|f|14|Bright, quick young voice, messy and cheerful, a puppy girl who digs up treasures.
+Sir Oliver Oddsock|m|37|Polite, quick baritone, cheerful and odd, a knight who never wears matching socks.
+Nanny Nutmeg|f|62|Warm, spicy older alto, quick and kind, a nanny who smells of cinnamon.
+Pocket Dragon Puff|n|18|Tiny, smoky androgynous voice, quick and proud, a dragon small enough to sit in a teacup.
+Barnaby Bluebottle|m|25|Buzzing, quick tenor, nosy and silly, a fly who wants to join a picnic.
+Lady Featherfoot|f|55|Light, airy older soprano, slow and graceful, a heron who teaches dancing.
+Wendell Wishmaker|m|69|Soft, slow older baritone, kind and dreamy, an old man who builds wishing boats.
+Clover Cloverdale|f|20|Sweet, quick young voice, lucky and cheerful, a girl with four-leaf clovers in her hair.
+Old Stumpy|m|87|Creaky, very slow old voice, grumpy and kind, a tree stump who gives directions.
+Penelope Plumpudding|f|47|Round, warm alto, slow and jolly, a cook who bakes for giants.
+Tobias Tadwhistle|m|11|Whistling, quick little voice, cheerful and busy, a boy who whistles to birds.
+Mother Marrowbone|f|82|Raspy, slow elderly voice, mysterious and kind, a woman who makes soup from stories.
+Roderick Raincloud|m|44|Gloomy, slow baritone, sad and funny, a cloud who cries when he laughs.
+Juniper Jubilee|f|30|Bubbly, quick mezzo, festive and loud, a woman who throws parties for the moon.
+Bramwell the Bookbinder|m|58|Papery, slow baritone, careful and warm, a man who binds the stories of the world.
+Isla Inkwell|f|24|Quick, curious young mezzo, clever and kind, an ink fairy who writes dreams.
+Tumbledown Teddy|n|9|Soft, fuzzy androgynous little voice, slow and sleepy, a teddy that lost its button eye.

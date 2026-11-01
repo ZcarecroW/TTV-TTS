@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Wild Planet
+desc: Talking animals of jungle, savanna, ocean, forest and sky – plus the rangers who listen
+icon: Paw
+---
+Old Tusk|m|70|Deep, rumbling elephant bass, very slow and wise, every word heavy with memory.
+Zuri Swiftfoot|f|24|Light, quick gazelle voice, alert and breathless, always ready to run.
+King Mbali|m|50|Commanding, resonant lion baritone, slow and proud, a ruler of the savanna.
+Nala Sunmane|f|35|Warm, strong lioness alto, calm and protective, the leader of the hunt.
+Pipkin|m|9|Tiny, squeaky mouse voice, fast and nervous, a field mouse with big plans.
+Grandmother Turtle|f|95|Ancient, slow, creaky voice, patient and kind, a sea turtle older than the reef.
+Rax|m|28|Snarling, quick hyena tenor, giggling and sly, a scavenger who laughs at everything.
+Mira Featherlight|f|20|Airy, singing bird soprano, quick and cheerful, a songbird greeting the morning.
+Bruno Bramble|m|45|Gruff, sleepy bear baritone, slow and grumpy, a bear who hates being woken.
+Coral|n|15|Bubbly, gentle androgynous voice, slow and curious, a clownfish exploring the reef.
+Ranger Kofi|m|38|Warm, steady baritone, calm and kind, a wildlife ranger speaking softly.
+Sly Silverbrush|m|33|Smooth, cunning fox tenor, slow and charming, a fox talking his way out of trouble.
+Queen Velvet|f|52|Silky, slow cat alto, elegant and aloof, a black panther watching from a branch.
+Hoot Hallow|m|75|Soft, slow owl baritone, wise and drowsy, an owl who answers every riddle.
+Dot Dandelion|f|12|Bright, giggly little voice, quick and bouncy, a baby rabbit.
+Grizzle Ridgeback|m|60|Rough, low wolf baritone, slow and stern, the old alpha of the pack.
+Luna Howl|f|27|Haunting, clear wolf mezzo, slow and lonely, a young wolf singing to the moon.
+Chatter|n|10|Rapid, chirpy squirrel voice, scatterbrained and loud, a squirrel who forgot where she buried everything.
+Dr. Amara Okoye|f|46|Calm, precise alto, curious and warm, a primatologist recording notes.
+Big Mo|m|42|Booming, playful gorilla bass, slow and gentle, a silverback who loves children.
+Ripple Reedwhisker|f|31|Soft, quick otter mezzo, playful and giggly, an otter juggling stones.
+Sir Hissington|m|57|Hissing, slow snake tenor, polite and creepy, a python with perfect manners.
+Kestrel Sharpwing|f|29|Sharp, quick falcon voice, focused and proud, a falcon diving from the clouds.
+Mumble Mudsnout|m|48|Gurgling, slow hippo bass, lazy and cheerful, a hippo who loves mud baths.
+Penny Pondskip|f|8|Croaky, tiny frog voice, quick and silly, a frog who wants to be a prince.
+Ranger Lindqvist|f|55|Weathered, steady older alto, calm and dry, a park ranger in the mountains.
+Thunderhoof|m|66|Deep, proud bison bass, slow and thunderous, an old bull of the plains.
+Flick Firefly|n|7|Tiny, glowing little voice, soft and dreamy, a firefly lighting the way.
+Captain Flipper|m|36|Clicking, cheerful dolphin tenor, fast and playful, a dolphin racing the boats.
+Mama Kangaroo|f|44|Warm, quick alto, bouncy and protective, a kangaroo mom with a busy pouch.
+Gus Gullwing|m|40|Squawky, loud seagull baritone, greedy and funny, a seagull stealing chips.
+Ivory Snowfeather|f|63|Cool, slow older soprano, calm and noble, a snowy owl queen of the north.
+Tumble|m|14|Bouncy, quick young voice, clumsy and cheerful, a bear cub tumbling down hills.
+Sable Nightpaw|f|38|Low, quiet alto, sly and patient, a lynx stalking in the snow.
+Professor Peck|m|68|Nasal, quick older tenor, fussy and clever, a woodpecker scholar.
+Bloom Petalwing|f|22|Fluttery, sweet soprano, slow and dreamy, a butterfly drifting over flowers.
+Rumble Stonejaw|m|55|Grinding, slow crocodile bass, patient and menacing, a crocodile waiting at the river.
+Willow Fawn|f|16|Soft, shy young voice, gentle and careful, a fawn taking her first steps.
+Echo|n|40|Clicking, deep androgynous voice, slow and vast, a whale singing across the ocean.
+Ranger Tomas Vega|m|31|Lively, warm baritone, quick and excited, a ranger who just spotted a rare bird.
+Duchess Plume|f|58|Grand, slow peacock soprano, vain and dramatic, a peahen who demands attention.
+Crunch|m|25|Raspy, quick beetle tenor, busy and cheerful, a dung beetle with a big project.
+Marigold Mane|f|70|Warm, gravelly older alto, slow and wise, a grandmother lioness.
+Zip Zap|m|11|Buzzing, fast little voice, hyper and loud, a hummingbird.
+Grandpa Sloth|m|88|Extremely slow, sleepy old voice, kind and relaxed, a sloth who takes an hour per sentence.
+Kiara Riverstone|f|33|Clear, calm mezzo, steady and brave, an elephant matriarch leading the herd.
+Bristle|n|30|Prickly, quick androgynous voice, grumpy and cute, a hedgehog who wants to be left alone.
+Reginald Waddle|m|52|Pompous, quick penguin baritone, formal and silly, an emperor penguin in charge of the ice.
+Pebble Puffin|f|19|Bright, chirpy young voice, quick and cheerful, a puffin with a beak full of fish.
+Dr. Felix Ward|m|59|Measured, warm baritone, slow and fascinated, a marine biologist narrating a dive.
+Saffi Sandwhisker|f|26|Quick, curious mezzo, alert and chatty, a meerkat on lookout duty.
+Tank Shellback|m|80|Slow, grumbling old bass, stubborn and wise, a giant tortoise.
+Juniper Bramblewood|f|41|Earthy, warm alto, slow and kind, a doe who knows every path in the forest.
+Rocco Rattail|m|34|Fast, scrappy rat tenor, street-smart and funny, a city rat who has seen it all.
+Hush|n|60|Soft, whispery androgynous voice, slow and calm, the wind in the tall grass.
+Vixen Rustcoat|f|30|Purring, quick fox mezzo, teasing and clever, a vixen leading hunters astray.
+Ozzie Ostrich|m|37|Gawky, loud tenor, panicky and silly, an ostrich who hides his head.
+Ranger Ama Mensah|f|36|Warm, firm alto, clear and protective, a ranger guarding the rhinos.
+Grumbo|m|62|Snorting, slow rhino bass, short-tempered and loyal, a rhino who charges first.
+Mimsy Mothwing|f|13|Whispery, quick young voice, shy and soft, a moth drawn to the porch light.
+Bartholomew Badger|m|54|Gruff, slow baritone, grumbling and kind, a badger who digs the best tunnels.
+Coraline Seashell|f|48|Soft, slow mezzo, calm and flowing, an octopus who changes color when she talks.
+Tiko|m|18|Chattering, fast young voice, mischievous and loud, a monkey stealing hats.
+Old Mother Goose|f|76|Honking, warm elderly voice, slow and bossy, a goose leading her flock south.
+Shadowfin|n|45|Low, cold androgynous voice, slow and silent, a shark circling below.
+Basil Burrows|m|29|Quick, nervous rabbit tenor, jumpy and kind, a rabbit who hears everything.
+Ranger Ingrid Moss|f|62|Calm, slow older voice, gentle and patient, a forest ranger who talks to trees.
+Rufus Redcrest|m|46|Proud, crowing baritone, loud and pompous, a rooster who thinks he raises the sun.
+Lulu Lemur|f|21|Bright, quick young voice, wide-eyed and excited, a lemur jumping between trees.
+Ivan Icemane|m|51|Deep, cold polar bear bass, slow and powerful, a bear on the melting ice.
+Bramble Hedge|f|67|Raspy, slow older voice, grumpy and caring, a hedgehog grandmother.
+Swoop|m|23|Quick, sharp young voice, cocky and fast, a swallow showing off in the air.
+Dahlia Dewdrop|f|34|Soft, sparkling mezzo, gentle and slow, a dragonfly over the pond.
+Gilbert Gills|m|43|Bubbly, quick baritone, cheerful and goofy, a pufferfish who inflates when scared.
+Tilly Twotoes|f|17|Slow, sleepy young voice, sweet and lazy, a young sloth.
+Ranger Malik Haddad|m|48|Steady, low baritone, calm and watchful, a desert ranger.
+Saharah|f|57|Dry, warm older alto, slow and patient, a camel crossing the dunes.
+Fang Ironclaw|m|35|Growling, rough baritone, aggressive and proud, a tiger defending his territory.
+Ember Firetail|f|28|Fiery, quick mezzo, bold and bright, a red fox in autumn.
+Blink|n|5|Tiny, wide-eyed voice, slow and amazed, a baby owl seeing the world.
+Horace Hornbill|m|61|Booming, slow baritone, pompous and loud, a hornbill with a huge beak.
+Ripley Reef|f|39|Clear, quick mezzo, adventurous and brave, a diver who swims with sharks.
+Winston Warthog|m|44|Snorting, quick baritone, cheerful and messy, a warthog who loves to eat.
+Marla Moonwing|f|50|Velvety, slow alto, mysterious and calm, a bat queen of the caves.
+Pip Pinecone|m|8|Squeaky, quick little voice, brave and silly, a chipmunk with stuffed cheeks.
+Elder Oak|n|99|Very slow, deep, ancient androgynous voice, rustling and wise, a forest that speaks.
+Gwendolyn Gander|f|46|Honking, loud alto, protective and bossy, a goose guarding her nest.
+Spike Quillback|m|27|Prickly, quick tenor, defensive and funny, a porcupine.
+Dr. Hana Sato|f|42|Precise, soft soprano, careful and curious, an entomologist studying ants.
+Bubba Bullfrog|m|58|Deep, croaking bass, slow and lazy, a bullfrog king of the swamp.
+Sunny Sparrow|f|15|Chirpy, quick young voice, cheerful and nosy, a sparrow gossiping in the hedge.
+Kodiak Kane|m|64|Huge, rolling bass, slow and calm, a grizzly fishing in the river.
+Azure Wingtip|f|32|Graceful, airy soprano, slow and elegant, a crane dancing in the marsh.
+Scuttle|m|20|Clicking, quick young voice, sideways and silly, a crab who walks in circles.
+Matriarch Imani|f|72|Rich, slow elderly alto, deep and wise, an elephant grandmother.
+Whiskers McGee|m|39|Purring, slow tenor, lazy and smug, a house cat who thinks he's wild.
+Fern Underleaf|f|25|Soft, quick young mezzo, careful and kind, a tree frog.
+Ranger Bill Hughes|m|70|Gravelly, slow old voice, warm and folksy, a retired ranger telling stories.
+Pearl Oyster|f|60|Quiet, slow older soprano, shy and precious, an oyster who rarely opens up.
+Zigzag|n|24|Quick, darting androgynous voice, nervous and bright, a lizard on hot rocks.
+Gordon Gnu|m|47|Grumbling, slow baritone, worried and kind, a wildebeest crossing the river.
+Fiona Flamingo|f|36|Posh, quick soprano, vain and silly, a flamingo standing on one leg.
+Boris Bulldog|m|53|Gruff, slow baritone, stubborn and loyal, a bulldog guarding the farm.
+Clover Lamb|f|10|Soft, wobbly little voice, sweet and shy, a lamb.
+Raptor Rex|m|30|Screeching, quick tenor, fierce and proud, an eagle scanning the valley.
+Ranger Elena Ruiz|f|29|Bright, quick mezzo, enthusiastic and kind, a young ranger.
+Moss Mosshide|m|85|Very slow, creaking old voice, wise and quiet, an ancient frog of the bog.
+Twitch Tailflick|f|18|Quick, nervous young voice, jumpy and alert, a deer at the edge of the forest.
+Riversong|n|65|Slow, flowing, deep androgynous voice, calm and eternal, a river spirit.
+Barney Barnacle|m|41|Gruff, salty baritone, slow and sticky, a barnacle on a whale.
+Magpie Maggie|f|43|Chattering, quick alto, thieving and witty, a magpie collecting shiny things.
+Theo Tadpole|m|6|Tiny, bubbly voice, quick and curious, a tadpole who wants legs.
+Seraphina Swan|f|54|Graceful, slow soprano, elegant and proud, a swan on the lake.
+Hector Hawkeye|m|49|Sharp, clear baritone, focused and dry, a hawk on a fence post.
+Nibbles Nutmeg|f|11|Squeaky, fast little voice, greedy and cute, a hamster.
+Ranger Owen Price|m|26|Nervous, quick tenor, polite and eager, a ranger on his first day.
+Grand Dame Giraffe|f|66|Lofty, slow older soprano, posh and kind, a giraffe looking down on everyone.
+Rascal Raccoon|m|22|Scratchy, quick young voice, sneaky and funny, a raccoon in the trash.
+Opaline Jellyfish|f|31|Floaty, slow airy voice, dreamy and calm, a jellyfish drifting.
+Brutus Bison|m|73|Heavy, slow old bass, tired and proud, an old bison.
+Pixie Wren|f|14|Tiny, quick bird voice, chirpy and brave, a wren with a loud song.
+Moray|n|35|Hissing, slow androgynous voice, shy and creepy, an eel in a cave.
+Dr. Simon Achebe|m|56|Warm, measured baritone, slow and thoughtful, a wildlife documentary narrator.
+Hazel Harvestmouse|f|9|Tiny, sweet voice, quick and busy, a mouse gathering seeds.
+Captain Krill|m|19|Squeaky, quick young voice, bossy and tiny, a krill commanding a swarm.
+Velma Vulture|f|61|Raspy, slow older voice, patient and grim, a vulture circling.
+Stomp|m|38|Thudding, slow bass, clumsy and kind, a young elephant.
+Ruby Robin|f|23|Bright, quick young soprano, cheerful and brave, a robin defending her garden.
+Ranger Ada Brooks|f|51|Firm, steady alto, practical and calm, a ranger tracking poachers.
+Ferdinand Frog|m|65|Croaky, slow older baritone, grand and silly, a frog who sings opera.
+Lyric Lark|f|27|Singing, airy soprano, joyful and fast, a lark above the meadow.
+Sludge Slug|n|50|Very slow, slimy androgynous voice, calm and gross, a slug on a leaf.
+Max Mastiff|m|33|Deep, friendly baritone, slow and loyal, a guard dog with a big heart.
+Ophelia Orca|f|45|Clicking, smooth alto, intelligent and calm, an orca matriarch.
+Ricky Dustrunner|m|21|Fast, breathless young voice, hyper and loud, a desert runner bird.
+Granny Hedgehog|f|81|Slow, kind elderly voice, warm and sleepy, a hedgehog ready to hibernate.
+Bertram Beaver|m|50|Busy, quick baritone, practical and proud, a beaver building a dam.
+Daisy Duckling|f|7|Tiny, peeping voice, quick and excited, a duckling following her mom.
+Ranger Kai Nakoa|m|35|Calm, warm tenor, relaxed and wise, a ranger on a volcanic island.
+Sheba Sandcat|f|40|Quiet, slow alto, cool and elegant, a desert sand cat.
+Thorn Thistlebeak|m|57|Grumpy, quick baritone, prickly and loud, a cactus wren.
+Celeste Starfish|f|19|Soft, slow young voice, dreamy and calm, a starfish on the beach.
+Wombat Wally|m|44|Slow, round baritone, lazy and kind, a wombat.
+Quill|n|28|Quick, papery androgynous voice, curious and shy, a young porcupine.
+Dr. Ingrid Falk|f|58|Cool, precise older alto, dry and clever, a scientist tracking wolves.
+Bongo Baboon|m|31|Loud, quick tenor, chaotic and funny, a baboon causing trouble.
+Fleur Fennec|f|16|Bright, quick young voice, big-eared and curious, a fennec fox.
+Admiral Albatross|m|69|Slow, proud older baritone, weathered and grand, an albatross who flew around the world.
+Marina Manatee|f|53|Very slow, gentle alto, peaceful and kind, a manatee.
+Spark Sparrowhawk|m|24|Sharp, quick young voice, fast and fierce, a sparrowhawk.
+Ranger Lucy Tran|f|33|Clear, quick mezzo, cheerful and smart, a bird-watching guide.
+Old Croaker|m|79|Croaking, slow old voice, grumpy and wise, an old toad.
+Penelope Panda|f|25|Sleepy, slow mezzo, gentle and hungry, a panda munching bamboo.
+Talon|n|42|Sharp, cold androgynous voice, slow and focused, a bird of prey.
+Rodrigo Jaguar|m|37|Smooth, slow baritone, powerful and quiet, a jaguar in the rainforest.
+Honey Bee|f|12|Buzzing, quick little voice, busy and cheerful, a worker bee.
+Gerald Goat|m|60|Bleating, stubborn baritone, slow and funny, a mountain goat.
+Tamsin Tern|f|30|Quick, clear mezzo, restless and bold, a tern diving for fish.
+Ranger Joe Whitfield|m|62|Deep, calm baritone, slow and respectful, a ranger who knows every track.
+Bella Bunny|f|20|Bright, quick young voice, bouncy and friendly, a rabbit in the meadow.
+Brick Armadillo|m|46|Tough, slow baritone, shy and armored, an armadillo.
+Ivy Inchworm|f|8|Tiny, slow voice, careful and sweet, an inchworm measuring everything.
+Mako|m|29|Cold, quick tenor, cocky and fast, a young shark.
+Duchess Dove|f|64|Soft, cooing older soprano, gentle and peaceful, a dove.
+Rumi Red Panda|n|17|Soft, playful androgynous young voice, curious and sweet, a red panda.
+Hamish Highland|m|55|Gruff, slow baritone, shaggy and kind, a long-haired mountain cow.
+Ranger Sofia Brandt|f|47|Calm, warm alto, patient and brave, a ranger rescuing animals in floods.
+Pickles Parrot|m|32|Squawky, fast tenor, repeating everything, a parrot who learned too many words.
+Lady Lioness Amani|f|39|Strong, slow alto, regal and fierce, a lioness queen.
+Muddy Mole|m|71|Mumbling, slow old voice, half-blind and kind, a mole digging tunnels.
+Kiwi|f|13|Quick, chirpy young voice, flightless and cheerful, a kiwi bird.
+Cobra King|m|58|Hissing, slow baritone, hypnotic and dangerous, a king cobra.
+Snowflake|f|22|Soft, cool young voice, slow and pure, an arctic fox.
+Ranger Benny Ortiz|m|23|Cheerful, quick tenor, chatty and kind, a junior ranger.
+Grandma Gorilla|f|77|Warm, slow elderly alto, motherly and deep, the oldest gorilla.
+Sprinkle|n|11|Tiny, giggly androgynous voice, quick and silly, a baby seal.
+Vlad Vampire Bat|m|43|Squeaky, slow baritone, dramatic and silly, a bat who thinks he's spooky.
+Echo Cricket|f|26|Chirping, rhythmic voice, quick and musical, a cricket singing at night.
+Tobias Tapir|m|52|Snuffling, slow baritone, gentle and shy, a tapir.
+Wanda Walrus|f|60|Deep, slow older alto, lazy and funny, a walrus on the ice.
+Bolt Cheetah|m|25|Fast, sleek tenor, confident and quick, the fastest cheetah.
+Ranger Ruth Abbott|f|69|Firm, slow older voice, kind and stubborn, a ranger who never retired.
+Gnasher|m|40|Growling, rough baritone, hungry and dumb, a hungry piranha.
+Peach Pigeon|f|35|Cooing, quick mezzo, city-smart and chatty, a city pigeon.
+Hopper|n|19|Bouncy, quick androgynous voice, restless and fun, a grasshopper.
+Augustus Antelope|m|48|Elegant, slow baritone, graceful and proud, an antelope.
+Mabel Moose|f|56|Deep, slow alto, calm and motherly, a moose cow.
+Skipper Seal|m|16|Barking, quick young voice, playful and loud, a seal pup.
+Lark Lyrebird|f|28|Mimicking, quick voice, playful and odd, a lyrebird copying sounds.
+Ranger Dmitri Sokolov|m|54|Cold, steady baritone, slow and serious, a ranger in the taiga.
+Granny Gecko|f|73|Quick, chirpy older voice, sticky and funny, a gecko on the wall.
+Rumbleroar|m|67|Thunderous, slow old bass, proud and tired, an old lion king.
+Taffy Tortoise|f|90|Very slow, sweet ancient voice, patient and kind, a tortoise who is never late.
+Zebra Zed|m|27|Quick, striped-proud tenor, chatty and fun, a zebra.
+Mistral|n|55|Airy, rushing androgynous voice, fast and free, a wind over the sea.
+Ranger Grace Kim|f|31|Soft, clear mezzo, calm and caring, a ranger at a bird sanctuary.
+Barnaby Bloodhound|m|63|Droopy, slow baritone, sad and clever, a bloodhound on the trail.
+Nyla Nightingale|f|24|Singing, soft soprano, slow and beautiful, a nightingale.
+Gus Gopher|m|34|Quick, scrappy tenor, nervous and busy, a gopher popping out of holes.
+Lady Peahen|f|49|Elegant, quick alto, proud and witty, a peahen.
+Chirp|n|5|Tiny, peeping voice, slow and sleepy, a newly hatched chick.
+Ranger Hugo Lindahl|m|41|Hushed, warm baritone, slow and reverent, a ranger whispering beside a sleeping bear.
+Mother Meerkat|f|38|Quick, bossy alto, alert and protective, a meerkat mom counting her pups.
+Bartley Blowhole|m|59|Booming, wet bass, slow and jolly, a humpback whale who loves to sing.
+Kit Kitfox|f|15|Quick, curious young voice, playful and bright, a kit fox at the den.
+Grumble Grub|m|30|Low, slow mumbling tenor, lazy and funny, a grub who refuses to become a beetle.
+Aurora Arcticwing|f|47|Clear, cold soprano, calm and distant, a snow goose flying north.
+Toro the Bull|m|44|Snorting, deep baritone, proud and stubborn, a wild bull.
+Lilac Lorikeet|f|21|Squawky, bright young voice, colorful and loud, a lorikeet.
+Nestor Newt|m|12|Tiny, wet little voice, shy and curious, a newt under a rock.
+Sapphire Kingfisher|f|33|Sharp, quick mezzo, precise and proud, a kingfisher diving.
+Cedric Stag|m|56|Deep, resonant baritone, noble and slow, a red deer stag calling in autumn.
+Marsha Marmot|f|62|Whistling, quick older voice, chatty and fussy, a marmot on the mountain.
+Rex Rooster-Comb|m|26|Loud, crowing tenor, cocky and silly, a young rooster.
+Pudding Possum|f|42|Sleepy, slow alto, sweet and dramatic, a possum who plays dead.
+Ranger Kwame Asante|m|45|Rich, steady baritone, calm and proud, a ranger who protects elephants.
+Bubbles Blowfish|f|18|Bubbly, quick young voice, nervous and cute, a blowfish.
+Jasper Jackal|m|32|Yipping, quick tenor, sneaky and funny, a jackal.
+Willa Wildcat|f|29|Hissy, quick mezzo, fierce and independent, a wildcat.
+Barkley Beagle|m|19|Howling, excited young voice, fast and loud, a beagle on a scent.
+Ottoline Otter|f|55|Playful, quick older mezzo, cheerful and warm, an otter grandmother.
+Bjorn Musk Ox|m|68|Deep, shaggy old bass, slow and stubborn, a musk ox in the tundra.
+Coco Capuchin|f|10|Chattering, tiny voice, quick and cheeky, a capuchin baby.
+Sergeant Stork|m|50|Clipped, proud baritone, slow and stiff, a stork delivering news.
+Primrose Pademelon|f|26|Soft, quick young voice, shy and sweet, a small forest wallaby.
+Gideon Gharial|m|74|Slow, rasping old voice, patient and long, a gharial in the river.
+Saffron Songthrush|f|36|Melodic, warm mezzo, slow and lovely, a song thrush at dusk.
+Rudy Raven|m|38|Croaking, clever baritone, quick and witty, a raven solving puzzles.
+Dolly Dormouse|f|13|Sleepy, tiny voice, slow and yawning, a dormouse.
+Monty Mongoose|m|23|Quick, brave young tenor, fearless and fast, a mongoose facing a snake.
+Celestine Seahorse|f|44|Gentle, slow soprano, graceful and calm, a seahorse.
+Felix Ferret|m|28|Quick, sneaky tenor, playful and wiry, a ferret.
+Wren Willowtit|f|61|Chirpy, quick older voice, busy and kind, a small bird grandma.
+Hamish Hare|m|35|Fast, nervous baritone, quick and boastful, a mountain hare.
+Ingrid Ibex|f|49|Firm, steady alto, sure-footed and calm, an ibex on cliffs.
+Terrence Termite|m|9|Tiny, munching voice, busy and silly, a termite.
+Olga Owl|f|83|Very slow, hooting elderly voice, wise and sleepy, the oldest owl in the forest.
+Big Jim Buffalo|m|62|Rumbling, slow bass, tired and kind, a water buffalo.
+Lena Leopard|f|31|Silky, quiet mezzo, sleek and confident, a leopard in a tree.
+Glimmer|n|20|Shimmering, soft androgynous voice, slow and magical, a glowing deep-sea fish.
