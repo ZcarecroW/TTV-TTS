@@ -1,6 +1,6 @@
 // End-to-end test of internet access (guest API) on a running TTV-TTS Proxy
 // (debug build bound to 127.0.0.1, see e2e.mjs) against a real VCP.
-//   node apps/proxy/scripts/internet-e2e.mjs <lan host:port> <access key> <a VCP voice id>
+//   node apps/proxy/scripts/internet-e2e.mjs <lan host:port> <access key> [VCP voice id | none]
 // Turns internet access on, creates an invite, joins over the internet port
 // with the pinned certificate and checks what a guest can and cannot do.
 // Leaves internet access off again and removes the test guest.
@@ -80,7 +80,8 @@ ok((await call(lanBase, "/ttv/v1/status", { token: g })).status === 401, "a gues
 ok((await call(net, "/ttv/v1/library")).status === 401, "no token, no library");
 
 // 6. speaking (a library voice: given, or the first one)
-const voice = voiceArg || (await call(lanBase, "/ttv/v1/library", { token: key })).body?.entries?.[0]?.voice_id || "";
+// "none" skips speaking (e.g. while the VCP is busy with another proxy)
+const voice = voiceArg === "none" ? "" : voiceArg || (await call(lanBase, "/ttv/v1/library", { token: key })).body?.entries?.[0]?.voice_id || "";
 const notShared = await call(net, "/api/v1/generation/clone", { token: g, method: "POST", body: { voice_id: "voice_00000000", target_text: "Hallo" } });
 ok(notShared.status === 403, "only library voices can be used");
 const tooLong = await call(net, "/api/v1/generation/clone", { token: g, method: "POST", body: { voice_id: voice, target_text: "a".repeat(601) } });

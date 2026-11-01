@@ -667,6 +667,7 @@ async fn accept(listener: tokio::net::TcpListener, state: Arc<AppState>) {
         let _ = stream.set_nodelay(true);
         let acceptor = tokio_rustls::TlsAcceptor::from(state.tls.read().config.clone());
         let router = router.clone();
+        let st = state.clone();
         tokio::spawn(async move {
             let _slot = slot;
             let svc = router.map_request(move |mut req: hyper::Request<hyper::body::Incoming>| {
@@ -676,7 +677,12 @@ async fn accept(listener: tokio::net::TcpListener, state: Arc<AppState>) {
             let svc = TowerToHyperService::new(svc);
             let Ok(Ok(tls)) = tokio::time::timeout(Duration::from_secs(10), acceptor.accept(stream)).await else { return };
             let builder = hyper_util::server::conn::auto::Builder::new(TokioExecutor::new());
-            let _ = builder.serve_connection_with_upgrades(TokioIo::new(tls), svc).await;
+            // Switched off or changed: open connections (keep-alive, events)
+            // end too, not only the listener.
+            tokio::select! {
+                _ = builder.serve_connection_with_upgrades(TokioIo::new(tls), svc) => {}
+                _ = st.internet_rebind.notified() => {}
+            }
         });
     }
 }
