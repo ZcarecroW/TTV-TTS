@@ -24,15 +24,15 @@ const check = (cond, name, extra = "") => {
 await page.goto(base + query);
 await page.waitForSelector("nav button");
 const navItems = await page.locator("nav button").allTextContents();
-check(navItems.length === 6, "six pages in the navigation", navItems.join(" | "));
-const nav = (name) => page.locator("nav button").nth(["live", "profiles", "presets", "voices", "host", "settings"].indexOf(name)).click();
+check(navItems.length === 7, "seven pages in the navigation", navItems.join(" | "));
+const nav = (name) => page.locator("nav button").nth(["live", "profiles", "viewers", "presets", "voices", "host", "settings"].indexOf(name)).click();
 
 for (let i = 0; i < navItems.length; i++) {
   await page.locator("nav button").nth(i).click();
   await page.waitForTimeout(250);
   const text = await page.locator("main").innerText();
   // vue-i18n shows the key itself when a message is missing.
-  const raw = text.match(/\b(common|nav|host|voices|live|profiles|settings|tips|app|presets|jobs|compute|editor|lang)\.[a-zA-Z.]+\b/g);
+  const raw = text.match(/\b(common|nav|host|voices|live|profiles|settings|tips|app|presets|jobs|compute|editor|lang|viewers)\.[a-zA-Z.]+\b/g);
   check(!raw, `page "${navItems[i].trim()}" renders without raw i18n keys`, raw?.slice(0, 3).join(", ") ?? `${text.length} chars`);
 }
 
@@ -72,6 +72,14 @@ await page.waitForTimeout(300);
 const prof = await page.locator("main").innerText();
 check(prof.includes("zcarecrow"), "profile editor shows the channel");
 check(/(Computed|Berechnet): de 41 · en 30/.test(prof), "profile shows how much of its preset is computed", prof.match(/(Computed|Berechnet):[^\n]*/)?.[0] ?? "");
+
+// Viewers: list with voices, reassign by preset voice name.
+await nav("viewers");
+await page.waitForTimeout(500);
+const vw = await page.locator("main").innerText();
+check(/Mikey_TV/.test(vw) && /LenaPlays/.test(vw), "viewer list shows who chatted");
+check((await page.locator("main table select").count()) >= 2, "voices can be reassigned by name (preset mode)", String(await page.locator("main table select").count()));
+check((await page.locator("main table select").first().locator("option").count()) === 31, "reassign offers the profile's 30 preset voices", String(await page.locator("main table select").first().locator("option").count()));
 
 // Presets: cards, 1.x adoption, details with listening, computing, own preset.
 await nav("presets");

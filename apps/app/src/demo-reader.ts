@@ -86,6 +86,21 @@ export const readerState: ReaderView = {
 export function readerCommand(cmd: string, args: Record<string, unknown>, emit: (event: string, payload: unknown) => void): { value: unknown } | undefined {
   const v = (value: unknown) => ({ value });
   switch (cmd) {
+    case "list_viewers": {
+      const now = Math.floor(Date.now() / 1000);
+      const all = [
+        { user_id: "1", login: "mikey_tv", display: "Mikey_TV", color: "#1E90FF", last_seen: now - 20, messages: 214, role: 3, voice: "Imogen Vale", pinned: null, muted: false },
+        { user_id: "2", login: "lenaplays", display: "LenaPlays", color: "#FF69B4", last_seen: now - 75, messages: 88, role: 7, voice: "Marcus Thorne", pinned: null, muted: false },
+        { user_id: "3", login: "xx_gamer_xx", display: "xx_Gamer_xx", color: "#9ACD32", last_seen: now - 400, messages: 41, role: 12, voice: "Theo Pike", pinned: null, muted: true },
+        { user_id: "4", login: "oma_hilde", display: "Oma_Hilde", color: null, last_seen: now - 3600, messages: 12, role: null, voice: null, pinned: "fem_ger_wow", muted: false },
+      ];
+      const q = String(args.query ?? "").toLowerCase();
+      const viewers = all.filter((v) => !q || v.login.includes(q));
+      return v({ viewers, total: viewers.length });
+    }
+    case "set_viewer_role":
+    case "forget_viewer":
+      return v(undefined);
     case "get_reader":
       return v(structuredClone(readerState));
     case "save_profile": {

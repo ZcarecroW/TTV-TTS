@@ -21,7 +21,7 @@ import {
 import { i18n, setLocale } from "./i18n";
 import { setTheme } from "@ttv-tts/ui/theme";
 
-export type View = "live" | "profiles" | "presets" | "voices" | "host" | "settings";
+export type View = "live" | "profiles" | "viewers" | "presets" | "voices" | "host" | "settings";
 
 export const store = reactive({
   app: null as AppView | null,

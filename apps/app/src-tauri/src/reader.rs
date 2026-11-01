@@ -42,6 +42,34 @@ pub struct ProfileStore {
 #[serde(default)]
 pub struct Assignments {
     pub roles: HashMap<String, HashMap<String, u32>>,
+    /// profile -> user id -> who that is (for the viewer list).
+    pub viewers: HashMap<String, HashMap<String, Viewer>>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Viewer {
+    pub login: String,
+    pub display: String,
+    pub color: Option<String>,
+    /// Unix seconds.
+    pub last_seen: i64,
+    pub messages: u32,
+}
+
+/// A row of the viewer list.
+#[derive(Debug, Clone, Serialize)]
+pub struct ViewerView {
+    pub user_id: String,
+    #[serde(flatten)]
+    pub info: Viewer,
+    /// Voice role (index into the preset or pool).
+    pub role: Option<u32>,
+    /// Name of the voice the role stands for (preset mode).
+    pub voice: Option<String>,
+    /// A fixed voice set in the profile (login -> voice).
+    pub pinned: Option<String>,
+    pub muted: bool,
 }
 
 // ── views for the window ────────────────────────────────────────────────
@@ -403,6 +431,7 @@ fn view_of(state: &AppState, m: &ChatMessage, speech: String, lang: &str, s: Ite
 
 fn on_message(state: &Arc<AppState>, m: ChatMessage) {
     let Some(p) = profile_for(state, &m.channel) else { return };
+    remember_viewer(state, &p.id, &m);
     if m.kind == Kind::Chat && mod_command(state, &p, &m) {
         return;
     }
@@ -640,6 +669,100 @@ fn fnv1a(s: &str) -> u32 {
         h = h.wrapping_mul(0x01000193);
     }
     h
+}
+
+// ── viewers ─────────────────────────────────────────────────────────────
+
+/// Notes who wrote (cheap: one map entry per message, saved with the roles).
+fn remember_viewer(state: &AppState, profile: &str, m: &ChatMessage) {
+    if m.user_id.is_empty() || m.kind != Kind::Chat {
+        return;
+    }
+    let mut a = state.reader.assign.lock();
+    let v = a.viewers.entry(profile.to_string()).or_default().entry(m.user_id.clone()).or_default();
+    v.login.clone_from(&m.login);
+    v.display.clone_from(&m.display_name);
+    if m.color.is_some() {
+        v.color.clone_from(&m.color);
+    }
+    v.last_seen = chrono::Utc::now().timestamp();
+    v.messages = v.messages.saturating_add(1);
+    state.reader.assign_dirty.store(true, Ordering::Relaxed);
+}
+
+/// Name of the voice a role stands for in preset mode.
+fn role_voice(state: &AppState, p: &crate::profile::Profile, role: u32) -> Option<String> {
+    if p.voices.mode != VoiceMode::Preset {
+        return None;
+    }
+    state
+        .presets
+        .with(&p.voices.preset, |preset| {
+            let n = match p.voices.preset_voices {
+                0 => preset.defs.len(),
+                k => (k as usize).min(preset.defs.len()),
+            };
+            (n > 0).then(|| preset.defs[role as usize % n].name.clone())
+        })
+        .flatten()
+}
+
+/// Viewers of a profile, most recently active first. `query` filters by
+/// name; at most `limit` rows (the list can hold thousands).
+pub fn viewers(state: &AppState, profile: &str, query: &str, limit: usize) -> (Vec<ViewerView>, usize) {
+    let Some(p) = state.reader.store.read().profiles.iter().find(|x| x.id == profile).cloned() else { return (Vec::new(), 0) };
+    let q = query.trim().to_lowercase();
+    let a = state.reader.assign.lock();
+    let roles = a.roles.get(profile);
+    let mut rows: Vec<(&String, &Viewer)> = a
+        .viewers
+        .get(profile)
+        .map(|m| m.iter().filter(|(_, v)| q.is_empty() || v.login.contains(&q) || v.display.to_lowercase().contains(&q)).collect())
+        .unwrap_or_default();
+    let total = rows.len();
+    rows.sort_unstable_by(|x, y| y.1.last_seen.cmp(&x.1.last_seen));
+    rows.truncate(limit.max(1));
+    let rows: Vec<(String, Viewer, Option<u32>)> = rows.into_iter().map(|(id, v)| (id.clone(), v.clone(), roles.and_then(|r| r.get(id).copied()))).collect();
+    drop(a);
+    let out = rows
+        .into_iter()
+        .map(|(user_id, info, role)| ViewerView {
+            voice: role.and_then(|r| role_voice(state, &p, r)),
+            pinned: p.voices.users.get(&info.login).cloned(),
+            muted: p.muted.contains(&info.login),
+            role,
+            user_id,
+            info,
+        })
+        .collect();
+    (out, total)
+}
+
+/// Gives a viewer another voice role (or a fresh random one with None).
+pub fn set_role(state: &AppState, profile: &str, user_id: &str, role: Option<u32>) {
+    let mut a = state.reader.assign.lock();
+    let map = a.roles.entry(profile.to_string()).or_default();
+    match role {
+        Some(r) => {
+            map.insert(user_id.to_string(), r);
+        }
+        None => {
+            map.remove(user_id);
+        }
+    }
+    state.reader.assign_dirty.store(true, Ordering::Relaxed);
+}
+
+/// Forgets a viewer completely (voice role and list entry).
+pub fn forget_viewer(state: &AppState, profile: &str, user_id: &str) {
+    let mut a = state.reader.assign.lock();
+    if let Some(m) = a.roles.get_mut(profile) {
+        m.remove(user_id);
+    }
+    if let Some(m) = a.viewers.get_mut(profile) {
+        m.remove(user_id);
+    }
+    state.reader.assign_dirty.store(true, Ordering::Relaxed);
 }
 
 /// A voice for one message.

@@ -30,10 +30,15 @@ function parse(text: string): Parsed {
   return p;
 }
 
-const all: Preset[] = Object.entries(files).map(([path, text]) => {
-  const p = parse(text);
-  return { id: path.split("/").pop()!.replace(".txt", ""), name: p.name, description: p.description, icon: p.icon || "Waveform", builtin: true, target: p.defs.length, defs: p.defs };
-});
+// Same order as `builtin![…]` in presets.rs; files not listed come last.
+const ORDER = ["cinematic", "everyday-neighbors", "fantasy-tavern", "starship-crew", "noir-city", "saturday-cartoons", "high-seas", "royal-court", "midnight-horror", "arena-casters", "on-air", "wild-planet", "storytime", "frontier-west", "neon-streets", "olympus", "capes-and-masks", "grand-stage", "quest-givers", "calm-and-cozy"];
+const rank = (id: string) => (ORDER.indexOf(id) + 1 || 999);
+const all: Preset[] = Object.entries(files)
+  .map(([path, text]) => {
+    const p = parse(text);
+    return { id: path.split("/").pop()!.replace(".txt", ""), name: p.name, description: p.description, icon: p.icon || "Waveform", builtin: true, target: p.defs.length, defs: p.defs };
+  })
+  .sort((a, b) => rank(a.id) - rank(b.id));
 
 // The demo library: "def|lang" of computed voices. Cinematic has some already.
 const hash = (d: VoiceDef) => `${d.gender}|${d.age}|${d.description}`;

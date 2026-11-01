@@ -457,6 +457,7 @@ async fn batch(inner: &Arc<Inner>, vcp: &ttv_vcp::Client, id: &str) -> Result<()
 
     // 1. design all takes (design checkpoint)
     inner.update(id, |j| j.view.phase = "design".into());
+    let mut last_error = None;
     for it in items.iter_mut() {
         for _ in 0..takes {
             if !inner.gap(id).await {
@@ -469,9 +470,17 @@ async fn batch(inner: &Arc<Inner>, vcp: &ttv_vcp::Client, id: &str) -> Result<()
                     let duration = ttv_vcp::wav::duration_secs(&wav).unwrap_or(0.0);
                     it.takes.push(Take { wav, duration, wer: None });
                 }
-                Err(e) => log::warn!("design {}: {e}", label(it)),
+                Err(e) => {
+                    log::warn!("design {}: {e}", label(it));
+                    last_error = Some(e);
+                }
             }
         }
+    }
+    // Nothing designed at all: VCP is down or restarting. Try the batch again
+    // later (the worker waits) instead of counting a failed attempt per voice.
+    if items.iter().all(|it| it.takes.is_empty()) {
+        return Err(format!("Voice Creator Pro designed nothing: {}", last_error.unwrap_or_else(|| "no answer".into())));
     }
 
     // 2. speech check (speech recognition model)

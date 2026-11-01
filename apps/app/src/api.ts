@@ -445,3 +445,24 @@ export const presets = {
 export const DESIGN_LANGS = ["en", "de", "ru", "fr", "es", "it", "pt", "ja", "zh", "ko"] as const;
 /** Tiers of the built-in presets: their first 30, 60, 120 or all 240 voices. */
 export const TIERS = [30, 60, 120, 240] as const;
+
+// ── viewers ─────────────────────────────────────────────────────────────
+
+export interface ViewerView {
+  user_id: string;
+  login: string;
+  display: string;
+  color: string | null;
+  last_seen: number;
+  messages: number;
+  role: number | null;
+  voice: string | null;
+  pinned: string | null;
+  muted: boolean;
+}
+
+export const viewers = {
+  list: (profile: string, query: string) => invoke<{ viewers: ViewerView[]; total: number }>("list_viewers", { profile, query }),
+  setRole: (profile: string, userId: string, role: number | null) => invoke<void>("set_viewer_role", { profile, userId, role }),
+  forget: (profile: string, userId: string) => invoke<void>("forget_viewer", { profile, userId }),
+};

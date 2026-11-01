@@ -97,6 +97,7 @@ export const Trash = icon("Trash");
 export const Trophy = icon("Trophy");
 export const Tv = icon("Tv");
 export const Upload = icon("Upload");
+export const Users = icon("Users");
 export const Warning = icon("Warning");
 export const Waveform = icon("Waveform");
 export const Wifi = icon("Wifi");

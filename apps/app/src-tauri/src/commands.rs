@@ -340,6 +340,30 @@ pub fn mute_viewer(state: St, profile: String, login: String, on: bool) -> Reade
     reader_view(&state)
 }
 
+#[derive(Serialize)]
+pub struct ViewerList {
+    pub viewers: Vec<crate::reader::ViewerView>,
+    /// All matching viewers (the list shows the most recent ones).
+    pub total: usize,
+}
+
+#[tauri::command]
+pub fn list_viewers(state: St, profile: String, query: String) -> ViewerList {
+    let (viewers, total) = crate::reader::viewers(&state, &profile, &query, 300);
+    ViewerList { viewers, total }
+}
+
+/// Another voice for a viewer; None = a new random one on the next message.
+#[tauri::command]
+pub fn set_viewer_role(state: St, profile: String, user_id: String, role: Option<u32>) {
+    crate::reader::set_role(&state, &profile, &user_id, role);
+}
+
+#[tauri::command]
+pub fn forget_viewer(state: St, profile: String, user_id: String) {
+    crate::reader::forget_viewer(&state, &profile, &user_id);
+}
+
 // ── updates ─────────────────────────────────────────────────────────────
 
 #[tauri::command]

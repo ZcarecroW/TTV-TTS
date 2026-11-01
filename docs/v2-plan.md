@@ -27,16 +27,16 @@ Decisions come from the interview of 2026-11-01 (see the project notes); this fi
 - ✅ Audio output to a chosen device (cpal), resampling, per-voice loudness matching (gain measured when a voice is computed)
 - ✅ Queue, skip, pause, clear, history with reasons for filtered messages, mod commands, timeouts/bans/deletions (replay + approval mode ⏳)
 
-## M4 – Presets & voices 🔨
+## M4 – Presets & voices ✅
 - ✅ 20 built-in presets × 240 language-neutral definitions (4,800 unique), nested balanced tiers 30/60/120/240 – checked by a test; parse 3.6 ms, preset list over 48,000 computed voices 3.4 ms
 - ✅ "Classic" adoption of the existing `TTS-xx NN Name (Role)` voices (definitions rebuilt from VCP's design text, nothing regenerated)
 - ✅ Preset library UI, computed-voice status per language, listen with own text; profile voice mode "preset" (stable roles, fallback language)
 - ✅ Own presets: manual editor, AI prompt builder (parts of 60), paste + validation (line format), export as text
-- ⏳ Viewer list: assigned voice, reassign, pin, mute; assignments stable when a preset grows
+- ✅ Viewer list per profile: assigned voice, reassign by preset voice name, mute, forget; pinned voices shown; assignments stable when a preset grows
 
 ## M5 – Computing voices 🔨 (needs a test run on the real VCP PC)
 - ✅ Job engine (`crates/engine`, runs on the proxy, or in the app for single-PC setups): design → speech check → save → prime, in phases, resumable; library as append-only log with incremental change events
-- ✅ ETA (benchmark, then measured), live progress, pause/resume/cancel; chat first, jobs in the gaps; free the design checkpoint afterwards ⏳
+- ✅ ETA (benchmark, then measured), live progress, pause/resume/cancel; chat first, jobs in the gaps; every batch ends with priming, so the speaking checkpoint is loaded again for chat; a batch where VCP designs nothing is retried later instead of failing voices
 - ✅ Best of 1–3 takes; long-job warnings
 - ✅ Lossless sample backup (FLAC) on the computing PC; export/import of computed packs ⏳
 - ✅ Update the proxy from the app (check + install now)
