@@ -32,7 +32,7 @@ for (let i = 0; i < navItems.length; i++) {
   await page.waitForTimeout(250);
   const text = await page.locator("main").innerText();
   // vue-i18n shows the key itself when a message is missing.
-  const raw = text.match(/\b(common|nav|host|voices|live|profiles|settings|tips|app|presets|jobs|compute|editor|lang|viewers|quality)\.[a-zA-Z.]+\b/g);
+  const raw = text.match(/\b(common|nav|host|voices|live|profiles|settings|tips|app|presets|jobs|compute|editor|lang|viewers|quality|emotions|fx|friends|packs|downloads)\.[a-zA-Z.]+\b/g);
   check(!raw, `page "${navItems[i].trim()}" renders without raw i18n keys`, raw?.slice(0, 3).join(", ") ?? `${text.length} chars`);
 }
 
@@ -62,6 +62,7 @@ await nav("live");
 await page.waitForTimeout(300);
 const live = await page.locator("main").innerText();
 check(live.includes("Mikey_TV") && /ignored user/.test(live), "live page shows the current message and filtered ones with a reason");
+check(/(joy|Freude) \(normal\)/.test(await page.locator("main [data-emotion]").first().innerText()), "the current message shows its emotion", await page.locator("main [data-emotion]").first().innerText());
 await page.locator("main textarea").fill("Hallo aus dem Test");
 await page.locator("main").getByRole("button", { name: /^(send|senden)$/i }).click();
 await page.waitForTimeout(300);
@@ -98,6 +99,7 @@ await page.waitForTimeout(300);
 const prof = await page.locator("main").innerText();
 check(prof.includes("zcarecrow"), "profile editor shows the channel");
 check(/(Computed|Berechnet): de 41 · en 30/.test(prof), "profile shows how much of its preset is computed", prof.match(/(Computed|Berechnet):[^\n]*/)?.[0] ?? "");
+check(/Emotions from chat|Gefühle aus dem Chat/.test(prof) && /At most|Höchstens/.test(prof) && /(strong|stark)/.test(prof), "emotions from chat can be switched and capped per profile");
 check((await page.locator("main [role=switch]", { hasText: /^(Voice effects|Stimmeffekte)$/ }).count()) + (await page.locator("main").getByText(/^(Voice effects|Stimmeffekte)$/).count()) >= 1, "voice effects can be switched per profile");
 
 // Viewers: list with voices, reassign by preset voice name.

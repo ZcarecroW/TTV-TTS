@@ -357,6 +357,18 @@ const defaultVoice = computed({
                 </select>
               </UiField>
               <UiToggle v-model="p.voices.effects" :label="t('profiles.effects')" :tip="t('tips.voiceEffects')" />
+              <UiToggle v-model="p.voices.emotions" :label="t('profiles.emotions')" :tip="t('tips.emotions')" />
+              <UiSegmented
+                v-if="p.voices.emotions"
+                v-model="p.voices.emotion_strength"
+                :label="t('profiles.emotionStrength')"
+                :tip="t('tips.emotionStrength')"
+                :options="[
+                  { value: 'mild', label: t('emotions.levels.mild') },
+                  { value: 'normal', label: t('emotions.levels.normal') },
+                  { value: 'strong', label: t('emotions.levels.strong') },
+                ]"
+              />
             </div>
             <div class="space-y-4">
               <UiField :label="t('profiles.userVoices')" :tip="t('tips.userVoices')">

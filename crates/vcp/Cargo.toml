@@ -21,4 +21,5 @@ url = { workspace = true }
 tokio = { workspace = true, default-features = false, features = ["sync"] }
 
 [dev-dependencies]
+parking_lot = { workspace = true }
 tokio = { workspace = true }

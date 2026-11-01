@@ -318,6 +318,8 @@ pub struct VoiceRules {
     pub users: BTreeMap<String, String>,
     /// Speak with emotions picked from emotes, emojis and punctuation.
     pub emotions: bool,
+    /// At most this strong: "mild", "normal" or "strong".
+    pub emotion_strength: String,
     /// Play voice effects (radio, robot, …) from the voice definitions and
     /// the viewer list.
     pub effects: bool,
@@ -335,7 +337,8 @@ impl Default for VoiceRules {
             default_voice: None,
             per_language: BTreeMap::new(),
             users: BTreeMap::new(),
-            emotions: false,
+            emotions: true,
+            emotion_strength: "normal".into(),
             effects: true,
         }
     }

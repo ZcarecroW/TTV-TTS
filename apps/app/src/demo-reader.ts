@@ -36,7 +36,7 @@ export const baseProfile: Profile = {
     blocked_mode: "skip",
   },
   mod_commands: { enabled: true, roles: ["broadcaster", "moderator"], skip: "!skip", clear: "!ttsclear", pause: "!ttspause", resume: "!ttsresume", volume: "!ttsvol", mute: "!ttsmute", unmute: "!ttsunmute", skip_on_timeout: true },
-  voices: { mode: "preset", preset: "cinematic", preset_voices: 30, prefix: "TTS-{lang} ", fallback_language: "en", exclude: [], default_voice: null, per_language: {}, users: {}, emotions: false, effects: true },
+  voices: { mode: "preset", preset: "cinematic", preset_voices: 30, prefix: "TTS-{lang} ", fallback_language: "en", exclude: [], default_voice: null, per_language: {}, users: {}, emotions: true, emotion_strength: "normal", effects: true },
   muted: [],
 };
 
@@ -57,6 +57,8 @@ function item(display: string, original: string, speech: string, lang: string, v
     reason,
     at: Date.now() - (120 - id) * 9000,
     first_audio_ms: state === "spoken" ? 1100 + (id % 7) * 90 : null,
+    emotion: null,
+    intensity: null,
   };
 }
 
@@ -70,7 +72,7 @@ export const readerState: ReaderView = {
     channels: off ? [] : [{ name: "zcarecrow", joined: true, room_id: "123" }],
     paused: false,
     queue: [item("Lena_Plays", "wie heißt das spiel? 🤔", "Lena Plays sagt: wie heißt das spiel?, hmm", "de", "TTS-de 07 Elena (Abenteurerin)", "queued", null, "#8A5CF6")],
-    current: { ...item("Mikey_TV", "that boss fight was insane KEKW KEKW", "Mikey TV says: that boss fight was insane, kek", "en", "TTS-en 11 Gabriel (Hero)", "speaking", null, "#1E90FF"), first_audio_ms: 1240 },
+    current: { ...item("Mikey_TV", "that boss fight was insane KEKW KEKW", "Mikey TV says: that boss fight was insane, kek", "en", "TTS-en 11 Gabriel (Hero)", "speaking", null, "#1E90FF"), first_audio_ms: 1240, emotion: "joy", intensity: "normal" },
   },
   history: [
     item("nightbot", "Follow on Twitter!", "", "", null, "filtered", "ignored user (bot)"),
@@ -127,7 +129,11 @@ export function readerCommand(cmd: string, args: Record<string, unknown>, emit: 
       return v(undefined);
     case "test_message": {
       const user = String(args.user || "TestUser");
-      emit("app://history", item(user, String(args.text), user + " sagt: " + String(args.text), "de", "TTS-de 01 Konrad (Trailer-Erzähler)", "spoken"));
+      const text = String(args.text);
+      const it = item(user, text, user + " sagt: " + text, "de", "TTS-de 01 Konrad (Trailer-Erzähler)", "spoken");
+      if (/haha|KEKW|😂|lol/i.test(text)) Object.assign(it, { emotion: "joy", intensity: "mild" });
+      else if (/rip|😭|nooo/i.test(text)) Object.assign(it, { emotion: "sad", intensity: "mild" });
+      emit("app://history", it);
       return v(undefined);
     }
     case "mute_viewer":

@@ -13,6 +13,8 @@ struct Seen {
     active_posts: AtomicUsize,
     max_posts: AtomicUsize,
     gets_during_post: AtomicUsize,
+    /// bodies of the POSTs in the order VCP got them
+    order: parking_lot::Mutex<Vec<String>>,
 }
 
 async fn serve(seen: Arc<Seen>) -> String {
@@ -47,6 +49,7 @@ async fn serve(seen: Arc<Seen>) -> String {
                         buf.extend_from_slice(&chunk[..n]);
                     }
                     if head.starts_with("post") {
+                        seen.order.lock().push(String::from_utf8_lossy(&buf[head_end..]).to_string());
                         let now = seen.active_posts.fetch_add(1, Ordering::SeqCst) + 1;
                         seen.max_posts.fetch_max(now, Ordering::SeqCst);
                         tokio::time::sleep(Duration::from_millis(120)).await;
@@ -97,4 +100,27 @@ async fn work_requests_take_turns() {
     assert!(!ttv_vcp::is_work(&ttv_vcp::Method::POST, "/api/v1/generation/stop"));
     assert!(!ttv_vcp::is_work(&ttv_vcp::Method::POST, "/ttv/v1/jobs"));
     assert!(!ttv_vcp::is_work(&ttv_vcp::Method::GET, "/api/v1/voices"));
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn chat_goes_before_background_work() {
+    let seen = Arc::new(Seen::default());
+    let base = serve(seen.clone()).await;
+    let post = |name: &'static str, background: bool, delay: u64| {
+        let c = ttv_vcp::Client::new(&base, None);
+        let c = if background { c.background() } else { c };
+        tokio::spawn(async move {
+            tokio::time::sleep(Duration::from_millis(delay)).await;
+            c.post::<_, serde_json::Value>("/api/v1/generation/clone?sync=true", &serde_json::json!({ "n": name }), Duration::from_secs(10)).await.unwrap();
+        })
+    };
+    // chat A works, a job queues up (B), then more chat arrives (C): C first
+    let a = post("A", false, 0);
+    let b = post("B", true, 30);
+    let c = post("C", false, 60);
+    for t in [a, b, c] {
+        t.await.unwrap();
+    }
+    let order: Vec<String> = seen.order.lock().iter().map(|b| b.chars().filter(|c| c.is_ascii_uppercase()).collect()).collect();
+    assert_eq!(order, ["A", "C", "B"], "chat must not wait behind a job");
 }

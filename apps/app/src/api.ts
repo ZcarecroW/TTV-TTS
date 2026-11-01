@@ -300,6 +300,7 @@ export interface Profile {
     per_language: Record<string, string>;
     users: Record<string, string>;
     emotions: boolean;
+    emotion_strength: "mild" | "normal" | "strong";
     effects: boolean;
   };
   muted: string[];
@@ -321,6 +322,8 @@ export interface ItemView {
   reason: string | null;
   at: number;
   first_audio_ms: number | null;
+  emotion: string | null;
+  intensity: string | null;
 }
 
 export interface ReaderStatus {

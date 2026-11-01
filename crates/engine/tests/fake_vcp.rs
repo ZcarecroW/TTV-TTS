@@ -457,8 +457,8 @@ async fn the_same_voices_are_not_checked_twice_at_once() {
 }
 
 #[tokio::test(flavor = "multi_thread")]
-async fn after_chat_designs_wait_longer_than_checks() {
-    // chat 20 s ago: past the 6 s gap, within the 90 s design gap
+async fn after_chat_only_speaking_goes_on() {
+    // chat 20 s ago: past the 6 s gap, within the 90 s gap for model switches
     let (fake, base) = serve().await;
     let dir = std::env::temp_dir().join(format!("ttv-engine-test-{}", rand::random::<u64>()));
     let chat = std::time::Instant::now() - Duration::from_secs(20);
@@ -469,13 +469,14 @@ async fn after_chat_designs_wait_longer_than_checks() {
     let d = def(0, "m", "Hard-boiled detective.");
     let key = d.def.key("en");
     e.adopt(vec![ttv_link::LibraryEntry { key: key.clone(), def_hash: d.def.hash(), lang: "en".into(), voice_id: "voice_old".into(), gain: 1.0, ..Default::default() }]);
-    // a check uses the speaking checkpoint: it runs
+    // a check speaks with the voice (speaking checkpoint, like chat) ...
     e.submit(JobRequest { kind: JobKind::Review, defs: vec![d], ..request(0) }).unwrap();
-    until("the check", || e.status().jobs.iter().any(|j| j.kind == JobKind::Review && j.state == JobState::Done)).await;
-    // designing waits for a quieter chat
+    until("the check speaks", || fake.clones.load(Ordering::SeqCst) >= 1).await;
+    // ... but listens (speech recognition) only after a longer quiet
+    until("the check waits", || e.status().jobs.iter().any(|j| j.kind == JobKind::Review && j.state == JobState::Waiting && j.phase == "review")).await;
+    // designing waits for a quieter chat, too
     e.submit(request(1)).unwrap();
     tokio::time::sleep(Duration::from_millis(1500)).await;
-    let job = e.status().jobs.into_iter().find(|j| j.kind == JobKind::Compute).unwrap();
-    assert_eq!(job.state, JobState::Waiting, "{job:?}");
     assert_eq!(fake.designs.load(Ordering::SeqCst), 0);
+    assert!(e.status().jobs.iter().all(|j| j.state != JobState::Done), "{:?}", e.status().jobs);
 }

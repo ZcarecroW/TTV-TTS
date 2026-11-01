@@ -1,5 +1,6 @@
+use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, LazyLock};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use reqwest::{Method, StatusCode};
 use serde::Serialize;
@@ -13,9 +14,52 @@ use crate::types::*;
 /// process takes turns here; the turn is held until the answer is read.
 static TURN: LazyLock<Arc<tokio::sync::Mutex<()>>> = LazyLock::new(|| Arc::new(tokio::sync::Mutex::new(())));
 
-/// Waits for this process's turn at VCP (first come, first served).
-pub async fn turn() -> tokio::sync::OwnedMutexGuard<()> {
-    TURN.clone().lock_owned().await
+/// Chat requests waiting for their turn; background work lets them first.
+static CHAT_WAITING: AtomicUsize = AtomicUsize::new(0);
+/// When a chat request last gave its turn back (ms since START).
+static CHAT_DONE: AtomicU64 = AtomicU64::new(0);
+static START: LazyLock<Instant> = LazyLock::new(Instant::now);
+/// Background work also waits this long after chat: the app sends a
+/// message's next sentence right after the previous one came back.
+const CHAT_PAUSE: Duration = Duration::from_millis(1500);
+
+/// Holding it means VCP works for you; dropping it gives the turn back.
+pub struct Turn {
+    _guard: tokio::sync::OwnedMutexGuard<()>,
+    chat: bool,
+}
+
+impl Drop for Turn {
+    fn drop(&mut self) {
+        if self.chat {
+            CHAT_DONE.store(START.elapsed().as_millis() as u64, Ordering::Relaxed);
+        }
+    }
+}
+
+/// Waits for this process's turn at VCP. Chat (speech, previews, guests)
+/// goes in order of arrival and before background work.
+pub async fn turn() -> Turn {
+    CHAT_WAITING.fetch_add(1, Ordering::SeqCst);
+    let guard = TURN.clone().lock_owned().await;
+    CHAT_WAITING.fetch_sub(1, Ordering::SeqCst);
+    Turn { _guard: guard, chat: true }
+}
+
+/// The turn for background work (computing jobs): it steps aside while chat
+/// waits or has just been served, so a job request that was queued first
+/// doesn't make VCP switch models between two chat messages.
+pub async fn background_turn() -> Turn {
+    loop {
+        let guard = TURN.clone().lock_owned().await;
+        let since_chat = (START.elapsed().as_millis() as u64).saturating_sub(CHAT_DONE.load(Ordering::Relaxed));
+        let chat_done = CHAT_DONE.load(Ordering::Relaxed);
+        if CHAT_WAITING.load(Ordering::SeqCst) == 0 && (chat_done == 0 || since_chat >= CHAT_PAUSE.as_millis() as u64) {
+            return Turn { _guard: guard, chat: false };
+        }
+        drop(guard);
+        tokio::time::sleep(Duration::from_millis(200)).await;
+    }
 }
 
 /// Requests that make VCP work: generating, designing, transcribing,
@@ -78,6 +122,8 @@ pub struct Client {
     http: reqwest::Client,
     base: String,
     key: Option<String>,
+    /// Work of a computing job: chat goes first (see `background_turn`).
+    background: bool,
 }
 
 impl Client {
@@ -99,7 +145,13 @@ impl Client {
             http,
             base: base.trim_end_matches('/').to_string(),
             key: key.filter(|k| !k.is_empty()),
+            background: false,
         }
+    }
+
+    /// The same client for background work: its requests let chat go first.
+    pub fn background(&self) -> Self {
+        Self { background: true, ..self.clone() }
     }
 
     pub fn base(&self) -> &str {
@@ -151,7 +203,11 @@ impl Client {
         timeout: Duration,
     ) -> Result<T, Error> {
         // the timeout starts once it is this request's turn
-        let _turn = if is_work(&Method::POST, path) { Some(turn().await) } else { None };
+        let _turn = match (is_work(&Method::POST, path), self.background) {
+            (false, _) => None,
+            (true, false) => Some(turn().await),
+            (true, true) => Some(background_turn().await),
+        };
         self.send(self.request(Method::POST, path).json(body).timeout(timeout)).await
     }
 

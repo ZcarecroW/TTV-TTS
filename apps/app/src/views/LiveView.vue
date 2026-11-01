@@ -108,7 +108,7 @@ async function sendTest() {
           </div>
           <p class="mt-1.5 text-lg leading-snug">{{ status.current.speech }}</p>
           <p class="mt-2 text-xs text-muted">
-            {{ status.current.voice }}<span v-if="status.current.first_audio_ms"> · {{ t("live.firstAudio", { s: (status.current.first_audio_ms / 1000).toFixed(1) }) }}</span>
+            {{ status.current.voice }}<span v-if="status.current.emotion" data-emotion> · {{ t(`emotions.${status.current.emotion}`) }} ({{ t(`emotions.levels.${status.current.intensity}`) }})</span><span v-if="status.current.first_audio_ms"> · {{ t("live.firstAudio", { s: (status.current.first_audio_ms / 1000).toFixed(1) }) }}</span>
           </p>
         </div>
         <p v-else class="rounded-xl bg-panel-2 p-4 text-sm text-muted">{{ status.paused ? t("live.paused") : t("live.silence") }}</p>
@@ -151,6 +151,7 @@ async function sendTest() {
             <div class="flex flex-wrap items-center gap-x-2">
               <b :style="h.color ? { color: h.color } : undefined">{{ h.display }}</b>
               <span class="badge" :class="stateCls[h.state]">{{ t(`live.states.${h.state}`) }}</span>
+              <span v-if="h.emotion" class="badge" data-emotion :data-tip="t('tips.emotionBadge')">{{ t(`emotions.${h.emotion}`) }} · {{ t(`emotions.levels.${h.intensity}`) }}</span>
               <span v-if="h.reason" class="text-xs text-muted">{{ h.reason }}</span>
             </div>
             <div class="truncate text-muted" :title="h.original">{{ h.speech || h.original }}</div>

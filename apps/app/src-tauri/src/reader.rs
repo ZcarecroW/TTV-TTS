@@ -110,6 +110,9 @@ pub struct ItemView {
     pub reason: Option<String>,
     pub at: i64,
     pub first_audio_ms: Option<u64>,
+    /// Emotion picked from the message's cues, and how strongly.
+    pub emotion: Option<String>,
+    pub intensity: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
@@ -133,6 +136,7 @@ pub struct ReaderStatus {
 
 struct Item {
     view: ItemView,
+    cue: Option<text::emotion::Cue>,
     profile: String,
     user_id: String,
     msg_id: String,
@@ -160,6 +164,8 @@ struct VoiceCache {
     /// Languages the active model speaks (VCP names, lower case).
     languages: Option<Vec<String>>,
     default_voice: Option<String>,
+    /// The active model speaks with emotions (VCP's emotional clone).
+    emotional: bool,
     loaded: Option<Instant>,
 }
 
@@ -439,6 +445,8 @@ fn view_of(state: &AppState, m: &ChatMessage, speech: String, lang: &str, s: Ite
         reason,
         at: chrono::Utc::now().timestamp_millis(),
         first_audio_ms: None,
+        emotion: None,
+        intensity: None,
     }
 }
 
@@ -509,8 +517,12 @@ fn on_message(state: &Arc<AppState>, m: ChatMessage) {
         return filtered(state, &m, "nothing to read (blocked word or only symbols)");
     };
     state.reader.cooldown.lock().insert(m.login.clone(), now);
-    let view = view_of(state, &m, speech, lang, ItemState::Queued, None);
+    let cue = if p.voices.emotions { text::emotion::detect(&a, &text, &p.voices.emotion_strength) } else { None };
+    let mut view = view_of(state, &m, speech, lang, ItemState::Queued, None);
+    view.emotion = cue.map(|c| c.emotion.to_string());
+    view.intensity = cue.map(|c| c.intensity.to_string());
     let item = Item {
+        cue,
         name: text::spoken_name(&m.login, &m.display_name, &p),
         action: m.action,
         profile: p.id.clone(),
@@ -662,6 +674,7 @@ async fn refresh_voices(state: &Arc<AppState>) {
     all.sort_by(|a, b| natural_cmp(&a.name, &b.name));
     let languages = vcp.languages().await.ok().map(|l| l.into_iter().flat_map(|x| [x.id.to_lowercase(), x.name.to_lowercase()]).collect());
     let default_voice = vcp.agent_settings().await.ok().and_then(|a| a.default_voice);
+    let emotional = vcp.active_model().await.is_ok_and(|m| m.supports_emotional_clone);
     let prefix = state.reader.store.read().profiles.first().map(|p| p.voices.prefix.clone()).unwrap_or_else(|| "TTS-{lang} ".into());
     let mut pools: HashMap<String, Vec<ttv_vcp::Voice>> = HashMap::new();
     for l in langs::LANGS {
@@ -672,7 +685,7 @@ async fn refresh_voices(state: &Arc<AppState>) {
         }
     }
     log::info!("voices: {} in VCP, language pools: {}", all.len(), pools.iter().map(|(k, v)| format!("{k} {}", v.len())).collect::<Vec<_>>().join(", "));
-    *state.reader.voices.write() = VoiceCache { all, pools, languages, default_voice, loaded: Some(Instant::now()) };
+    *state.reader.voices.write() = VoiceCache { all, pools, languages, default_voice, emotional, loaded: Some(Instant::now()) };
 }
 
 fn fnv1a(s: &str) -> u32 {
@@ -985,15 +998,33 @@ async fn generator(state: Arc<AppState>) {
         let (ctx, crx) = mpsc::channel(8);
         let cancel = item.cancel.clone();
         let fx = if p.voices.effects { viewer_fx(&state, &p.id, &item.user_id).unwrap_or(voice_fx) } else { None };
+        let cue = item.cue.filter(|_| state.reader.voices.read().emotional);
         if tx.send(Prepared { item, clips: crx, gain, fx }).await.is_err() {
             return;
         }
-        let u = speech::Utterance { text, voice: voice_id, language: vcp_lang, emotion: None, intensity: None, gain, fx: None };
+        let mut u = speech::Utterance {
+            text,
+            voice: voice_id,
+            language: vcp_lang,
+            emotion: cue.map(|c| c.emotion.to_string()),
+            intensity: cue.map(|c| c.intensity.to_string()),
+            gain,
+            fx: None,
+        };
         for piece in speech::split(&u.text) {
             if cancel.load(Ordering::Relaxed) {
                 break;
             }
-            let r = speech::generate(&vcp, &u, &piece.0).await;
+            let mut r = speech::generate(&vcp, &u, &piece.0).await;
+            if let Err(e) = &r
+                && u.emotion.is_some()
+            {
+                // an emotion VCP can't do must not cost the message
+                log::info!("speaking with emotion {:?} failed ({e}) - without it", u.emotion);
+                u.emotion = None;
+                u.intensity = None;
+                r = speech::generate(&vcp, &u, &piece.0).await;
+            }
             let failed = r.is_err();
             if ctx.send(r).await.is_err() || failed {
                 break;

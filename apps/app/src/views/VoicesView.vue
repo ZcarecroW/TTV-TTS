@@ -88,7 +88,7 @@ const reportText = computed(() => {
           <label class="label">{{ t("voices.emotion") }}</label>
           <select v-model="emotion" class="input">
             <option value="">{{ t("voices.emotionNone") }}</option>
-            <option v-for="e in EMOTIONS" :key="e" :value="e">{{ e }}</option>
+            <option v-for="e in EMOTIONS" :key="e" :value="e">{{ t(`emotions.${e}`) }}</option>
           </select>
         </div>
         <div>

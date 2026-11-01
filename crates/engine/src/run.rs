@@ -160,7 +160,7 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
     let mut last_error = None;
     for it in items.iter_mut() {
         for _ in 0..takes {
-            if !inner.gap_for(id, crate::DESIGN_GAP).await {
+            if !inner.gap_for(id, crate::SWITCH_GAP).await {
                 return Ok(0);
             }
             let l = label(it);
@@ -201,7 +201,7 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
             }
             let (name, lang) = (label(it), it.lang);
             for take in it.takes.iter_mut().filter(|t| plausible(t)) {
-                if !inner.gap(id).await {
+                if !inner.gap_for(id, crate::SWITCH_GAP).await {
                     return Ok(0);
                 }
                 let l = name.clone();
@@ -327,7 +327,7 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
     if req.options.quality || improving {
         inner.phase(id, "review", fresh.len());
         for k in 0..fresh.len() {
-            if !inner.gap(id).await {
+            if !inner.gap_for(id, crate::SWITCH_GAP).await {
                 delete_candidates(vcp, &fresh[k..], improving).await;
                 return Ok(0);
             }
@@ -466,7 +466,7 @@ async fn review(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, items: Vec<Item>
     inner.phase(id, "review", items.len());
     let mut checked = 0;
     for (it, h) in items.iter().zip(heard) {
-        if !inner.gap(id).await {
+        if !inner.gap_for(id, crate::SWITCH_GAP).await {
             return Ok(checked);
         }
         let l = label(it);

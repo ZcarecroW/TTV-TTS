@@ -3,6 +3,7 @@
 //! render the text to speak with the profile's rules.
 
 pub mod emoji;
+pub mod emotion;
 pub mod lang;
 pub mod langs;
 

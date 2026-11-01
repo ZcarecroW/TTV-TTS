@@ -33,12 +33,12 @@ pub use store::Library;
 pub(crate) const BATCH: usize = 16;
 /// The engine only calls VCP after this much quiet (chat goes first).
 const GAP: Duration = Duration::from_secs(6);
-/// Designing needs VCP's design checkpoint, and switching between it and the
-/// speaking checkpoint takes ~17 s each way (measured on an RTX 3070, 1.7B
-/// models). After chat, designs wait for this much quiet, so a chatty stream
-/// doesn't pay the switch with every message; the other steps use the
-/// speaking checkpoint, like chat, and keep the short gap.
-pub(crate) const DESIGN_GAP: Duration = Duration::from_secs(90);
+/// Designing needs VCP's design checkpoint and speech recognition pushes the
+/// speaking model out of memory; switching back for chat takes ~16 s
+/// (measured on an RTX 3070, 1.7B models). After chat, these steps wait for
+/// this much quiet, so a chatty stream doesn't pay the switch with every
+/// message; steps that speak, like chat, keep the short gap.
+pub(crate) const SWITCH_GAP: Duration = Duration::from_secs(90);
 /// Attempts per voice before it counts as failed.
 pub(crate) const ATTEMPTS: u32 = 3;
 /// Accepted speech-check error rate.
@@ -137,7 +137,8 @@ impl Engine {
     }
 
     pub fn set_vcp(&self, vcp: Option<ttv_vcp::Client>) {
-        *self.inner.vcp.write() = vcp;
+        // chat goes first at VCP
+        *self.inner.vcp.write() = vcp.map(|c| c.background());
         self.inner.wake_up();
     }
 
