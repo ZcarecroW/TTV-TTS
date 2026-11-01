@@ -73,8 +73,14 @@ fn neutral(description: &str) -> String {
 /// stored).
 fn is_description(text: &str) -> bool {
     const WORDS: &[&str] = &["voice", "tone", "pitch", "timbre", "speaks", "speaking", "baritone", "tenor", "alto", "soprano", "bass", "accent", "raspy", "husky"];
+    // without the "(voice 5)" that tells apart roles with the same sentence
+    let t = text.trim();
+    let t = match t.rfind(" (voice ") {
+        Some(i) if t.ends_with(')') => &t[..i],
+        _ => t,
+    };
     // whole words: "stone" is no "tone"
-    text.to_lowercase().split(|c: char| !c.is_alphanumeric()).any(|w| WORDS.contains(&w))
+    t.to_lowercase().split(|c: char| !c.is_alphanumeric()).any(|w| WORDS.contains(&w))
 }
 
 /// Role words of the 1.x role voices (German labels like
@@ -380,6 +386,7 @@ mod tests {
         assert_eq!(entries[0].voice_id, "voice_1");
         assert!(migrate(&p, &voices, &entries).is_none(), "only once");
         assert!(!is_description("Long ago, legends were written in fire and stone."));
+        assert!(!is_description("The rain hadn't stopped for three days. (voice 5)"), "the duplicate marker isn't a description");
         assert!(is_description("A warm, low voice with a calm tone."));
     }
 }
@@ -400,5 +407,20 @@ mod real {
             println!("{} | {} | {} | {}", d.name, d.gender, d.age, d.description);
         }
         println!("{} defs, {} entries", p.defs.len(), entries.len());
+    }
+}
+
+#[cfg(test)]
+mod real_preset {
+    /// `TTV_PRESETS=%APPDATA%/io.github.zcarecrow.ttvtts/presets.json cargo test -p ttv-tts --lib classic_outdated_real -- --ignored --nocapture`
+    #[test]
+    #[ignore]
+    fn classic_outdated_real() {
+        let all: Vec<crate::presets::Preset> = serde_json::from_slice(&std::fs::read(std::env::var("TTV_PRESETS").unwrap()).unwrap()).unwrap();
+        let p = all.iter().find(|p| p.id == super::ID).expect("classic");
+        for d in p.defs.iter().take(5) {
+            println!("{} | {} | {} | is_description={}", d.name, d.gender, d.description, super::is_description(&d.description));
+        }
+        println!("outdated: {}", super::outdated(p));
     }
 }

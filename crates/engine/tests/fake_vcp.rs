@@ -440,3 +440,18 @@ async fn voices_left_unchecked_get_a_check_job() {
     assert!(jobs.iter().any(|j| j.kind == JobKind::Review && j.flagged == 1), "{jobs:?}");
     assert!(jobs.iter().any(|j| j.kind == JobKind::Improve && j.total == 1), "the check queued the improvement");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_same_voices_are_not_checked_twice_at_once() {
+    let (_fake, base) = serve().await;
+    let dir = std::env::temp_dir().join(format!("ttv-engine-test-{}", rand::random::<u64>()));
+    // no worker: jobs stay queued
+    let e = Engine::new(dir, Arc::new(|| None));
+    e.set_vcp(Some(ttv_vcp::Client::new(&base, None)));
+    let d = def(0, "m", "Hard-boiled detective.");
+    let key = d.def.key("en");
+    e.adopt(vec![ttv_link::LibraryEntry { key: key.clone(), def_hash: d.def.hash(), lang: "en".into(), voice_id: "v".into(), gain: 1.0, ..Default::default() }]);
+    let req = JobRequest { kind: JobKind::Review, defs: vec![d], only: vec![key], ..request(0) };
+    assert_eq!(e.submit(req.clone()).unwrap().total, 1);
+    assert!(e.submit(req).unwrap_err().contains("already"));
+}

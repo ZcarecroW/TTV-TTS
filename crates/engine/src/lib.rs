@@ -377,7 +377,22 @@ impl Engine {
 }
 
 impl Inner {
-    fn submit(&self, req: JobRequest) -> Result<JobView, String> {
+    fn submit(&self, mut req: JobRequest) -> Result<JobView, String> {
+        // Checking or improving a voice twice at the same time is wasted GPU
+        // time: leave out what an open job of the same kind covers already.
+        if matches!(req.kind, JobKind::Review | JobKind::Improve) && !req.only.is_empty() {
+            let busy: std::collections::HashSet<String> = self
+                .jobs
+                .lock()
+                .iter()
+                .filter(|j| j.request.kind == req.kind && matches!(j.view.state, JobState::Queued | JobState::Running | JobState::Waiting | JobState::Paused))
+                .flat_map(|j| j.request.only.iter().filter(|k| !j.processed.contains(k)).cloned())
+                .collect();
+            req.only.retain(|k| !busy.contains(k));
+            if req.only.is_empty() {
+                return Err("These voices are being checked or improved already.".into());
+            }
+        }
         if req.kind == JobKind::Import {
             let m = pack::read_manifest(std::path::Path::new(&req.pack))?;
             let total = m.voices.iter().filter(|v| !self.library.contains(&v.key)).count() as u32;
