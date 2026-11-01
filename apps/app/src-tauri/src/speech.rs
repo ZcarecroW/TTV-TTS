@@ -147,8 +147,14 @@ pub fn last_vcp_use() -> Option<Instant> {
     Instant::now().checked_sub(Duration::from_millis(now.saturating_sub(ms)))
 }
 
+/// Development builds: make every generation fail (to test the fallback voice).
+pub static DEBUG_FAIL: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
 /// Generates one piece with VCP (sync clone of a saved voice).
 pub async fn generate(vcp: &ttv_vcp::Client, u: &Utterance, text: &str) -> Result<(Vec<f32>, u32), String> {
+    if cfg!(debug_assertions) && DEBUG_FAIL.load(std::sync::atomic::Ordering::Relaxed) {
+        return Err("VCP failed (simulated)".into());
+    }
     touch();
     let mut body = serde_json::json!({ "voice_id": u.voice, "target_text": text, "language": u.language });
     if let Some(e) = u.emotion.as_deref().filter(|e| *e != "neutral") {

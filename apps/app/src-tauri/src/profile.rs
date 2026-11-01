@@ -329,6 +329,8 @@ pub struct VoiceRules {
     /// Play voice effects (radio, robot, …) from the voice definitions and
     /// the viewer list.
     pub effects: bool,
+    /// When the voice host can't speak, the system's own voice reads.
+    pub os_fallback: bool,
 }
 
 impl Default for VoiceRules {
@@ -346,6 +348,7 @@ impl Default for VoiceRules {
             emotions: true,
             emotion_strength: "normal".into(),
             effects: true,
+            os_fallback: false,
         }
     }
 }

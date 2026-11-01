@@ -177,6 +177,7 @@ export default {
     noHost: "No voice host yet – TTV-TTS can read the chat, but not speak.",
   },
   profiles: {
+    osFallback: "System voice when the voice host is down",
     approval: "Approve messages before they are read",
     approvalMinutes: "drop after (minutes)",
     translateTitle: "Translate for me",
@@ -674,6 +675,7 @@ export default {
     saved: "“{name}” saved with {n} voices.",
   },
   tips: {
+    osFallback: "If Voice Creator Pro or its PC can't speak (stopped, restarting, unreachable), your operating system's own voice reads the messages instead of skipping them – plain, but chat isn't lost. Windows uses an installed voice of the message's language, macOS \u201csay\u201d, Linux espeak-ng.",
     hotkeys: "These work everywhere, also while a game or OBS has the focus. Click a field and press the combination; Esc cancels. A combination another program already uses can't be taken.",
     pending: "Approval is on for this profile: nothing is read until you OK it here (or with the hotkey). Messages nobody approves are dropped after the set minutes.",
     approval: "For sensitive streams: every message waits on the Live page until you approve it with a click or a hotkey.",

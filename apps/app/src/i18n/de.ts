@@ -179,6 +179,7 @@ const de: typeof en = {
     noHost: "Noch kein Stimmen-Host – TTV-TTS kann den Chat lesen, aber nicht sprechen.",
   },
   profiles: {
+    osFallback: "Systemstimme, wenn der Stimmen-Host ausfällt",
     approval: "Nachrichten vor dem Vorlesen freigeben",
     approvalMinutes: "verwerfen nach (Minuten)",
     translateTitle: "Für mich übersetzen",
@@ -676,6 +677,7 @@ const de: typeof en = {
     saved: "„{name}“ mit {n} Stimmen gespeichert.",
   },
   tips: {
+    osFallback: "Kann Voice Creator Pro oder sein PC gerade nicht sprechen (beendet, startet neu, nicht erreichbar), liest die Stimme deines Betriebssystems die Nachrichten, statt sie zu überspringen – schlicht, aber der Chat geht nicht verloren. Windows nimmt eine installierte Stimme der Nachrichtensprache, macOS \u201esay\u201c, Linux espeak-ng.",
     hotkeys: "Die funktionieren überall, auch wenn ein Spiel oder OBS im Vordergrund ist. Feld anklicken und die Kombination drücken; Esc bricht ab. Eine Kombination, die ein anderes Programm schon nutzt, geht nicht.",
     pending: "Freigabe ist für dieses Profil an: Nichts wird vorgelesen, bevor du es hier (oder per Tastenkürzel) freigibst. Was niemand freigibt, wird nach der eingestellten Zeit verworfen.",
     approval: "Für heikle Streams: Jede Nachricht wartet auf der Live-Seite, bis du sie per Klick oder Tastenkürzel freigibst.",

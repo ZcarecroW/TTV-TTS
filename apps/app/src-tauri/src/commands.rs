@@ -269,6 +269,16 @@ pub async fn debug_vcp_low_vram(state: St<'_>, enabled: bool) -> Result<serde_js
     vcp.put(&format!("/api/v1/settings/low-vram?enabled={enabled}"), &serde_json::json!({}), Duration::from_secs(60)).await.map_err(|e| e.to_string())
 }
 
+/// Development builds only: every VCP generation fails while on.
+#[tauri::command]
+pub fn debug_fail_vcp(on: bool) -> Result<(), String> {
+    if !cfg!(debug_assertions) {
+        return Err("only in development builds".into());
+    }
+    speech::DEBUG_FAIL.store(on, std::sync::atomic::Ordering::Relaxed);
+    Ok(())
+}
+
 /// Translates a text the way "translate for me" would (to try it).
 #[tauri::command]
 pub async fn try_translate(state: St<'_>, text: String, from: Option<String>, target: String, provider: String) -> Result<Translated, String> {

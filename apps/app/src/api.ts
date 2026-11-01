@@ -310,6 +310,7 @@ export interface Profile {
     emotions: boolean;
     emotion_strength: "mild" | "normal" | "strong";
     effects: boolean;
+    os_fallback: boolean;
   };
   translate: { enabled: boolean; into: string; mine: string[]; read: "translation" | "both" | "show"; provider: "mymemory" | "deepl" | "vcp" };
   muted: string[];

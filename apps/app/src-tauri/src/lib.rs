@@ -14,6 +14,7 @@ mod friends_cmds;
 pub mod fx;
 #[cfg(desktop)]
 mod hotkeys;
+mod os_voice;
 mod translate;
 mod pack_cmds;
 mod preset_cmds;
@@ -103,6 +104,7 @@ pub fn run() {
             commands::set_deepl_key,
             commands::debug_vcp_get,
             commands::debug_vcp_low_vram,
+            commands::debug_fail_vcp,
             commands::skip,
             commands::get_reader,
             commands::save_profile,

@@ -413,6 +413,7 @@ const defaultVoice = computed({
                 </select>
               </UiField>
               <UiToggle v-model="p.voices.effects" :label="t('profiles.effects')" :tip="t('tips.voiceEffects')" />
+              <UiToggle v-model="p.voices.os_fallback" :label="t('profiles.osFallback')" :tip="t('tips.osFallback')" />
               <UiToggle v-model="p.voices.emotions" :label="t('profiles.emotions')" :tip="t('tips.emotions')" />
               <UiSegmented
                 v-if="p.voices.emotions"

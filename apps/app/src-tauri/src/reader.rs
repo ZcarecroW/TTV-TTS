@@ -165,6 +165,8 @@ struct Prepared {
     /// Loudness correction of the voice.
     gain: f32,
     fx: Option<crate::fx::Fx>,
+    /// Set when the system voice had to read (why the voice host failed).
+    fell_back: Arc<Mutex<Option<String>>>,
 }
 
 #[derive(Default)]
@@ -1109,24 +1111,47 @@ async fn generator(state: Arc<AppState>) {
             let vl = langs::vcp_name(into, state.reader.voices.read().languages.as_deref(), &p.language.unsupported);
             Some((t, v, vl))
         });
-        let Some(vcp) = state.vcp() else {
-            item.view.state = ItemState::Failed;
-            item.view.reason = Some("no voice host".into());
-            record(&state, item.view);
-            continue;
+        let fallback = p.voices.os_fallback;
+        let (vcp, voice) = match (state.vcp(), voice) {
+            (Some(c), Some(v)) => (c, v),
+            (host, _) => {
+                let why = if host.is_none() { "no voice host" } else { "no voice found - set a default voice in VCP or create voices" };
+                if !fallback {
+                    item.view.state = ItemState::Failed;
+                    item.view.reason = Some(why.into());
+                    record(&state, item.view);
+                    continue;
+                }
+                // the system's own voice reads instead
+                item.view.voice = Some("system voice".into());
+                item.view.reason = Some(format!("{why} – read by the system voice"));
+                state.reader.inflight.lock().push((item.view.id, item.user_id.clone(), item.msg_id.clone(), item.view.login.clone(), item.cancel.clone()));
+                let (ctx, crx) = mpsc::channel(8);
+                let cancel = item.cancel.clone();
+                if tx.send(Prepared { item, clips: crx, gain: 1.0, fx: None, fell_back: Arc::default() }).await.is_err() {
+                    return;
+                }
+                for piece in speech::split(&text) {
+                    if cancel.load(Ordering::Relaxed) {
+                        break;
+                    }
+                    let r = crate::os_voice::speak(&piece.0, &lang).await;
+                    let failed = r.is_err();
+                    if ctx.send(r).await.is_err() || failed {
+                        break;
+                    }
+                }
+                continue;
+            }
         };
-        let Some(Picked { id: voice_id, gain, fx: voice_fx, .. }) = voice else {
-            item.view.state = ItemState::Failed;
-            item.view.reason = Some("no voice found - set a default voice in VCP or create voices".into());
-            record(&state, item.view);
-            continue;
-        };
+        let Picked { id: voice_id, gain, fx: voice_fx, .. } = voice;
         state.reader.inflight.lock().push((item.view.id, item.user_id.clone(), item.msg_id.clone(), item.view.login.clone(), item.cancel.clone()));
         let (ctx, crx) = mpsc::channel(8);
         let cancel = item.cancel.clone();
         let fx = if p.voices.effects { viewer_fx(&state, &p.id, &item.user_id).unwrap_or(voice_fx) } else { None };
         let cue = item.cue.filter(|_| state.reader.voices.read().emotional);
-        if tx.send(Prepared { item, clips: crx, gain, fx }).await.is_err() {
+        let fell_back: Arc<Mutex<Option<String>>> = Arc::default();
+        if tx.send(Prepared { item, clips: crx, gain, fx, fell_back: fell_back.clone() }).await.is_err() {
             return;
         }
         let mut u = speech::Utterance {
@@ -1151,6 +1176,20 @@ async fn generator(state: Arc<AppState>) {
                 u.emotion = None;
                 u.intensity = None;
                 r = speech::generate(&vcp, &u, &piece.0).await;
+            }
+            if let Err(e) = &r
+                && fallback
+            {
+                // the voice host can't speak right now: the system voice reads this piece
+                log::info!("voice host failed ({e}) - system voice");
+                fell_back.lock().get_or_insert_with(|| e.clone());
+                r = crate::os_voice::speak(&piece.0, &lang).await.map(|(mut s, rate)| {
+                    // the player applies the voice's loudness correction
+                    if gain > 0.0 {
+                        s.iter_mut().for_each(|x| *x /= gain);
+                    }
+                    (s, rate)
+                });
             }
             let failed = r.is_err();
             if ctx.send(r).await.is_err() || failed {
@@ -1181,7 +1220,7 @@ async fn generator(state: Arc<AppState>) {
 }
 
 async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
-    while let Some(Prepared { mut item, mut clips, gain, fx }) = rx.recv().await {
+    while let Some(Prepared { mut item, mut clips, gain, fx, fell_back }) = rx.recv().await {
         let max_secs = state.reader.store.read().profiles.iter().find(|p| p.id == item.profile).map(|p| p.reading.max_seconds).unwrap_or(60) as f32;
         let t0 = Instant::now();
         item.view.state = ItemState::Speaking;
@@ -1254,6 +1293,10 @@ async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
             state.audio.wait(last_clip).await;
         }
         let cancelled = item.cancel.load(Ordering::Relaxed);
+        if let Some(why) = fell_back.lock().take() {
+            item.view.voice = Some("system voice".into());
+            item.view.reason = Some(format!("{why} – read by the system voice"));
+        }
         item.view.state = if let Some(e) = &error {
             log::warn!("speaking failed: {e}");
             item.view.reason = Some(e.clone());

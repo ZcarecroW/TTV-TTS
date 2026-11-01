@@ -5881,6 +5881,7 @@ dependencies = [
  "ttv-vcp",
  "unicode-segmentation",
  "url",
+ "windows",
 ]
 
 [[package]]

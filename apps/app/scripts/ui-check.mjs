@@ -131,6 +131,7 @@ check(/(Computed|Berechnet): de 41 · en 30/.test(prof), "profile shows how much
   await page.waitForTimeout(900);
   check(/Hallo zusammen! · 0\.5 s/.test(await tc.locator("[data-tried]").innerText().catch(() => "")), "a translation can be tried in the profile", await tc.locator("[data-tried]").innerText().catch(() => "none"));
 }
+check(/System voice when the voice host is down|Systemstimme, wenn der Stimmen-Host ausfällt/.test(prof), "a system voice can stand in when the voice host is down");
 check(/Emotions from chat|Gefühle aus dem Chat/.test(prof) && /At most|Höchstens/.test(prof) && /(strong|stark)/.test(prof), "emotions from chat can be switched and capped per profile");
 check((await page.locator("main [role=switch]", { hasText: /^(Voice effects|Stimmeffekte)$/ }).count()) + (await page.locator("main").getByText(/^(Voice effects|Stimmeffekte)$/).count()) >= 1, "voice effects can be switched per profile");
 

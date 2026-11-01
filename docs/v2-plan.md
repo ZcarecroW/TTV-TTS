@@ -54,7 +54,8 @@ Decisions come from the interview of 2026-11-01 (see the project notes); this fi
 - ✅ Translate for me: MyMemory (free, ~0.5 s), DeepL (own key) or VCP (offline; ~20 s because VCP holds one model); read the translation, both, or show it
 - ✅ Built-in voice effects (radio, telephone, megaphone, robot, cave, hall, walkie-talkie, underwater, whisper): per preset voice, per viewer in the viewer list, switch per profile; loudness matched on 60 real voices, < 0.1 % of real time
 - ⏳ VST3 + CLAP hosting
-- ⏳ Global hotkeys, event announcements (optional, off by default), OS-voice fallback (optional)
+- ✅ Global hotkeys (skip, pause, clear, play again, approve, drop), approval queue, play again from memory, system-voice fallback (Windows WinRT, macOS say, Linux espeak-ng)
+- ⏳ Event announcements (optional, off by default)
 - ⏳ Remote control API (Stream Deck, Streamer.bot), optional Twitch login (EventSub)
 
 ## M7 – Docs & release ⏳
