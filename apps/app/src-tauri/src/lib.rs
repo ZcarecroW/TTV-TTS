@@ -12,6 +12,7 @@ mod logbuf;
 mod monitor;
 mod friends_cmds;
 pub mod fx;
+mod translate;
 mod pack_cmds;
 mod preset_cmds;
 mod quality_cmds;
@@ -91,6 +92,10 @@ pub fn run() {
             commands::set_audio,
             commands::list_voices,
             commands::speak_test,
+            commands::try_translate,
+            commands::set_deepl_key,
+            commands::debug_vcp_get,
+            commands::debug_vcp_low_vram,
             commands::skip,
             commands::get_reader,
             commands::save_profile,

@@ -359,8 +359,31 @@ pub struct Profile {
     pub text: TextRules,
     pub mod_commands: ModCommands,
     pub voices: VoiceRules,
+    pub translate: TranslateRules,
     /// Viewers muted with !ttsmute or in the app.
     pub muted: Vec<String>,
+}
+
+/// "Translate for me": chat in languages the streamer doesn't speak.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct TranslateRules {
+    pub enabled: bool,
+    /// Into this language ("" = the profile's default language).
+    pub into: String,
+    /// Languages the streamer understands: never translated.
+    pub mine: Vec<String>,
+    /// "translation" (read only it), "both" (the original, then the
+    /// translation) or "show" (read the original, show the translation).
+    pub read: String,
+    /// "mymemory", "deepl" or "vcp".
+    pub provider: String,
+}
+
+impl Default for TranslateRules {
+    fn default() -> Self {
+        Self { enabled: false, into: String::new(), mine: Vec::new(), read: "translation".into(), provider: "mymemory".into() }
+    }
 }
 
 impl Default for Profile {
@@ -377,6 +400,7 @@ impl Default for Profile {
             text: TextRules::default(),
             mod_commands: ModCommands::default(),
             voices: VoiceRules::default(),
+            translate: TranslateRules::default(),
             muted: Vec::new(),
         }
     }

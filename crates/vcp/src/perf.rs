@@ -5,9 +5,9 @@
 //! the recent speed with the best speed seen with the same model and
 //! restarts VCP at a quiet moment when it has become clearly slower.
 //!
-//! Only speaking with saved voices counts (chat, previews, checks of
-//! existing voices); designing and the first sentence of a new voice do more
-//! work and would look slow.
+//! Only chat and previews count, and only when VCP spoke right before (no
+//! switch of models in between, which costs ~15 s); designing, recognition
+//! and the first sentence of a new voice do other or more work.
 
 use std::collections::{HashMap, VecDeque};
 use std::sync::{LazyLock, Mutex};
@@ -22,6 +22,9 @@ const MIN_AUDIO_SECS: f32 = 1.5;
 pub const SLOW_FACTOR: f32 = 1.8;
 /// … and slower than this (a fast GPU that got a bit slower is still fine).
 pub const SLOW_FLOOR: f32 = 0.7;
+/// Clearly broken whatever the usual speed: VCP in the state where it loads
+/// its model again for every sentence measured 4–6 (a restart: 0.5).
+pub const BROKEN: f32 = 2.5;
 
 #[derive(Default)]
 struct State {
@@ -107,12 +110,10 @@ pub struct Speed {
 }
 
 impl Speed {
-    /// Clearly slower than usual, measured on a full window.
+    /// Clearly slower than usual (or broken), measured on a full window.
     pub fn slow(&self) -> bool {
-        match (self.now, self.usual) {
-            (Some(n), Some(u)) => self.recent >= WINDOW && n > u * SLOW_FACTOR && n > SLOW_FLOOR,
-            _ => false,
-        }
+        let Some(n) = self.now.filter(|_| self.recent >= WINDOW) else { return false };
+        n > BROKEN || self.usual.is_some_and(|u| n > u * SLOW_FACTOR && n > SLOW_FLOOR)
     }
 }
 
@@ -199,6 +200,13 @@ mod tests {
         assert!(s.slow(), "{s:?}");
         clear_recent();
         assert!(!speed().slow(), "a restart starts over");
+        // broken even without a usual speed (a new model)
+        set_model("another-model");
+        for _ in 0..WINDOW {
+            record(18.0, 4.0); // 4.5: the model loads for every sentence
+        }
+        assert!(speed().slow(), "{:?}", speed());
+        set_model("test-model");
         // short clips and nonsense are ignored
         record(5.0, 0.5);
         record(f32::NAN, 3.0);

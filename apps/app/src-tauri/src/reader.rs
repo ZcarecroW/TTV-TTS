@@ -113,6 +113,8 @@ pub struct ItemView {
     /// Emotion picked from the message's cues, and how strongly.
     pub emotion: Option<String>,
     pub intensity: Option<String>,
+    /// "Translate for me": the message in the streamer's language.
+    pub translation: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
@@ -447,6 +449,7 @@ fn view_of(state: &AppState, m: &ChatMessage, speech: String, lang: &str, s: Ite
         first_audio_ms: None,
         emotion: None,
         intensity: None,
+        translation: None,
     }
 }
 
@@ -967,21 +970,51 @@ async fn generator(state: Arc<AppState>) {
             Announce::Never => false,
             Announce::OnChange => recent_other,
         };
-        let l = langs::get(&item.view.lang);
+        // translate for me: chat in a language the streamer doesn't speak
+        let tr = &p.translate;
+        let into = langs::intern(if tr.into.is_empty() { &p.language.default } else { &tr.into });
+        let mut translated = None;
+        if tr.enabled && item.view.lang != into && !tr.mine.contains(&item.view.lang) && !item.view.speech.trim().is_empty() {
+            let email = state.cfg.read().translate_email.clone();
+            let deepl = state.secrets.get(crate::secrets::DEEPL_KEY);
+            let host = state.vcp();
+            let svc = crate::translate::Service { provider: &tr.provider, email: &email, deepl_key: deepl.as_deref(), vcp: host.as_ref() };
+            match state.translator.translate(&svc, &item.view.speech, &item.view.lang, into).await {
+                Ok(t) => translated = Some(t),
+                Err(e) => {
+                    log::info!("translating failed: {e}");
+                    item.view.reason = Some(format!("not translated: {e}"));
+                }
+            }
+            item.view.translation = translated.clone();
+        }
+        // read: the original, the translation, or the original and then the translation
+        let (lang, body, then): (String, String, Option<String>) = match (translated, tr.read.as_str()) {
+            (Some(t), "translation") => (into.to_string(), t, None),
+            (Some(t), "both") => (item.view.lang.clone(), item.view.speech.clone(), Some(t)),
+            _ => (item.view.lang.clone(), item.view.speech.clone(), None),
+        };
+        let l = langs::get(&lang);
         let text = if item.action {
-            format!("{} {}", item.name, item.view.speech)
+            format!("{} {}", item.name, body)
         } else if announce {
-            l.map(|l| l.say).unwrap_or("{user}: {msg}").replace("{user}", &item.name).replace("{msg}", &item.view.speech)
+            l.map(|l| l.say).unwrap_or("{user}: {msg}").replace("{user}", &item.name).replace("{msg}", &body)
         } else {
-            item.view.speech.clone()
+            body
         };
         *state.reader.last.lock() = Some((item.view.login.clone(), Instant::now()));
-        let voice = pick_voice(&state, &p, &item.user_id, &item.view.login, &item.view.lang);
+        let voice = pick_voice(&state, &p, &item.user_id, &item.view.login, &lang);
         item.view.voice = voice.as_ref().map(|v| v.name.clone());
         let vcp_lang = {
             let vc = state.reader.voices.read();
-            langs::vcp_name(&item.view.lang, vc.languages.as_deref(), &p.language.unsupported)
+            langs::vcp_name(&lang, vc.languages.as_deref(), &p.language.unsupported)
         };
+        // the translation after the original: the viewer's voice in that language
+        let then = then.and_then(|t| {
+            let v = pick_voice(&state, &p, &item.user_id, &item.view.login, into)?;
+            let vl = langs::vcp_name(into, state.reader.voices.read().languages.as_deref(), &p.language.unsupported);
+            Some((t, v, vl))
+        });
         let Some(vcp) = state.vcp() else {
             item.view.state = ItemState::Failed;
             item.view.reason = Some("no voice host".into());
@@ -1028,6 +1061,26 @@ async fn generator(state: Arc<AppState>) {
             let failed = r.is_err();
             if ctx.send(r).await.is_err() || failed {
                 break;
+            }
+        }
+        if let Some((t, v, vl)) = then {
+            // its voice entry has its own loudness correction; the player applies the first one's
+            let ratio = if gain > 0.0 { v.gain / gain } else { 1.0 };
+            let u2 = speech::Utterance { text: t, voice: v.id, language: vl, emotion: u.emotion.clone(), intensity: u.intensity.clone(), gain: v.gain, fx: None };
+            for piece in speech::split(&u2.text) {
+                if cancel.load(Ordering::Relaxed) {
+                    break;
+                }
+                let r = speech::generate(&vcp, &u2, &piece.0).await.map(|(mut s, rate)| {
+                    if (ratio - 1.0).abs() > 1e-3 {
+                        s.iter_mut().for_each(|x| *x *= ratio);
+                    }
+                    (s, rate)
+                });
+                let failed = r.is_err();
+                if ctx.send(r).await.is_err() || failed {
+                    break;
+                }
             }
         }
     }

@@ -41,6 +41,14 @@ await nav("settings");
 await page.locator(".tip-btn").first().hover();
 await page.waitForTimeout(500);
 check(await page.locator("#ttv-tip").isVisible(), "tooltip appears on hover");
+{
+  const ts = page.locator("main [data-translation-service]");
+  check(/MyMemory/.test(await ts.innerText()) && /DeepL/.test(await ts.innerText()), "the translation service can be set up in the settings");
+  await ts.locator("input[type=password]").fill("demo-key:fx");
+  await ts.getByRole("button", { name: /^(Save|Speichern)$/ }).click();
+  await page.waitForTimeout(300);
+  check(/(key stored|Schlüssel gespeichert)/.test(await ts.locator("input[type=password]").getAttribute("placeholder")) && (await ts.getByRole("button", { name: /^(Remove|Entfernen)$/ }).count()) === 1, "a DeepL key is stored and can be removed");
+}
 
 // Voices: the library lists the demo voices and the test speaks.
 await nav("voices");
@@ -63,6 +71,7 @@ await page.waitForTimeout(300);
 const live = await page.locator("main").innerText();
 check(live.includes("Mikey_TV") && /ignored user/.test(live), "live page shows the current message and filtered ones with a reason");
 check(/(joy|Freude) \(normal\)/.test(await page.locator("main [data-emotion]").first().innerText()), "the current message shows its emotion", await page.locator("main [data-emotion]").first().innerText());
+check(/Hallo zusammen, welches Spiel ist das\?/.test(await page.locator("main [data-translation]").first().innerText()), "translated messages show the translation", await page.locator("main [data-translation]").first().innerText());
 await page.locator("main textarea").fill("Hallo aus dem Test");
 await page.locator("main").getByRole("button", { name: /^(send|senden)$/i }).click();
 await page.waitForTimeout(300);
@@ -99,6 +108,15 @@ await page.waitForTimeout(300);
 const prof = await page.locator("main").innerText();
 check(prof.includes("zcarecrow"), "profile editor shows the channel");
 check(/(Computed|Berechnet): de 41 · en 30/.test(prof), "profile shows how much of its preset is computed", prof.match(/(Computed|Berechnet):[^\n]*/)?.[0] ?? "");
+{
+  const tc = page.locator("main [data-translate]");
+  const tct = await tc.innerText();
+  check(/Translate for me|Für mich übersetzen/.test(tct) && /MyMemory/.test(tct) && /(original, then translation|Original, dann Übersetzung)/.test(tct), "profiles can translate chat for the streamer");
+  await tc.locator("input").last().fill("hola a todos!");
+  await tc.getByRole("button", { name: /^(Translate|Übersetzen)$/ }).click();
+  await page.waitForTimeout(900);
+  check(/Hallo zusammen! · 0\.5 s/.test(await tc.locator("[data-tried]").innerText().catch(() => "")), "a translation can be tried in the profile", await tc.locator("[data-tried]").innerText().catch(() => "none"));
+}
 check(/Emotions from chat|Gefühle aus dem Chat/.test(prof) && /At most|Höchstens/.test(prof) && /(strong|stark)/.test(prof), "emotions from chat can be switched and capped per profile");
 check((await page.locator("main [role=switch]", { hasText: /^(Voice effects|Stimmeffekte)$/ }).count()) + (await page.locator("main").getByText(/^(Voice effects|Stimmeffekte)$/).count()) >= 1, "voice effects can be switched per profile");
 

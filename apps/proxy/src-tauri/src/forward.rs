@@ -86,7 +86,7 @@ pub async fn handler(State(state): State<Arc<AppState>>, req: Request) -> Respon
     let turn = if ttv_vcp::is_work(&parts.method, parts.uri.path()) {
         touch_work();
         let t0 = std::time::Instant::now();
-        let t = ttv_vcp::turn().await;
+        let t = ttv_vcp::turn(parts.uri.path()).await;
         if t0.elapsed() > std::time::Duration::from_secs(5) {
             log::info!("{} waited {:.1} s for VCP", parts.uri.path(), t0.elapsed().as_secs_f32());
         }
@@ -111,7 +111,7 @@ pub async fn handler(State(state): State<Arc<AppState>>, req: Request) -> Respon
     }
 
     // speaking with a saved voice: how fast VCP is (see ttv_vcp::perf)
-    let meter = (turn.is_some() && parts.uri.path().starts_with("/api/v1/generation/clone") && !parts.uri.path().contains("stream")).then(|| Arc::new(parking_lot::Mutex::new(Meter::new())));
+    let meter = (turn.as_ref().is_some_and(ttv_vcp::Turn::measures_speed) && !parts.uri.path().contains("stream")).then(|| Arc::new(parking_lot::Mutex::new(Meter::new())));
     let sent = rb.send().await;
     if turn.is_some() {
         // the quiet gap counts from the end of a long generation

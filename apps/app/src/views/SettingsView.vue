@@ -29,6 +29,21 @@ const theme = setting("theme");
 const channel = setting("update_channel");
 const generation = setting("generation");
 
+const email = ref(c.value.translate_email ?? "");
+const saveEmail = () => {
+  if (email.value.trim() === (c.value.translate_email ?? "")) return;
+  void run("settings", () => api.updateSettings({ translate_email: email.value.trim() })).then(apply);
+};
+const deepl = ref("");
+async function saveDeepl() {
+  const v = await run("settings", () => api.setDeeplKey(deepl.value.trim()));
+  if (v) {
+    apply(v);
+    deepl.value = "";
+  }
+}
+const removeDeepl = () => void run("settings", () => api.setDeeplKey(null)).then(apply);
+
 async function open(url: string) {
   if (!isTauri) return void window.open(url, "_blank");
   const { openUrl } = await import("@tauri-apps/plugin-opener");
@@ -113,6 +128,22 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
         <span v-else-if="store.update?.phase === 'idle'" class="text-muted">· {{ t("settings.upToDate") }}</span>
         <button class="btn btn-sm ml-auto" :disabled="store.update?.phase === 'checking'" @click="updates.check()">{{ t("settings.checkNow") }}</button>
         <button v-if="store.update?.available" class="btn btn-primary btn-sm" @click="updates.install()">{{ t("settings.install") }}</button>
+      </div>
+    </section>
+
+    <section class="card p-5" data-translation-service>
+      <div class="card-head"><Globe />{{ t("settings.translateTitle") }}<UiTip :text="t('tips.translateService')" /></div>
+      <div class="space-y-4">
+        <UiField :label="t('settings.translateEmail')" :tip="t('tips.translateEmail')">
+          <input v-model="email" class="input" type="email" autocomplete="email" :placeholder="t('settings.translateEmailPlaceholder')" @blur="saveEmail" @keydown.enter="saveEmail" />
+        </UiField>
+        <UiField :label="t('settings.deeplKey')" :tip="t('tips.deeplKey')">
+          <div class="flex gap-2">
+            <input v-model="deepl" class="input mono" type="password" autocomplete="off" :placeholder="store.app?.deepl_key ? t('settings.deeplStored') : t('settings.deeplPlaceholder')" @keydown.enter="saveDeepl" />
+            <button class="btn" :disabled="!deepl.trim()" @click="saveDeepl">{{ t("common.save") }}</button>
+            <button v-if="store.app?.deepl_key" class="btn btn-ghost" @click="removeDeepl">{{ t("settings.deeplRemove") }}</button>
+          </div>
+        </UiField>
       </div>
     </section>
 

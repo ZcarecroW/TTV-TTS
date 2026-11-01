@@ -37,6 +37,7 @@ export const baseProfile: Profile = {
   },
   mod_commands: { enabled: true, roles: ["broadcaster", "moderator"], skip: "!skip", clear: "!ttsclear", pause: "!ttspause", resume: "!ttsresume", volume: "!ttsvol", mute: "!ttsmute", unmute: "!ttsunmute", skip_on_timeout: true },
   voices: { mode: "preset", preset: "cinematic", preset_voices: 30, prefix: "TTS-{lang} ", fallback_language: "en", exclude: [], default_voice: null, per_language: {}, users: {}, emotions: true, emotion_strength: "normal", effects: true },
+  translate: { enabled: true, into: "", mine: ["en"], read: "both", provider: "mymemory" },
   muted: [],
 };
 
@@ -59,6 +60,7 @@ function item(display: string, original: string, speech: string, lang: string, v
     first_audio_ms: state === "spoken" ? 1100 + (id % 7) * 90 : null,
     emotion: null,
     intensity: null,
+    translation: null,
   };
 }
 
@@ -75,6 +77,7 @@ export const readerState: ReaderView = {
     current: { ...item("Mikey_TV", "that boss fight was insane KEKW KEKW", "Mikey TV says: that boss fight was insane, kek", "en", "TTS-en 11 Gabriel (Hero)", "speaking", null, "#1E90FF"), first_audio_ms: 1240, emotion: "joy", intensity: "normal" },
   },
   history: [
+    { ...item("Pablo_Juega", "hola a todos, ¿qué juego es este?", "Pablo Juega dice: hola a todos, ¿qué juego es este?", "es", "TTS-es 04 Diego (Abenteurer)", "spoken", null, "#FF7F50"), translation: "Hallo zusammen, welches Spiel ist das?" },
     item("nightbot", "Follow on Twitter!", "", "", null, "filtered", "ignored user (bot)"),
     item("Anya_ru", "Привет всем! 🔥", "Anya ru пишет: Привет всем, огонь", "ru", "TTS-ru 16 Anastasia (Agentin)", "spoken", null, "#FF4500"),
     item("KlausDieter", "gg wp, bin gleich zurück", "Klaus Dieter sagt: gut gespielt well played, bin gleich zurück", "de", "TTS-de 13 Sebastian (Mentor)", "spoken", null, "#2E8B57"),

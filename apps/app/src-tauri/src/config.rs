@@ -79,6 +79,8 @@ pub struct Config {
     /// "stable" or "preview"
     pub update_channel: String,
     pub setup_done: bool,
+    /// Contact email for MyMemory (optional, 10× more translations a day).
+    pub translate_email: String,
 }
 
 impl Default for Config {
@@ -93,6 +95,7 @@ impl Default for Config {
             theme: "system".into(),
             update_channel: "preview".into(),
             setup_done: false,
+            translate_email: String::new(),
         }
     }
 }

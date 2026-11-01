@@ -50,7 +50,8 @@ Decisions come from the interview of 2026-11-01 (see the project notes); this fi
 - ✅ Update the proxy from the app (check + install now)
 
 ## M6 – Extras ⏳
-- ⏳ Emotions from chat cues (VCP emotional clone), translate-for-me (VCP /translate)
+- ✅ Emotions from chat cues (VCP emotional clone; emotes, emojis, words, shouting; capped per profile)
+- ✅ Translate for me: MyMemory (free, ~0.5 s), DeepL (own key) or VCP (offline; ~20 s because VCP holds one model); read the translation, both, or show it
 - ✅ Built-in voice effects (radio, telephone, megaphone, robot, cave, hall, walkie-talkie, underwater, whisper): per preset voice, per viewer in the viewer list, switch per profile; loudness matched on 60 real voices, < 0.1 % of real time
 - ⏳ VST3 + CLAP hosting
 - ⏳ Global hotkeys, event announcements (optional, off by default), OS-voice fallback (optional)

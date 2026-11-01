@@ -18,6 +18,15 @@ const p = ref<Profile | null>(null);
 const voices = ref<Voice[]>([]);
 const replLang = ref("all");
 
+const tryText = ref("");
+const tried = ref("");
+async function tryIt() {
+  const pr = p.value;
+  if (!pr || !tryText.value.trim()) return;
+  const into = pr.translate.into || pr.language.default;
+  const r = await run("translate", () => api.tryTranslate(tryText.value, into, pr.translate.provider));
+  if (r) tried.value = `${r.text} · ${t("profiles.translateTook", { s: (r.ms / 1000).toFixed(1) })}`;
+}
 const LANGS = ["de", "en", "ru", "uk", "fr", "es", "it", "pt", "nl", "pl", "tr", "ja", "zh", "ko"];
 
 // Preset mode: which preset, how many of its voices.
@@ -286,6 +295,46 @@ const defaultVoice = computed({
               </span>
               <UiPairs v-model="replMap" lower-keys :key-label="t('profiles.replaceFrom')" :value-label="t('profiles.replaceTo')" :add-label="t('profiles.add')" />
             </div>
+          </div>
+        </section>
+
+        <section class="card p-5" data-translate>
+          <div class="card-head"><Globe />{{ t("profiles.translateTitle") }}<UiTip :text="t('tips.translate')" /></div>
+          <div class="space-y-4">
+            <UiToggle v-model="p.translate.enabled" :label="t('profiles.translate')" />
+            <template v-if="p.translate.enabled">
+              <div class="grid grid-cols-2 gap-3">
+                <UiField :label="t('profiles.translateInto')">
+                  <select v-model="p.translate.into" class="input">
+                    <option value="">{{ t("profiles.translateIntoDefault", { lang: p.language.default }) }}</option>
+                    <option v-for="l in LANGS" :key="l" :value="l">{{ l }}</option>
+                  </select>
+                </UiField>
+                <UiField :label="t('profiles.translateProvider')" :tip="t('tips.translateProvider')">
+                  <select v-model="p.translate.provider" class="input">
+                    <option value="mymemory">{{ t("profiles.providerMyMemory") }}</option>
+                    <option value="deepl">{{ t("profiles.providerDeepl") }}</option>
+                    <option value="vcp">{{ t("profiles.providerVcp") }}</option>
+                  </select>
+                </UiField>
+              </div>
+              <UiField :label="t('profiles.translateMine')" :tip="t('tips.translateMine')"><UiTags v-model="p.translate.mine" lower mono /></UiField>
+              <UiSegmented
+                v-model="p.translate.read"
+                :label="t('profiles.translateRead')"
+                :options="[
+                  { value: 'translation', label: t('profiles.readTranslation') },
+                  { value: 'both', label: t('profiles.readBoth') },
+                  { value: 'show', label: t('profiles.readShow') },
+                ]"
+              />
+              <p v-if="p.translate.provider === 'deepl' && !store.app?.deepl_key" class="notice notice-warn text-xs">{{ t("profiles.deeplMissing") }}</p>
+              <div class="flex gap-2">
+                <input v-model="tryText" class="input" :placeholder="t('profiles.translateTry')" @keydown.enter="tryIt" />
+                <button class="btn" :disabled="!tryText.trim() || store.busy === 'translate'" @click="tryIt">{{ t("profiles.translateTryButton") }}</button>
+              </div>
+              <p v-if="tried" class="text-sm" data-tried>{{ tried }}</p>
+            </template>
           </div>
         </section>
 

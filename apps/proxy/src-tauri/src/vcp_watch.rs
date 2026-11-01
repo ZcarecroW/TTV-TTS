@@ -195,6 +195,10 @@ pub fn auto_restart_due() -> bool {
 }
 
 static SLOW_RESTART: AtomicBool = AtomicBool::new(false);
+/// Speed before the last restart for slowness (bits of an f32; 0 = none).
+static SLOW_BEFORE: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+/// A restart didn't make VCP faster: this machine is just slow.
+static SLOW_GAVE_UP: AtomicBool = AtomicBool::new(false);
 
 /// VCP has become clearly slower than usual: restart it once chat has been
 /// quiet for a minute, while nobody else may use it, and warm it up again.
@@ -211,9 +215,16 @@ async fn restart_slow(state: Arc<AppState>) {
     if !auto_restart_due() {
         return;
     }
-    let _turn = ttv_vcp::turn().await;
     let sp = ttv_vcp::perf::speed();
     let (now, usual) = (sp.now.unwrap_or(0.0), sp.usual.unwrap_or(0.0));
+    let before = f32::from_bits(SLOW_BEFORE.load(Ordering::Relaxed));
+    if before > 0.0 && now >= before * 0.8 {
+        log::info!("restarting VCP didn't make it faster ({before:.2} before, {now:.2} after) - not restarting it for slowness again");
+        SLOW_GAVE_UP.store(true, Ordering::Relaxed);
+        return;
+    }
+    let _turn = ttv_vcp::turn("/ttv/restart").await;
+    SLOW_BEFORE.store(now.to_bits(), Ordering::Relaxed);
     log::warn!(
         "Voice Creator Pro has become {:.1}x slower than usual ({now:.2} instead of {usual:.2} s per second of speech) - restarting it",
         if usual > 0.0 { now / usual } else { 0.0 }
@@ -285,7 +296,7 @@ pub async fn run(state: Arc<AppState>) {
             }
             saved_usual = usual;
         }
-        if when_slow && reachable && !starting && ttv_vcp::perf::speed().slow() && !SLOW_RESTART.swap(true, Ordering::Relaxed) {
+        if when_slow && reachable && !starting && !SLOW_GAVE_UP.load(Ordering::Relaxed) && ttv_vcp::perf::speed().slow() && !SLOW_RESTART.swap(true, Ordering::Relaxed) {
             let st = state.clone();
             tokio::spawn(async move {
                 restart_slow(st).await;

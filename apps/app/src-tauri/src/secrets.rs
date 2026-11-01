@@ -14,6 +14,8 @@ const SERVICE: &str = "TTV-TTS";
 
 /// VCP's API key when TTV-TTS talks to VCP directly (same PC).
 pub const VCP_KEY: &str = "vcp-api-key";
+/// The streamer's own DeepL API key ("translate for me").
+pub const DEEPL_KEY: &str = "deepl-api-key";
 
 /// Device token for a paired proxy.
 pub fn proxy_token(proxy_id: &str) -> String {

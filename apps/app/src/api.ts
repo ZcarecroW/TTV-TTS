@@ -129,6 +129,7 @@ export interface Config {
   theme: string;
   update_channel: string;
   setup_done: boolean;
+  translate_email: string;
 }
 
 export interface OutputDevice {
@@ -143,6 +144,7 @@ export interface AppView {
   devices: OutputDevice[];
   version: string;
   data_dir: string;
+  deepl_key: boolean;
 }
 
 export interface Found {
@@ -219,7 +221,7 @@ export async function listen<T>(event: string, cb: (payload: T) => void): Promis
 
 export const api = {
   state: () => invoke<AppView>("get_state"),
-  updateSettings: (patch: Partial<Pick<Config, "language" | "theme" | "update_channel" | "generation" | "setup_done">>) => invoke<AppView>("update_settings", { patch }),
+  updateSettings: (patch: Partial<Pick<Config, "language" | "theme" | "update_channel" | "generation" | "setup_done" | "translate_email">>) => invoke<AppView>("update_settings", { patch }),
   discover: () => invoke<Found[]>("discover_proxies"),
   probe: (address: string) => invoke<Probe>("probe_proxy", { address }),
   pair: (address: string, fingerprint: string, code: string) => invoke<AppView>("pair_proxy", { address, fingerprint, code }),
@@ -232,6 +234,8 @@ export const api = {
   setAudio: (patch: { device?: string | null; volume?: number; gap_ms?: number }) => invoke<AppView>("set_audio", { patch }),
   voices: () => invoke<Voice[]>("list_voices"),
   speakTest: (utterance: Utterance) => invoke<SayReport>("speak_test", { utterance }),
+  tryTranslate: (text: string, target: string, provider: string) => invoke<{ text: string; ms: number }>("try_translate", { text, from: null, target, provider }),
+  setDeeplKey: (key: string | null) => invoke<AppView>("set_deepl_key", { key }),
   skip: () => invoke<void>("skip"),
 };
 
@@ -303,6 +307,7 @@ export interface Profile {
     emotion_strength: "mild" | "normal" | "strong";
     effects: boolean;
   };
+  translate: { enabled: boolean; into: string; mine: string[]; read: "translation" | "both" | "show"; provider: "mymemory" | "deepl" | "vcp" };
   muted: string[];
 }
 
@@ -324,6 +329,7 @@ export interface ItemView {
   first_audio_ms: number | null;
   emotion: string | null;
   intensity: string | null;
+  translation: string | null;
 }
 
 export interface ReaderStatus {

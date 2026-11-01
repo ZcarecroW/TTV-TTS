@@ -107,6 +107,7 @@ async function sendTest() {
             <span class="text-muted">#{{ status.current.channel }} · {{ status.current.lang }}</span>
           </div>
           <p class="mt-1.5 text-lg leading-snug">{{ status.current.speech }}</p>
+          <p v-if="status.current.translation" class="mt-1 text-sm" data-translation>→ {{ status.current.translation }}</p>
           <p class="mt-2 text-xs text-muted">
             {{ status.current.voice }}<span v-if="status.current.emotion" data-emotion> · {{ t(`emotions.${status.current.emotion}`) }} ({{ t(`emotions.levels.${status.current.intensity}`) }})</span><span v-if="status.current.first_audio_ms"> · {{ t("live.firstAudio", { s: (status.current.first_audio_ms / 1000).toFixed(1) }) }}</span>
           </p>
@@ -155,6 +156,7 @@ async function sendTest() {
               <span v-if="h.reason" class="text-xs text-muted">{{ h.reason }}</span>
             </div>
             <div class="truncate text-muted" :title="h.original">{{ h.speech || h.original }}</div>
+            <div v-if="h.translation" class="truncate text-xs" data-translation>→ {{ h.translation }}</div>
           </div>
           <button class="btn btn-ghost btn-sm opacity-0 group-hover:opacity-100" @click="mute(h)"><Stop :size="14" />{{ t("live.mute") }}</button>
         </li>

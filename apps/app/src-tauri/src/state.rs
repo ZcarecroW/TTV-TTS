@@ -48,6 +48,8 @@ pub struct AppState {
     pub host_changed: Notify,
     /// The window wants live system stats of the proxy PC.
     pub watch_system: AtomicBool,
+    /// "Translate for me" (MyMemory, DeepL or VCP), with a small cache.
+    pub translator: crate::translate::Translator,
     app: OnceLock<AppHandle>,
 }
 
@@ -56,7 +58,9 @@ impl AppState {
         let secrets = Secrets::new(data_dir.clone());
         let audio = Arc::new(Audio::start(cfg.audio.device.clone(), cfg.audio.volume));
         let vcp = crate::host::client(&cfg.host, |k| secrets.get(k));
+        let web = reqwest::Client::builder().user_agent(concat!("TTV-TTS/", env!("CARGO_PKG_VERSION"))).build().unwrap_or_default();
         Arc::new(Self {
+            translator: crate::translate::Translator::new(web),
             reader: ReaderData::load(&data_dir),
             presets: PresetStore::load(&data_dir),
             library: VoiceLibrary::new(&data_dir),

@@ -578,7 +578,7 @@ async fn clone(State(state): S, axum::Extension(Guest(g)): axum::Extension<Guest
     });
     let body = serde_json::json!({ "voice_id": b.voice_id, "target_text": text, "language": b.language, "emotion": b.emotion, "intensity": b.intensity });
     let vcp = state.vcp();
-    let _vcp_turn = ttv_vcp::turn().await;
+    let _vcp_turn = ttv_vcp::turn("/api/v1/generation/clone").await;
     let r = vcp.request(ttv_vcp::Method::POST, "/api/v1/generation/clone?sync=true").json(&body).timeout(Duration::from_secs(300)).send().await;
     let answer = match r {
         Ok(r) => {

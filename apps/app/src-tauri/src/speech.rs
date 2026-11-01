@@ -150,7 +150,6 @@ pub fn last_vcp_use() -> Option<Instant> {
 /// Generates one piece with VCP (sync clone of a saved voice).
 pub async fn generate(vcp: &ttv_vcp::Client, u: &Utterance, text: &str) -> Result<(Vec<f32>, u32), String> {
     touch();
-    let t0 = Instant::now();
     let mut body = serde_json::json!({ "voice_id": u.voice, "target_text": text, "language": u.language });
     if let Some(e) = u.emotion.as_deref().filter(|e| *e != "neutral") {
         body["emotion"] = e.into();
@@ -177,8 +176,41 @@ pub async fn generate(vcp: &ttv_vcp::Client, u: &Utterance, text: &str) -> Resul
         let ch = f.channels as usize;
         samples = samples.chunks(ch).map(|c| c.iter().sum::<f32>() / ch as f32).collect();
     }
-    ttv_vcp::perf::record(t0.elapsed().as_secs_f32(), samples.len() as f32 / f.sample_rate.max(1) as f32);
     Ok((samples, f.sample_rate))
+}
+
+/// Translates chat text with VCP (`POST /api/v1/translate`, one result per
+/// text). `target` and `source` are language codes ("de", "en").
+pub async fn translate(vcp: &ttv_vcp::Client, texts: &[String], target: &str, source: Option<&str>) -> Result<Vec<String>, String> {
+    touch();
+    let mut body = serde_json::json!({ "texts": texts, "target_lang": target, "candidates": 1 });
+    if let Some(s) = source {
+        body["source_lang"] = s.into();
+    }
+    let v: serde_json::Value = vcp.post("/api/v1/translate", &body, Duration::from_secs(60)).await.map_err(|e| e.to_string())?;
+    touch();
+    let out = translations(&v).ok_or_else(|| format!("unexpected answer from VCP's translator: {}", v.to_string().chars().take(200).collect::<String>()))?;
+    if out.len() != texts.len() {
+        return Err(format!("VCP translated {} of {} texts", out.len(), texts.len()));
+    }
+    Ok(out)
+}
+
+/// The translated texts in VCP's answer: a list of strings, or of objects
+/// with the text, possibly under a key like "translations" or "results".
+fn translations(v: &serde_json::Value) -> Option<Vec<String>> {
+    let text_of = |x: &serde_json::Value| -> Option<String> {
+        match x {
+            serde_json::Value::String(s) => Some(s.clone()),
+            serde_json::Value::Object(o) => ["text", "translation", "translated", "target", "output", "result"].iter().find_map(|k| o.get(*k).and_then(|t| t.as_str()).map(str::to_string)),
+            _ => None,
+        }
+    };
+    match v {
+        serde_json::Value::Array(a) => a.iter().map(text_of).collect(),
+        serde_json::Value::Object(o) => ["translations", "results", "texts", "items", "data", "outputs"].iter().find_map(|k| o.get(*k).and_then(|x| x.as_array()).and_then(|a| a.iter().map(text_of).collect())),
+        _ => None,
+    }
 }
 
 /// Says `u` now: generates piece by piece and plays as soon as the first one

@@ -448,13 +448,8 @@ async fn review(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, items: Vec<Item>
         let wav = base64::engine::general_purpose::STANDARD.decode(sample.audio_base64.as_bytes()).unwrap_or_default();
         let analysis = audio::decode(&wav).map(|(s, r)| quality::analyze(&s, r)).unwrap_or_default();
         let text = sample.spoken_text().map(str::to_string);
-        let t0 = std::time::Instant::now();
         let (spoken, failure) = match crate::prime(vcp, &old.voice_id, it.lang).await {
-            Ok(s) => {
-                // a saved voice speaking: counts for VCP's speed
-                ttv_vcp::perf::record(t0.elapsed().as_secs_f32(), s.analysis.duration);
-                (Some(s), None)
-            }
+            Ok(s) => (Some(s), None),
             Err(Trouble::Down(e)) => return Err(e),
             Err(Trouble::Failed(e)) => (None, Some(e)),
         };

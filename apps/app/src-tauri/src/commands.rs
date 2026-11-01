@@ -23,6 +23,8 @@ pub struct AppView {
     pub devices: Vec<OutputDevice>,
     pub version: String,
     pub data_dir: String,
+    /// A DeepL API key is stored.
+    pub deepl_key: bool,
 }
 
 pub fn view(state: &AppState) -> AppView {
@@ -32,6 +34,7 @@ pub fn view(state: &AppState) -> AppView {
         devices: audio::devices(),
         version: env!("CARGO_PKG_VERSION").into(),
         data_dir: state.data_dir.to_string_lossy().into_owned(),
+        deepl_key: state.secrets.get(crate::secrets::DEEPL_KEY).is_some(),
     }
 }
 
@@ -48,6 +51,7 @@ pub struct SettingsPatch {
     update_channel: Option<String>,
     generation: Option<GenerationMode>,
     setup_done: Option<bool>,
+    translate_email: Option<String>,
 }
 
 #[tauri::command]
@@ -68,6 +72,9 @@ pub fn update_settings(state: St, patch: SettingsPatch) -> AppResult<AppView> {
         }
         if let Some(v) = patch.setup_done {
             c.setup_done = v;
+        }
+        if let Some(v) = patch.translate_email {
+            c.translate_email = v.trim().to_string();
         }
         c.normalize();
     }
@@ -229,6 +236,61 @@ pub async fn list_voices(state: St<'_>) -> AppResult<Vec<ttv_vcp::Voice>> {
     let mut v = vcp.voices().await?;
     v.sort_by_cached_key(|a| a.name.to_lowercase());
     Ok(v)
+}
+
+#[derive(Serialize)]
+pub struct Translated {
+    pub text: String,
+    pub ms: u64,
+}
+
+/// Development builds only: reads a VCP setting or status (GET under
+/// /api/v1/) through the voice host, for checks against the real setup.
+#[tauri::command]
+pub async fn debug_vcp_get(state: St<'_>, path: String) -> Result<serde_json::Value, String> {
+    if !cfg!(debug_assertions) {
+        return Err("only in development builds".into());
+    }
+    if !path.starts_with("/api/v1/") || path.contains("..") {
+        return Err("only VCP API paths".into());
+    }
+    let vcp = state.vcp().ok_or("no voice host")?;
+    vcp.get(&path, Duration::from_secs(20)).await.map_err(|e| e.to_string())
+}
+
+/// Development builds only: changes VCP's low-VRAM setting (PUT
+/// /api/v1/settings/low-vram), for measurements against the real setup.
+#[tauri::command]
+pub async fn debug_vcp_low_vram(state: St<'_>, enabled: bool) -> Result<serde_json::Value, String> {
+    if !cfg!(debug_assertions) {
+        return Err("only in development builds".into());
+    }
+    let vcp = state.vcp().ok_or("no voice host")?;
+    vcp.put(&format!("/api/v1/settings/low-vram?enabled={enabled}"), &serde_json::json!({}), Duration::from_secs(60)).await.map_err(|e| e.to_string())
+}
+
+/// Translates a text the way "translate for me" would (to try it).
+#[tauri::command]
+pub async fn try_translate(state: St<'_>, text: String, from: Option<String>, target: String, provider: String) -> Result<Translated, String> {
+    let from = match from.filter(|f| !f.is_empty()) {
+        Some(f) => f,
+        None => crate::text::lang::detect(&text).map(str::to_string).ok_or("The language of this text isn't clear – write a little more.")?,
+    };
+    let email = state.cfg.read().translate_email.clone();
+    let deepl = state.secrets.get(crate::secrets::DEEPL_KEY);
+    let vcp = state.vcp();
+    let t0 = std::time::Instant::now();
+    let svc = crate::translate::Service { provider: &provider, email: &email, deepl_key: deepl.as_deref(), vcp: vcp.as_ref() };
+    let out = state.translator.translate(&svc, &text, &from, &target).await?;
+    Ok(Translated { text: out, ms: t0.elapsed().as_millis() as u64 })
+}
+
+/// Stores (or with None/"" removes) the DeepL API key in the system keyring.
+#[tauri::command]
+pub fn set_deepl_key(state: St, key: Option<String>) -> AppResult<AppView> {
+    let key = key.map(|k| k.trim().to_string()).filter(|k| !k.is_empty());
+    state.secrets.set(crate::secrets::DEEPL_KEY, key.as_deref())?;
+    Ok(view(&state))
 }
 
 #[tauri::command]

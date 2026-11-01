@@ -43,6 +43,7 @@ const vcp = {
 const state: AppView = {
   version: "2.0.0",
   data_dir: "C:\\Users\\you\\AppData\\Roaming\\io.github.zcarecrow.ttvtts",
+  deepl_key: false,
   devices: [
     { id: "wasapi:speakers", name: "Speakers (Realtek(R) Audio)", default: true },
     { id: "wasapi:headset", name: "Headset (HyperX Cloud II)", default: false },
@@ -59,6 +60,7 @@ const state: AppView = {
     theme: params.get("theme") ?? "system",
     update_channel: "stable",
     setup_done: !params.has("setup"),
+    translate_email: "",
   },
   host: params.has("nohost")
     ? { kind: "none", connected: false, error: null, proxy: null, vcp: null }
@@ -215,6 +217,16 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
       return r(args.action === "check" ? { available: null, phase: "idle", progress: null, error: null, channel: "stable" } : null);
     case "list_voices":
       return r(voices);
+    case "try_translate": {
+      await new Promise((res) => setTimeout(res, 500));
+      const known: Record<string, string> = { "hola a todos": "Hallo zusammen", "привет": "Hallo" };
+      const text = String(args.text);
+      const hit = Object.entries(known).find(([k]) => text.toLowerCase().includes(k));
+      return r({ text: hit ? hit[1] + "!" : "(Übersetzung) " + text, ms: 480 });
+    }
+    case "set_deepl_key":
+      state.deepl_key = !!args.key;
+      return r(structuredClone(state));
     case "speak_test":
       await new Promise((res) => setTimeout(res, 1200));
       return r({ pieces: 2, first_audio_ms: 1180, total_ms: 6400, audio_secs: 5.2, rtf: 0.51 });

@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicU8, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, LazyLock};
 use std::time::{Duration, Instant};
 
@@ -23,39 +23,65 @@ static START: LazyLock<Instant> = LazyLock::new(Instant::now);
 /// message's next sentence right after the previous one came back.
 const CHAT_PAUSE: Duration = Duration::from_millis(1500);
 
+/// What VCP did last in this process: 0 nothing yet, 1 speaking with a
+/// saved voice, 2 anything else (design, recognition, translation …), which
+/// may have pushed the speaking model out of memory.
+static LAST_KIND: AtomicU8 = AtomicU8::new(0);
+const SPEAKING: u8 = 1;
+const OTHER: u8 = 2;
+
+fn kind_of(path: &str) -> u8 {
+    if path.starts_with("/api/v1/generation/clone") { SPEAKING } else { OTHER }
+}
+
 /// Holding it means VCP works for you; dropping it gives the turn back.
 pub struct Turn {
     _guard: tokio::sync::OwnedMutexGuard<()>,
     chat: bool,
+    kind: u8,
+    after_speaking: bool,
+}
+
+impl Turn {
+    /// Speaking right after speaking: VCP didn't have to switch models, so
+    /// this request tells how fast VCP really is (see `perf`).
+    pub fn measures_speed(&self) -> bool {
+        self.kind == SPEAKING && self.after_speaking
+    }
 }
 
 impl Drop for Turn {
     fn drop(&mut self) {
+        LAST_KIND.store(self.kind, Ordering::Relaxed);
         if self.chat {
             CHAT_DONE.store(START.elapsed().as_millis() as u64, Ordering::Relaxed);
         }
     }
 }
 
-/// Waits for this process's turn at VCP. Chat (speech, previews, guests)
-/// goes in order of arrival and before background work.
-pub async fn turn() -> Turn {
+fn granted(guard: tokio::sync::OwnedMutexGuard<()>, chat: bool, path: &str) -> Turn {
+    Turn { _guard: guard, chat, kind: kind_of(path), after_speaking: LAST_KIND.load(Ordering::Relaxed) == SPEAKING }
+}
+
+/// Waits for this process's turn at VCP to do `path`. Chat (speech,
+/// previews, guests) goes in order of arrival and before background work.
+pub async fn turn(path: &str) -> Turn {
     CHAT_WAITING.fetch_add(1, Ordering::SeqCst);
     let guard = TURN.clone().lock_owned().await;
     CHAT_WAITING.fetch_sub(1, Ordering::SeqCst);
-    Turn { _guard: guard, chat: true }
+    granted(guard, true, path)
 }
 
 /// The turn for background work (computing jobs): it steps aside while chat
 /// waits or has just been served, so a job request that was queued first
 /// doesn't make VCP switch models between two chat messages.
-pub async fn background_turn() -> Turn {
+pub async fn background_turn(path: &str) -> Turn {
     loop {
         let guard = TURN.clone().lock_owned().await;
         let since_chat = (START.elapsed().as_millis() as u64).saturating_sub(CHAT_DONE.load(Ordering::Relaxed));
         let chat_done = CHAT_DONE.load(Ordering::Relaxed);
         if CHAT_WAITING.load(Ordering::SeqCst) == 0 && (chat_done == 0 || since_chat >= CHAT_PAUSE.as_millis() as u64) {
-            return Turn { _guard: guard, chat: false };
+            return granted(guard, false, path);
         }
         drop(guard);
         tokio::time::sleep(Duration::from_millis(200)).await;
@@ -180,6 +206,12 @@ impl Client {
     }
 
     async fn send<T: DeserializeOwned>(&self, rb: reqwest::RequestBuilder) -> Result<T, Error> {
+        let bytes = self.send_bytes(rb).await?;
+        serde_json::from_slice(&bytes).map_err(|e| Error::Decode(format!("{e}: {}", preview(&bytes))))
+    }
+
+    /// The answer's body, or VCP's error.
+    async fn send_bytes(&self, rb: reqwest::RequestBuilder) -> Result<bytes::Bytes, Error> {
         let res = rb.send().await.map_err(Error::from_reqwest)?;
         let status = res.status();
         let bytes = res.bytes().await.map_err(Error::from_reqwest)?;
@@ -189,7 +221,7 @@ impl Client {
         if !status.is_success() {
             return Err(Error::Http { status: status.as_u16(), message: error_message(&bytes) });
         }
-        serde_json::from_slice(&bytes).map_err(|e| Error::Decode(format!("{e}: {}", preview(&bytes))))
+        Ok(bytes)
     }
 
     pub async fn get<T: DeserializeOwned>(&self, path: &str, timeout: Duration) -> Result<T, Error> {
@@ -203,12 +235,23 @@ impl Client {
         timeout: Duration,
     ) -> Result<T, Error> {
         // the timeout starts once it is this request's turn
-        let _turn = match (is_work(&Method::POST, path), self.background) {
+        let turn = match (is_work(&Method::POST, path), self.background) {
             (false, _) => None,
-            (true, false) => Some(turn().await),
-            (true, true) => Some(background_turn().await),
+            (true, false) => Some(turn(path).await),
+            (true, true) => Some(background_turn(path).await),
         };
-        self.send(self.request(Method::POST, path).json(body).timeout(timeout)).await
+        let t0 = Instant::now();
+        let bytes = self.send_bytes(self.request(Method::POST, path).json(body).timeout(timeout)).await?;
+        // chat and previews tell how fast VCP is; computing jobs don't (their
+        // first sentence with a new voice does more work)
+        if !self.background
+            && turn.as_ref().is_some_and(Turn::measures_speed)
+            && let Some(audio) = crate::perf::audio_secs(&bytes[..bytes.len().min(1024)], &bytes[bytes.len().saturating_sub(512)..], bytes.len())
+        {
+            crate::perf::record(t0.elapsed().as_secs_f32(), audio);
+        }
+        drop(turn);
+        serde_json::from_slice(&bytes).map_err(|e| Error::Decode(format!("{e}: {}", preview(&bytes))))
     }
 
     pub async fn put<B: Serialize + ?Sized, T: DeserializeOwned>(
