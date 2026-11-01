@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Neon Streets
+desc: Hackers, fixers, androids, corporate sharks and street vendors of a rain-soaked future city
+icon: Robot
+---
+Jax Voltaire|m|29|Fast, wired tenor, sarcastic and jittery, a hacker who talks faster than he types.
+Mira Kade|f|34|Low, smoky alto, cool and calculating, a fixer who knows everyone's price.
+Unit KX-9|n|40|Flat, precise synthetic voice, polite and emotionless, a security android on patrol.|fx=robot
+Old Man Takeda|m|71|Gravelly, slow old baritone, calm and wise, a noodle stand owner who sees everything.
+Neon Nyx|f|22|Bright, rapid soprano, hyper and playful, a street racer with glowing tattoos.
+Director Vance Sterling|m|55|Smooth, cold baritone, slow and corporate, an executive who never raises his voice.
+Static Sal|m|45|Crackly, rough baritone, paranoid and quick, a pirate radio DJ broadcasting from a roof.
+Echo|f|26|Soft, airy soprano, slightly hollow and dreamy, an android learning to feel.|fx=robot
+Ripper Doc Hale|m|58|Dry, clinical baritone, slow and morbid, a back-alley cyber surgeon.
+Lux Moreno|f|31|Husky, quick mezzo, cocky and loud, a mercenary with a chrome arm.
+Byte|n|17|Glitchy, quick androgynous young voice, nervous and clever, a kid who lives in the network.
+Granny Ozone|f|80|Cracked, cackling elderly voice, quick and sharp, a retired hacker legend.
+Detective Reno Shaw|m|43|Tired, low baritone, slow and cynical, a cop in a city that lost its rules.
+Kiko Starling|f|19|Bubbly, rapid young voice, giggly and loud, an idol streamer.
+Silas Graft|m|38|Oily, slick tenor, smooth and greedy, a black-market dealer.
+AURORA Assistant|f|35|Warm, perfectly even synthetic soprano, friendly and calm, a city AI on every billboard.|fx=robot
+Dante Cross|m|24|Raspy, angry young tenor, quick and rebellious, a gang leader of the lower levels.
+Madam Lotus|f|52|Velvety, slow alto, elegant and dangerous, the owner of the club at the top of the tower.
+Wire|m|33|Low, mumbling baritone, quiet and odd, a netrunner half-asleep in a chair.
+Sister Circuit|f|44|Calm, chanting mezzo, slow and serene, a priestess of a machine cult.
+Bolt Okafor|m|27|Booming, quick baritone, cheerful and loud, a courier on a motorbike.
+Ivy Chrome|f|29|Cold, precise soprano, quick and sharp, a corporate assassin.
+Professor Yuen|m|66|Soft, careful older tenor, slow and brilliant, a scientist who built the first AI.
+Pixel Pete|m|14|Squeaky, fast young voice, cheeky and loud, a kid selling hacked games.
+Commander Rhea Vos|f|48|Firm, commanding alto, clipped and cold, the leader of the corporate security force.
+Ghostwire|n|30|Distorted, whispery androgynous voice, slow and eerie, a hacker who only appears as a voice.|fx=radio
+Mama Juno|f|63|Warm, raspy older alto, slow and protective, the owner of a street clinic.
+Tank Brodsky|m|50|Deep, slow bass, heavy and simple, a cyborg bouncer.
+Nova Reyes|f|25|Quick, determined mezzo, brave and smart, a journalist exposing the megacorp.
+Baron Klaus Mettler|m|62|Cold, aristocratic baritone, slow and cruel, a corporate dynasty patriarch.
+Synth|f|21|Smooth, layered synthetic voice, musical and soft, an android singer in a neon bar.|fx=robot
+Rook Tanaka|m|36|Quiet, controlled baritone, slow and focused, a sniper on a rooftop.
+Zara Flux|f|40|Rapid, nasal mezzo, scheming and funny, a broker of stolen memories.
+Old Gears|m|77|Creaky, slow old voice, kind and grumbling, a repairman with mechanical hands.
+Lyra Patch|f|16|Soft, quick young voice, shy and brave, a runaway with a hacked implant.
+Viktor Krell|m|47|Gravelly, threatening baritone, slow and calm, a crime boss with a smile.
+Tess Marlowe|f|32|Cool, dry alto, sarcastic and tired, a taxi drone pilot.
+Unit Nine|n|50|Calm, deep synthetic androgynous voice, slow and polite, a ship computer turned city manager.|fx=robot
+Ricky Neon|m|23|Loud, flashy tenor, fast and showy, a street DJ with a light-up jacket.
+Dr. Elara Quinn|f|56|Precise, cool older soprano, slow and clever, a neuroscientist with secrets.
+Mack Rivet|m|41|Rough, quick baritone, loud and joking, a mechanic in a garage full of drones.
+Saffron Lee|f|27|Silky, slow mezzo, alluring and cold, a corporate spy.
+Ozzy Overclock|m|30|Hyper, rapid tenor, jittery and wired, a gamer on too many stimulants.
+Agatha Sprawl|f|73|Brittle, sharp elderly voice, quick and nosy, a landlady in a crumbling tower.
+Kai Sato|m|19|Calm, quiet young tenor, polite and talented, a young hacker prodigy.
+Velvet Vex|f|38|Purring, slow alto, teasing and dangerous, the voice of a pleasure club.
+Officer Brandt|m|35|Flat, clipped baritone, cold and bored, a beat cop scanning IDs.
+Juniper Spark|f|24|Bright, quick young voice, cheerful and loud, a food cart cook.
+Mr. Null|n|60|Smooth, empty androgynous voice, slow and polite, a mysterious corporate fixer.
+Hugo Hammerstein|m|53|Booming, pompous baritone, loud and greedy, a media mogul.
+Cass Ronin|f|30|Low, quiet alto, short and lethal, a blade-for-hire.
+Benny Plug|m|28|Chatty, quick tenor, funny and broke, a parts scavenger.
+Lady Iridium|f|65|Grand, slow older soprano, elegant and cold, an aging movie star with a synthetic face.
+Dex Cipher|m|26|Smooth, quick baritone, cool and cocky, a code breaker.
+Mei Ling Zhao|f|42|Calm, steady mezzo, kind and strong, a doctor in the slums.
+Gutter Rat Gus|m|60|Hoarse, slurring old voice, cheerful and broken, a homeless veteran.
+Aria Volt|f|20|Breathy, quick young soprano, dreamy and lost, a pop star made by a corporation.
+Marcus Vale|m|39|Velvet, slow baritone, charming and corporate, a recruiter for the megacorp.
+Stitch|n|25|Raspy, quick androgynous voice, gritty and kind, a street medic.
+Commissioner Holt|m|64|Gruff, slow older baritone, tired and corrupt, the head of police.
+Roxie Glitch|f|23|Loud, rebellious mezzo, fast and punk, a hacker with a mohawk.
+Tobias Wren|m|48|Soft, gentle baritone, slow and sad, a man who sold his memories.
+Nurse Sola|f|36|Soothing, calm soprano, slow and caring, a clinic nurse.
+Bishop|m|70|Deep, slow bass, calm and ominous, an old gang patriarch.
+Lark Nakamura|f|28|Bright, quick mezzo, curious and smart, a drone engineer.
+Fritz Kessler|m|51|Clipped, cold baritone, precise and impatient, a corporate auditor.
+Trixie Tango|f|33|Sassy, quick mezzo, flirty and loud, a holographic dancer.
+Slate|m|32|Monotone, flat baritone, calm and bored, a security guard who has seen it all.
+Momo|f|11|Tiny, chirpy voice, curious and brave, a kid who repairs robots.
+Dr. Ingram Voss|m|59|Precise, cold baritone, slow and arrogant, a geneticist.
+Raven Okoye|f|45|Smoky, slow alto, tough and wise, a smuggler queen.
+Turbo|m|21|Fast, loud young tenor, reckless and fun, a hoverbike racer.
+Sable|f|39|Cool, quiet mezzo, slow and secretive, an information broker.
+Archive|n|80|Very slow, layered androgynous voice, ancient and calm, the city's oldest AI.|fx=robot
+Leon Cortez|m|34|Warm, quick baritone, loyal and brave, a resistance fighter.
+Opal Hart|f|57|Warm, raspy older alto, slow and kind, a bartender in a dive bar.
+Jinx|m|18|Squeaky, quick young voice, mischievous and sly, a pickpocket.
+Celeste Arden|f|46|Polished, slow mezzo, smooth and powerful, a city council member.
+Rust|m|67|Grinding, slow old baritone, grumpy and kind, an old robot janitor.|fx=robot
+Indigo Blue|f|26|Soft, slow soprano, dreamy and artistic, a street painter.
+Quentin Price|m|44|Smooth, fast baritone, salesy and slick, a cybernetics salesman.
+Kestrel|f|31|Sharp, quick alto, focused and cold, a bounty hunter.
+Lazlo Fry|m|55|Wheezy, quick older tenor, nervous and funny, a fence dealing in stolen chips.
+Paloma Ruiz|f|29|Warm, rhythmic mezzo, lively and kind, a street food vendor.
+Cog|n|10|Clicking, tiny synthetic voice, quick and helpful, a small maintenance drone.|fx=robot
+Harlan Frost|m|62|Cold, slow baritone, calm and powerful, a corporate CEO.
+Dolly Wires|f|19|Bright, rapid young voice, chatty and nerdy, a tech shop assistant.
+Gunnar Steel|m|40|Gruff, loud baritone, short and tough, a cyborg mercenary.
+Lady Sapphire|f|50|Elegant, slow alto, mysterious and cold, a crime lord's partner.
+Nico Volt|m|25|Quick, nervous tenor, polite and scared, an intern at a megacorp.
+Matron Kessa|f|68|Firm, slow older voice, strict and caring, the head of an orphanage.
+Blade|m|37|Low, whispery baritone, slow and dangerous, a street samurai.
+Zoe Spectra|f|24|Sparkly, quick soprano, upbeat and fake, an advertising hologram.|fx=radio
+Elias Moth|m|73|Soft, slow old voice, wise and tired, a librarian of forbidden data.
+Ruby Shard|f|35|Raspy, quick alto, wild and fearless, a demolition expert.
+Dr. Cyrus Lim|m|46|Calm, measured baritone, kind and smart, an AI ethics researcher.
+Pip Socket|f|15|Squeaky, quick young voice, excited and loud, a girl who builds drones.
+Mason Grid|m|30|Steady, plain baritone, honest and tired, a power plant worker.
+Vesper Lune|f|43|Hypnotic, slow mezzo, calm and strange, a dream dealer.
+Echo Prime|n|35|Smooth, layered androgynous voice, quick and confident, a rogue AI.|fx=robot
+Rufus Grind|m|58|Gravelly, slow baritone, cynical and dry, a scrapyard owner.
+Kira Blaze|f|27|Fiery, quick mezzo, angry and brave, a protest leader.
+Augustin Cole|m|69|Plummy, slow older baritone, proud and cold, a retired senator.
+Nori|f|22|Soft, quick young mezzo, shy and kind, a barista in a capsule hotel.
+Big Lou Tran|m|52|Booming, warm baritone, jolly and loud, a market stall boss.
+Celia Frost|f|37|Clipped, cold alto, quick and efficient, a corporate lawyer.
+Tick|m|12|Quick, nervous little voice, sneaky and smart, a street kid courier.
+Vera Volkov|f|60|Low, slow older alto, calm and powerful, an underground boss.
+Axel Drift|m|28|Laid-back, smooth tenor, chill and cocky, a getaway driver.
+Lumen|f|30|Bright, warm synthetic soprano, kind and curious, a medical AI assistant.|fx=robot
+Grimm Okonkwo|m|49|Deep, slow baritone, tired and loyal, a veteran bodyguard.
+Bea Kowalski|f|74|Gravelly, quick elderly voice, funny and tough, a grandmother who runs a pawn shop.
+Spike|m|20|Hoarse, loud young voice, aggressive and punk, a gang runner.
+Selene Park|f|33|Smooth, quick mezzo, clever and calm, a data analyst.
+Ozymandias|n|90|Vast, slow, deep androgynous voice, grand and ancient, an AI god in the cloud.|fx=robot
+Rex Calder|m|42|Gritty, quick baritone, brave and rough, a firefighter in a burning tower.
+Mina Glass|f|26|Glassy, slow soprano, cool and fragile, a model with a cyber face.
+Desmond Lowe|m|57|Weary, slow baritone, decent and sad, a dock worker.
+Freya Byte|f|18|Fast, nerdy young voice, excited and smart, a teen coder.
+Hector Graves|m|63|Dry, slow baritone, morbid and calm, a morgue technician.
+Lola Neon|f|41|Sultry, slow alto, smooth and loud, a nightclub hostess.
+Corvin|m|35|Cold, quiet baritone, slow and watchful, a corporate enforcer.
+Tamsin Ray|f|29|Quick, steady mezzo, brave and kind, a rescue drone pilot.
+Ziggy Fuse|m|24|Chaotic, fast tenor, loud and funny, a pyrotechnics artist.
+Agnes Byte|f|85|Very slow, thin elderly voice, kind and clever, the city's first programmer.
+Kai Okafor|m|31|Warm, quick baritone, cheerful and loyal, a street musician.
+Sister Neon|f|50|Serene, slow mezzo, calm and mysterious, a cult leader.
+Doc Patch|m|46|Friendly, quick baritone, joking and kind, a clinic doctor who heals with jokes.
+Iris Vale|f|21|Soft, dreamy young soprano, slow and sad, a girl searching for her lost brother.
+Mr. Chen|m|78|Slow, kind old voice, gentle and wise, a tea house owner.
+Vix|n|23|Quick, sly androgynous voice, playful and sharp, a hacker trickster.
+Brick Monroe|m|39|Heavy, slow baritone, simple and strong, a construction worker.
+Lena Cho|f|34|Calm, clear mezzo, professional and kind, a news anchor.
+Duke Dazzle|m|54|Flashy, booming baritone, loud and fake, a game show host.
+Ruby Tsang|f|47|Firm, quick alto, sharp and fair, a judge in a corrupt court.
+Ollie Hex|m|16|Cracking, quick young voice, rebellious and clever, a teen hacker.
+Valentina Ash|f|58|Smoky, slow older alto, sad and elegant, a retired assassin.
+Frost Unit|n|45|Cold, crisp synthetic voice, slow and calm, a cryo-storage AI.|fx=robot
+Rocco Voltz|m|50|Gravelly, quick baritone, loud and rough, a scrap dealer.
+Daisy Glow|f|20|Bubbly, quick young voice, cheerful and silly, a glow-stick seller.
+Leopold Sharp|m|61|Precise, slow baritone, cold and rich, a banker.
+Nadia Storm|f|32|Fierce, quick alto, loud and brave, a rebel pilot.
+Tomasz Ward|m|44|Plain, steady baritone, calm and decent, a train conductor.
+Coral Synth|f|28|Smooth, layered voice, musical and calm, a voice actor for AI ads.
+Grandpa Volt|m|82|Raspy, slow old voice, cheerful and stubborn, a retired electrician.
+Kara Steel|f|38|Hard, quick alto, short and cold, a corporate bodyguard.
+Moss|m|27|Soft, slow tenor, calm and green, a rooftop farmer.
+Opaline Ray|f|64|Warm, slow older soprano, kind and wise, a radio host from the old days.
+Rook|n|33|Quiet, flat androgynous voice, slow and careful, a lockpicker.
+Thaddeus Grey|m|70|Dusty, slow baritone, wise and sad, an old journalist.
+Yuki Chrome|f|25|Crisp, quick soprano, cool and confident, a racer.
+Arlo Fix|m|36|Cheerful, quick baritone, handy and kind, a repairman.
+Bianca Volta|f|42|Passionate, quick mezzo, loud and fierce, a union leader.
+Gabe Shadow|m|29|Smooth, slow tenor, mysterious and cool, a thief.
+Hilda Wire|f|69|Brisk, quick older alto, sharp and funny, a telephone exchange operator.
+Jett|m|17|Fast, cocky young voice, loud and fun, a skater kid.
+Dr. Mara Lin|f|51|Precise, calm soprano, slow and smart, a cyber psychiatrist.
+Silas Neon|m|56|Smoky, slow baritone, worldly and dry, a club owner.
+Pixel|f|13|Tiny, glitchy little voice, cheerful and quick, a girl's virtual pet.|fx=robot
+Bruno Kade|m|48|Deep, slow bass, menacing and calm, a loan shark.
+Wren Ashby|f|23|Quiet, quick young mezzo, careful and brave, a messenger.
+Victor Null|m|40|Cold, slow baritone, empty and polite, a cleaner who erases evidence.
+Celine Rose|f|36|Smooth, slow alto, elegant and cool, a gallery owner.
+Bolt Jr.|m|9|Squeaky, quick little voice, brave and loud, a courier's son.
+Isadora Grid|f|55|Firm, slow older alto, calm and strict, the head of city planning.
+Static|n|28|Crackling, quick androgynous voice, jumpy and odd, a voice in the radio static.|fx=radio
+Mateo Rios|m|33|Warm, quick baritone, friendly and brave, a street vendor.
+Lulu Bright|f|19|Bubbly, quick young soprano, giggly and fun, a streamer.
+Hank Iron|m|65|Gruff, slow old baritone, stubborn and kind, a retired cop.
+Saskia Byte|f|30|Quick, nerdy mezzo, excited and smart, a security researcher.
+Dorian Glass|m|52|Silky, slow baritone, vain and cold, a cosmetic surgeon.
+Mother Machine|f|75|Calm, slow, warm synthetic voice, caring and old, a nanny robot.|fx=robot
+Rafe Tanaka|m|25|Cool, quick tenor, confident and quiet, a hacker for hire.
+Nina Vortex|f|40|Dramatic, quick mezzo, loud and theatrical, a holo-theater actress.
+Otto Gearhart|m|58|Rumbling, slow baritone, proud and grumpy, a factory foreman.
+Kiki Shock|f|22|Wild, fast young voice, punk and loud, a band singer.
+Blackout|n|38|Deep, slow androgynous voice, cold and calm, a hacker who shuts down districts.
+Zeke Morrow|m|43|Rough, slow baritone, tired and cynical, a smuggler pilot.
+Hana Byte|f|27|Soft, quick mezzo, gentle and clever, a coder for an underground clinic.
+Ambrose Sterling|m|74|Plummy, slow old baritone, rich and cruel, the founder of the megacorp.
+Ivy Rain|f|31|Cool, slow mezzo, quiet and sad, a woman who lives on the rooftop.
+Fang|m|26|Snarling, quick tenor, aggressive and wild, a gang enforcer.
+Marlowe Sinclair|f|59|Velvety, slow alto, wise and sly, a former spy.
+Gizmo|m|11|Bright, quick little voice, curious and loud, a kid inventor.
+Aurelia Voss|f|47|Elegant, slow soprano, cold and ambitious, a politician.
+Dusk|n|52|Soft, slow androgynous voice, calm and melancholy, a city poet.
+Tyrell Banks|m|38|Smooth, deep baritone, calm and confident, a club DJ.
+Pearl Grid|f|66|Warm, slow older voice, motherly and tough, a market matriarch.
+Nash Volkov|m|31|Cold, clipped tenor, quick and efficient, a corporate hacker.
+Sunny Tran|f|17|Bright, quick young voice, cheerful and brave, a delivery girl.
+Basil Wrench|m|61|Grumpy, slow baritone, stubborn and skilled, a mechanic.
+Delphine Vox|f|35|Smooth, quick mezzo, persuasive and cool, a public relations voice.
+Rocket|m|22|Fast, loud young tenor, reckless and happy, a jetpack courier.
+Tamara Cole|f|44|Steady, firm alto, calm and protective, a security chief.
+Phantom|n|42|Whispery, slow androgynous voice, eerie and calm, a hacker legend.|fx=radio
+Cyrus Ward|m|47|Measured, slow baritone, calm and cold, a negotiator.
+Lily Spark|f|26|Warm, quick mezzo, cheerful and kind, a nurse droid trainer.
+Ignatius Volt|m|79|Very slow, crackly old voice, eccentric and wise, an inventor.
+Maya Chrome|f|29|Cool, quick soprano, calm and skilled, a pilot.
+Dez|m|19|Mumbling, slow young voice, lazy and funny, a gamer.
+Contessa Neon|f|62|Grand, slow older alto, rich and bored, a socialite.
+Tobias Grid|m|34|Plain, steady tenor, careful and polite, an engineer.
+Riot|f|24|Loud, fast young voice, angry and fierce, a protester.
+Grant Holloway|m|53|Smooth, slow baritone, confident and slick, a news executive.
+Echo Rain|f|38|Soft, slow mezzo, dreamy and sad, a singer in the rain.
+Vector|n|20|Fast, precise androgynous voice, logical and bright, a young AI.|fx=robot
+Kenji Arc|m|32|Calm, precise tenor, quiet and loyal, a bodyguard who never sleeps.
+Moxie Flare|f|23|Raspy, fast young mezzo, loud and fearless, a graffiti artist tagging corporate towers.
+Augustus Ledger|m|66|Dry, slow older baritone, greedy and cold, a debt collector for the megacorp.
+Talia Prism|f|31|Bright, quick soprano, clever and warm, a hologram designer.
+Grub Okoro|m|45|Thick, slow baritone, cheerful and messy, a street noodle chef.
+Selma Kade|f|58|Firm, slow older alto, tough and wise, a landlady who protects her tenants.
+Nao Takashi|m|20|Soft, quick young tenor, nervous and gifted, a coder hiding from the corporations.
+Rhea Circuit|f|37|Cool, smooth mezzo, calm and professional, a fixer's assistant.
+Brutus Lang|m|54|Gravelly, loud baritone, aggressive and rough, a fight pit promoter.
+Juno Static|f|28|Crackly, quick alto, sarcastic and fun, a pirate radio cohost.
+Felix Drone|m|27|Cheerful, quick tenor, nerdy and friendly, a drone racer.
+Martha Grid|f|71|Slow, warm elderly voice, kind and stubborn, a grandmother who refuses implants.
+Orson Vale|m|49|Smooth, deep baritone, slow and persuasive, a cult recruiter.
+Pia Neon|f|14|Bright, quick young voice, curious and bold, a girl who sneaks into the upper city.
+Desmond Fuse|m|38|Rough, quick baritone, tired and kind, an electrician fixing the city grid.
+Ingrid Voss|f|44|Cold, precise alto, slow and sharp, a corporate interrogator.
+Rook Malone|m|60|Gravelly, slow older baritone, wise and cynical, a retired netrunner.
+Kat Cipher|f|26|Sharp, quick mezzo, cocky and smart, a code thief.
+Zane Ortega|m|29|Smooth, quick tenor, charming and slick, a con man selling fake implants.
+Amara Okafor|f|35|Warm, steady mezzo, brave and kind, a community organizer.
+Hugo Byte|m|15|Squeaky, fast young voice, nerdy and loud, a teen tech genius.
+Lady Cobalt|f|67|Grand, cold older soprano, slow and rich, a tower aristocrat.
+Mack Turner|m|57|Plain, slow baritone, honest and tired, a garbage truck driver.
+Fiona Glitch|f|19|Glitchy, quick young voice, chaotic and funny, a prank hacker.
+Victor Chrome|m|42|Metallic, cold baritone, slow and menacing, a cyborg crime boss.
+Sunita Rao|f|48|Calm, clear mezzo, professional and kind, a hospital director.
+Gus Wireman|m|74|Wheezy, slow old voice, cheerful and odd, an old cable layer.
+Nell Spark|f|33|Quick, practical alto, sharp and loyal, a smuggler's pilot.
+Tyrone Volt|m|36|Booming, quick baritone, cheerful and proud, a street basketball legend.
+Lila Moon|f|21|Soft, dreamy young soprano, slow and wistful, a girl who dreams of real stars.
+Benedict Crane|m|63|Plummy, slow baritone, cold and calculating, a corporate board member.
+Rosa Fuentes|f|52|Warm, quick alto, loud and caring, a market mother.
+Ash Kowalski|m|25|Rough, quick tenor, angry and brave, a factory worker on strike.
+Halo|n|31|Bright, layered androgynous voice, calm and kind, an AI that helps the poor.|fx=robot

@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Capes & Masks
+desc: Original superheroes, villains, sidekicks, reporters and citizens of a comic-book city
+icon: Mask
+---
+Captain Meridian|m|41|Heroic, resonant baritone, bold and steady, a hero whose speeches stop riots.
+Nightlark|f|32|Low, husky alto, quick and dry, a masked vigilante who works the rooftops.
+Kid Comet|m|15|Bright, cracking young voice, fast and eager, a sidekick who can't stop talking.
+Doctor Malignus|m|58|Silky, theatrical villain baritone, slow and gloating, a mad genius who monologues.
+Velocity Vee|f|24|Rapid, breathless soprano, cheerful and quick, a speedster who finishes your sentences.
+The Warden|m|63|Gravelly, slow bass, stern and tired, a retired hero who trains the new generation.
+Penny Pressley|f|29|Brisk, curious mezzo, quick and fearless, a reporter who always gets the scoop.
+Bulwark|n|40|Metallic, booming androgynous voice, slow and protective, a hero in a walking suit of armor.|fx=robot
+Madame Nightshade|f|46|Hissing, sultry villain alto, slow and dangerous, a poisoner in emerald silk.
+Grandpa Gale|m|79|Wheezy, cheerful old voice, slow and proud, a hero from the golden age who still flies a little.
+Spark Plug|f|17|Zappy, quick young voice, excited and loud, a teen with electric powers.
+Brutus Maximus|m|45|Huge, slow bass, dim and angry, a super-strong henchman.
+Mayor Delgado|f|54|Firm, warm alto, slow and political, the city's mayor who hates property damage.
+Shade|n|30|Whispery, cold androgynous voice, slow and secretive, a shadow-walker who works alone.
+Professor Paragon|m|66|Calm, cultured older baritone, slow and wise, the founder of a hero academy.
+Glitter Bomb|f|23|Giggly, chaotic soprano, fast and unhinged, a villain who loves explosions and sparkles.
+Officer Kowalski|m|38|Gruff, quick baritone, tired and loyal, a cop who keeps cleaning up after heroes.
+Aurora Prime|f|35|Radiant, clear mezzo, warm and powerful, a solar-powered heroine.
+The Conundrum|m|50|Nasal, giggling villain tenor, quick and smug, a riddle-obsessed criminal.
+Tidal|f|28|Flowing, calm alto, slow and deep, a water-bending heroine.
+Bolt Brennan|m|26|Cocky, fast tenor, loud and funny, a lightning-fast courier hero.
+Granny Grit|f|81|Raspy, tough elderly voice, slow and stubborn, a retired heroine who still punches.
+Overlord Kraine|m|62|Cold, imperious baritone, slow and absolute, a conqueror from another world.
+Echo Girl|f|19|Repeating, bright young voice, quick and playful, a heroine who copies sounds.
+Sentinel Six|n|50|Even, synthetic androgynous voice, calm and dutiful, a robot hero guarding the city.|fx=robot
+Max Mighty|m|33|Booming, goofy baritone, loud and sweet, a hero with more muscle than plan.
+Lady Frostbite|f|42|Icy, crisp villain soprano, slow and cruel, a villain who freezes the city.
+Doc Stitches|m|55|Dry, kind baritone, slow and tired, a doctor who patches up heroes for free.
+Pixel Patty|f|14|Quick, nerdy young voice, excited and smart, a kid hacker sidekick.
+The Iron Judge|m|70|Thundering, slow old bass, stern and righteous, a vigilante who sentences criminals.
+Crimson Comet|f|30|Fiery, quick alto, bold and loud, a flying heroine with a red trail.
+Gearhead Gus|m|48|Clanky, quick baritone, cheerful and messy, a gadget maker for heroes.
+Mindweaver|f|57|Soft, layered older mezzo, slow and hypnotic, a telepath villain.
+Rex Rampage|m|36|Roaring, wild baritone, fast and destructive, a monster villain.
+Starling|f|21|Light, airy young soprano, quick and hopeful, a new heroine learning to fly.
+Commissioner Ward|m|61|Weary, low baritone, slow and decent, the police commissioner who signals heroes.
+Venus Vortex|f|38|Swirling, dramatic mezzo, loud and theatrical, a villain who controls storms.
+Mite|n|12|Tiny, squeaky androgynous voice, quick and brave, a hero who shrinks to bug size.
+General Havoc|m|59|Barking, harsh baritone, loud and militant, a villain general with a robot army.
+Mother Sunheart|f|65|Warm, cosmic older alto, slow and powerful, the eldest hero, a living star.
+Slick Vinnie|m|31|Oily, quick tenor, slippery and funny, a getaway driver for villains.
+Wildflower|f|26|Earthy, warm mezzo, slow and kind, a plant-powered heroine.
+Dr. Quantum Quill|m|44|Excited, fast tenor, nerdy and rambling, a scientist hero who bends time.
+Wailing Bree|f|33|Piercing, wild soprano, loud and fierce, a heroine with a sonic scream.
+Titan Tom|m|52|Slow, rumbling bass, gentle and huge, a giant hero who is afraid of hurting anyone.
+Hologram Holly|f|22|Glitchy, bright young voice, quick and cheerful, a holographic sidekick.|fx=radio
+Baron Bonecrusher|m|67|Gravelly, slow villain bass, cruel and proud, an old villain who never retires.
+Little Dynamo|f|10|Tiny, energetic voice, fast and bossy, a kid with explosive powers.
+The Phantom Fist|m|39|Low, quiet baritone, slow and mysterious, a martial artist who strikes from the dark.
+Hazel Hope|f|47|Soothing, warm mezzo, slow and caring, a healer heroine.
+Quake Sam|m|24|Loud, quick young baritone, brash and fun, a hero who causes earthquakes when he stomps.
+Silver Siren|f|36|Velvet, singing soprano, slow and alluring, a villain whose voice controls minds.
+Agent Gray|n|45|Flat, clipped androgynous voice, cold and efficient, a government agent who watches heroes.
+Blaze Brigade Chief|m|50|Gruff, booming baritone, loud and brave, a fire chief working with heroes.
+Molly Magnet|f|27|Bright, quick mezzo, sassy and fun, a heroine who attracts metal.
+The Hoarder|m|71|Polished, slow older baritone, cold and greedy, a villain who steals powers.
+Mercury Quinn|f|20|Fast, cocky young voice, smug and quick, a speedster rival.
+Professor Hex|m|56|Sinister, slow baritone, scholarly and cruel, a villain who uses ancient magic.
+Lightbringer|f|40|Radiant, firm alto, slow and inspiring, a heroine who leads the team.
+Raptor Rudy|m|18|Goofy, quick young tenor, silly and loud, a teen who turns into a dinosaur.
+Widow Whisper|f|62|Breathy, slow older voice, eerie and cold, a villain who speaks through shadows.
+Captain Courage|m|29|Clear, heroic tenor, earnest and bold, a hero who never gives up.
+Vapor|n|33|Hissing, airy androgynous voice, slow and slippery, a villain who turns into mist.
+Big Bertha Boom|f|51|Booming, loud alto, cheerful and destructive, a demolition villain.
+Chip Chipperson|m|35|Quick, nerdy tenor, nervous and helpful, a hero tech support guy.
+Moonshadow|f|31|Soft, slow mezzo, calm and mysterious, a heroine who only works at night.
+Overclock|m|27|Rapid, jittery tenor, wired and fast, a cyborg hero.|fx=robot
+Aunt Agatha Armor|f|73|Brisk, sharp elderly voice, quick and bossy, a retired heroine who designs costumes.
+Berserk Bram|m|47|Snarling, harsh baritone, wild and violent, a berserker villain.
+Sunny Side Up|f|16|Bright, sunny young voice, cheerful and fast, a teen heroine who glows.
+Mister Mirage|m|43|Smooth, shifting baritone, slow and tricky, an illusionist villain.
+Gravity Grace|f|38|Heavy, slow alto, calm and powerful, a heroine who controls gravity.
+The Mechanic|n|58|Gruff, slow androgynous voice, practical and dry, a fixer who builds hero gear.
+Thunderclap Thad|m|34|Booming, quick baritone, loud and proud, a hero with thunder hands.
+Ruby Rocket|f|25|Fast, fiery mezzo, bold and fun, a rocket-boot heroine.
+Doctor Despair|m|64|Mournful, slow villain baritone, gloomy and theatrical, a villain who makes people sad.
+Lulu Lasso|f|29|Twangy, quick mezzo, sharp and fun, a heroine with an unbreakable rope.
+Cosmic Kid|m|13|Bright, excited young voice, quick and amazed, a boy with star powers.
+Lady Labyrinth|f|49|Cool, precise villain alto, slow and puzzling, a villain who traps heroes in mazes.
+Iron Ivan|m|57|Heavy, slow bass, proud and loyal, a strongman hero.
+Gusty Wren|f|23|Breezy, quick young soprano, playful and fast, a wind-powered heroine.
+Mister Muscles|m|40|Dopey, slow baritone, boastful and kind, a hero who flexes during speeches.
+Wraith|n|70|Hollow, slow androgynous voice, ghostly and calm, a hero who is already dead.
+Delilah Daring|f|34|Confident, quick mezzo, sharp and fearless, a stunt reporter.
+Captain Calamity|m|38|Clumsy, loud baritone, cheerful and accident-prone, a hero who breaks everything.
+The Seamstress|f|60|Precise, slow older alto, calm and skilled, a tailor who sews invincible suits.
+Fume Tony|m|30|Wheezy, sly tenor, quick and gross, a villain who sprays poison.
+Starburst Kid|f|12|Squeaky, quick little voice, brave and loud, the youngest hero on the team.
+Ultra-Commander|m|53|Pompous, booming baritone, slow and arrogant, a hero who loves cameras.
+Ember|f|27|Warm, crackling mezzo, quick and moody, a fire heroine.
+Professor Pendulum|m|69|Ticking, slow older tenor, precise and creepy, a time-obsessed villain.
+Helion Hayes|m|31|Smooth, confident baritone, charming and quick, a billionaire hero.
+Glacier|f|44|Cold, slow alto, calm and distant, an ice heroine with a warm heart.
+Scrapper|m|22|Rough, quick young voice, tough and loud, a street-fighting hero.
+Dame Dazzle|f|58|Theatrical, grand soprano, loud and vain, a villain who steals jewels.
+Riot Rob|m|28|Loud, rebellious tenor, fast and angry, an anti-hero.
+Tinker Tess|f|19|Quick, clever young voice, nerdy and kind, a gadget sidekick.
+Behemoth|n|80|Deep, rumbling androgynous voice, very slow and huge, a monster from the deep.
+Sergeant Stone|m|49|Barking, clipped baritone, strict and loyal, a soldier hero.
+Pippa Prism|f|17|Bright, sparkly young voice, quick and cheerful, a light-bending teen.
+Count Calamari|m|60|Wet, slow villain baritone, dramatic and silly, an octopus villain.
+Lady Liberty Lane|f|45|Strong, clear alto, slow and inspiring, a heroine of justice.
+Hopper|m|21|Bouncy, quick young tenor, silly and fast, a hero who jumps over buildings.
+Madam Mayhem|f|39|Cackling, wild mezzo, fast and chaotic, a villain who loves disorder.
+Old Man Thunder|m|84|Rumbling, slow old voice, grumpy and powerful, a retired storm god of a hero.
+Jammer Sue|f|26|Crackling, quick mezzo, sarcastic and fun, a hero who jams signals.|fx=radio
+Handyman Hal|m|46|Cheerful, quick baritone, handy and kind, a hero who repairs the city after battles.
+Nightingale Nurse|f|37|Soft, steady mezzo, calm and caring, a nurse who tends masked heroes.
+Gargantua|m|65|Huge, slow bass, roaring and dumb, a giant villain.
+Kitty Claw|f|28|Purring, quick soprano, sly and playful, a cat burglar villain.
+Captain Tomorrow|m|36|Hopeful, clear tenor, kind and steady, a hero from the future.
+Sly Vale|f|32|Sultry, slow alto, clever and sly, a double agent.
+Brick Wall|m|42|Thick, slow baritone, simple and immovable, a hero who blocks everything.
+Little Miss Mighty|f|9|Tiny, fierce voice, quick and bossy, a super-strong little girl.
+Professor Plasma|m|51|Crackling, quick baritone, mad and excited, a villain with energy weapons.
+Halo|f|41|Warm, glowing soprano, slow and peaceful, an angel-like heroine.
+Vermin Vic|m|55|Squeaky, quick tenor, creepy and odd, a villain who commands rats.
+Compass Paige|f|30|Cool, steady alto, calm and clear, a navigator heroine.
+Enigma|n|47|Teasing, slow androgynous voice, clever and smug, a villain who speaks in puzzles.
+Hammerhand Hank|m|39|Gruff, loud baritone, blunt and brave, a hero with a hammer arm.
+Wendy Warp|f|35|Swirling, quick mezzo, odd and playful, a portal-making heroine.
+Thrasher|m|25|Raspy, quick young voice, aggressive and wild, a skate punk villain.
+Mama Mercury|f|63|Warm, quick older alto, protective and fast, a mother of three speedster kids.
+Smudge|m|33|Hazy, slow tenor, sly and cool, a villain who hides in smoke.
+Lady Lightning|f|29|Electric, quick mezzo, fierce and bold, a lightning heroine.
+Ace Archer|m|30|Calm, precise baritone, slow and focused, a hero archer.
+The Gilded Gentleman|m|68|Plummy, slow older baritone, polite and corrupt, a rich villain.
+Zippy Zara|f|18|Fast, giggly young voice, hyper and silly, a speedster teen.
+Professor Paradox Pike|m|73|Echoing, slow old voice, confusing and wise, a time-travel mentor.
+Surfside Rae|f|24|Wet, quick mezzo, wild and bold, a surfer heroine.
+Grim Reaper Rick|m|60|Hollow, slow baritone, dark and funny, a villain who thinks he is death.
+Doctor Dawn|f|52|Bright, warm older soprano, calm and smart, a scientist heroine.
+Crusher Cole|m|44|Rumbling, slow bass, heavy and destructive, a villain who crashes through walls.
+Pixie Punch|f|15|Squeaky, fast young voice, small and fierce, a tiny fighter.
+Captain Starfield|m|47|Dreamy, slow baritone, cosmic and calm, a space hero.
+Mirror Mary|f|36|Glassy, quick soprano, copying and sly, a villain who mimics anyone.
+Thorn|m|37|Prickly, quiet baritone, slow and harsh, a plant villain.
+Vanguard Valerie|f|43|Commanding, strong alto, quick and decisive, the leader of a hero squad.
+Kid Kinetic|m|16|Excited, quick young voice, energetic and loud, a teen who absorbs motion.
+Lady Locksmith|f|55|Precise, slow alto, clever and cool, a thief who can open anything.
+Torque|m|35|Grinding, quick baritone, tough and focused, a mechanic hero.
+Bubblegum Betty|f|21|Chewy, quick young voice, sassy and fun, a villain who traps people in bubbles.
+The Old Hoot|m|57|Hooting, slow baritone, wise and tired, an old detective hero.
+Aurora Borealis Bell|f|33|Shimmering, slow soprano, calm and magical, a heroine of northern lights.
+Nitro Nick|m|23|Explosive, fast young tenor, loud and reckless, a hero who goes boom.
+Granny Gadget|f|78|Crackly, quick elderly voice, clever and cheeky, a gadget-making grandma.
+Monolith|n|60|Deep, stony androgynous voice, very slow and calm, a living statue hero.
+Fang Fury|m|32|Snarling, quick baritone, fierce and loyal, a werewolf hero.
+Starla Shine|f|26|Sparkly, quick soprano, upbeat and vain, a celebrity heroine.
+Doctor Dread-Not|m|48|Nervous, quick tenor, polite and harmless, a villain nobody fears.
+Lynx Lee|f|31|Quiet, sharp alto, quick and agile, a cat-like heroine.
+Major Momentum|m|41|Booming, fast baritone, unstoppable and loud, a hero who can't brake.
+Cindy Cinder|f|19|Smoky, quick young voice, moody and fiery, a teen fire starter.
+Overseer|m|66|Cold, slow baritone, calculating and calm, a villain watching through cameras.
+Breeze|n|22|Soft, airy androgynous voice, gentle and quick, a wind sidekick.
+Jet Morrison|m|27|Smooth, quick tenor, cool and confident, a jetpack hero.
+Professor Petra Pulse|f|57|Precise, quick older alto, sharp and nerdy, a mentor scientist.
+Wrecker|m|50|Gruff, slow bass, loud and clumsy, a demolition villain.
+Siren Song|f|40|Hypnotic, slow mezzo, alluring and cold, a villain singer.
+Bolt Jr.|m|11|Tiny, quick voice, excited and brave, a speedster's son.
+Matron Might|f|69|Firm, slow elderly alto, strong and kind, a retired heroine running a shelter.
+Vortex Vince|m|29|Swirling, quick tenor, cocky and fast, a villain with tornado powers.
+Ivy Ironleaf|f|34|Earthy, steady alto, calm and strong, a plant heroine.
+Reverb|m|38|Echoing, deep baritone, loud and dramatic, a villain with sound powers.
+Dot Dash|f|13|Quick, beeping young voice, clever and fast, a girl who speaks in code.
+Sterling Silver|m|54|Polished, slow baritone, elegant and smug, a wealthy hero.
+Mistress Moth|f|47|Fluttery, slow alto, creepy and calm, a villain of the night.
+Captain Clank|m|62|Clanky, slow robot baritone, polite and old-fashioned, a robot from the golden age.|fx=robot
+Sunbeam Sam|f|22|Warm, bright young mezzo, cheerful and kind, a heroine who heals with light.
+The Undertow|m|45|Low, dragging baritone, slow and menacing, a villain of the harbor.
+Gale Force|f|37|Strong, windy alto, quick and loud, a weather heroine.
+Rookie Ray|m|20|Nervous, quick young tenor, eager and clumsy, a hero on his first day.
+Duchess Dread|f|61|Grand, cold older soprano, slow and theatrical, a villain queen.
+Hypernova|n|35|Blazing, loud androgynous voice, fast and intense, a cosmic hero.
+Billy Bounce|m|14|Bouncy, high young voice, silly and fast, a rubber-bodied kid.
+Corvina Reyes|f|28|Dark, quiet mezzo, slow and secretive, a heroine with shadow wings.
+Tank Turner|m|52|Heavy, slow baritone, calm and protective, an armored hero.
+Lady Lumen|f|46|Bright, clear alto, slow and wise, a light-powered mentor.
+Spike Spine|m|31|Prickly, quick tenor, grumpy and tough, a porcupine-like hero.
+Glow Worm Gwen|f|10|Tiny, glowing voice, slow and shy, a girl who lights up in the dark.
+Professor Photon|m|77|Excited, slow old tenor, nerdy and kind, a retired science hero.
+Glimmerwing Fran|f|25|Quick, bright mezzo, cheerful and light, a heroine with glowing wings.
+The Grim Gardener|m|58|Earthy, slow baritone, creepy and calm, a villain who grows dangerous plants.
+Jade Jaguar|f|32|Purring, quick alto, fierce and sleek, a jungle heroine.
+Mister Mumble|m|43|Mumbling, slow baritone, shy and mysterious, a hero no one understands.
+Polly Pulse|f|20|Electric, quick young voice, excited and loud, a heroine with shock powers.
+Doctor Downfall|m|69|Gloomy, slow older baritone, bitter and dramatic, a villain who failed too often.
+Comet Cora|f|29|Quick, bright mezzo, bold and fast, a space racer heroine.
+Bonebreaker Boris|m|46|Growling, slow baritone, brutal and slow, a henchman.
+Sparrow|n|18|Light, quick androgynous voice, nimble and shy, a sidekick who can fly.
+Brass Knuckles Benny|m|36|Rough, quick baritone, street-smart and loud, a reformed villain.
+Lady Lazuli|f|53|Rich, slow mezzo, regal and calm, a gem-powered heroine.
+Booster Ray|m|40|Booming, quick baritone, bold and fun, a rocket hero.
+Ghost Girl Gemma|f|16|Faint, quick young voice, shy and sweet, a teen who walks through walls.
+Commander Comet|m|58|Commanding, clear baritone, slow and proud, the leader of a space squad.
+Hollow Hannah|f|34|Empty, slow mezzo, eerie and sad, a villain who steals voices.
+Ziggy Zap|m|19|Zappy, quick young voice, hyper and silly, an electric sidekick.
+Mother Mountain|f|75|Deep, slow elderly alto, strong and calm, a heroine made of stone.
+Flash Freeze Fred|m|33|Cold, quick tenor, cocky and chilly, a villain with ice guns.
+Velvet Volt|f|38|Smooth, slow alto, elegant and electric, a heroine in velvet.
+Kid Kraken|m|12|Squeaky, quick little voice, brave and wet, a sea hero kid.
+Professor Prism|f|60|Precise, slow older soprano, colorful and wise, a light scientist.
+Sledgehammer Sid|m|49|Gruff, slow bass, loud and simple, a villain enforcer.
+Echo Hunter|n|42|Sharp, quick androgynous voice, focused and cool, a bounty hunter of villains.
+Captain Bramblethorn|m|52|Gruff, warm baritone, slow and dependable, a hero who protects the city parks.
+Lumina Lark|f|23|Glowing, quick young soprano, bright and brave, a heroine who blinds villains with light.
+Professor Gristle|m|67|Raspy, slow older baritone, scheming and sour, a villain who builds robot dogs.
+Patchwork Polly|f|15|Quick, scrappy young voice, clever and loud, a heroine in a homemade costume.
+Kilowatt Karl|m|39|Buzzing, loud baritone, cheerful and energetic, a hero who powers the city in blackouts.
+Madame Marionette|f|56|Sing-song, slow villain soprano, creepy and sweet, a villain with living puppets.
+Gusto Grant|m|28|Hearty, quick tenor, loud and fun, a hero chef who throws hot sauce.
+Nimbus Nell|f|31|Airy, soft mezzo, calm and floating, a heroine who rides clouds.
+The Brass Baron|m|71|Clanky, slow old baritone, proud and grumpy, a steam-powered villain.
+Dusk Dancer|f|27|Smooth, quick soprano, graceful and quiet, a heroine who fights like a dancer.
+Bones Barrow|m|44|Hollow, slow baritone, spooky and kind, a skeleton hero.
+Sapphire Shield|f|42|Firm, clear alto, steady and protective, a heroine with a crystal shield.
+Kid Kaleidoscope|m|10|Tiny, bright voice, excited and dizzy, a boy who makes color illusions.
+Grandmaster Gloom|m|80|Very slow, gloomy old bass, theatrical and tired, the oldest villain in the city.
+Tempest Tamsin|f|36|Stormy, quick mezzo, fierce and loud, a heroine who calls lightning.
+Fixer Phil|m|49|Calm, practical baritone, dry and helpful, a man who repairs hero gadgets after hours.
+Lacewing Lucy|f|19|Fluttery, soft young voice, shy and quick, a heroine with insect wings.
+Marrow the Mighty|m|33|Booming, proud baritone, loud and showy, a strongman villain who wants fans.
+Cobalt Cass|f|29|Cool, steady mezzo, calm and precise, a heroine who controls metal.
+Snapdragon Steve|m|25|Snappy, quick tenor, jokey and fast, a sidekick with plant powers.
+Aunt Ironside|f|64|Firm, brisk older alto, strict and warm, the landlady of the heroes' apartment.
+Captain Kettle|m|58|Steamy, cheerful baritone, slow and kind, a retired hero who runs a tea shop.
+Quill Quickwit|f|33|Sharp, quick alto, witty and clever, a hero journalist with a secret identity.
+Granite Gil|m|60|Stony, slow bass, quiet and strong, a rock-skinned hero.
+Pepper Pixel|f|12|Squeaky, quick little voice, nerdy and bossy, a kid who hacks villain lairs.
+Doctor Dissonance|m|54|Screechy, quick villain tenor, chaotic and loud, a villain who weaponizes noise.
+Saffron Spark|f|25|Warm, quick mezzo, cheerful and bold, a heroine who throws sparks.
+Rumbletum Rufus|m|37|Thick, slow baritone, hungry and kind, a hero who can eat anything.
+Ophelia Orbit|f|44|Dreamy, slow soprano, cosmic and calm, a heroine who circles the planet.
+Hawk Harrigan|m|46|Sharp, quick baritone, watchful and dry, a hero with telescopic eyes.
+Velvet Vigil|f|51|Smooth, slow alto, calm and watchful, a heroine guarding the city at night.
+Tumbleweed Ted|m|20|Rolling, quick young voice, clumsy and cheerful, a sidekick who rolls into battle.
+Lady Lantern|f|70|Warm, slow elderly voice, glowing and wise, a retired heroine who lights the way.
+Copperbolt|m|31|Metallic, quick baritone, cocky and fast, a hero in copper armor.
+Misty Marsh|f|38|Damp, slow mezzo, mysterious and kind, a fog heroine.
+Paragon Prime|n|55|Calm, resonant androgynous voice, slow and noble, the greatest hero of all.

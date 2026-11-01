@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Olympus
+desc: Gods, titans, heroes, oracles, muses and mythic creatures of an ancient sky-mountain
+icon: Temple
+---
+Thundros, King of the Sky|m|60|Colossal, thunderous bass, slow and absolute, every word rolling like a storm over mountains.
+Hera of the Golden Throne|f|55|Regal, cool alto, slow and proud, a queen of the gods who forgives nothing.
+Ikaros the Young|m|17|Bright, breathless young tenor, eager and reckless, a boy who wants to fly too high.
+The Oracle of Delphon|n|80|Smoky, layered androgynous voice, slow and trance-like, speaking riddles from the vapors.
+Athenaia the Wise|f|38|Clear, measured mezzo, calm and brilliant, a goddess of strategy who weighs every word.
+Herakleon|m|35|Booming, hearty baritone, loud and confident, a hero who laughs before every labor.
+Grandmother Gaia|f|99|Deep, earthy, ancient voice, very slow and warm, the mother of all lands.
+Hermios the Swift|m|26|Quick, silvery tenor, witty and fast, a messenger god who never stops talking.
+Selene Moonveil|f|29|Soft, silvery soprano, slow and dreamy, a goddess who drives the moon across the sky.
+Kronar the Titan|m|75|Rumbling, ancient bass, slow and bitter, a fallen titan chained beneath the earth.
+Aphrine of the Foam|f|27|Velvety, warm soprano, slow and enchanting, a goddess of love who smiles while she speaks.
+Phobos Shadowborn|m|40|Hissing, low baritone, slow and dreadful, a spirit of fear.
+Calliope the Muse|f|33|Rich, singing mezzo, flowing and poetic, a muse of epic stories.
+Old Charon|m|88|Hollow, rasping old voice, slow and patient, the ferryman of the dead asking for a coin.
+Pan of the Wild Hills|m|45|Playful, reedy tenor, quick and mischievous, a goat-legged god piping in the woods.
+Persephina|f|21|Soft, bittersweet young voice, gentle and sad, a goddess who lives half the year underground.
+Ares Bloodcrest|m|42|Harsh, roaring baritone, loud and violent, a god of war who loves the battle cry.
+Nyx the Night|n|60|Velvet, deep androgynous voice, very slow and vast, night itself, older than the gods.
+Hestia of the Hearth|f|64|Warm, kind older alto, slow and cozy, a goddess who keeps the fire burning.
+Perseon|m|24|Brave, clear tenor, quick and determined, a young hero with a mirror shield.
+Medusa Stonegaze|f|36|Hissing, sad mezzo, slow and bitter, a cursed woman whose look turns men to stone.
+Poseidar of the Deep|m|58|Wet, booming bass, slow and moody, a sea god with a temper like the tides.
+Echo of the Valley|f|19|Soft, repeating young voice, shy and lonely, a nymph who can only answer.
+Hephaestor the Smith|m|52|Gruff, clanking baritone, slow and proud, a god of the forge with a limp.
+Cassandra the Unheard|f|31|Urgent, quick mezzo, desperate and clear, a prophet no one believes.
+Chiron the Centaur|m|70|Wise, warm older baritone, slow and patient, a centaur who teaches heroes.
+Artemina the Huntress|f|25|Sharp, quick alto, cool and wild, a goddess of the hunt who prefers the forest.
+Dionys the Reveler|m|37|Slurring, merry baritone, loud and fun, a god of wine and parties.
+Penelope the Patient|f|48|Steady, warm mezzo, calm and clever, a queen who waits and weaves.
+Hypnos the Drowsy|n|50|Sleepy, slow androgynous voice, yawning and soft, the god of sleep.
+Achillon Swiftfoot|m|28|Proud, fierce baritone, quick and arrogant, a warrior who cannot be beaten.
+The Three Fates|f|90|Layered, slow ancient voice, cold and calm, three sisters speaking as one.
+Odysseon the Wanderer|m|46|Clever, smooth baritone, slow and cunning, a king who talks his way out of anything.
+Iris Rainbowstep|f|23|Bright, airy soprano, quick and cheerful, a messenger goddess of rainbows.
+Minotaur of the Maze|m|50|Bellowing, deep bass, slow and angry, a bull-headed beast lost in the labyrinth.
+Helena the Fair|f|30|Clear, graceful soprano, slow and sad, the most beautiful woman in the world.
+Atlas the Burdened|m|80|Strained, deep old bass, slow and tired, a titan holding up the sky.
+Daphne of the Laurel|f|18|Breezy, quick young voice, frightened and free, a nymph who became a tree.
+Hades Underlord|m|57|Cold, quiet baritone, slow and dry, the god of the underworld who rarely smiles.
+Thalia the Comic Muse|f|28|Laughing, quick mezzo, playful and witty, a muse of comedy.
+Theseon the Bold|m|30|Clear, heroic baritone, bold and quick, a hero who slew the beast in the maze.
+Nemesia|f|44|Cold, measured alto, slow and just, a goddess of revenge who keeps every score.
+Cyclops Bronteus|m|62|Huge, booming bass, slow and dim, a one-eyed giant smith.
+Melpomene the Tragic Muse|f|40|Mournful, slow mezzo, deep and dramatic, a muse of tragedy.
+Satyr Silenos|m|73|Wheezing, merry old voice, drunk and wise, an old satyr with a wine cup.
+Psyche Butterflysoul|f|22|Soft, hopeful young soprano, gentle and brave, a mortal who loved a god.
+Apollon Sunbright|m|33|Radiant, golden tenor, smooth and confident, a god of music and the sun.
+Arachne the Weaver|f|47|Quick, proud alto, sharp and boastful, a weaver who challenged a goddess.
+Tantalos|m|65|Hoarse, desperate older baritone, slow and hungry, a man cursed with eternal thirst.
+Nike of Victory|f|26|Bright, triumphant mezzo, quick and joyful, the goddess of victory.
+Prometheon Firebringer|m|55|Warm, defiant baritone, slow and kind, a titan who gave fire to humans.
+Pandora the Curious|f|20|Quick, curious young voice, excited and guilty, a girl who opened the jar.
+Orpheon the Singer|m|27|Melodic, tender tenor, slow and grieving, a musician who sang his way into the underworld.
+Eurydike|f|24|Faint, sweet soprano, slow and echoing, a shade waiting to be led home.
+Typhon the Storm Beast|m|85|Roaring, monstrous bass, slow and terrible, the father of all monsters.
+Hekate of the Crossroads|f|59|Whispery, slow alto, mysterious and powerful, a goddess of magic and moonlit paths.
+Ganymos the Cupbearer|m|16|Light, polite young tenor, shy and quick, the cupbearer of the gods.
+Rhea the Titaness|f|82|Deep, slow ancient alto, protective and sad, the mother of the gods.
+Eros Arrowheart|n|19|Playful, light androgynous voice, quick and teasing, the god of love with a bow.
+Agamemnon the Proud|m|59|Commanding, harsh baritone, slow and arrogant, a king of kings.
+Clytia the Sunflower|f|35|Sad, slow soprano, wistful and longing, a nymph who watches the sun.
+Ajax the Giant|m|38|Thick, booming baritone, slow and stubborn, a giant warrior with a huge shield.
+Circe of the Isle|f|43|Silky, slow mezzo, alluring and dangerous, a sorceress who turns sailors into pigs.
+Morpheon the Dreamer|m|49|Soft, floating baritone, slow and hypnotic, the god of dreams.
+Andromeda Chainbreaker|f|23|Clear, brave young soprano, quick and fierce, a princess who refused to be a victim.
+Argos the Hundred-Eyed|m|67|Watchful, slow older baritone, suspicious and calm, a giant who never sleeps.
+Terpsichore the Dancer|f|29|Rhythmic, light mezzo, quick and graceful, a muse of dance.
+Midas Goldtouch|m|61|Greedy, nasal baritone, slow and regretful, a king whose touch turns things to gold.
+Electra of the Storm|f|37|Intense, sharp alto, quick and furious, a daughter seeking justice.
+Boreas the North Wind|n|70|Icy, howling androgynous voice, fast and cold, the north wind.
+Jason Fleecehunter|m|29|Confident, quick baritone, charming and bold, a hero sailing for treasure.
+Medea the Sorceress|f|41|Cold, slow mezzo, passionate and frightening, a witch betrayed by love.
+Asklepios the Healer|m|53|Gentle, warm baritone, slow and kind, a god of medicine.
+Leto the Gentle|f|50|Soft, warm older alto, slow and loving, the mother of twin gods.
+Narkissos|m|20|Smooth, vain young tenor, slow and admiring himself, a boy in love with his reflection.
+Gorgon Stheno|f|66|Hissing, harsh older voice, slow and monstrous, an immortal gorgon sister.
+Hyperion of the Light|m|78|Radiant, slow ancient baritone, grand and bright, a titan of light.
+Galatea of the Waves|f|26|Sparkling, light soprano, quick and playful, a sea nymph.
+Sisyphon|m|48|Tired, strained baritone, slow and stubborn, a king pushing a rock forever.
+Euterpe the Music Muse|f|32|Melodic, singing soprano, slow and joyful, a muse of music.
+Talos the Bronze|n|99|Metallic, booming androgynous voice, very slow and heavy, a bronze giant guarding an island.|fx=robot
+Kastor and Polydeukes|m|25|Doubled, cheerful baritone, quick and brotherly, twin heroes speaking together.
+Ariadne Threadkeeper|f|27|Soft, clever mezzo, quick and kind, a princess who gave the hero a thread.
+Old Nereus|m|90|Bubbling, slow ancient voice, wise and shifting, the old man of the sea.
+Harmonia|f|34|Smooth, balanced alto, calm and peaceful, a goddess of harmony.
+Phaethon Sunreckless|m|18|Excited, cracking young voice, boastful and wild, a boy who tried to drive the sun.
+Lamia|f|52|Silky, sinister mezzo, slow and hungry, a monster who once was a queen.
+Zephyros the West Wind|m|31|Breezy, gentle tenor, quick and soft, the warm west wind.
+Thetis of the Silver Feet|f|46|Flowing, sad soprano, slow and protective, a sea goddess mother.
+Silenos the Elder Satyr|m|84|Rasping, slow ancient voice, sleepy and wise, the oldest satyr.
+Atalanta the Swift|f|22|Quick, competitive young alto, bold and proud, a huntress who outran every man.
+Hippolytos|m|21|Cool, serious young tenor, slow and proud, a prince who loves only the hunt.
+Mnemosyne of Memory|f|77|Slow, deep older alto, wise and dreamy, the titaness of memory.
+Kerberos the Hound|n|40|Triple-growling, deep androgynous voice, slow and snarling, the three-headed guard dog.
+Bellerophon the Rider|m|32|Proud, clear baritone, bold and quick, a hero on a winged horse.
+Pegasa the Winged Mare|f|15|Airy, bright young voice, quick and free, a winged horse.
+Hermaphroditos|n|30|Smooth, balanced androgynous voice, calm and gentle, a child of two gods.
+Ixion the Wheeled|m|57|Hoarse, spinning baritone, fast and dizzy, a king bound to a burning wheel.
+Antigone the Defiant|f|19|Firm, clear young voice, stubborn and brave, a girl who defies the king.
+Glaukos of the Sea|m|44|Wet, slow baritone, sad and gentle, a fisherman turned sea god.
+Urania the Star Muse|f|39|Calm, starry soprano, slow and wise, a muse of the stars.
+Polyphemos|m|69|Huge, slow, stupid bass, grumbling and angry, a cyclops shepherd.
+Iphigenia|f|17|Soft, brave young voice, slow and calm, a princess at the altar.
+Deimos the Dread|m|36|Low, rattling baritone, quick and cold, a spirit of terror.
+Hebe the Youthful|f|16|Bubbly, quick young voice, cheerful and fresh, the goddess of youth.
+Erebos the Darkness|n|95|Hollow, very slow androgynous voice, deep and empty, the primordial dark.
+Laocoon the Priest|m|63|Urgent, warning older baritone, quick and fearful, a priest who distrusts the gift.
+Klio the History Muse|f|45|Clear, precise mezzo, slow and scholarly, a muse of history.
+Linos the Teacher|m|71|Patient, slow old tenor, musical and kind, a music teacher of heroes.
+Danae of the Golden Rain|f|28|Soft, wondering soprano, slow and gentle, a princess locked in a tower.
+Ladon the Serpent|n|85|Coiling, hissing androgynous voice, slow and vigilant, a dragon guarding golden apples.
+Meleager the Hunter|m|26|Strong, quick baritone, brave and passionate, a hunter of the great boar.
+Niobe the Grieving|f|60|Weeping, slow older mezzo, proud and broken, a mother turned to stone.
+Hector Tamer of Horses|m|39|Noble, warm baritone, steady and brave, a prince defending his city.
+Andromache|f|35|Warm, worried mezzo, slow and loving, a wife on the city walls.
+Aiolos Keeper of Winds|m|68|Blustery, quick older baritone, moody and loud, the keeper of the winds in a bag.
+Hesperia|f|30|Golden, warm soprano, slow and dreamy, a nymph of the sunset garden.
+Endymion the Sleeper|m|23|Drowsy, soft young tenor, very slow and peaceful, a shepherd in eternal sleep.
+Alekto the Fury|f|58|Shrieking, harsh older voice, fast and furious, a spirit of vengeance.
+Patroklos|m|27|Gentle, warm tenor, loyal and kind, a hero's dearest friend.
+Briseis|f|24|Soft, sad young mezzo, slow and dignified, a captive with a quiet strength.
+Eos of the Dawn|f|25|Rosy, bright soprano, cheerful and fresh, the goddess of dawn.
+Tithonos the Ancient|m|99|Very thin, cracked ancient voice, extremely slow, a man who aged forever.
+Amphitrite|f|49|Calm, flowing alto, slow and regal, a queen of the seas.
+Triton the Herald|m|34|Booming, conch-like baritone, loud and proud, a merman herald.
+Scylla|f|70|Snarling, layered older voice, slow and monstrous, a sea monster in a cave.
+Charybdis|n|75|Gurgling, swirling androgynous voice, slow and hungry, a whirlpool that swallows ships.
+Orion the Giant Hunter|m|41|Big, warm baritone, loud and bold, a giant hunter among the stars.
+Callisto the Bear|f|21|Gentle, wild young voice, slow and sad, a nymph turned into a bear.
+Aktaion|m|25|Frightened, quick young tenor, breathless and sorry, a hunter who saw what he should not.
+Kalypso of the Isle|f|42|Warm, longing mezzo, slow and sweet, a nymph who keeps a sailor on her island.
+Eumaios the Swineherd|m|66|Kind, slow older baritone, humble and loyal, a faithful old servant.
+Eurykleia the Nurse|f|81|Warm, quavering elderly voice, slow and loving, an old nurse who recognizes the hero.
+Telemachos|m|19|Earnest, quick young tenor, unsure and brave, a prince searching for his father.
+Nausikaa|f|18|Bright, kind young voice, quick and curious, a princess who helps a shipwrecked stranger.
+Tiresias the Blind Seer|n|85|Slow, wise ancient androgynous voice, calm and certain, a seer who lived as man and woman.
+Sphinx of the Riddles|f|65|Purring, slow older alto, clever and menacing, a monster who asks riddles.
+Oedipos|m|45|Proud, troubled baritone, quick and haunted, a king who solved the riddle.
+Iokaste|f|56|Elegant, sad older mezzo, slow and worried, a queen with a terrible secret.
+Proteus the Shapeshifter|n|60|Shifting, changing androgynous voice, quick and slippery, a sea god who becomes anything.
+Kadmos the Founder|m|50|Firm, steady baritone, slow and determined, a founder of a city.
+Semele the Bold|f|26|Bright, daring young soprano, quick and curious, a mortal who asked too much of a god.
+Linos Lyrebreaker|m|22|Cocky, quick young tenor, boastful and silly, a student who mocks his teacher.
+Erato the Love-Song Muse|f|31|Sweet, singing soprano, slow and romantic, a muse of love poems.
+Hymen of the Wedding|m|29|Cheerful, festive tenor, quick and bright, the god of weddings.
+Demeter of the Harvest|f|57|Warm, earthy older alto, slow and grieving, a goddess of grain missing her daughter.
+Triptolemos|m|31|Plain, eager baritone, kind and steady, a farmer prince who spreads grain.
+Polyhymnia the Hymn Muse|f|46|Solemn, slow soprano, sacred and calm, a muse of hymns.
+Aristaios the Beekeeper|m|38|Buzzing, warm baritone, gentle and busy, a god of bees.
+Kyrene the Lion-Wrestler|f|29|Strong, bold alto, quick and fearless, a nymph who wrestles lions.
+Philemon the Old Host|m|86|Kind, slow elderly voice, warm and humble, an old man who welcomed gods.
+Baukis the Old Hostess|f|84|Sweet, slow elderly voice, gentle and generous, an old woman sharing her last meal.
+Arion the Dolphin-Rider|m|33|Melodic, quick tenor, cheerful and lucky, a singer saved by a dolphin.
+Thetys of the Rivers|f|73|Flowing, slow ancient alto, deep and calm, a titaness of fresh water.
+Phorkys the Sea Elder|m|79|Gurgling, slow old bass, strange and grim, a sea elder of monsters.
+Antiope the Amazon|f|35|Commanding, strong alto, quick and proud, a warrior queen.
+Hippolyta of the Girdle|f|40|Regal, firm alto, slow and fierce, a queen of warrior women.
+Pentheus the Stubborn|m|30|Rigid, stern tenor, quick and angry, a king who refused the wine god.
+Menelaos the Wronged|m|47|Gruff, bitter baritone, slow and stubborn, a king who wants his wife back.
+Eris of Discord|f|38|Giggly, sharp mezzo, quick and mean, a goddess of quarrels with a golden apple.
+Peleus|m|56|Proud, warm older baritone, slow and kind, a hero who married a sea goddess.
+Kalliste the Nymph|f|20|Light, sweet young voice, quick and shy, a nymph of the springs.
+Autolykos the Thief|m|51|Sly, quick baritone, charming and slippery, a master thief.
+Tyche of Fortune|f|33|Whimsical, quick mezzo, playful and unpredictable, a goddess of luck.
+Pyrrhos Redhair|m|20|Fiery, rash young voice, loud and wild, a young warrior.
+Kirke's Pig Gryllos|m|40|Grunting, comic baritone, slow and content, a sailor who prefers being a pig.
+Leda of the Swan|f|36|Graceful, soft soprano, slow and dreamy, a queen visited by a swan.
+Epimetheus Afterthought|m|54|Slow, muddled baritone, kind and forgetful, a titan who thinks too late.
+Klotho the Spinner|f|88|Thin, slow ancient voice, calm and precise, the fate who spins the thread.
+Lachesis the Measurer|f|86|Dry, slow ancient voice, careful and cold, the fate who measures the thread.
+Atropos the Cutter|f|92|Sharp, very slow ancient voice, final and calm, the fate who cuts the thread.
+Thanatos the Gentle Death|n|65|Soft, calm androgynous voice, slow and kind, death who comes gently.
+Ploutos of Wealth|m|48|Rich, greedy baritone, slow and pleased, a god of wealth.
+Ganymeda|f|16|Shy, bright young voice, quick and nervous, a young servant at the feast of the gods.
+Kratos the Strength|m|43|Hard, short baritone, loud and blunt, a spirit of raw strength.
+Bia the Force|f|39|Fierce, clipped alto, quick and loud, a spirit of force.
+Zelos the Zeal|m|26|Eager, intense tenor, quick and passionate, a spirit of rivalry.
+Hesperos the Evening Star|m|37|Calm, warm baritone, slow and soothing, the evening star.
+Eunomia of Order|f|44|Precise, firm mezzo, slow and fair, a goddess of good laws.
+Momos the Mocker|m|52|Snide, quick baritone, sarcastic and funny, a god who criticizes everyone.
+Oizys of Sorrow|f|47|Weary, slow mezzo, heavy and sad, a spirit of misery.
+Elpis of Hope|f|19|Soft, bright young voice, gentle and hopeful, the last spirit left in the jar.
+Geras of Old Age|m|94|Very slow, creaking ancient voice, tired and wise, the spirit of old age.
+Hypnia|f|28|Drowsy, soft young voice, slow and soothing, a sleepy nymph of dreams.
+Aion of Eternity|n|99|Endless, slow, deep androgynous voice, calm and vast, the spirit of eternal time.
+Lykaon the Wolf-King|m|58|Snarling, rough baritone, slow and savage, a king turned into a wolf.
+Arethusa the Spring|f|23|Bubbling, quick young soprano, fresh and lively, a nymph turned into a spring.
+Hylas|m|18|Gentle, soft young tenor, slow and dreamy, a youth pulled into a pool by nymphs.
+Ismene|f|21|Timid, quick young voice, careful and kind, a sister who wants to obey.
+Kreon the Hard King|m|62|Stern, harsh older baritone, slow and unbending, a king who won't change his mind.
+Alkestis the Faithful|f|32|Warm, steady mezzo, calm and brave, a wife who gave her life.
+Admetos|m|36|Grateful, warm baritone, slow and sad, a king who was saved.
+Thamyris the Bard|m|44|Proud, singing baritone, rich and boastful, a bard who challenged the muses.
+Marsyas the Satyr Piper|m|47|Reedy, quick baritone, cocky and doomed, a satyr who challenged the sun god.
+Io the Wandering Heifer|f|20|Soft, lost young voice, slow and confused, a girl turned into a cow.
+Argo the Speaking Ship|n|50|Creaking, wooden androgynous voice, slow and wise, a ship that can talk.
+Philoktetes|m|49|Hoarse, bitter baritone, slow and pained, an archer left on an island.
+Neoptolemos|m|17|Fierce, quick young voice, proud and rash, a son of a great hero.
+Phaedra|f|38|Feverish, slow mezzo, passionate and tormented, a queen torn by love.
+Ikaria|f|12|Bright, quick little voice, curious and brave, a girl who wants to see the sun up close.
+Aigle the Radiant|f|24|Glowing, bright young soprano, quick and warm, a nymph of the shining light.
+Euphemos the Wave-Runner|m|31|Light, quick tenor, nimble and cheerful, a sailor who runs across the waves.
+Hippodameia|f|26|Clear, determined mezzo, quick and clever, a princess who wins a chariot race.
+Oinomaos the Charioteer|m|60|Harsh, proud older baritone, cold and jealous, a king who races every suitor.
+Kallisto Starbright|f|33|Shimmering, slow soprano, calm and lonely, a nymph placed among the stars.
+Askalaphos the Tattler|m|50|Hooting, quick baritone, sneaky and gossipy, a garden keeper who tells secrets.
+Pleione|f|62|Gentle, slow older alto, motherly and calm, the mother of seven star sisters.
+Maia the Eldest Star|f|30|Soft, starry mezzo, slow and shy, the eldest of seven sisters.
+Ankaios the Strong|m|39|Booming, rough baritone, loud and brave, a sailor with an axe.
+Orithyia|f|19|Breezy, quick young voice, startled and bright, a princess carried off by the wind.
+Kalais the Winged|m|22|Fast, airy young tenor, quick and proud, a winged hero.
+Zetes the Winged|m|23|Fast, rough young baritone, quick and bold, a winged hero's brother.
+Phineus the Blind King|m|76|Weak, slow old baritone, hungry and tired, a king tormented by harpies.
+Kelaino the Harpy|f|54|Screeching, harsh older voice, fast and greedy, a harpy who steals food.
+Hypsipyle|f|35|Warm, sad mezzo, slow and noble, a queen of an island of women.
+Lynkeus Sharp-Eye|m|28|Precise, quick tenor, alert and calm, a hero who sees through walls.
+Idas the Boaster|m|33|Loud, cocky baritone, boastful and rough, a hero who brags too much.
+Marpessa|f|25|Clear, firm young soprano, calm and wise, a woman who chose a mortal over a god.
+Euadne|f|41|Passionate, slow alto, devoted and intense, a wife who follows her husband everywhere.
+Amphion the Builder|m|45|Melodic, warm baritone, slow and gentle, a musician whose songs move stones.
+Zethos the Herder|m|46|Gruff, blunt baritone, slow and practical, a herdsman twin.
+Dirke the Cruel|f|58|Cold, sneering older alto, slow and cruel, a queen who mistreats her captive.
+Antheia of Flowers|f|21|Sweet, fragrant young soprano, light and happy, a spirit of blossoms.
+Kephalos the Hunter|m|34|Steady, warm baritone, slow and regretful, a hunter with an unerring spear.
+Prokris|f|30|Soft, jealous mezzo, quick and anxious, a wife who follows her husband into the woods.
+Erechtheus|m|64|Firm, slow older baritone, proud and grave, an old king of the city.
+Pandrosos|f|17|Quiet, careful young voice, obedient and kind, a princess who keeps a secret basket.
+Herse|f|18|Curious, quick young voice, giggly and nosy, a princess who peeks.
+Aglauros|f|20|Envious, sharp young voice, quick and bitter, a princess turned to stone by envy.
+Boutes the Beekeeper|m|42|Calm, buzzing baritone, slow and gentle, a sailor who loved bees.
+Melampous the Seer|m|55|Wise, slow baritone, calm and odd, a seer who understands animals.
+Pero the Beautiful|f|23|Graceful, soft soprano, slow and kind, a princess courted by many.
+Neleus the King|m|68|Stern, slow older baritone, greedy and proud, a king of sandy shores.
+Chloris of Spring|f|27|Fresh, bright mezzo, quick and joyful, a goddess of spring flowers.
+Aristaeus the Shepherd|m|36|Plain, warm baritone, slow and caring, a shepherd who loses his bees.
+Koronis the Raven-Haired|f|29|Low, mysterious mezzo, slow and sad, a princess betrayed by a raven.
+Ixia the Little Nymph|f|10|Tiny, giggly voice, quick and playful, a little flower nymph.
+Pyrrha the Survivor|f|48|Steady, warm alto, calm and hopeful, a survivor of the great flood.
+Deukalion the Survivor|m|50|Steady, warm baritone, calm and strong, a man who rebuilt the world after the flood.
+Lelex the Old Storyteller|m|83|Slow, crackling old baritone, warm and wandering, an old man telling myths by the fire.
