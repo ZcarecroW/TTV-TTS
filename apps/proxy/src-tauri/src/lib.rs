@@ -11,6 +11,8 @@ mod discovery;
 mod error;
 mod firewall;
 mod forward;
+#[cfg(windows)]
+mod gpu_procs;
 mod logbuf;
 mod secrets;
 mod server;

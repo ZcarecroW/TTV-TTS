@@ -111,7 +111,7 @@ export interface GpuStats {
   vram_total: number | null;
   temperature_c: number | null;
   power_w: number | null;
-  processes: { pid: number; name: string; vram: number | null }[];
+  processes: { pid: number; name: string; vram: number | null; usage: number | null }[];
 }
 
 export interface SystemStats {

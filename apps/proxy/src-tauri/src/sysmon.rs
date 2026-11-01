@@ -25,11 +25,22 @@ struct Monitor {
     nvml_tried: bool,
     /// pid -> program name, so the GPU process list needs no full process scan.
     names: HashMap<u32, String>,
+    /// Windows performance counters for per-process GPU use (None = unavailable).
+    #[cfg(windows)]
+    counters: Option<Option<crate::gpu_procs::GpuCounters>>,
 }
 
 impl Monitor {
     fn new() -> Self {
-        Self { sys: System::new().ok(), gpus: None, nvml: None, nvml_tried: false, names: HashMap::new() }
+        Self {
+            sys: System::new().ok(),
+            gpus: None,
+            nvml: None,
+            nvml_tried: false,
+            names: HashMap::new(),
+            #[cfg(windows)]
+            counters: None,
+        }
     }
 
     fn sample(&mut self) -> SystemStats {
@@ -89,6 +100,26 @@ impl Monitor {
             });
         }
 
+        // Windows: per-process load and memory from the performance counters
+        // (all vendors, real memory figures) replace NVML's process list.
+        #[cfg(windows)]
+        if let Some(first) = gpus.first_mut()
+            && let Some(c) = self.counters.get_or_insert_with(crate::gpu_procs::GpuCounters::new).as_mut()
+        {
+            let mut list: Vec<GpuProcess> = c
+                .sample()
+                .into_iter()
+                .filter(|(pid, (usage, mem))| *pid != 0 && (*usage >= 0.5 || *mem >= 64 * 1024 * 1024))
+                .map(|(pid, (usage, mem))| GpuProcess { pid, name: String::new(), vram: Some(mem), usage: Some(usage) })
+                .collect();
+            list.sort_by(|a, b| {
+                b.usage.unwrap_or(0.0).total_cmp(&a.usage.unwrap_or(0.0)).then(b.vram.unwrap_or(0).cmp(&a.vram.unwrap_or(0)))
+            });
+            list.truncate(8);
+            unnamed.retain(|_| false);
+            unnamed.extend(list.iter().filter(|p| !self.names.contains_key(&p.pid)).map(|p| p.pid));
+            first.processes = list;
+        }
         // Names for processes seen for the first time (one targeted lookup).
         if !unnamed.is_empty()
             && let Some(sys) = self.sys.as_mut()
@@ -136,7 +167,7 @@ fn gpu_processes(d: &nvml_wrapper::Device) -> Vec<GpuProcess> {
             (a, b) => a.or(b),
         };
     }
-    let mut out: Vec<GpuProcess> = by_pid.into_iter().map(|(pid, vram)| GpuProcess { pid, name: String::new(), vram }).collect();
+    let mut out: Vec<GpuProcess> = by_pid.into_iter().map(|(pid, vram)| GpuProcess { pid, name: String::new(), vram, usage: None }).collect();
     out.sort_by(|a, b| b.vram.unwrap_or(0).cmp(&a.vram.unwrap_or(0)).then(a.pid.cmp(&b.pid)));
     out.truncate(12);
     out

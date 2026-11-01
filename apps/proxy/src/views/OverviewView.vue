@@ -150,7 +150,7 @@ function vcpAction(action: "start" | "restart") {
         <div class="label">{{ t("overview.gpuProcesses") }}<UiTip :text="t('tips.gpuProcesses')" /></div>
         <ul class="flex flex-wrap gap-1.5">
           <li v-for="p in gpu.processes" :key="p.pid" class="badge" :class="/voice ?creator/i.test(p.name) ? 'badge-accent' : ''">
-            {{ p.name }}<span v-if="p.vram" class="font-normal opacity-80">· {{ bytes(p.vram, locale) }}</span>
+            {{ p.name }}<span v-if="p.usage != null && p.usage >= 1" class="font-normal opacity-80">· {{ Math.round(p.usage) }} %</span><span v-if="p.vram" class="font-normal opacity-80">· {{ bytes(p.vram, locale) }}</span>
           </li>
         </ul>
       </div>

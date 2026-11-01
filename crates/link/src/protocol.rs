@@ -134,6 +134,8 @@ pub struct GpuProcess {
     pub name: String,
     /// Video memory used by the process, if the driver reports it.
     pub vram: Option<u64>,
+    /// GPU load caused by the process in percent (busiest engine), if known.
+    pub usage: Option<f32>,
 }
 
 /// Network addresses of the proxy PC (for manual setup and Wake-on-LAN).

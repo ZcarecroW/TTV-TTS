@@ -128,8 +128,9 @@ function system(): SystemStats {
         temperature_c: Math.round(wave(9, 46, 61)),
         power_w: wave(5, 38, 168),
         processes: [
-          { pid: 14212, name: "VoiceCreatorPro.exe", vram: 3.9 * 2 ** 30 },
-          { pid: 8120, name: "dwm.exe", vram: null },
+          { pid: 14212, name: "VoiceCreatorPro.exe", vram: 3.9 * 2 ** 30, usage: wave(5, 2, 58) },
+          { pid: 9310, name: "NVIDIA Broadcast.exe", vram: 0.7 * 2 ** 30, usage: 6 },
+          { pid: 8120, name: "dwm.exe", vram: 0.4 * 2 ** 30, usage: 1.2 },
         ],
       },
     ],
