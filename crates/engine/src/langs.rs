@@ -10,6 +10,9 @@ pub struct DesignLang {
     pub accent: &'static str,
     pub text: &'static str,
     pub verify: &'static str,
+    /// Typical speaking rate of designed voices (letters or CJK characters
+    /// per second of talking): median of 420 real VCP voices (2026-11-01).
+    pub letters_per_sec: f32,
 }
 
 pub const LANGS: &[DesignLang] = &[
@@ -20,6 +23,7 @@ pub const LANGS: &[DesignLang] = &[
         accent: "Native speaker of American English with a natural General American accent.",
         text: "Hey everyone, it's great to see you here again today. Let's see what else we're going to experience in the stream.",
         verify: "Thanks for the follow, that really means a lot to me!",
+        letters_per_sec: 14.2,
     },
     DesignLang {
         code: "de",
@@ -28,6 +32,7 @@ pub const LANGS: &[DesignLang] = &[
         accent: "Native German speaker with standard High German pronunciation and no foreign accent.",
         text: "Hallo zusammen, schön dass ihr heute wieder dabei seid. Mal sehen, was wir im Stream heute noch alles erleben werden.",
         verify: "Danke für den Follow, das freut mich wirklich sehr!",
+        letters_per_sec: 14.7,
     },
     DesignLang {
         code: "ru",
@@ -36,6 +41,7 @@ pub const LANGS: &[DesignLang] = &[
         accent: "Native Russian speaker with standard Moscow pronunciation and no foreign accent.",
         text: "Всем привет, как здорово снова видеть вас здесь. Посмотрим, что ещё интересного произойдёт сегодня на стриме.",
         verify: "Спасибо за подписку, мне это очень приятно!",
+        letters_per_sec: 12.3,
     },
     DesignLang {
         code: "fr",
@@ -44,6 +50,7 @@ pub const LANGS: &[DesignLang] = &[
         accent: "Native French speaker from France with standard Parisian pronunciation and no foreign accent.",
         text: "Salut tout le monde, c'est super de vous revoir ici aujourd'hui. Voyons ce qui va encore se passer pendant le stream.",
         verify: "Merci pour le follow, ça me fait vraiment plaisir !",
+        letters_per_sec: 15.0,
     },
     DesignLang {
         code: "es",
@@ -52,6 +59,7 @@ pub const LANGS: &[DesignLang] = &[
         accent: "Native Spanish speaker with a neutral, standard accent and no foreign accent.",
         text: "Hola a todos, qué bueno verlos de nuevo por aquí hoy. Vamos a ver qué más pasa hoy en el directo.",
         verify: "Gracias por el follow, ¡me alegra muchísimo!",
+        letters_per_sec: 12.7,
     },
     DesignLang {
         code: "it",
@@ -60,6 +68,7 @@ pub const LANGS: &[DesignLang] = &[
         accent: "Native Italian speaker with standard Italian pronunciation and no foreign accent.",
         text: "Ciao a tutti, che bello rivedervi qui anche oggi. Vediamo cos'altro succederà oggi nella live.",
         verify: "Grazie per il follow, mi fa davvero piacere!",
+        letters_per_sec: 12.5,
     },
     DesignLang {
         code: "pt",
@@ -68,6 +77,7 @@ pub const LANGS: &[DesignLang] = &[
         accent: "Native Brazilian Portuguese speaker with a natural Brazilian accent.",
         text: "Olá a todos, que bom ver vocês aqui de novo hoje. Vamos ver o que mais vai acontecer na live.",
         verify: "Valeu pelo follow, isso me deixa muito feliz!",
+        letters_per_sec: 11.1,
     },
     DesignLang {
         code: "ja",
@@ -76,6 +86,7 @@ pub const LANGS: &[DesignLang] = &[
         accent: "Native Japanese speaker with standard Tokyo pronunciation.",
         text: "みなさん、こんにちは。今日もまた来てくれてうれしいです。配信でこれから何が起きるか楽しみですね。",
         verify: "フォローありがとうございます、本当にうれしいです！",
+        letters_per_sec: 5.6,
     },
     DesignLang {
         code: "zh",
@@ -84,6 +95,7 @@ pub const LANGS: &[DesignLang] = &[
         accent: "Native Mandarin Chinese speaker with standard Beijing pronunciation.",
         text: "大家好，很高兴今天又在这里见到你们。让我们看看今天的直播还会发生什么吧。",
         verify: "谢谢你的关注，我真的很开心！",
+        letters_per_sec: 4.8,
     },
     DesignLang {
         code: "ko",
@@ -92,6 +104,7 @@ pub const LANGS: &[DesignLang] = &[
         accent: "Native Korean speaker with standard Seoul pronunciation.",
         text: "여러분 안녕하세요, 오늘도 다시 만나서 정말 반가워요. 오늘 방송에서 또 어떤 일이 일어날지 기대돼요.",
         verify: "팔로우해 주셔서 감사합니다, 정말 기뻐요!",
+        letters_per_sec: 5.3,
     },
 ];
 

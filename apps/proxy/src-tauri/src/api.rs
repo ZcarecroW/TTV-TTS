@@ -190,6 +190,7 @@ pub fn engine_routes() -> Router<Arc<AppState>> {
         .route("/library", get(library))
         .route("/library/delete", post(library_delete))
         .route("/library/adopt", post(library_adopt))
+        .route("/library/keep", post(library_keep))
         .route("/library/verify", post(library_verify))
         .route("/library/sample/{key}", get(library_sample))
         .route("/jobs", post(job_submit))
@@ -236,8 +237,41 @@ async fn library_delete(State(state): S, Json(k): Json<Keys>) -> Response {
     }
 }
 
-async fn library_adopt(State(state): S, Json(entries): Json<Vec<ttv_link::LibraryEntry>>) -> Json<serde_json::Value> {
-    Json(serde_json::json!({ "adopted": state.engine.adopt(entries) }))
+/// A list of entries to adopt, or entries replacing others (re-keying adopted
+/// voices; nothing is deleted in VCP).
+#[derive(serde::Deserialize)]
+#[serde(untagged)]
+enum Adopt {
+    List(Vec<ttv_link::LibraryEntry>),
+    Replace {
+        entries: Vec<ttv_link::LibraryEntry>,
+        #[serde(default)]
+        remove: Vec<String>,
+    },
+}
+
+async fn library_adopt(State(state): S, Json(a): Json<Adopt>) -> Json<serde_json::Value> {
+    let n = match a {
+        Adopt::List(entries) => state.engine.adopt(entries),
+        Adopt::Replace { entries, remove } => state.engine.rekey(entries, &remove),
+    };
+    Json(serde_json::json!({ "adopted": n }))
+}
+
+#[derive(serde::Deserialize)]
+struct Keep {
+    keys: Vec<String>,
+    #[serde(default = "yes")]
+    kept: bool,
+}
+
+fn yes() -> bool {
+    true
+}
+
+/// Marks voices as listened to and fine (the quality check stops listing them).
+async fn library_keep(State(state): S, Json(k): Json<Keep>) -> Json<serde_json::Value> {
+    Json(serde_json::json!({ "changed": state.engine.keep(&k.keys, k.kept) }))
 }
 
 async fn library_verify(State(state): S) -> Response {

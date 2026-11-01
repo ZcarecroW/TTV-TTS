@@ -54,12 +54,31 @@ pub struct JobOptions {
     pub takes: u8,
     /// Keep a lossless copy of each voice's sample on the engine's PC.
     pub backup: bool,
+    /// Quality check: listen to every new voice speaking a new sentence and
+    /// list the ones that may sound odd.
+    pub quality: bool,
+    /// Design odd voices again automatically and keep the better one.
+    pub improve: bool,
 }
 
 impl Default for JobOptions {
     fn default() -> Self {
-        Self { speech_check: true, takes: 2, backup: true }
+        Self { speech_check: true, takes: 2, backup: true, quality: false, improve: false }
     }
+}
+
+/// What a job does.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum JobKind {
+    /// Design the voices that aren't computed yet.
+    #[default]
+    Compute,
+    /// Design computed voices again; the new one replaces the old one only
+    /// if it sounds better (quality score).
+    Improve,
+    /// Check the quality of computed voices (no new designs).
+    Review,
 }
 
 /// `POST /ttv/v1/jobs`
@@ -72,6 +91,11 @@ pub struct JobRequest {
     /// Language codes (de, en, …).
     pub languages: Vec<String>,
     pub options: JobOptions,
+    pub kind: JobKind,
+    /// Only these voice keys (empty = all of defs × languages).
+    pub only: Vec<String>,
+    /// Improve: designs per voice before keeping the old one (default 2).
+    pub rounds: u8,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
@@ -97,13 +121,18 @@ pub struct JobView {
     pub preset_name: String,
     pub languages: Vec<String>,
     pub options: JobOptions,
+    pub kind: JobKind,
     /// Voices this job has to compute (definitions × languages, minus those
-    /// that already existed when it started).
+    /// that already existed when it started), improve or check.
     pub total: u32,
     pub done: u32,
     pub failed: u32,
+    /// Quality check: voices found that may sound odd.
+    pub flagged: u32,
+    /// Improve: voices replaced by a better design.
+    pub improved: u32,
     pub state: JobState,
-    /// "design", "check", "save", "prime"
+    /// "design", "check", "save", "prime", "review", "speak"
     pub phase: String,
     /// The voice being worked on ("Vic Malone · de").
     pub current: Option<String>,
@@ -146,6 +175,8 @@ pub struct LibraryEntry {
     /// Speech loudness of the reference sample in dBFS (None = not measured
     /// yet; "Check voices" measures it once and corrects the gain).
     pub level: Option<f32>,
+    /// Quality check result (None = not checked).
+    pub quality: Option<Quality>,
     /// A lossless copy of the sample exists on the engine's PC.
     pub backup: bool,
 }
@@ -208,4 +239,34 @@ pub struct Verified {
     pub removed: u32,
     /// Voices whose loudness was measured (once) and gain corrected.
     pub measured: u32,
+}
+
+/// Result of the quality check of a computed voice.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Quality {
+    /// 1 = nothing odd; below 0.75 the voice is listed for review.
+    pub score: f32,
+    pub issues: Vec<QualityIssue>,
+    /// Median pitch of the reference sample (Hz).
+    pub f0: Option<f32>,
+    /// Unix seconds.
+    pub checked: i64,
+    /// The check included speaking a new sentence.
+    pub new_text: bool,
+    /// The user listened and keeps the voice as it is.
+    pub kept: bool,
+}
+
+/// One thing that may sound odd ("pitch_high", "quiet", "new_misheard", …).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct QualityIssue {
+    pub code: String,
+    /// The measured value (Hz, dB, seconds, ratio, error rate – see code).
+    pub value: f32,
+    /// How much it lowers the score (0–1).
+    pub weight: f32,
+    /// e.g. the other language for "languages_differ".
+    pub extra: Option<String>,
 }

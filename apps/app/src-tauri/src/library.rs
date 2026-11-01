@@ -28,31 +28,57 @@ struct Cache {
     map: HashMap<String, LibraryEntry>,
     /// def hash -> languages computed (for counts per preset).
     by_def: HashMap<String, Vec<String>>,
+    /// def hash -> languages whose voice the quality check lists.
+    odd: HashMap<String, Vec<String>>,
+}
+
+/// Listed by the quality check: may sound odd, and nobody kept it yet.
+pub fn is_odd(e: &LibraryEntry) -> bool {
+    e.quality.as_ref().is_some_and(|q| q.score < ttv_engine::quality::FLAG && !q.kept)
 }
 
 impl Cache {
     fn index(&mut self) {
         self.by_def.clear();
+        self.odd.clear();
         for e in self.map.values() {
             self.by_def.entry(e.def_hash.clone()).or_default().push(e.lang.clone());
+            if is_odd(e) {
+                self.odd.entry(e.def_hash.clone()).or_default().push(e.lang.clone());
+            }
         }
     }
 
     fn add(&mut self, e: LibraryEntry) {
+        if self.map.contains_key(&e.key) {
+            self.remove(&e.key.clone());
+        }
         let langs = self.by_def.entry(e.def_hash.clone()).or_default();
         if !langs.contains(&e.lang) {
             langs.push(e.lang.clone());
+        }
+        if is_odd(&e) {
+            self.odd.entry(e.def_hash.clone()).or_default().push(e.lang.clone());
         }
         self.map.insert(e.key.clone(), e);
     }
 
     fn remove(&mut self, key: &str) {
-        if let Some(e) = self.map.remove(key)
-            && let Some(l) = self.by_def.get_mut(&e.def_hash)
-        {
-            l.retain(|x| *x != e.lang);
+        if let Some(e) = self.map.remove(key) {
+            if let Some(l) = self.by_def.get_mut(&e.def_hash) {
+                l.retain(|x| *x != e.lang);
+            }
+            if let Some(l) = self.odd.get_mut(&e.def_hash) {
+                l.retain(|x| *x != e.lang);
+            }
         }
     }
+}
+
+/// What the window's preset views need from the library.
+pub struct Counts<'a> {
+    pub by_def: &'a HashMap<String, Vec<String>>,
+    pub odd: &'a HashMap<String, Vec<String>>,
 }
 
 /// What the window gets on `app://library`.
@@ -121,6 +147,12 @@ impl VoiceLibrary {
     pub fn with<R>(&self, f: impl FnOnce(&HashMap<String, LibraryEntry>, &HashMap<String, Vec<String>>) -> R) -> R {
         let c = self.cache.read();
         f(&c.map, &c.by_def)
+    }
+
+    /// Runs `f` with the counts per definition (computed and odd languages).
+    pub fn counts<R>(&self, f: impl FnOnce(Counts) -> R) -> R {
+        let c = self.cache.read();
+        f(Counts { by_def: &c.by_def, odd: &c.odd })
     }
 
     pub fn size(&self) -> u32 {
@@ -237,6 +269,29 @@ impl VoiceLibrary {
             Backend::Remote(c) => {
                 let v: serde_json::Value = c.post("/ttv/v1/library/adopt", &entries, T_LONG).await.map_err(|e| e.to_string())?;
                 Ok(v["adopted"].as_u64().unwrap_or(0) as u32)
+            }
+        }
+    }
+
+    /// Replaces entries by re-keyed ones for the same VCP voices (nothing is
+    /// deleted in VCP). Needs TTV-TTS Proxy 2.0.0-alpha.9 or newer.
+    pub async fn rekey(&self, state: &AppState, entries: Vec<LibraryEntry>, remove: Vec<String>) -> Result<u32, String> {
+        match Self::backend(state)? {
+            Backend::Local => Ok(self.local.rekey(entries, &remove)),
+            Backend::Remote(c) => {
+                let v: serde_json::Value = c.post("/ttv/v1/library/adopt", &serde_json::json!({ "entries": entries, "remove": remove }), T_LONG).await.map_err(|e| e.to_string())?;
+                Ok(v["adopted"].as_u64().unwrap_or(0) as u32)
+            }
+        }
+    }
+
+    /// Marks voices as listened to and fine (or not).
+    pub async fn keep(&self, state: &AppState, keys: Vec<String>, kept: bool) -> Result<u32, String> {
+        match Self::backend(state)? {
+            Backend::Local => Ok(self.local.keep(&keys, kept)),
+            Backend::Remote(c) => {
+                let v: serde_json::Value = c.post("/ttv/v1/library/keep", &serde_json::json!({ "keys": keys, "kept": kept }), T_SHORT).await.map_err(|e| e.to_string())?;
+                Ok(v["changed"].as_u64().unwrap_or(0) as u32)
             }
         }
     }

@@ -9,6 +9,7 @@ import ComputeDialog from "../components/ComputeDialog.vue";
 import JobList from "../components/JobList.vue";
 import PresetDetailDialog from "../components/PresetDetailDialog.vue";
 import PresetEditorDialog from "../components/PresetEditorDialog.vue";
+import ReviewDialog from "../components/ReviewDialog.vue";
 import { activeJobs, host, loadEngine, loadPresets, run, store, toast } from "../store";
 
 const { t } = useI18n();
@@ -16,6 +17,9 @@ const detail = ref<string | null>(null);
 const computeFor = ref<string | null>(null);
 const editor = ref<{ id?: string } | null>(null);
 const classic = ref<ClassicFound | null>(null);
+/** The quality check's list: all presets ("") or one. */
+const review = ref<string | null>(null);
+const odd = computed(() => store.presets.reduce((n, p) => n + (p.odd ?? 0), 0));
 
 const connected = computed(() => !!host.value?.connected);
 // A proxy from before presets (2.0.0-alpha.4) answers 404 to the engine.
@@ -94,6 +98,12 @@ function openEditor(id?: string) {
       </button>
     </div>
 
+    <div v-if="odd" class="notice notice-warn text-sm">
+      <Warning :size="18" />
+      <span class="flex-1">{{ t("quality.notice", odd) }}</span>
+      <button class="btn btn-primary btn-sm" @click="review = ''">{{ t("quality.open") }}</button>
+    </div>
+
     <section v-if="store.engine?.jobs.length" class="card p-5">
       <div class="card-head"><Sparkle />{{ t("jobs.title") }}<span v-if="activeJobs.length" class="badge badge-accent ml-1">{{ activeJobs.length }}</span></div>
       <p class="muted mb-3 text-sm">{{ host?.kind === "direct" ? t("jobs.hintDirect") : t("jobs.hintProxy") }}</p>
@@ -133,6 +143,7 @@ function openEditor(id?: string) {
             <div class="mt-3 flex flex-wrap gap-1">
               <span v-for="[l, n] in langs(p)" :key="l" class="badge" :class="n >= p.count ? 'badge-ok' : 'badge-accent'">{{ l }} {{ n }}</span>
               <span v-if="!p.ready" class="text-xs text-muted">{{ t("presets.notYet") }}</span>
+              <button v-if="p.odd" type="button" class="badge badge-warn" @click="review = p.id"><Warning :size="12" />{{ t("quality.toCheck", { n: p.odd }) }}</button>
             </div>
             <div class="mt-3 flex items-center gap-2 text-xs text-muted">
               <div class="bar bar-thin flex-1"><i :style="{ width: `${pct(p)}%` }" /></div>
@@ -149,6 +160,7 @@ function openEditor(id?: string) {
 
     <PresetDetailDialog v-if="detail" :preset-id="detail" @close="detail = null" @compute="openCompute" @edit="openEditor" />
     <ComputeDialog v-if="computeFor" :preset-id="computeFor" @close="computeFor = null" />
+    <ReviewDialog v-if="review !== null" :preset-id="review || null" @close="review = null" />
     <PresetEditorDialog v-if="editor" :preset-id="editor.id" @close="editor = null" @saved="(id) => ((editor = null), (detail = id))" />
   </div>
 </template>

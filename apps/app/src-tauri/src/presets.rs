@@ -11,13 +11,15 @@
 //! Lola Fine|f|31|Velvety low alto, unhurried, teasing warmth.|fx=radio
 //! ```
 
-use std::collections::{BTreeMap, HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use ttv_link::VoiceDef;
+
+use crate::library::Counts;
 
 pub const MAGIC: &str = "#ttv-tts preset v1";
 /// Effects the player knows (M6); others are accepted with a warning.
@@ -334,9 +336,19 @@ impl PresetStore {
         self.own.read().iter().find(|p| p.id == id).map(f)
     }
 
-    pub fn summaries(&self, by_def: &HashMap<String, Vec<String>>) -> Vec<PresetView> {
+    pub fn summaries(&self, c: &Counts) -> Vec<PresetView> {
         let own = self.own.read();
-        builtins().iter().chain(own.iter()).map(|p| PresetView::new(p, by_def)).collect()
+        builtins().iter().chain(own.iter()).map(|p| PresetView::new(p, c)).collect()
+    }
+
+    /// Calls `f` for every preset (built-ins first).
+    pub fn each(&self, mut f: impl FnMut(&Preset)) {
+        for p in builtins() {
+            f(p);
+        }
+        for p in self.own.read().iter() {
+            f(p);
+        }
     }
 }
 
@@ -350,21 +362,25 @@ pub struct PresetView {
     pub computed: BTreeMap<String, u32>,
     /// Definitions computed in at least one language.
     pub ready: u32,
+    /// Voices the quality check lists (may sound odd).
+    pub odd: u32,
 }
 
 impl PresetView {
-    pub fn new(p: &Preset, by_def: &HashMap<String, Vec<String>>) -> Self {
+    pub fn new(p: &Preset, c: &Counts) -> Self {
         let mut computed = BTreeMap::new();
-        let mut ready = 0;
+        let (mut ready, mut odd) = (0, 0);
         for d in &p.defs {
-            if let Some(langs) = by_def.get(&d.hash()).filter(|l| !l.is_empty()) {
+            let hash = d.hash();
+            if let Some(langs) = c.by_def.get(&hash).filter(|l| !l.is_empty()) {
                 ready += 1;
                 for l in langs {
                     *computed.entry(l.clone()).or_insert(0) += 1;
                 }
+                odd += c.odd.get(&hash).map_or(0, |l| l.len() as u32);
             }
         }
-        Self { summary: p.summary(), computed, ready }
+        Self { summary: p.summary(), computed, ready, odd }
     }
 }
 
@@ -376,6 +392,8 @@ pub struct VoiceView {
     pub hash: String,
     /// Languages this voice is computed in.
     pub langs: Vec<String>,
+    /// Languages whose voice may sound odd (quality check).
+    pub odd: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -386,19 +404,21 @@ pub struct PresetDetail {
 }
 
 impl PresetDetail {
-    pub fn new(p: &Preset, by_def: &HashMap<String, Vec<String>>) -> Self {
+    pub fn new(p: &Preset, c: &Counts) -> Self {
         let voices = p
             .defs
             .iter()
             .enumerate()
             .map(|(i, d)| {
                 let hash = d.hash();
-                let mut langs = by_def.get(&hash).cloned().unwrap_or_default();
+                let mut langs = c.by_def.get(&hash).cloned().unwrap_or_default();
                 langs.sort();
-                VoiceView { index: i as u32, def: d.clone(), hash, langs }
+                let mut odd = c.odd.get(&hash).cloned().unwrap_or_default();
+                odd.sort();
+                VoiceView { index: i as u32, def: d.clone(), hash, langs, odd }
             })
             .collect();
-        Self { view: PresetView::new(p, by_def), voices }
+        Self { view: PresetView::new(p, c), voices }
     }
 }
 
@@ -567,15 +587,20 @@ mod tests {
         let n: usize = BUILTIN.iter().map(|(_, text)| parse(text).defs.len()).sum();
         let parse_ms = t.elapsed().as_secs_f64() * 1000.0;
         // A library with every voice computed in 10 languages.
-        let mut by_def: HashMap<String, Vec<String>> = HashMap::new();
+        let mut by_def: std::collections::HashMap<String, Vec<String>> = Default::default();
+        // and 10 % of them listed by the quality check
+        let mut odd: std::collections::HashMap<String, Vec<String>> = Default::default();
         for b in builtins() {
             for d in &b.defs {
                 by_def.insert(d.hash(), ["en", "de", "ru", "fr", "es", "it", "pt", "ja", "zh", "ko"].iter().map(|s| s.to_string()).collect());
+                if d.name.len() % 10 == 0 {
+                    odd.insert(d.hash(), vec!["en".into()]);
+                }
             }
         }
         let store = PresetStore { path: std::env::temp_dir().join("ttv-presets-timing.json"), own: RwLock::new(Vec::new()) };
         let t = std::time::Instant::now();
-        let views = store.summaries(&by_def);
+        let views = store.summaries(&Counts { by_def: &by_def, odd: &odd });
         let list_ms = t.elapsed().as_secs_f64() * 1000.0;
         let json = serde_json::to_string(&views).unwrap();
         println!("parse {n} voices: {parse_ms:.2} ms · preset list (48 000 computed voices): {list_ms:.2} ms · {} KB JSON", json.len() / 1024);

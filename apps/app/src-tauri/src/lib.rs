@@ -11,6 +11,7 @@ mod library;
 mod logbuf;
 mod monitor;
 mod preset_cmds;
+mod quality_cmds;
 mod presets;
 mod profile;
 mod reader;
@@ -119,6 +120,11 @@ pub fn run() {
             preset_cmds::verify_library,
             preset_cmds::listen,
             preset_cmds::redo_voice,
+            quality_cmds::quality_list,
+            quality_cmds::keep_voices,
+            quality_cmds::improve_voices,
+            quality_cmds::check_quality,
+            quality_cmds::play_reference,
             preset_cmds::detect_classic,
             preset_cmds::adopt_classic,
         ])

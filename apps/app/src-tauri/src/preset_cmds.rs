@@ -14,19 +14,19 @@ type St<'a> = State<'a, Arc<AppState>>;
 
 #[tauri::command]
 pub fn list_presets(state: St) -> Vec<PresetView> {
-    state.library.with(|_, by_def| state.presets.summaries(by_def))
+    state.library.counts(|c| state.presets.summaries(&c))
 }
 
 #[tauri::command]
 pub fn get_preset(state: St, id: String) -> Result<PresetDetail, String> {
-    state.library.with(|_, by_def| state.presets.with(&id, |p| PresetDetail::new(p, by_def))).ok_or_else(|| "This preset doesn't exist (any more).".into())
+    state.library.counts(|c| state.presets.with(&id, |p| PresetDetail::new(p, &c))).ok_or_else(|| "This preset doesn't exist (any more).".into())
 }
 
 /// Creates or replaces an own preset.
 #[tauri::command]
 pub fn save_preset(state: St, preset: Preset) -> Result<PresetView, String> {
     let p = state.presets.put(preset)?;
-    Ok(state.library.with(|_, by_def| PresetView::new(&p, by_def)))
+    Ok(state.library.counts(|c| PresetView::new(&p, &c)))
 }
 
 /// Copies any preset (built-ins too) into a new own one.
@@ -107,6 +107,7 @@ pub async fn compute(state: St<'_>, request: ComputeRequest) -> Result<JobView, 
                 defs: p.defs[..n].iter().enumerate().map(|(i, d)| JobDef { index: i as u32, def: d.clone() }).collect(),
                 languages: r.languages.clone(),
                 options: JobOptions { takes: r.options.takes.clamp(1, 3), ..r.options.clone() },
+                ..Default::default()
             }
         })
         .ok_or("This preset doesn't exist (any more).")?;
@@ -133,7 +134,9 @@ pub async fn redo_voice(state: St<'_>, preset_id: String, index: u32, lang: Stri
         .flatten()
         .ok_or("This voice doesn't exist (any more).")?;
     state.library.delete(&state, vec![def.key(&lang)]).await?;
-    let job = JobRequest { preset_id: id, preset_name: name, defs: vec![JobDef { index, def }], languages: vec![lang], options: JobOptions::default() };
+    // with the quality check: the new design gets a report right away
+    let options = JobOptions { quality: true, ..JobOptions::default() };
+    let job = JobRequest { preset_id: id, preset_name: name, defs: vec![JobDef { index, def }], languages: vec![lang], options, ..Default::default() };
     state.library.submit(&state, job).await
 }
 

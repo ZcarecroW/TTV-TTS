@@ -231,18 +231,13 @@ impl Client {
         Ok(())
     }
 
-    /// The voice's reference sample (base64 WAV) from `GET /api/v1/voices/{id}`.
-    pub async fn voice_audio(&self, id: &str) -> Result<String, Error> {
-        #[derive(serde::Deserialize)]
-        struct Audio {
-            #[serde(default)]
-            audio_base64: String,
-        }
-        let v: Audio = self.get(&format!("/api/v1/voices/{id}"), Duration::from_secs(30)).await?;
+    /// The voice's reference sample from `GET /api/v1/voices/{id}`.
+    pub async fn voice_sample(&self, id: &str) -> Result<VoiceSample, Error> {
+        let v: VoiceSample = self.get(&format!("/api/v1/voices/{id}"), Duration::from_secs(30)).await?;
         if v.audio_base64.is_empty() {
             return Err(Error::Decode("voice without audio".into()));
         }
-        Ok(v.audio_base64)
+        Ok(v)
     }
 
     /// `DELETE /api/v1/voices/{id}`. A voice that is already gone counts as deleted.

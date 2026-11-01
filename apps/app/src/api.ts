@@ -339,6 +339,8 @@ export interface PresetView {
   mix: [number, number, number];
   /** language -> computed voices */
   computed: Record<string, number>;
+  /** voices the quality check lists (may sound odd) */
+  odd: number;
   /** definitions computed in at least one language */
   ready: number;
 }
@@ -347,6 +349,8 @@ export interface VoiceView extends VoiceDef {
   index: number;
   hash: string;
   langs: string[];
+  /** languages whose voice may sound odd (quality check) */
+  odd: string[];
 }
 
 export interface PresetDetail extends PresetView {
@@ -371,7 +375,54 @@ export interface JobOptions {
   speech_check: boolean;
   takes: number;
   backup: boolean;
+  /** quality check: list voices that may sound odd */
+  quality?: boolean;
+  /** design odd voices again automatically, keep the better one */
+  improve?: boolean;
 }
+
+export type JobKind = "compute" | "improve" | "review";
+
+/** One thing that may sound odd about a voice. */
+export interface QualityIssue {
+  code: string;
+  value: number;
+  weight: number;
+  extra: string | null;
+}
+
+export interface Quality {
+  /** 1 = nothing odd; below 0.75 the voice is listed */
+  score: number;
+  issues: QualityIssue[];
+  f0: number | null;
+  checked: number;
+  new_text: boolean;
+  kept: boolean;
+}
+
+export interface ReviewItem {
+  key: string;
+  preset_id: string;
+  preset_name: string;
+  index: number;
+  name: string;
+  gender: string;
+  age: number;
+  description: string;
+  lang: string;
+  quality: Quality;
+}
+
+export interface ReviewList {
+  items: ReviewItem[];
+  checked: number;
+  unchecked: number;
+  kept: number;
+}
+
+/** Below this score the quality check lists a voice. */
+export const FLAG = 0.75;
 
 export type JobState = "queued" | "running" | "paused" | "waiting" | "done" | "cancelled" | "failed";
 
@@ -381,9 +432,14 @@ export interface JobView {
   preset_name: string;
   languages: string[];
   options: JobOptions;
+  kind: JobKind;
   total: number;
   done: number;
   failed: number;
+  /** quality check: voices found that may sound odd */
+  flagged: number;
+  /** improve: voices replaced by a better design */
+  improved: number;
   state: JobState;
   phase: string;
   current: string | null;
@@ -447,6 +503,11 @@ export const presets = {
   job: (id: string, action: "pause" | "resume" | "cancel" | "remove") => invoke<void>("job_control", { id, action }),
   deleteVoices: (keys: string[]) => invoke<number>("delete_voices", { keys }),
   redo: (presetId: string, index: number, lang: string) => invoke<JobView>("redo_voice", { presetId, index, lang }),
+  review: () => invoke<ReviewList>("quality_list"),
+  keep: (keys: string[], kept = true) => invoke<number>("keep_voices", { keys, kept }),
+  improve: (keys: string[]) => invoke<JobView[]>("improve_voices", { keys }),
+  checkQuality: (presetId: string | null, again = false) => invoke<JobView[]>("check_quality", { presetId, again }),
+  playReference: (key: string) => invoke<number>("play_reference", { key }),
   verify: () => invoke<Verified>("verify_library"),
   listen: (presetId: string, index: number, lang: string, text: string) => invoke<SayReport>("listen", { presetId, index, lang, text }),
   detectClassic: () => invoke<ClassicFound>("detect_classic"),

@@ -215,3 +215,25 @@ mod tests {
         assert!(!q.is_generating);
     }
 }
+
+/// A saved voice's reference sample (`GET /api/v1/voices/{id}`).
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[serde(default)]
+pub struct VoiceSample {
+    /// WAV, base64.
+    pub audio_base64: String,
+    /// What the sample says (VCP 2.4: set for design voices).
+    pub ref_text: Option<String>,
+    /// Design voices: the description; cloned and 1.x voices: what it says.
+    pub transcript: Option<String>,
+}
+
+impl VoiceSample {
+    /// The words spoken in the sample, if VCP knows them.
+    pub fn spoken_text(&self) -> Option<&str> {
+        let r = self.ref_text.as_deref().map(str::trim).filter(|t| !t.is_empty());
+        // TTV-TTS always sets ref_text; voices from 1.x keep the spoken words in
+        // the transcript (and leave ref_text empty).
+        r.or_else(|| self.transcript.as_deref().map(str::trim).filter(|t| !t.is_empty()))
+    }
+}

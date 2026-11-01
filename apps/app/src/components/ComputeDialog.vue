@@ -20,6 +20,23 @@ const langs = ref<string[]>([]);
 const takes = ref("2");
 const check = ref(true);
 const backup = ref(true);
+const remembered = (k: string) => {
+  try {
+    return localStorage.getItem(`ttv.compute.${k}`) === "1";
+  } catch {
+    return false;
+  }
+};
+const quality = ref(remembered("quality"));
+const improve = ref(remembered("improve"));
+watch([quality, improve], ([q, i]) => {
+  try {
+    localStorage.setItem("ttv.compute.quality", q ? "1" : "0");
+    localStorage.setItem("ttv.compute.improve", i ? "1" : "0");
+  } catch {
+    /* private mode */
+  }
+});
 const eta = ref<number | null | undefined>(undefined);
 
 onMounted(async () => {
@@ -57,9 +74,10 @@ async function updateEta() {
   const seq = ++etaSeq;
   if (!todo.value.add) return (eta.value = 0);
   const e = await presets.estimate(todo.value.add, Number(takes.value), check.value).catch(() => null);
-  if (seq === etaSeq) eta.value = e;
+  // the quality check listens to every voice once more (~15 %)
+  if (seq === etaSeq) eta.value = e == null ? e : quality.value ? Math.round(e * 1.15) : e;
 }
-watch([todo, takes, check], updateEta);
+watch([todo, takes, check, quality], updateEta);
 watch(detail, updateEta);
 
 async function measure() {
@@ -81,7 +99,7 @@ async function start() {
   const d = detail.value;
   if (!d) return;
   const job = await run("compute", () =>
-    presets.compute({ preset_id: d.id, count: Number(count.value), languages: langs.value, options: { takes: Number(takes.value), speech_check: check.value, backup: backup.value } }),
+    presets.compute({ preset_id: d.id, count: Number(count.value), languages: langs.value, options: { takes: Number(takes.value), speech_check: check.value, backup: backup.value, quality: quality.value, improve: quality.value && improve.value } }),
   );
   if (job) {
     toast("ok", t("compute.started", { n: job.total }));
@@ -120,6 +138,11 @@ async function start() {
           <UiToggle v-model="check" :label="t('compute.check')" :tip="t('tips.speechCheck')" />
           <UiToggle v-model="backup" :label="t('compute.backup')" :tip="t('tips.backup')" />
         </div>
+      </div>
+
+      <div class="space-y-2 rounded-xl border border-line p-3.5">
+        <UiToggle v-model="quality" :label="t('compute.quality')" :tip="t('tips.qualityCheck')" />
+        <UiToggle v-model="improve" :disabled="!quality" :label="t('compute.improve')" :tip="t('tips.improveAuto')" />
       </div>
 
       <div class="rounded-xl border border-line bg-panel-2/40 p-4 text-sm">

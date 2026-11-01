@@ -40,6 +40,7 @@ async function act(j: JobView, action: "pause" | "resume" | "cancel" | "remove")
     <li v-for="j in jobs" :key="j.id" class="rounded-xl border border-line bg-panel-2/40 p-3.5">
       <div class="flex flex-wrap items-center gap-2">
         <span class="font-medium">{{ j.preset_name }}</span>
+        <span v-if="j.kind && j.kind !== 'compute'" class="badge">{{ t(`jobs.kind.${j.kind}`) }}</span>
         <span class="text-xs text-muted">{{ j.languages.join(" · ") }}</span>
         <span class="badge" :class="badge[j.state]">
           <Spinner v-if="j.state === 'running'" :size="12" class="spin" />{{ t(`jobs.state.${j.state}`) }}
@@ -53,7 +54,7 @@ async function act(j: JobView, action: "pause" | "resume" | "cancel" | "remove")
       </div>
       <div class="bar mt-2.5"><i :style="{ width: `${pct(j)}%` }" /></div>
       <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted">
-        <span>{{ t("jobs.progress", { done: j.done, total: j.total }) }}<template v-if="j.failed"> · {{ t("jobs.failed", { n: j.failed }) }}</template></span>
+        <span>{{ t("jobs.progress", { done: j.done, total: j.total }) }}<template v-if="j.failed"> · {{ t("jobs.failed", { n: j.failed }) }}</template><template v-if="j.flagged"> · <span class="text-warn">{{ t("jobs.flagged", { n: j.flagged }) }}</span></template><template v-if="j.improved"> · {{ t("jobs.improved", { n: j.improved }) }}</template></span>
         <span v-if="j.state === 'running' && j.current" :data-tip="t('jobs.batchTip', { n: j.batch })">{{ t(`jobs.phase.${j.phase || "design"}`) }}<template v-if="j.steps"> {{ Math.min(j.step + 1, j.steps) }}/{{ j.steps }}</template>: {{ j.current }}</span>
         <span v-if="j.state === 'waiting'">{{ t("jobs.waitingText") }}</span>
         <span v-if="j.eta_secs != null && !['done', 'cancelled', 'failed'].includes(j.state)" class="ml-auto">{{ t("jobs.eta", { time: duration(j.eta_secs) }) }}</span>

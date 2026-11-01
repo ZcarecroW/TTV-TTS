@@ -32,7 +32,7 @@ for (let i = 0; i < navItems.length; i++) {
   await page.waitForTimeout(250);
   const text = await page.locator("main").innerText();
   // vue-i18n shows the key itself when a message is missing.
-  const raw = text.match(/\b(common|nav|host|voices|live|profiles|settings|tips|app|presets|jobs|compute|editor|lang|viewers)\.[a-zA-Z.]+\b/g);
+  const raw = text.match(/\b(common|nav|host|voices|live|profiles|settings|tips|app|presets|jobs|compute|editor|lang|viewers|quality)\.[a-zA-Z.]+\b/g);
   check(!raw, `page "${navItems[i].trim()}" renders without raw i18n keys`, raw?.slice(0, 3).join(", ") ?? `${text.length} chars`);
 }
 
@@ -95,6 +95,37 @@ await page.locator("main").getByRole("button", { name: /^(check voices|stimmen p
 await page.waitForTimeout(1000);
 check(/measured for loudness|Lautstärke gemessen/.test(await page.locator("body").innerText()), "checking the voices reports what it repaired");
 
+// Quality check: odd voices are listed; listen, keep, improve, check the rest.
+pre = await page.locator("main").innerText();
+check(/4 voices may sound odd|4 Stimmen klingen vielleicht seltsam/.test(pre), "the presets page says how many voices may sound odd");
+check(/4 to check|4 prüfen/.test(await page.locator("article", { hasText: "Cinematic" }).innerText()), "the preset card shows its voices to check");
+await page.locator("main").getByRole("button", { name: /listen and decide|anhören und entscheiden/i }).click();
+await page.waitForTimeout(500);
+let rv = page.locator("[role=dialog]");
+check((await rv.locator("[data-review]").count()) === 4, "the review list shows the odd voices", String(await rv.locator("[data-review]").count()));
+const rvText = await rv.innerText();
+check(/Pitch high for the role \(375 Hz\)|Hohe Tonlage für die Rolle \(375 Hz\)/.test(rvText) && /Sounds different in English|Klingt auf Englisch anders/.test(rvText), "issues are explained in words with the measured values");
+check(/[0-9]+ computed voices have no quality report|[0-9]+ berechnete Stimmen haben noch keinen/.test(rvText), "voices without a report are counted");
+await rv.locator("[data-review]").first().getByRole("button", { name: /original/i }).click();
+await page.waitForTimeout(300);
+check((await rv.locator("[data-review]").first().locator("[aria-label]").filter({ hasText: "" }).count()) > 0, "the original sample can be played");
+await page.waitForTimeout(1200);
+await rv.locator("[data-review]").nth(3).getByRole("button", { name: /^(keep|behalten)$/i }).click();
+await page.waitForTimeout(600);
+check((await rv.locator("[data-review]").count()) === 3, "a kept voice leaves the list", String(await rv.locator("[data-review]").count()));
+await rv.getByRole("button", { name: /^(improve all|alle verbessern)$/i }).click();
+await page.waitForTimeout(400);
+check(/Improving|Verbessere/.test(await page.locator("body").innerText()), "improving starts a job");
+await page.waitForTimeout(2500);
+check((await rv.locator("[data-review]").count()) === 0 && /No voice sounds odd|Keine Stimme klingt seltsam/.test(await rv.innerText()), "improved voices leave the list", String(await rv.locator("[data-review]").count()));
+await rv.getByRole("button", { name: /^(check them|jetzt prüfen)$/i }).click();
+await page.waitForTimeout(5500);
+check(!/no quality report yet|noch keinen Qualitätsbericht/.test(await rv.innerText()), "checking gives every voice a report");
+await rv.getByRole("button", { name: /^(close|schließen)$/i }).last().click();
+await page.waitForTimeout(300);
+pre = await page.locator("main").innerText();
+check(/Quality check|Qualitätsprüfung/.test(pre) && /improved|verbessert/.test(pre), "the job list shows the quality check and the improvement");
+
 await page.locator("article", { hasText: "Cinematic" }).getByRole("button", { name: /^(voices|stimmen)$/i }).click();
 await page.waitForTimeout(400);
 const dlg = page.locator("[role=dialog]");
@@ -121,6 +152,7 @@ await dlg.getByRole("button", { name: /^(compute|berechnen)$/i }).click();
 await page.waitForTimeout(500);
 const cd = page.locator("[role=dialog]");
 const cdText = await cd.innerText();
+check(/Quality check|Qualitätsprüfung/.test(cdText) && /Improve odd voices automatically|Seltsame Stimmen automatisch verbessern/.test(cdText), "the compute dialog offers the quality check");
 check(/new voices|neue Stimmen/i.test(cdText) && /Takes about|Dauert etwa/.test(cdText), "compute dialog shows new voices and an estimate", cdText.match(/\d+ (new voices|neue Stimmen)/)?.[0] ?? "");
 await cd.getByRole("button", { name: /^(start|starten)$/i }).click();
 await page.waitForTimeout(1800);

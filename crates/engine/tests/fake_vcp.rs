@@ -1,9 +1,17 @@
 //! The engine against a fake Voice Creator Pro: a whole job, broken speech
-//! recognition, a voice VCP can't speak with, and checking the library.
+//! recognition, a voice VCP can't speak with, checking the library, and the
+//! quality check (odd voices, improving them, checking existing ones).
+//!
+//! The fake sounds a bit like the real thing: designs are sines at a pitch
+//! that follows the gender in the instruction (a man 115 Hz, a woman 210 Hz);
+//! a description containing "WEIRD" makes the designer produce a 400 Hz
+//! voice (as often as `weird` allows); speech recognition hears the reference
+//! sentence in long clips and the priming sentence in short ones.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
+use std::hash::{Hash, Hasher};
 use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32, Ordering};
 use std::time::{Duration, Instant};
 
 use axum::extract::{Path, State};
@@ -13,23 +21,40 @@ use base64::Engine as _;
 use parking_lot::Mutex;
 use serde_json::{Value, json};
 use ttv_engine::Engine;
-use ttv_link::{JobDef, JobOptions, JobRequest, JobState, VoiceDef};
+use ttv_engine::quality::FLAG;
+use ttv_link::{JobDef, JobKind, JobOptions, JobRequest, JobState, VoiceDef};
+
+struct FakeVoice {
+    name: String,
+    hz: f32,
+}
 
 #[derive(Default)]
 struct Fake {
-    /// id -> name
-    voices: Mutex<BTreeMap<String, String>>,
+    voices: Mutex<BTreeMap<String, FakeVoice>>,
+    /// pitch of every designed sample, by a hash of its base64
+    designed: Mutex<HashMap<u64, f32>>,
     next: AtomicU32,
     asr_broken: AtomicBool,
     clone_broken: AtomicBool,
     clones: AtomicU32,
     designs: AtomicU32,
+    /// How many more "WEIRD" designs come out odd (negative: always).
+    weird: AtomicI32,
 }
 
 type S = State<Arc<Fake>>;
 
-/// Mono PCM16 sine at −20 dBFS RMS (gain 1.0).
-fn wav(secs: f32) -> String {
+fn hash(s: &str) -> u64 {
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    s.hash(&mut h);
+    h.finish()
+}
+
+/// Mono PCM16 "speech" at −20 dBFS RMS (gain 1.0): a sine in phrases of
+/// 1.2 s with 0.2 s gaps, 0.25 s of silence before and after (like VCP output;
+/// without gaps the quality check rightly hears noise everywhere).
+fn wav(secs: f32, hz: f32) -> String {
     let rate = 24_000u32;
     let n = (secs * rate as f32) as u32;
     let mut b = Vec::with_capacity(44 + n as usize * 2);
@@ -46,48 +71,74 @@ fn wav(secs: f32) -> String {
     b.extend_from_slice(b"data");
     b.extend_from_slice(&(n * 2).to_le_bytes());
     for i in 0..n {
-        let s = (i as f32 * 150.0 * std::f32::consts::TAU / rate as f32).sin() * 0.1414;
+        let t = i as f32 / rate as f32;
+        let talking = t > 0.25 && t < secs - 0.25 && (t - 0.25) % 1.4 < 1.2;
+        let s = if talking { (t * hz * std::f32::consts::TAU).sin() * 0.1414 } else { 0.0 };
         b.extend_from_slice(&((s * 32767.0) as i16).to_le_bytes());
     }
     base64::engine::general_purpose::STANDARD.encode(b)
 }
 
-// Handlers read the body like VCP does (an unread upload resets the connection).
-async fn design(State(f): S, Json(_b): Json<Value>) -> Json<Value> {
-    f.designs.fetch_add(1, Ordering::SeqCst);
-    Json(json!({ "success": true, "status": "completed", "audio_base64": wav(7.0) }))
+fn lang_of(b: &Value) -> &'static ttv_engine::langs::DesignLang {
+    let name = b["language"].as_str().unwrap_or("English");
+    ttv_engine::langs::LANGS.iter().find(|l| l.vcp == name).unwrap_or(&ttv_engine::langs::LANGS[0])
 }
 
-async fn transcribe(State(f): S, Json(_b): Json<Value>) -> Json<Value> {
+// Handlers read the body like VCP does (an unread upload resets the connection).
+async fn design(State(f): S, Json(b): Json<Value>) -> Json<Value> {
+    f.designs.fetch_add(1, Ordering::SeqCst);
+    let instruct = b["instruct_text"].as_str().unwrap_or_default();
+    let weird = instruct.contains("WEIRD") && f.weird.try_update(Ordering::SeqCst, Ordering::SeqCst, |w| if w == 0 { None } else { Some(if w > 0 { w - 1 } else { w }) }).is_ok();
+    let hz = if weird {
+        400.0
+    } else if instruct.contains("-year-old man.") {
+        115.0
+    } else if instruct.contains("-year-old woman.") {
+        210.0
+    } else {
+        150.0
+    };
+    let audio = wav(7.0, hz);
+    f.designed.lock().insert(hash(&audio), hz);
+    Json(json!({ "success": true, "status": "completed", "audio_base64": audio }))
+}
+
+async fn transcribe(State(f): S, Json(b): Json<Value>) -> Json<Value> {
     if f.asr_broken.load(Ordering::SeqCst) {
         return Json(json!({ "success": false, "text": null, "error": "ASR model failed to load" }));
     }
-    Json(json!({ "success": true, "text": ttv_engine::langs::get("en").unwrap().text }))
+    let bytes = base64::engine::general_purpose::STANDARD.decode(b["audio_base64"].as_str().unwrap_or_default()).unwrap_or_default();
+    let secs = bytes.len().saturating_sub(44) as f32 / 48_000.0;
+    let l = lang_of(&b);
+    Json(json!({ "success": true, "text": if secs > 5.0 { l.text } else { l.verify } }))
 }
 
 async fn save(State(f): S, Json(b): Json<Value>) -> Json<Value> {
     let id = format!("voice_{:08x}", f.next.fetch_add(1, Ordering::SeqCst));
     let name = b["name"].as_str().unwrap_or_default().to_string();
-    f.voices.lock().insert(id.clone(), name.clone());
+    let hz = f.designed.lock().get(&hash(b["audio_base64"].as_str().unwrap_or_default())).copied().unwrap_or(150.0);
+    f.voices.lock().insert(id.clone(), FakeVoice { name: name.clone(), hz });
     Json(json!({ "success": true, "voice": { "id": id, "name": name }, "message": "saved" }))
 }
 
-async fn clone(State(f): S, Json(_b): Json<Value>) -> Json<Value> {
+async fn clone(State(f): S, Json(b): Json<Value>) -> Json<Value> {
     f.clones.fetch_add(1, Ordering::SeqCst);
     if f.clone_broken.load(Ordering::SeqCst) {
         return Json(json!({ "success": false, "status": "failed", "error_detail": "Generation failed" }));
     }
-    Json(json!({ "success": true, "status": "completed", "audio_base64": wav(2.5) }))
+    let hz = f.voices.lock().get(b["voice_id"].as_str().unwrap_or_default()).map_or(150.0, |v| v.hz);
+    Json(json!({ "success": true, "status": "completed", "audio_base64": wav(2.5, hz) }))
 }
 
 async fn list(State(f): S) -> Json<Value> {
-    let voices: Vec<Value> = f.voices.lock().iter().map(|(id, name)| json!({ "id": id, "name": name })).collect();
+    let voices: Vec<Value> = f.voices.lock().iter().map(|(id, v)| json!({ "id": id, "name": v.name })).collect();
     Json(json!({ "voices": voices }))
 }
 
-async fn one(Path(id): Path<String>) -> Json<Value> {
+async fn one(State(f): S, Path(id): Path<String>) -> Json<Value> {
     // Every fake reference sample is at −20 dBFS.
-    Json(json!({ "id": id, "audio_base64": wav(7.0) }))
+    let hz = f.voices.lock().get(&id).map_or(150.0, |v| v.hz);
+    Json(json!({ "id": id, "audio_base64": wav(7.0, hz), "ref_text": ttv_engine::langs::get("en").unwrap().text }))
 }
 
 async fn remove(State(f): S, Path(id): Path<String>) -> Json<Value> {
@@ -118,15 +169,27 @@ fn engine(base: &str) -> Engine {
     e
 }
 
+fn def(i: u32, gender: &str, description: &str) -> JobDef {
+    JobDef { index: i, def: VoiceDef { name: format!("Voice {i}"), gender: gender.into(), age: 30, description: description.into(), fx: None } }
+}
+
 fn request(voices: u32) -> JobRequest {
     JobRequest {
         preset_id: "test".into(),
         preset_name: "Test".into(),
-        defs: (0..voices)
-            .map(|i| JobDef { index: i, def: VoiceDef { name: format!("Voice {i}"), gender: "f".into(), age: 30, description: format!("A clear, friendly test voice number {i}."), fx: None } })
-            .collect(),
+        defs: (0..voices).map(|i| def(i, "f", &format!("A clear, friendly test voice number {i}."))).collect(),
         languages: vec!["en".into()],
-        options: JobOptions { speech_check: true, takes: 1, backup: false },
+        options: JobOptions { speech_check: true, takes: 1, backup: false, ..Default::default() },
+        ..Default::default()
+    }
+}
+
+/// A man and a man whose design comes out like a child (400 Hz).
+fn odd_request(quality: bool, improve: bool) -> JobRequest {
+    JobRequest {
+        defs: vec![def(0, "m", "Calm, warm baritone of a radio host."), def(1, "m", "Punchy action-hero baritone. WEIRD")],
+        options: JobOptions { speech_check: true, takes: 1, backup: false, quality, improve },
+        ..request(0)
     }
 }
 
@@ -136,6 +199,11 @@ async fn until(what: &str, mut f: impl FnMut() -> bool) {
         assert!(t.elapsed() < Duration::from_secs(30), "timed out waiting for {what}");
         tokio::time::sleep(Duration::from_millis(30)).await;
     }
+}
+
+fn done(e: &Engine) -> bool {
+    let s = e.status();
+    !s.jobs.is_empty() && s.jobs.iter().all(|j| j.state == JobState::Done)
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -154,6 +222,7 @@ async fn computes_checks_saves_and_primes_every_voice() {
     assert!(lib.iter().all(|x| voices.contains_key(&x.voice_id)));
     assert_eq!(fake.clones.load(Ordering::SeqCst), 3, "one prime per voice");
     assert!(lib.iter().all(|x| x.wer == Some(0.0) && (x.gain - 1.0).abs() < 0.1 && x.level.is_some()), "{lib:?}");
+    assert!(lib.iter().all(|x| x.quality.is_none()), "no quality check unless asked for");
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -212,7 +281,7 @@ async fn verify_removes_voices_deleted_in_vcp() {
 async fn verify_measures_the_loudness_of_adopted_voices_once() {
     let (fake, base) = serve().await;
     let e = engine(&base);
-    fake.voices.lock().insert("voice_old".into(), "TTS-de 01 Anna".into());
+    fake.voices.lock().insert("voice_old".into(), FakeVoice { name: "TTS-de 01 Anna".into(), hz: 200.0 });
     let adopted = ttv_link::LibraryEntry { key: "vabc:de".into(), lang: "de".into(), voice_id: "voice_old".into(), gain: 1.0, ..Default::default() };
     assert_eq!(e.adopt(vec![adopted]), 1);
 
@@ -222,4 +291,93 @@ async fn verify_measures_the_loudness_of_adopted_voices_once() {
     assert!(x.level.is_some_and(|db| (db + 20.0).abs() < 0.5), "{x:?}");
     assert!((x.gain - 1.0).abs() < 0.06);
     assert_eq!(e.verify().await.unwrap().measured, 0);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_quality_check_lists_odd_voices() {
+    let (fake, base) = serve().await;
+    fake.weird.store(-1, Ordering::SeqCst);
+    let e = engine(&base);
+    e.submit(odd_request(true, false)).unwrap();
+    until("the job", || done(&e)).await;
+
+    let job = &e.status().jobs[0];
+    assert_eq!((job.done, job.flagged), (2, 1));
+    let lib = e.library().entries;
+    let fine = lib.iter().find(|x| x.index == 0).unwrap().quality.clone().unwrap();
+    let odd = lib.iter().find(|x| x.index == 1).unwrap().quality.clone().unwrap();
+    assert!(fine.score >= FLAG && fine.new_text, "{fine:?}");
+    assert!((fine.f0.unwrap() - 115.0).abs() < 3.0);
+    assert!(odd.score < FLAG && odd.issues.iter().any(|i| i.code == "pitch_high"), "{odd:?}");
+    // keeping it takes it off the list
+    assert_eq!(e.keep(&[lib.iter().find(|x| x.index == 1).unwrap().key.clone()], true), 1);
+    assert!(e.library().entries.iter().find(|x| x.index == 1).unwrap().quality.as_ref().unwrap().kept);
+    assert_eq!(fake.voices.lock().len(), 2);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn odd_voices_are_improved_automatically() {
+    let (fake, base) = serve().await;
+    // only the first design of the odd voice comes out odd
+    fake.weird.store(1, Ordering::SeqCst);
+    let e = engine(&base);
+    e.submit(odd_request(true, true)).unwrap();
+    until("both jobs", || e.status().jobs.len() == 2 && done(&e)).await;
+
+    let jobs = e.status().jobs;
+    let improve = jobs.iter().find(|j| j.kind == JobKind::Improve).expect("follow-up job");
+    assert_eq!((improve.total, improve.done, improve.improved), (1, 1, 1));
+    let lib = e.library().entries;
+    let odd = lib.iter().find(|x| x.index == 1).unwrap();
+    let q = odd.quality.as_ref().unwrap();
+    assert!(q.score >= FLAG && (q.f0.unwrap() - 115.0).abs() < 3.0, "{q:?}");
+    // The old voice is gone from VCP, the new one is in the library: no orphans.
+    let voices = fake.voices.lock();
+    assert_eq!(voices.len(), 2);
+    assert!(lib.iter().all(|x| voices.contains_key(&x.voice_id)));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn improving_keeps_the_old_voice_unless_the_new_one_is_better() {
+    let (fake, base) = serve().await;
+    fake.weird.store(-1, Ordering::SeqCst);
+    let e = engine(&base);
+    e.submit(odd_request(true, false)).unwrap();
+    until("the job", || done(&e)).await;
+    let before = e.library().entries.into_iter().find(|x| x.index == 1).unwrap();
+
+    let req = JobRequest { kind: JobKind::Improve, only: vec![before.key.clone()], rounds: 2, ..odd_request(true, false) };
+    let v = e.submit(req).unwrap();
+    assert_eq!(v.total, 1);
+    until("the improve job", || done(&e)).await;
+    let job = e.status().jobs.into_iter().find(|j| j.kind == JobKind::Improve).unwrap();
+    assert_eq!((job.done, job.improved), (1, 0));
+    // two rounds of 2 takes, nothing better: the old voice stays, the
+    // candidates are deleted again
+    let after = e.library().entries.into_iter().find(|x| x.index == 1).unwrap();
+    assert_eq!(after.voice_id, before.voice_id);
+    assert_eq!(fake.voices.lock().len(), 2);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn checks_the_quality_of_existing_voices() {
+    let (fake, base) = serve().await;
+    let e = engine(&base);
+    // a 1.x voice: a man who sounds like a child, never checked
+    fake.voices.lock().insert("voice_old".into(), FakeVoice { name: "TTS-en 01 Jack (Detektiv)".into(), hz: 390.0 });
+    let d = def(0, "m", "Hard-boiled detective.");
+    let key = d.def.key("en");
+    e.adopt(vec![ttv_link::LibraryEntry { key: key.clone(), def_hash: d.def.hash(), lang: "en".into(), voice_id: "voice_old".into(), gain: 1.0, ..Default::default() }]);
+
+    let req = JobRequest { kind: JobKind::Review, defs: vec![d], ..request(0) };
+    assert_eq!(e.submit(req).unwrap().total, 1);
+    until("the review", || done(&e)).await;
+    let job = &e.status().jobs[0];
+    assert_eq!((job.done, job.flagged), (1, 1));
+    let x = e.library().entries.into_iter().next().unwrap();
+    let q = x.quality.unwrap();
+    assert!(q.new_text && q.score < FLAG && q.issues.iter().any(|i| i.code == "pitch_high"), "{q:?}");
+    assert_eq!(x.wer, Some(0.0), "the sample was transcribed");
+    assert!(x.level.is_some() && x.voice_id == "voice_old");
+    assert_eq!(fake.designs.load(Ordering::SeqCst), 0, "checking designs nothing");
 }

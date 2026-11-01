@@ -3,7 +3,7 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue"
 import { useI18n } from "vue-i18n";
 import UiModal from "@ttv-tts/ui/components/UiModal.vue";
 import { copyText } from "@ttv-tts/ui/clipboard";
-import { Copy, Layers, Pen, Play, Refresh, Spinner, Sparkle, Stop, Trash } from "@ttv-tts/ui/icons";
+import { CircleCheck, Copy, Layers, Pen, Play, Refresh, Spinner, Sparkle, Stop, Trash, Warning } from "@ttv-tts/ui/icons";
 import { api, DESIGN_LANGS, presets, type PresetDetail, type VoiceView } from "../api";
 import { host, loadEngine, loadPresets, run, store, toast } from "../store";
 
@@ -15,6 +15,7 @@ const d = ref<PresetDetail | null>(null);
 const filter = ref("");
 const gender = ref<"" | "m" | "f" | "n">("");
 const onlyReady = ref(false);
+const onlyOdd = ref(false);
 const lang = ref("en");
 const text = ref("");
 const playing = ref<number | null>(null);
@@ -61,6 +62,7 @@ const shown = computed(() => {
     (v) =>
       (!gender.value || v.gender === gender.value) &&
       (!onlyReady.value || v.langs.length > 0) &&
+      (!onlyOdd.value || v.odd.length > 0) &&
       (!f || v.name.toLowerCase().includes(f) || v.description.toLowerCase().includes(f)),
   );
 });
@@ -87,6 +89,15 @@ async function redo(v: VoiceView) {
     redoing.add(`${v.index}:${l}`);
     toast("ok", t("presets.redoQueued", { name: v.name }));
     await Promise.all([loadEngine(), load(true)]);
+  }
+}
+
+async function checkQuality() {
+  const jobs = await run("checkQuality", () => presets.checkQuality(props.presetId));
+  if (jobs) {
+    const n = jobs.reduce((n, j) => n + j.total, 0);
+    toast(n ? "ok" : "info", n ? t("quality.checkStarted", { n }) : t("quality.allChecked"));
+    await loadEngine();
   }
 }
 
@@ -140,6 +151,7 @@ const genderLabel = (g: string) => t(`presets.gender.${g}`);
           {{ g ? genderLabel(g) : t("presets.everyone") }}
         </button>
         <button type="button" class="chip" :class="onlyReady && 'chip-on'" @click="onlyReady = !onlyReady">{{ t("presets.onlyReady") }}</button>
+        <button v-if="d.odd" type="button" class="chip" :class="onlyOdd && 'chip-on'" @click="onlyOdd = !onlyOdd"><Warning :size="12" />{{ t("quality.filterOdd") }} · {{ d.odd }}</button>
         <span class="ml-auto text-xs text-muted">{{ t("presets.shown", { n: shown.length, total: d.count }) }}</span>
       </div>
 
@@ -153,6 +165,7 @@ const genderLabel = (g: string) => t(`presets.gender.${g}`);
               <span v-if="v.fx" class="badge">{{ v.fx }}</span>
               <span class="ml-auto flex flex-wrap gap-1">
                 <span v-if="redoing.has(`${v.index}:${lang}`)" class="badge badge-accent"><Spinner :size="12" class="spin" />{{ t("presets.redoing") }}</span>
+                <span v-else-if="v.odd.includes(lang)" class="badge badge-warn" :data-tip="t('quality.oddRow')"><Warning :size="12" />{{ t("quality.maybe") }}</span>
                 <span v-for="l in v.langs" :key="l" class="badge" :class="l === lang && 'badge-ok'">{{ l }}</span>
               </span>
             </div>
@@ -184,7 +197,10 @@ const genderLabel = (g: string) => t(`presets.gender.${g}`);
     </div>
 
     <template #footer>
-      <button class="btn mr-auto" :disabled="!d" @click="exportText"><Copy :size="15" />{{ t("presets.export") }}</button>
+      <button class="btn" :disabled="!d" @click="exportText"><Copy :size="15" />{{ t("presets.export") }}</button>
+      <button class="btn mr-auto" :disabled="!d || !d.ready || !canListen || store.busy === 'checkQuality'" :data-tip="t('quality.checkTip')" @click="checkQuality">
+        <Spinner v-if="store.busy === 'checkQuality'" :size="15" class="spin" /><CircleCheck v-else :size="15" />{{ t("quality.checkPreset") }}
+      </button>
       <button v-if="d && !d.builtin" class="btn btn-danger" @click="remove"><Trash :size="15" />{{ t("presets.delete") }}</button>
       <button class="btn" :disabled="!d" @click="d?.builtin ? duplicate() : emit('edit', presetId)">
         <Layers v-if="d?.builtin" :size="15" /><Pen v-else :size="15" />{{ d?.builtin ? t("presets.duplicate") : t("presets.edit") }}

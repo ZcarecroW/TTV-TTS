@@ -15,6 +15,8 @@ use ttv_link::{LibraryChange, LibraryEntry, LibrarySnapshot};
 
 #[derive(Serialize, Deserialize)]
 #[serde(tag = "op", rename_all = "snake_case")]
+// Lines only live while being written; boxing the entry gains nothing.
+#[allow(clippy::large_enum_variant)]
 enum Line {
     Add { entry: LibraryEntry },
     Del { key: String },

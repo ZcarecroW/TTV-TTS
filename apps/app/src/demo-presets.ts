@@ -1,6 +1,6 @@
 // Demo backend: presets, computing jobs and the library. Used by demo.ts.
 // Reads the real built-in preset files; jobs progress on a timer.
-import type { EngineStatus, Issue, JobView, Parsed, Preset, PresetDetail, PresetView, VoiceDef } from "./api";
+import type { EngineStatus, Issue, JobKind, JobView, Parsed, Preset, PresetDetail, PresetView, Quality, ReviewItem, VoiceDef } from "./api";
 
 const files = import.meta.glob("../src-tauri/presets/*.txt", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 
@@ -47,25 +47,62 @@ const cinematic = all.find((p) => p.id === "cinematic");
 cinematic?.defs.slice(0, 30).forEach((d) => ["de", "en"].forEach((l) => library.add(`${hash(d)}:${l}`)));
 cinematic?.defs.slice(30, 41).forEach((d) => library.add(`${hash(d)}:de`));
 
+// Quality reports: the first 30 Cinematic voices were checked, four of them sound odd.
+const quality = new Map<string, Quality>();
+const report = (score: number, issues: Quality["issues"] = [], f0 = 140): Quality => ({ score, issues, f0, checked: Math.floor(Date.now() / 1000) - 3600, new_text: true, kept: false });
+cinematic?.defs.slice(0, 30).forEach((d) => ["de", "en"].forEach((l) => quality.set(`${hash(d)}:${l}`, report(0.94))));
+const oddOnes: [number, string, Quality][] = [
+  [2, "en", report(0.1, [{ code: "pitch_high", value: 375, weight: 0.9, extra: null }], 375)],
+  [2, "de", report(0.1, [{ code: "pitch_high", value: 400, weight: 0.9, extra: null }], 400)],
+  [1, "en", report(0.45, [{ code: "pitch_low", value: 98, weight: 0.55, extra: null }], 98)],
+  [19, "de", report(0.09, [{ code: "pitch_high", value: 375, weight: 0.9, extra: null }, { code: "languages_differ", value: 255, weight: 0.13, extra: "en" }], 375)],
+];
+for (const [i, l, q] of oddOnes) if (cinematic?.defs[i]) quality.set(`${hash(cinematic.defs[i])}:${l}`, q);
+const isOdd = (k: string) => { const q = quality.get(k); return !!q && q.score < 0.75 && !q.kept; };
+const langsOf = (d: VoiceDef) => [...library].filter((k) => k.startsWith(`${hash(d)}:`)).map((k) => k.split(":").pop()!);
+
 function view(p: Preset): PresetView {
   const computed: Record<string, number> = {};
   let ready = 0;
+  let odd = 0;
   for (const d of p.defs) {
-    const langs = [...library].filter((k) => k.startsWith(`${hash(d)}:`)).map((k) => k.split(":").pop()!);
+    const langs = langsOf(d);
     if (langs.length) ready++;
-    for (const l of langs) computed[l] = (computed[l] ?? 0) + 1;
+    for (const l of langs) {
+      computed[l] = (computed[l] ?? 0) + 1;
+      if (isOdd(`${hash(d)}:${l}`)) odd++;
+    }
   }
   const first = p.defs.slice(0, 30);
   const n = (g: string) => first.filter((d) => d.gender === g).length;
-  return { id: p.id, name: p.name, description: p.description, icon: p.icon, builtin: p.builtin, count: p.defs.length, target: p.target, mix: [n("m"), n("f"), n("n")], computed, ready };
+  return { id: p.id, name: p.name, description: p.description, icon: p.icon, builtin: p.builtin, count: p.defs.length, target: p.target, mix: [n("m"), n("f"), n("n")], computed, ready, odd };
 }
 
 function detail(p: Preset): PresetDetail {
   return {
     ...view(p),
-    voices: p.defs.map((d, index) => ({ ...d, index, hash: hash(d), langs: [...library].filter((k) => k.startsWith(`${hash(d)}:`)).map((k) => k.split(":").pop()!).sort() })),
+    voices: p.defs.map((d, index) => {
+      const langs = langsOf(d).sort();
+      return { ...d, index, hash: hash(d), langs, odd: langs.filter((l) => isOdd(`${hash(d)}:${l}`)) };
+    }),
   };
 }
+
+/** Where a library key's definition lives (preset, index). */
+function place(key: string): [Preset, number] | null {
+  const h = key.slice(0, key.lastIndexOf(":"));
+  for (const p of all) {
+    const i = p.defs.findIndex((d) => hash(d) === h);
+    if (i >= 0) return [p, i];
+  }
+  return null;
+}
+
+function job(kind: JobKind, p: Preset, languages: string[], total: number, options: JobView["options"]): JobView {
+  return { id: `job-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, preset_id: p.id, preset_name: p.name, languages, options, kind, total, done: 0, failed: 0, flagged: 0, improved: 0, state: "queued", phase: "", current: null, batch: 0, step: 0, steps: 0, created: Math.floor(Date.now() / 1000), finished: null, secs_per_voice: 10.8, eta_secs: Math.round(total * 10.8), error: null };
+}
+/** Keys an improve or review job still has to do. */
+const pending = new Map<string, string[]>();
 
 const engine: EngineStatus = {
   jobs: [
@@ -74,10 +111,13 @@ const engine: EngineStatus = {
       preset_id: "cinematic",
       preset_name: "Cinematic",
       languages: ["de", "en"],
-      options: { speech_check: true, takes: 2, backup: true },
+      options: { speech_check: true, takes: 2, backup: true, quality: true },
+      kind: "compute",
       total: 60,
       done: 60,
       failed: 0,
+      flagged: 4,
+      improved: 0,
       state: "done",
       phase: "",
       current: null,
@@ -102,6 +142,34 @@ let timer = 0;
 function tick(emit: Emit) {
   const job = engine.jobs.find((j) => j.state === "running" || j.state === "queued");
   if (!job) return void (clearInterval(timer), (timer = 0));
+  const keys = pending.get(job.id);
+  if (keys) {
+    // improve / review: one voice per tick
+    job.state = "running";
+    // like the engine: a batch of voices per step
+    const batch = keys.splice(0, 16);
+    const k = batch[batch.length - 1];
+    for (const x of batch.slice(0, -1)) {
+      if (job.kind === "improve") (quality.set(x, report(0.91, [], 120)), job.improved++);
+      else if (!quality.has(x)) quality.set(x, report(0.93));
+      job.done++;
+    }
+    if (!k) {
+      Object.assign(job, { state: "done", phase: "", current: null, finished: Math.floor(Date.now() / 1000), eta_secs: null });
+      pending.delete(job.id);
+    } else {
+      const at = place(k);
+      job.current = at ? `${at[0].defs[at[1]]!.name} · ${k.split(":").pop()}` : k;
+      job.phase = job.kind === "review" ? "review" : "design";
+      if (job.kind === "improve") {
+        quality.set(k, report(0.91, [], 120));
+        job.improved++;
+      } else if (!quality.has(k)) quality.set(k, report(0.93));
+      job.done++;
+      emit("app://library", { rev: ++engine.library_rev, size: library.size });
+    }
+    return void emit("app://job", structuredClone(job));
+  }
   const p = all.find((x) => x.id === job.preset_id);
   const todo = p?.defs.flatMap((d) => job.languages.map((l) => [d, l] as const)).filter(([d, l]) => !library.has(`${hash(d)}:${l}`)) ?? [];
   job.state = "running";
@@ -110,6 +178,7 @@ function tick(emit: Emit) {
     Object.assign(job, { state: "done", phase: "", current: null, finished: Math.floor(Date.now() / 1000), eta_secs: null });
   } else {
     library.add(`${hash(next[0])}:${next[1]}`);
+    if (job.options.quality) quality.set(`${hash(next[0])}:${next[1]}`, report(0.92));
     job.done++;
     job.phase = ["design", "check", "save", "prime"][job.done % 4]!;
     Object.assign(job, { batch: 16, step: job.done % 16, steps: 16 });
@@ -173,30 +242,10 @@ export function presetCommand(cmd: string, args: Record<string, unknown>, emit: 
       const p = find(r.preset_id);
       const defs = r.count ? p.defs.slice(0, r.count) : p.defs;
       const total = defs.reduce((n, d) => n + r.languages.filter((l) => !library.has(`${hash(d)}:${l}`)).length, 0);
-      const job: JobView = {
-        id: `job-${Date.now()}`,
-        preset_id: p.id,
-        preset_name: p.name,
-        languages: r.languages,
-        options: r.options,
-        total,
-        done: 0,
-        failed: 0,
-        state: "queued",
-        phase: "",
-        current: null,
-        batch: 0,
-        step: 0,
-        steps: 0,
-        created: Math.floor(Date.now() / 1000),
-        finished: null,
-        secs_per_voice: 10.8,
-        eta_secs: Math.round(total * 10.8),
-        error: null,
-      };
-      engine.jobs.push(job);
+      const j = job("compute", p, r.languages, total, r.options);
+      engine.jobs.push(j);
       if (!timer) timer = window.setInterval(() => tick(emit), 700);
-      return { value: structuredClone(job) };
+      return { value: structuredClone(j) };
     }
     case "job_control": {
       const j = engine.jobs.find((x) => x.id === args.id);
@@ -214,8 +263,45 @@ export function presetCommand(cmd: string, args: Record<string, unknown>, emit: 
       const def = p.defs[Number(args.index)];
       if (!def) throw "This voice doesn't exist (any more).";
       library.delete(`${hash(def)}:${args.lang}`);
-      return presetCommand("compute", { request: { preset_id: p.id, count: Number(args.index) + 1, languages: [args.lang], options: { speech_check: true, takes: 2, backup: true } } }, emit);
+      quality.delete(`${hash(def)}:${args.lang}`);
+      return presetCommand("compute", { request: { preset_id: p.id, count: Number(args.index) + 1, languages: [args.lang], options: { speech_check: true, takes: 2, backup: true, quality: true } } }, emit);
     }
+    case "quality_list": {
+      const items: ReviewItem[] = [];
+      for (const k of library) {
+        if (!isOdd(k)) continue;
+        const at = place(k);
+        if (!at) continue;
+        const d = at[0].defs[at[1]]!;
+        items.push({ key: k, preset_id: at[0].id, preset_name: at[0].name, index: at[1], name: d.name, gender: d.gender, age: d.age, description: d.description, lang: k.split(":").pop()!, quality: structuredClone(quality.get(k)!) });
+      }
+      items.sort((a, b) => a.quality.score - b.quality.score);
+      const checked = [...library].filter((k) => quality.has(k)).length;
+      return { value: { items, checked, unchecked: library.size - checked, kept: [...quality.values()].filter((q) => q.kept && q.score < 0.75).length } };
+    }
+    case "keep_voices": {
+      let n = 0;
+      for (const k of args.keys as string[]) {
+        const q = quality.get(k);
+        if (q && q.kept !== args.kept) (q.kept = Boolean(args.kept)), n++;
+      }
+      emit("app://library", { rev: ++engine.library_rev, size: library.size });
+      return { value: n };
+    }
+    case "improve_voices":
+    case "check_quality": {
+      const improve = cmd === "improve_voices";
+      const keys = improve ? (args.keys as string[]) : [...library].filter((k) => (args.again || !quality.has(k)) && (!args.presetId || place(k)?.[0].id === args.presetId));
+      if (!keys.length) return { value: [] };
+      const first = place(keys[0]!);
+      const j = job(improve ? "improve" : "review", first ? first[0] : all[0]!, [...new Set(keys.map((k) => k.split(":").pop()!))], keys.length, { speech_check: true, takes: 2, backup: true, quality: true });
+      pending.set(j.id, [...keys]);
+      engine.jobs.push(j);
+      if (!timer) timer = window.setInterval(() => tick(emit), 700);
+      return { value: [structuredClone(j)] };
+    }
+    case "play_reference":
+      return { value: new Promise((res) => setTimeout(() => res(7.2), 1200)) };
     case "verify_library":
       return { value: new Promise((res) => setTimeout(() => res({ checked: library.size, removed: 0, measured: 90 }), 600)) };
     case "listen":

@@ -10,6 +10,8 @@
 
 mod audio;
 pub mod langs;
+pub mod quality;
+mod run;
 mod store;
 
 use std::collections::HashMap;
@@ -21,20 +23,20 @@ use base64::Engine as _;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
 use tokio::sync::{Notify, broadcast};
-use ttv_link::{EngineStatus, JobRequest, JobState, JobView, LibraryChange, LibraryEntry, LibrarySnapshot, Verified};
+use ttv_link::{EngineStatus, JobKind, JobRequest, JobState, JobView, LibraryChange, LibraryEntry, LibrarySnapshot, Verified};
 use ttv_vcp::GenerationResult;
 
 pub use store::Library;
 
 /// Voices per batch (between two checkpoint swaps).
-const BATCH: usize = 16;
+pub(crate) const BATCH: usize = 16;
 /// The engine only calls VCP after this much quiet (chat goes first).
 const GAP: Duration = Duration::from_secs(6);
 /// Attempts per voice before it counts as failed.
-const ATTEMPTS: u32 = 3;
+pub(crate) const ATTEMPTS: u32 = 3;
 /// Accepted speech-check error rate.
-const MAX_WER: f32 = 0.15;
-const MAX_WER_CJK: f32 = 0.25;
+pub(crate) const MAX_WER: f32 = 0.15;
+pub(crate) const MAX_WER_CJK: f32 = 0.25;
 
 /// When somebody else (chat TTS, listening tests) last used VCP.
 pub type Activity = Arc<dyn Fn() -> Option<Instant> + Send + Sync>;
@@ -47,13 +49,19 @@ pub enum EngineEvent {
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]
-struct StoredJob {
+pub(crate) struct StoredJob {
     view: JobView,
     request: JobRequest,
-    /// key -> attempts so far
+    /// key -> attempts (improve: rounds) so far
     attempts: HashMap<String, u32>,
     /// keys that failed for good
     failed: Vec<String>,
+    /// Improve and review: keys that are done.
+    processed: Vec<String>,
+    /// Compute: keys this job created (for improving the odd ones after).
+    created: Vec<String>,
+    /// The follow-up improve job was queued.
+    followed: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -63,9 +71,11 @@ struct Stats {
     secs_per_voice: Option<f32>,
     /// Measured seconds per design (benchmark), for estimates.
     design_secs: Option<f32>,
+    /// Measured seconds per voice of quality checks of computed voices.
+    review_secs: Option<f32>,
 }
 
-struct Inner {
+pub(crate) struct Inner {
     dir: PathBuf,
     vcp: RwLock<Option<ttv_vcp::Client>>,
     library: Library,
@@ -134,34 +144,29 @@ impl Engine {
         self.inner.library.snapshot()
     }
 
-    /// Queues a job for everything of `req` that isn't computed yet.
+    /// Queues a job: computing what isn't computed yet, improving or
+    /// checking computed voices.
     pub fn submit(&self, req: JobRequest) -> Result<JobView, String> {
-        if req.defs.is_empty() || req.languages.is_empty() {
-            return Err("nothing to compute".into());
-        }
-        if let Some(l) = req.languages.iter().find(|l| langs::get(l).is_none()) {
-            return Err(format!("language {l} can't be computed"));
-        }
-        let total = req.defs.iter().flat_map(|d| req.languages.iter().map(move |l| d.def.key(l))).filter(|k| !self.inner.library.contains(k)).count() as u32;
-        let view = JobView {
-            id: format!("job{}", rand::random::<u32>()),
-            preset_id: req.preset_id.clone(),
-            preset_name: req.preset_name.clone(),
-            languages: req.languages.clone(),
-            options: req.options.clone(),
-            total,
-            state: if total == 0 { JobState::Done } else { JobState::Queued },
-            created: chrono::Utc::now().timestamp(),
-            eta_secs: self.estimate(total, req.options.takes, req.options.speech_check),
-            secs_per_voice: self.inner.stats.lock().secs_per_voice,
-            ..Default::default()
-        };
-        self.inner.jobs.lock().push(StoredJob { view: view.clone(), request: req, ..Default::default() });
-        self.inner.save_jobs();
-        self.inner.emit_job(&view);
-        self.inner.wake_up();
-        log::info!("job {} queued: {} voices of {}", view.id, total, view.preset_name);
-        Ok(view)
+        self.inner.submit(req)
+    }
+
+    /// Marks voices as listened to and fine as they are (or not), so the
+    /// quality check doesn't list them any more.
+    pub fn keep(&self, keys: &[String], kept: bool) -> u32 {
+        let changed: Vec<LibraryEntry> = keys
+            .iter()
+            .filter_map(|k| self.inner.library.get(k))
+            .filter_map(|e| {
+                let mut q = e.quality.clone()?;
+                (q.kept != kept).then(|| {
+                    q.kept = kept;
+                    LibraryEntry { quality: Some(q), ..e }
+                })
+            })
+            .collect();
+        let n = changed.len() as u32;
+        self.inner.change(changed, &[]);
+        n
     }
 
     /// pause, resume, cancel or remove (finished jobs).
@@ -199,6 +204,16 @@ impl Engine {
         let new: Vec<LibraryEntry> = entries.into_iter().filter(|e| !self.inner.library.contains(&e.key)).collect();
         let n = new.len() as u32;
         self.inner.change(new, &[]);
+        n
+    }
+
+    /// Replaces library entries by others for the same VCP voices (when an
+    /// adopted preset's definitions change). Nothing is deleted in VCP.
+    pub fn rekey(&self, entries: Vec<LibraryEntry>, remove: &[String]) -> u32 {
+        let n = entries.len() as u32;
+        let keep: std::collections::HashSet<&str> = entries.iter().map(|e| e.key.as_str()).collect();
+        let remove: Vec<String> = remove.iter().filter(|k| !keep.contains(k.as_str())).cloned().collect();
+        self.inner.change(entries, &remove);
         n
     }
 
@@ -261,15 +276,7 @@ impl Engine {
     /// Estimated seconds for `voices` voices, from earlier jobs or the
     /// benchmark; None if nothing was measured yet.
     pub fn estimate(&self, voices: u32, takes: u8, check: bool) -> Option<u64> {
-        let s = self.inner.stats.lock().clone();
-        let per = match (s.secs_per_voice, s.design_secs) {
-            (Some(spv), _) => spv,
-            // design + speech check per take, plus save + prime, plus the
-            // checkpoint swaps spread over a batch.
-            (None, Some(d)) => takes.max(1) as f32 * (d + if check { 1.5 } else { 0.0 }) + d * 0.9 + 60.0 / BATCH as f32,
-            (None, None) => return None,
-        };
-        Some((voices as f32 * per).round() as u64)
+        self.inner.estimate(voices, takes, check)
     }
 
     /// Designs two short samples (discarded) to measure this PC's speed.
@@ -298,6 +305,62 @@ impl Engine {
 }
 
 impl Inner {
+    fn submit(&self, req: JobRequest) -> Result<JobView, String> {
+        if req.defs.is_empty() || req.languages.is_empty() {
+            return Err("nothing to compute".into());
+        }
+        if let Some(l) = req.languages.iter().find(|l| langs::get(l).is_none()) {
+            return Err(format!("language {l} can't be computed"));
+        }
+        let only: std::collections::HashSet<&str> = req.only.iter().map(String::as_str).collect();
+        let total = req
+            .defs
+            .iter()
+            .flat_map(|d| req.languages.iter().map(move |l| d.def.key(l)))
+            .filter(|k| only.is_empty() || only.contains(k.as_str()))
+            .filter(|k| self.library.contains(k) == (req.kind != JobKind::Compute))
+            .count() as u32;
+        let o = &req.options;
+        let eta = match req.kind {
+            JobKind::Compute => self.estimate(total, o.takes, o.speech_check).map(|s| if o.quality { s + s / 7 } else { s }),
+            // 2–3 takes plus the review, on average 1.5 rounds
+            JobKind::Improve => self.estimate(total, o.takes.max(2), true).map(|s| s * 2),
+            JobKind::Review => Some((total as f32 * self.stats.lock().review_secs.unwrap_or(8.0)).round() as u64),
+        };
+        let view = JobView {
+            id: format!("job{}", rand::random::<u32>()),
+            preset_id: req.preset_id.clone(),
+            preset_name: req.preset_name.clone(),
+            languages: req.languages.clone(),
+            options: req.options.clone(),
+            kind: req.kind,
+            total,
+            state: if total == 0 { JobState::Done } else { JobState::Queued },
+            created: chrono::Utc::now().timestamp(),
+            eta_secs: eta,
+            secs_per_voice: self.stats.lock().secs_per_voice,
+            ..Default::default()
+        };
+        self.jobs.lock().push(StoredJob { view: view.clone(), request: req, ..Default::default() });
+        self.save_jobs();
+        self.emit_job(&view);
+        self.wake_up();
+        log::info!("job {} queued ({:?}): {} voices of {}", view.id, view.kind, total, view.preset_name);
+        Ok(view)
+    }
+
+    fn estimate(&self, voices: u32, takes: u8, check: bool) -> Option<u64> {
+        let s = self.stats.lock().clone();
+        let per = match (s.secs_per_voice, s.design_secs) {
+            (Some(spv), _) => spv,
+            // design + speech check per take, plus save + prime, plus the
+            // checkpoint swaps spread over a batch.
+            (None, Some(d)) => takes.max(1) as f32 * (d + if check { 1.5 } else { 0.0 }) + d * 0.9 + 60.0 / BATCH as f32,
+            (None, None) => return None,
+        };
+        Some((voices as f32 * per).round() as u64)
+    }
+
     fn wake_up(&self) {
         self.wakes.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
         self.wake.notify_one();
@@ -399,7 +462,7 @@ fn write_json<T: Serialize>(path: &std::path::Path, value: &T) {
 /// description. Without them some "baritone" men came out at 280–370 Hz and
 /// "low alto" women at ~120 Hz; naming them moved 3 of 4 such voices into
 /// their range (measured on the VCP PC, 2026-11-01).
-fn instruct(def: &ttv_link::VoiceDef) -> String {
+pub(crate) fn instruct(def: &ttv_link::VoiceDef) -> String {
     let who = match (def.gender.as_str(), def.age) {
         ("m", 0..13) => "boy",
         ("m", 13..18) => "teenage boy",
@@ -413,7 +476,7 @@ fn instruct(def: &ttv_link::VoiceDef) -> String {
     format!("A {}-year-old {who}. {}", def.age, def.description.trim())
 }
 
-async fn design(vcp: &ttv_vcp::Client, description: &str, l: &langs::DesignLang) -> Result<Vec<u8>, String> {
+pub(crate) async fn design(vcp: &ttv_vcp::Client, description: &str, l: &langs::DesignLang) -> Result<Vec<u8>, String> {
     let body = serde_json::json!({ "instruct_text": format!("{} {}", description.trim(), l.accent), "target_text": l.text, "language": l.vcp });
     let r: GenerationResult = vcp.post("/api/v1/generation/design?sync=true", &body, Duration::from_secs(600)).await.map_err(|e| e.to_string())?;
     decode_result(r)
@@ -435,7 +498,7 @@ struct Transcript {
 }
 
 /// Why a VCP call didn't give what it should.
-enum Trouble {
+pub(crate) enum Trouble {
     /// VCP didn't answer (restarting, gone): retry the batch later.
     Down(String),
     /// VCP answered, but it didn't work for this take or voice.
@@ -463,7 +526,7 @@ impl From<&str> for Trouble {
     }
 }
 
-async fn transcribe(vcp: &ttv_vcp::Client, wav: &[u8], l: &langs::DesignLang) -> Result<String, Trouble> {
+pub(crate) async fn transcribe(vcp: &ttv_vcp::Client, wav: &[u8], l: &langs::DesignLang) -> Result<String, Trouble> {
     let body = serde_json::json!({ "audio_base64": base64::engine::general_purpose::STANDARD.encode(wav), "language": l.vcp });
     let t: Transcript = vcp.post("/api/v1/transcription/start?sync=true", &body, Duration::from_secs(300)).await?;
     if !t.success {
@@ -472,22 +535,32 @@ async fn transcribe(vcp: &ttv_vcp::Client, wav: &[u8], l: &langs::DesignLang) ->
     Ok(t.text.unwrap_or_default())
 }
 
-/// One normal generation with a saved voice. Returns how loud it spoke
-/// (dBFS), or why VCP couldn't speak with it.
-async fn prime(vcp: &ttv_vcp::Client, voice_id: &str, l: &langs::DesignLang) -> Result<f32, Trouble> {
+/// What a voice said when it spoke the priming sentence.
+pub(crate) struct Spoken {
+    pub wav: Vec<u8>,
+    pub analysis: quality::Analysis,
+}
+
+/// One normal generation with a saved voice (the priming sentence), or why
+/// VCP couldn't speak with it.
+pub(crate) async fn prime(vcp: &ttv_vcp::Client, voice_id: &str, l: &langs::DesignLang) -> Result<Spoken, Trouble> {
     let body = serde_json::json!({ "voice_id": voice_id, "target_text": l.verify, "language": l.vcp });
     let r: GenerationResult = vcp.post("/api/v1/generation/clone?sync=true", &body, Duration::from_secs(600)).await?;
-    let (samples, rate) = audio::decode(&decode_result(r)?).ok_or("unreadable audio")?;
+    let wav = decode_result(r)?;
+    let (samples, rate) = audio::decode(&wav).ok_or("unreadable audio")?;
     if (samples.len() as f32) < rate as f32 * 0.8 {
         return Err("audio too short".into());
     }
-    Ok(audio::loudness_db(&samples).ok_or("silent audio")?)
+    if audio::loudness_db(&samples).is_none() {
+        return Err("silent audio".into());
+    }
+    Ok(Spoken { analysis: quality::analyze(&samples, rate), wav })
 }
 
 /// Speech loudness of a saved voice's reference sample (dBFS).
 async fn reference_level(vcp: &ttv_vcp::Client, voice_id: &str) -> Result<f32, String> {
-    let b64 = vcp.voice_audio(voice_id).await.map_err(|e| e.to_string())?;
-    let wav = base64::engine::general_purpose::STANDARD.decode(b64.as_bytes()).map_err(|e| e.to_string())?;
+    let sample = vcp.voice_sample(voice_id).await.map_err(|e| e.to_string())?;
+    let wav = base64::engine::general_purpose::STANDARD.decode(sample.audio_base64.as_bytes()).map_err(|e| e.to_string())?;
     let (samples, _) = audio::decode(&wav).ok_or("unreadable audio")?;
     audio::loudness_db(&samples).ok_or_else(|| "silent audio".into())
 }
@@ -496,7 +569,7 @@ async fn reference_level(vcp: &ttv_vcp::Client, voice_id: &str) -> Result<f32, S
 /// generation with it. Measured on 120 real voices: each alone predicts the
 /// loudness of new sentences within ±1.2–1.4 dB (sd); the mean of both is
 /// best (sd 1.16 dB, worst ±3.5 dB instead of ±6 dB for one short sentence).
-fn mix_levels(reference: Option<f32>, spoken: Option<f32>) -> Option<f32> {
+pub(crate) fn mix_levels(reference: Option<f32>, spoken: Option<f32>) -> Option<f32> {
     match (reference, spoken) {
         (Some(r), Some(s)) => Some((r + s) / 2.0),
         (r, s) => r.or(s),
@@ -505,25 +578,25 @@ fn mix_levels(reference: Option<f32>, spoken: Option<f32>) -> Option<f32> {
 
 /// Saves a take as a VCP voice and primes it: one normal generation makes
 /// the voice ready for streaming (VCP streams a new voice only after that)
-/// and tells how loud it speaks (returned in dBFS). If VCP can't speak with
+/// and shows how it speaks a new sentence. If VCP can't speak with
 /// the voice, the voice is deleted again – VCP never keeps voices the
 /// library doesn't know.
 ///
 /// (VCP's `has_voice_clone_prompt` stays false for a voice saved while the
 /// speaking model isn't loaded – the first of each batch. Measured: such
 /// voices stream and speak exactly as fast, so it isn't worth extra work.)
-async fn save_voice(vcp: &ttv_vcp::Client, body: &serde_json::Value, l: &langs::DesignLang) -> Result<(ttv_vcp::Voice, f32), Trouble> {
+pub(crate) async fn save_voice(vcp: &ttv_vcp::Client, body: &serde_json::Value, l: &langs::DesignLang) -> Result<(ttv_vcp::Voice, Spoken), Trouble> {
     let saved: ttv_vcp::VoiceSaveResponse = vcp.post("/api/v1/voices", body, Duration::from_secs(60)).await?;
     let Some(voice) = saved.voice.filter(|_| saved.success) else {
         return Err(Trouble::Failed(saved.message.unwrap_or_else(|| "VCP did not save the voice".into())));
     };
-    let mut level = prime(vcp, &voice.id, l).await;
-    if level.is_err() {
+    let mut spoken = prime(vcp, &voice.id, l).await;
+    if spoken.is_err() {
         tokio::time::sleep(Duration::from_secs(1)).await;
-        level = prime(vcp, &voice.id, l).await;
+        spoken = prime(vcp, &voice.id, l).await;
     }
-    match level {
-        Ok(db) => Ok((voice, db)),
+    match spoken {
+        Ok(s) => Ok((voice, s)),
         Err(t) => {
             let _ = vcp.delete_voice(&voice.id).await;
             Err(match t {
@@ -532,22 +605,6 @@ async fn save_voice(vcp: &ttv_vcp::Client, body: &serde_json::Value, l: &langs::
             })
         }
     }
-}
-
-struct Take {
-    wav: Vec<u8>,
-    duration: f32,
-    wer: Option<f32>,
-    /// Speech loudness (dBFS).
-    level: Option<f32>,
-}
-
-struct Item {
-    index: u32,
-    def: ttv_link::VoiceDef,
-    lang: &'static langs::DesignLang,
-    key: String,
-    takes: Vec<Take>,
 }
 
 async fn worker(inner: Arc<Inner>) {
@@ -569,7 +626,7 @@ async fn worker(inner: Arc<Inner>) {
             continue;
         };
         let wakes = inner.wakes.load(std::sync::atomic::Ordering::SeqCst);
-        match batch(&inner, &vcp, &id).await {
+        match run::batch(&inner, &vcp, &id).await {
             Ok(()) => failures = 0,
             Err(e) => {
                 log::warn!("job {id}: {e}");
@@ -592,240 +649,9 @@ async fn worker(inner: Arc<Inner>) {
     }
 }
 
-/// Runs one batch of a job. Ok(()) also when the job was paused/cancelled.
-async fn batch(inner: &Arc<Inner>, vcp: &ttv_vcp::Client, id: &str) -> Result<(), String> {
-    let Some(job) = inner.jobs.lock().iter().find(|j| j.view.id == id).cloned() else { return Ok(()) };
-    let req = &job.request;
-    let mut items: Vec<Item> = Vec::new();
-    'outer: for d in &req.defs {
-        for code in &req.languages {
-            let Some(lang) = langs::get(code) else { continue };
-            let key = d.def.key(code);
-            if inner.library.contains(&key) || job.failed.contains(&key) {
-                continue;
-            }
-            items.push(Item { index: d.index, def: d.def.clone(), lang, key, takes: Vec::new() });
-            if items.len() >= BATCH {
-                break 'outer;
-            }
-        }
-    }
-    if items.is_empty() {
-        inner.update(id, |j| {
-            j.view.state = JobState::Done;
-            j.view.phase.clear();
-            j.view.current = None;
-            j.view.batch = 0;
-            j.view.step = 0;
-            j.view.steps = 0;
-            j.view.eta_secs = Some(0);
-            j.view.finished = Some(chrono::Utc::now().timestamp());
-        });
-        inner.save_jobs();
-        log::info!("job {id} finished");
-        return Ok(());
-    }
-    let t0 = Instant::now();
-    let takes = req.options.takes.clamp(1, 3);
-    let label = |it: &Item| format!("{} · {}", it.def.name, it.lang.code);
-    let phase = |name: &str, steps: usize| {
-        let name = name.to_string();
-        inner.update(id, |j| {
-            j.view.state = JobState::Running;
-            j.view.phase = name;
-            j.view.step = 0;
-            j.view.steps = steps as u32;
-        });
-    };
-    let batch_size = items.len() as u32;
-    inner.update(id, |j| {
-        j.view.state = JobState::Running;
-        j.view.error = None;
-        j.view.batch = batch_size;
-    });
-
-    // 1. design all takes (design checkpoint)
-    phase("design", items.len() * takes as usize);
-    let mut last_error = None;
-    for it in items.iter_mut() {
-        for _ in 0..takes {
-            if !inner.gap(id).await {
-                return Ok(());
-            }
-            let l = label(it);
-            inner.update(id, |j| j.view.current = Some(l));
-            match design(vcp, &instruct(&it.def), it.lang).await {
-                Ok(wav) => {
-                    let duration = ttv_vcp::wav::duration_secs(&wav).unwrap_or(0.0);
-                    let level = audio::decode(&wav).and_then(|(s, _)| audio::loudness_db(&s));
-                    it.takes.push(Take { wav, duration, wer: None, level });
-                }
-                Err(e) => {
-                    log::warn!("design {}: {e}", label(it));
-                    last_error = Some(e);
-                }
-            }
-            inner.update(id, |j| j.view.step += 1);
-        }
-    }
-    // Nothing designed at all: VCP is down or restarting. Try the batch again
-    // later (the worker waits) instead of counting a failed attempt per voice.
-    if items.iter().all(|it| it.takes.is_empty()) {
-        return Err(format!("Voice Creator Pro designed nothing: {}", last_error.unwrap_or_else(|| "no answer".into())));
-    }
-
-    // 2. speech check (speech recognition model). A take only counts as
-    // checked when VCP heard it; one VCP couldn't transcribe is not accepted.
-    if req.options.speech_check {
-        let todo: usize = items.iter().filter(|it| it.lang.asr).map(|it| it.takes.iter().filter(|t| plausible(t)).count()).sum();
-        phase("check", todo);
-        let (mut heard_any, mut last_failure) = (false, None);
-        for it in items.iter_mut() {
-            if !it.lang.asr {
-                continue;
-            }
-            let (name, lang) = (label(it), it.lang);
-            for take in it.takes.iter_mut().filter(|t| plausible(t)) {
-                if !inner.gap(id).await {
-                    return Ok(());
-                }
-                let l = name.clone();
-                inner.update(id, |j| j.view.current = Some(l));
-                // One dropped connection shouldn't cost the batch: try once more.
-                let mut heard = transcribe(vcp, &take.wav, lang).await;
-                if matches!(heard, Err(Trouble::Down(_))) {
-                    tokio::time::sleep(Duration::from_secs(2)).await;
-                    heard = transcribe(vcp, &take.wav, lang).await;
-                }
-                match heard {
-                    Ok(heard) => {
-                        heard_any = true;
-                        take.wer = Some(langs::error_rate(lang.text, &heard, lang.code));
-                    }
-                    Err(Trouble::Down(e)) => return Err(format!("speech check: {e}")),
-                    Err(Trouble::Failed(e)) => {
-                        log::warn!("speech check {name}: {e}");
-                        take.wer = Some(1.0);
-                        last_failure = Some(e);
-                    }
-                }
-                inner.update(id, |j| j.view.step += 1);
-            }
-        }
-        // Speech recognition failed for every take: it's broken, not the voices.
-        if todo > 0 && !heard_any {
-            return Err(format!("VCP's speech recognition doesn't work: {}", last_failure.unwrap_or_default()));
-        }
-    }
-
-    // 3. pick the best take, save it, prime it (speaking checkpoint)
-    phase("save", items.len());
-    let mut finished = 0u32;
-    for it in items.iter_mut() {
-        let max_wer = if matches!(it.lang.code, "ja" | "zh" | "ko") { MAX_WER_CJK } else { MAX_WER };
-        let checked = req.options.speech_check && it.lang.asr;
-        // Best take: understood, near 7 s, and at a normal loudness (VCP
-        // clones the loudness too; a whispered sample stays too quiet even
-        // with the maximum gain).
-        let best = it
-            .takes
-            .iter()
-            .enumerate()
-            .filter(|(_, t)| plausible(t) && if checked { t.wer.is_some_and(|w| w <= max_wer) } else { true })
-            .min_by(|(_, a), (_, b)| {
-                let score = |t: &Take| t.wer.unwrap_or(0.0) + (t.duration - 7.0).abs() * 0.01 + t.level.map_or(0.5, |db| ((db + 20.0).abs() - 6.0).max(0.0) * 0.05);
-                score(a).total_cmp(&score(b))
-            })
-            .map(|(i, _)| i);
-        let Some(bi) = best else {
-            inner.attempt_failed(id, &it.key, None);
-            continue;
-        };
-        let take = it.takes.swap_remove(bi);
-        if !inner.gap(id).await {
-            return Ok(());
-        }
-        let l = label(it);
-        inner.update(id, |j| {
-            j.view.current = Some(l);
-            j.view.phase = "prime".into();
-        });
-        let voice_name = format!("TTV {} {} {:03} {}", req.preset_id, it.lang.code, it.index + 1, it.def.name);
-        let save = serde_json::json!({
-            "name": voice_name,
-            "audio_base64": base64::engine::general_purpose::STANDARD.encode(&take.wav),
-            "transcript": it.def.description,
-            "ref_text": it.lang.text,
-            "voice_type": "design",
-            "transcript_manual": true,
-        });
-        let (voice, spoken) = match save_voice(vcp, &save, it.lang).await {
-            Ok(v) => v,
-            Err(Trouble::Down(e)) => return Err(e),
-            Err(Trouble::Failed(e)) => {
-                log::warn!("{voice_name}: {e}");
-                inner.attempt_failed(id, &it.key, Some(format!("{}: {e}", label(it))));
-                continue;
-            }
-        };
-        let gain = audio::gain_from_db(mix_levels(take.level, Some(spoken)).unwrap_or(-20.0));
-        let mut backup = false;
-        if req.options.backup
-            && let Some((samples, rate)) = audio::decode(&take.wav)
-            && let Some(flac) = audio::flac(&samples, rate)
-        {
-            backup = std::fs::write(inner.sample_path(&it.key), flac).is_ok();
-        }
-        inner.change(vec![LibraryEntry {
-            key: it.key.clone(),
-            def_hash: it.def.hash(),
-            lang: it.lang.code.to_string(),
-            preset_id: req.preset_id.clone(),
-            index: it.index,
-            name: it.def.name.clone(),
-            voice_id: voice.id.clone(),
-            voice_name,
-            created: chrono::Utc::now().timestamp(),
-            duration: take.duration,
-            wer: take.wer,
-            gain,
-            backup,
-            level: take.level,
-        }], &[]);
-        finished += 1;
-        inner.update(id, |j| {
-            j.view.done += 1;
-            j.view.step += 1;
-            j.view.phase = "save".into();
-        });
-    }
-
-    // speed: moving average over real batches
-    if finished > 0 {
-        let per = t0.elapsed().as_secs_f32() / finished as f32;
-        let spv = {
-            let mut s = inner.stats.lock();
-            let v = match s.secs_per_voice {
-                Some(old) => old * 0.6 + per * 0.4,
-                None => per,
-            };
-            s.secs_per_voice = Some(v);
-            v
-        };
-        inner.save_stats();
-        inner.update(id, |j| {
-            j.view.secs_per_voice = Some(spv);
-            let left = j.view.total.saturating_sub(j.view.done + j.view.failed);
-            j.view.eta_secs = Some((left as f32 * spv).round() as u64);
-        });
-    }
-    inner.save_jobs();
-    Ok(())
-}
-
-/// Reference samples must be 3–10.5 s long (VCP clones best from that).
-fn plausible(t: &Take) -> bool {
-    (3.0..=10.5).contains(&t.duration)
+/// Mono samples and rate of a WAV file (for tools and tests).
+pub fn decode_wav(bytes: &[u8]) -> Option<(Vec<f32>, u32)> {
+    audio::decode(bytes)
 }
 
 #[cfg(test)]
@@ -841,3 +667,4 @@ mod tests {
         assert_eq!(instruct(&def("n", 40)), "Low, warm voice.");
     }
 }
+
