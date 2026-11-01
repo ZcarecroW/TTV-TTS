@@ -1,0 +1,68 @@
+[workspace]
+resolver = "3"
+members = ["crates/vcp", "crates/link", "apps/proxy/src-tauri"]
+
+[workspace.package]
+version = "2.0.0"
+edition = "2024"
+rust-version = "1.95"
+license = "MIT"
+authors = ["ZcarecroW"]
+repository = "https://github.com/ZcarecroW/TTV-TTS"
+
+[workspace.dependencies]
+ttv-vcp = { path = "crates/vcp" }
+ttv-link = { path = "crates/link" }
+
+tauri = { version = "2.12.5", features = ["tray-icon"] }
+tauri-build = { version = "2.7.4", features = [] }
+tauri-plugin-opener = "2.7.2"
+tauri-plugin-process = "2.4.0"
+tauri-plugin-window-state = "2.5.0"
+tauri-plugin-log = "2.10.1"
+tauri-plugin-single-instance = "2.5.5"
+tauri-plugin-updater = "2.14.1"
+tauri-plugin-autostart = "2.7.0"
+
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+tokio = { version = "1.54.1", features = ["rt-multi-thread", "macros", "time", "sync", "net", "io-util", "fs", "process"] }
+futures-util = { version = "0.3.34", default-features = false, features = ["std"] }
+bytes = "1.12.1"
+reqwest = { version = "0.13.5", default-features = false, features = ["json", "stream", "rustls", "http2", "query"] }
+rustls = { version = "0.23.46", default-features = false, features = ["aws_lc_rs", "std", "tls12", "logging"] }
+tokio-rustls = { version = "0.26.6", default-features = false, features = ["aws_lc_rs", "tls12", "logging"] }
+rcgen = { version = "0.14.10", default-features = false, features = ["crypto", "pem", "aws_lc_rs"] }
+axum = { version = "0.8.9", default-features = false, features = ["tokio", "http1", "http2", "json", "query", "ws"] }
+hyper = { version = "1.12.0", features = ["server", "http1", "http2"] }
+hyper-util = { version = "0.1.21", features = ["server-auto", "tokio", "service"] }
+tower = { version = "0.5.3", default-features = false, features = ["util"] }
+sha2 = "0.11.1"
+hex = "0.4.3"
+base64 = "0.23.1"
+rand = "0.10.3"
+subtle = "2.6.1"
+thiserror = "2.0.21"
+anyhow = "1.0.104"
+log = { version = "0.4.35", features = ["std"] }
+parking_lot = "0.13.0"
+keyring = "4.2.0"
+sysinfo = { version = "0.40.1", default-features = false, features = ["system", "network", "gpu"] }
+nvml-wrapper = "0.13.0"
+chrono = { version = "0.4.45", default-features = false, features = ["clock", "serde", "std"] }
+time = "0.3.55"
+url = "2.5.8"
+socket2 = { version = "0.6.5", features = ["all"] }
+windows-sys = "0.61.2"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true
+
+# Dependencies are built with optimizations in dev builds too: the proxy streams
+# audio and the dev build should behave like the release build.
+[profile.dev.package."*"]
+opt-level = 2

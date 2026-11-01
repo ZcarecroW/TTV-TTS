@@ -1,0 +1,19 @@
+{
+  "name": "@ttv-tts/ui",
+  "private": true,
+  "version": "2.0.0",
+  "description": "Shared design system of TTV-TTS and TTV-TTS Proxy: theme, components, tooltips, Nucleo icons",
+  "type": "module",
+  "exports": {
+    "./style.css": "./src/style.css",
+    "./icons": "./src/icons/index.ts",
+    "./theme": "./src/theme.ts",
+    "./format": "./src/format.ts",
+    "./clipboard": "./src/clipboard.ts",
+    "./components/*": "./src/components/*"
+  },
+  "peerDependencies": {
+    "vue": "^3.5.44",
+    "vue-i18n": "^11.4.16"
+  }
+}

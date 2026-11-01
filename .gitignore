@@ -9,3 +9,10 @@ dist/
 
 # Your personal, configured copy (contains your API key) - never commit it
 *.local.html
+
+# Build output and dependencies
+node_modules/
+target/
+apps/*/dist/
+apps/*/src-tauri/gen/
+.vitest/

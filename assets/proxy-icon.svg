@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#2450B8"/>
+      <stop offset="0.55" stop-color="#132E73"/>
+      <stop offset="1" stop-color="#0A1838"/>
+    </linearGradient>
+    <linearGradient id="bubble" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#DCE8FF"/>
+    </linearGradient>
+    <linearGradient id="bars" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#1D3FAF"/>
+    </linearGradient>
+    <linearGradient id="badge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBBF24"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="208" fill="url(#bg)"/>
+  <path d="M268 248h376a96 96 0 0 1 96 96v176a96 96 0 0 1-96 96H476L360 708V616h-92a96 96 0 0 1-96-96V344a96 96 0 0 1 96-96z" fill="url(#bubble)"/>
+  <g fill="url(#bars)">
+    <rect x="303" y="389" width="42" height="86" rx="21"/>
+    <rect x="371" y="352" width="42" height="160" rx="21"/>
+    <rect x="439" y="316" width="42" height="232" rx="21"/>
+    <rect x="507" y="352" width="42" height="160" rx="21"/>
+    <rect x="575" y="389" width="42" height="86" rx="21"/>
+  </g>
+  <circle cx="724" cy="724" r="196" fill="#0A1838"/>
+  <circle cx="724" cy="724" r="168" fill="url(#badge)"/>
+  <g fill="none" stroke="#0A1838" stroke-width="40" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M630 676h176m-52-52 52 52-52 52"/>
+    <path d="M818 772H642m52-52-52 52 52 52"/>
+  </g>
+</svg>

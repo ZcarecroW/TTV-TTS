@@ -1,0 +1,24 @@
+<script setup lang="ts">
+import UiTip from "./UiTip.vue";
+defineProps<{ options: { value: string; label: string }[]; disabled?: boolean; label?: string; tip?: string }>();
+const model = defineModel<string>({ required: true });
+</script>
+
+<template>
+  <div class="min-w-0">
+    <span v-if="label" class="label">{{ label }}<UiTip v-if="tip" :text="tip" /></span>
+    <div class="inline-flex flex-wrap gap-1 rounded-lg border border-line bg-panel-2 p-0.5" :class="disabled && 'opacity-60'">
+      <button
+        v-for="o in options"
+        :key="o.value"
+        type="button"
+        :disabled="disabled"
+        class="rounded-md px-2.5 py-1 text-xs font-medium transition"
+        :class="model === o.value ? 'bg-accent text-white shadow-sm' : 'text-muted hover:text-fg'"
+        @click="model = o.value"
+      >
+        {{ o.label }}
+      </button>
+    </div>
+  </div>
+</template>
