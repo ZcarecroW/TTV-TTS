@@ -31,7 +31,12 @@ const SPEAKING: u8 = 1;
 const OTHER: u8 = 2;
 
 fn kind_of(path: &str) -> u8 {
-    if path.starts_with("/api/v1/generation/clone") { SPEAKING } else { OTHER }
+    if path.starts_with("/api/v1/generation/clone") || is_stream(path) { SPEAKING } else { OTHER }
+}
+
+/// The audio of a streaming session: VCP generates while it sends.
+fn is_stream(path: &str) -> bool {
+    path.starts_with("/api/v1/streaming/") && path.split('?').next().is_some_and(|p| p.ends_with("/audio"))
 }
 
 /// Holding it means VCP works for you; dropping it gives the turn back.
@@ -91,7 +96,8 @@ pub async fn background_turn(path: &str) -> Turn {
 /// Requests that make VCP work: generating, designing, transcribing,
 /// saving voices. Stopping and shutting down never wait for a turn.
 pub fn is_work(method: &Method, path: &str) -> bool {
-    *method == Method::POST && path.starts_with("/api/v1/") && !path.starts_with("/api/v1/generation/stop") && !path.starts_with("/api/v1/app/")
+    (*method == Method::POST && path.starts_with("/api/v1/") && !path.starts_with("/api/v1/generation/stop") && !path.starts_with("/api/v1/app/"))
+        || (*method == Method::GET && is_stream(path))
 }
 
 #[derive(Debug, thiserror::Error)]

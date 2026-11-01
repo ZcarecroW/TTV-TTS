@@ -100,6 +100,8 @@ async fn work_requests_take_turns() {
     assert!(!ttv_vcp::is_work(&ttv_vcp::Method::POST, "/api/v1/generation/stop"));
     assert!(!ttv_vcp::is_work(&ttv_vcp::Method::POST, "/ttv/v1/jobs"));
     assert!(!ttv_vcp::is_work(&ttv_vcp::Method::GET, "/api/v1/voices"));
+    assert!(ttv_vcp::is_work(&ttv_vcp::Method::GET, "/api/v1/streaming/abc/audio?format=wav"));
+    assert!(!ttv_vcp::is_work(&ttv_vcp::Method::GET, "/api/v1/streaming/abc"));
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]

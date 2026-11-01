@@ -319,6 +319,11 @@ export default {
     add: "Add",
   },
   settings: {
+    genMeasured: "Measured: whole sentences {s1} s (×{r1})",
+    genMeasuredStream: "streaming {s2} s to first sound (×{r2})",
+    genStreamingFailed: "streaming didn't work",
+    genNotMeasured: "Not measured yet – \u201cAutomatic\u201d does it once chat has been quiet for two minutes.",
+    genMeasure: "Measure now",
     remoteTitle: "Remote control (Stream Deck, Streamer.bot)",
     remoteOn: "Allow remote control",
     remotePort: "Port",

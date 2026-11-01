@@ -226,6 +226,11 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
       const hit = Object.entries(known).find(([k]) => text.toLowerCase().includes(k));
       return r({ text: hit ? hit[1] + "!" : "(Übersetzung) " + text, ms: 480 });
     }
+    case "generation_info":
+      return r({ host: "proxy:demo", model: "Higher Quality (1.7B)", at: Math.floor(Date.now() / 1000) - 3600, sentences_first_ms: 2600, sentences_rtf: 0.51, streaming_first_ms: 2800, streaming_rtf: 3.6, pick: "sentences" });
+    case "measure_generation":
+      await new Promise((res) => setTimeout(res, 1200));
+      return r({ host: "proxy:demo", model: "Higher Quality (1.7B)", at: Math.floor(Date.now() / 1000), sentences_first_ms: 2400, sentences_rtf: 0.5, streaming_first_ms: 2900, streaming_rtf: 3.9, pick: "sentences" });
     case "set_remote":
       Object.assign(state.config.remote, { enabled: !!args.enabled, port: Number(args.port), lan: !!args.lan });
       if (args.newToken) state.config.remote.token = "newToken" + Date.now().toString(36);

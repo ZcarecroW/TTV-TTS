@@ -12,6 +12,7 @@ mod logbuf;
 mod monitor;
 mod friends_cmds;
 mod announce;
+mod bench;
 pub mod fx;
 #[cfg(desktop)]
 mod hotkeys;
@@ -122,6 +123,8 @@ pub fn run() {
             commands::reader_replay,
             commands::set_hotkey,
             commands::set_remote,
+            commands::generation_info,
+            commands::measure_generation,
             commands::remote_status,
             commands::test_message,
             commands::test_event,

@@ -1253,9 +1253,21 @@ async fn generator(state: Arc<AppState>) {
             gain,
             fx: None,
         };
+        let streaming = crate::bench::mode(&state) == crate::config::GenerationMode::Streaming;
         for piece in speech::split(&u.text) {
             if cancel.load(Ordering::Relaxed) {
                 break;
+            }
+            if streaming {
+                match speech::generate_streaming(&vcp, &u, &piece.0, &ctx).await {
+                    Ok(_) => continue,
+                    Err(e) if e.sent => {
+                        let _ = ctx.send(Err(e.message)).await;
+                        break;
+                    }
+                    // nothing played yet: this piece as a whole sentence
+                    Err(e) => log::info!("streaming failed ({}) - whole sentence", e.message),
+                }
             }
             let mut r = speech::generate(&vcp, &u, &piece.0).await;
             if let Err(e) = &r
@@ -1414,18 +1426,33 @@ async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
 }
 
 async fn housekeeping(state: Arc<AppState>) {
-    let mut tick = tokio::time::interval(Duration::from_secs(60));
+    // every 10 s for (re)connects, the rest every minute
+    let mut tick = tokio::time::interval(Duration::from_secs(10));
     let mut was_connected = false;
+    let mut round = 0u32;
     loop {
         tick.tick().await;
-        state.reader.save_assignments();
-        // Refresh voices every 10 min and when the voice host (re)connects.
+        round += 1;
         let connected = state.host.read().connected;
-        let old = state.reader.voices.read().loaded.is_none_or(|t| t.elapsed() > Duration::from_secs(600));
-        if connected && (old || !was_connected) {
+        if connected && !was_connected {
             refresh_voices(&state).await;
+            if !state.reader.store.read().active.is_empty() {
+                let st = state.clone();
+                tokio::spawn(async move { crate::bench::warm_up(&st).await });
+            }
+            if state.cfg.read().generation == crate::config::GenerationMode::Auto && crate::bench::current(&state).is_none() {
+                tokio::spawn(measure_when_quiet(state.clone()));
+            }
         }
         was_connected = connected;
+        if round % 6 != 1 {
+            continue;
+        }
+        state.reader.save_assignments();
+        // Refresh voices every 10 min (and above when the host (re)connects).
+        if connected && state.reader.voices.read().loaded.is_none_or(|t| t.elapsed() > Duration::from_secs(600)) {
+            refresh_voices(&state).await;
+        }
         for lm in state.reader.lang.lock().values_mut() {
             lm.prune();
         }
@@ -1446,6 +1473,24 @@ async fn housekeeping(state: Arc<AppState>) {
                 record(&state, i.view);
             }
             publish(&state);
+        }
+    }
+}
+
+/// "Automatic" generation: measure both ways once chat has been quiet for
+/// two minutes (it keeps VCP busy for ~30 s on a slow setup).
+async fn measure_when_quiet(state: Arc<AppState>) {
+    for _ in 0..120 {
+        tokio::time::sleep(Duration::from_secs(30)).await;
+        if crate::bench::current(&state).is_some() || !state.host.read().connected {
+            return;
+        }
+        let quiet = speech::last_vcp_use().is_none_or(|t| t.elapsed() > Duration::from_secs(120));
+        if quiet && state.reader.queue.lock().is_empty() {
+            if let Err(e) = crate::bench::run(&state).await {
+                log::info!("generation benchmark: {e}");
+            }
+            return;
         }
     }
 }

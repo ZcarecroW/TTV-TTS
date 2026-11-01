@@ -409,6 +409,18 @@ pub fn reader_replay(state: St, id: Option<u64>) -> Result<(), String> {
     crate::reader::replay(&state, id)
 }
 
+/// The last speed measurement of the two generation modes (this host).
+#[tauri::command]
+pub fn generation_info(state: St) -> Option<crate::bench::Measured> {
+    crate::bench::current(&state)
+}
+
+/// Measures whole sentences against streaming now (~30 s on a slow setup).
+#[tauri::command]
+pub async fn measure_generation(state: St<'_>) -> Result<crate::bench::Measured, String> {
+    crate::bench::run(&state).await
+}
+
 /// Remote control (Stream Deck, Streamer.bot): switch, port, LAN, new token.
 #[tauri::command]
 pub async fn set_remote(state: St<'_>, enabled: bool, port: u16, lan: bool, new_token: bool) -> Result<AppView, String> {

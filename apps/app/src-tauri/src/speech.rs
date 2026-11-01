@@ -185,6 +185,82 @@ pub async fn generate(vcp: &ttv_vcp::Client, u: &Utterance, text: &str) -> Resul
     Ok((samples, f.sample_rate))
 }
 
+/// A streaming generation that failed; `sent` = some of its audio was
+/// already handed to the player (so it can't be retried another way).
+pub struct StreamError {
+    pub message: String,
+    pub sent: bool,
+}
+
+/// Generates one piece with VCP's streaming session: the progressive WAV is
+/// decoded while it arrives and passed on in blocks of ~0.3 s. Returns the
+/// seconds of audio.
+pub async fn generate_streaming(vcp: &ttv_vcp::Client, u: &Utterance, text: &str, tx: &tokio::sync::mpsc::Sender<Result<(Vec<f32>, u32), String>>) -> Result<f32, StreamError> {
+    use futures_util::StreamExt;
+    let fail = |message: String, sent: bool| StreamError { message, sent };
+    touch();
+    let mut body = serde_json::json!({ "voice_id": u.voice, "target_text": text, "language": u.language });
+    if let Some(e) = u.emotion.as_deref().filter(|e| *e != "neutral") {
+        body["emotion"] = e.into();
+        body["intensity"] = u.intensity.clone().unwrap_or_else(|| "normal".into()).into();
+    }
+    let start: serde_json::Value = vcp.post("/api/v1/generation/clone/stream", &body, Duration::from_secs(60)).await.map_err(|e| fail(e.to_string(), false))?;
+    let sid = start["session_id"].as_str().filter(|s| !s.is_empty()).ok_or_else(|| fail(format!("VCP started no stream: {start}"), false))?.to_string();
+    let path = format!("/api/v1/streaming/{sid}/audio?format=wav");
+    // VCP direct: this app's other work waits (the proxy does that itself)
+    let _turn = ttv_vcp::turn(&path).await;
+    let r = vcp.request(ttv_vcp::Method::GET, &path).send().await.map_err(|e| fail(e.to_string(), false))?;
+    if !r.status().is_success() {
+        return Err(fail(format!("VCP answered HTTP {} for the stream", r.status()), false));
+    }
+    let mut stream = r.bytes_stream();
+    let mut dec = wav::StreamDecoder::new();
+    let (mut buf, mut total, mut sent) = (Vec::new(), 0usize, false);
+    let started = Instant::now();
+    let flush = |buf: &mut Vec<f32>, ch: usize| -> Vec<f32> {
+        let whole = buf.len() / ch.max(1) * ch.max(1);
+        let frames: Vec<f32> = buf.drain(..whole).collect();
+        if ch > 1 { frames.chunks(ch).map(|c| c.iter().sum::<f32>() / ch as f32).collect() } else { frames }
+    };
+    loop {
+        let next = tokio::time::timeout(Duration::from_secs(3), stream.next()).await;
+        match next {
+            Ok(Some(Ok(chunk))) => dec.push(&chunk, &mut buf).map_err(|e| fail(e.to_string(), sent))?,
+            Ok(Some(Err(e))) => return Err(fail(e.to_string(), sent)),
+            Ok(None) => break,
+            Err(_) => {
+                // no data for a while: done, failed or just slow?
+                let st: serde_json::Value = vcp.get(&format!("/api/v1/streaming/{sid}"), Duration::from_secs(10)).await.unwrap_or_default();
+                if let Some(e) = st["error"].as_str().filter(|e| !e.is_empty()) {
+                    return Err(fail(format!("VCP: {e}"), sent));
+                }
+                if st["is_complete"].as_bool() == Some(true) || started.elapsed() > Duration::from_secs(300) {
+                    break;
+                }
+            }
+        }
+        if let Some(f) = dec.format()
+            && buf.len() >= f.sample_rate as usize * f.channels as usize * 3 / 10
+        {
+            let block = flush(&mut buf, f.channels as usize);
+            total += block.len();
+            sent = true;
+            if tx.send(Ok((block, f.sample_rate))).await.is_err() {
+                // skipped: nobody listens any more
+                break;
+            }
+        }
+    }
+    touch();
+    let Some(f) = dec.format() else { return Err(fail("VCP's stream had no audio".into(), sent)) };
+    if !buf.is_empty() {
+        let block = flush(&mut buf, f.channels as usize);
+        total += block.len();
+        let _ = tx.send(Ok((block, f.sample_rate))).await;
+    }
+    Ok(total as f32 / f.sample_rate.max(1) as f32)
+}
+
 /// Translates chat text with VCP (`POST /api/v1/translate`, one result per
 /// text). `target` and `source` are language codes ("de", "en").
 pub async fn translate(vcp: &ttv_vcp::Client, texts: &[String], target: &str, source: Option<&str>) -> Result<Vec<String>, String> {

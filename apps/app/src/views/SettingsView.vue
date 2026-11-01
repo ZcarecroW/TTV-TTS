@@ -4,8 +4,8 @@ import { useI18n } from "vue-i18n";
 import UiField from "@ttv-tts/ui/components/UiField.vue";
 import UiSegmented from "@ttv-tts/ui/components/UiSegmented.vue";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
-import { CircleInfo, Copy, Download, ExternalLink, Globe, Keyboard, Link, Sparkle, Waveform } from "@ttv-tts/ui/icons";
-import { api, HOTKEY_ACTIONS, isTauri, updates } from "../api";
+import { CircleInfo, Copy, Download, ExternalLink, Globe, Keyboard, Link, Sparkle, Spinner, Waveform } from "@ttv-tts/ui/icons";
+import { api, HOTKEY_ACTIONS, isTauri, updates, type Measured } from "../api";
 import { apply, config, run, store, toast } from "../store";
 import { copyText } from "@ttv-tts/ui/clipboard";
 import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
@@ -45,6 +45,15 @@ async function saveDeepl() {
   }
 }
 const removeDeepl = () => void run("settings", () => api.setDeeplKey(null)).then(apply);
+
+// Generation: what "automatic" measured on this voice host.
+const measured = ref<Measured | null>(null);
+void api.generationInfo().then((m) => (measured.value = m)).catch(() => {});
+async function measure() {
+  const m = await run("measure", () => api.measureGeneration());
+  if (m) measured.value = m;
+}
+const sec = (ms: number) => (ms / 1000).toFixed(1);
 
 // Remote control: Stream Deck / Streamer.bot call these URLs.
 const remote = computed(() => c.value.remote);
@@ -126,6 +135,17 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
           { value: 'streaming', label: t('settings.genStreaming') },
         ]"
       />
+      <div class="mt-3 flex flex-wrap items-center gap-2 text-sm" data-measured>
+        <span v-if="measured" class="text-muted">
+          {{ t("settings.genMeasured", { s1: sec(measured.sentences_first_ms), r1: measured.sentences_rtf.toFixed(2) }) }}
+          · {{ measured.streaming_first_ms != null ? t("settings.genMeasuredStream", { s2: sec(measured.streaming_first_ms), r2: (measured.streaming_rtf ?? 0).toFixed(2) }) : t("settings.genStreamingFailed") }}
+          → <b class="text-fg">{{ measured.pick === "streaming" ? t("settings.genStreaming") : t("settings.genSentences") }}</b>
+        </span>
+        <span v-else class="text-muted">{{ t("settings.genNotMeasured") }}</span>
+        <button class="btn btn-sm ml-auto" :disabled="store.busy === 'measure' || !store.app?.host.connected" @click="measure">
+          <Spinner v-if="store.busy === 'measure'" :size="14" class="spin" />{{ t("settings.genMeasure") }}
+        </button>
+      </div>
     </section>
 
     <section class="card p-5">

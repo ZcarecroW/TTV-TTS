@@ -50,6 +50,13 @@ check(await page.locator("#ttv-tip").isVisible(), "tooltip appears on hover");
   check(/(key stored|Schlüssel gespeichert)/.test(await ts.locator("input[type=password]").getAttribute("placeholder")) && (await ts.getByRole("button", { name: /^(Remove|Entfernen)$/ }).count()) === 1, "a DeepL key is stored and can be removed");
 }
 {
+  const gm = page.locator("main [data-measured]");
+  check(/2\.6 s \(×0\.51\)/.test(await gm.innerText()), "the measured generation speeds are shown", await gm.innerText());
+  await gm.getByRole("button").click();
+  await page.waitForTimeout(1600);
+  check(/2\.4 s \(×0\.50\)/.test(await gm.innerText()), "generation can be measured again", await gm.innerText());
+}
+{
   const rc = page.locator("main [data-remote]");
   await rc.getByRole("switch").first().click();
   await page.waitForTimeout(300);

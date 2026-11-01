@@ -23,7 +23,7 @@ Decisions come from the interview of 2026-11-01 (see the project notes); this fi
 - ✅ Twitch IRC (anonymous, several channels on one connection, reconnect), profiles per streamer (auto-saved editor)
 - ✅ Text pipeline from 1.0: emotes (Twitch/BTTV/FFZ/7TV), emojis, links, mentions, repeats, caps, replacements, blocked words, name announcements (7TV live updates over the EventAPI)
 - ✅ Language detection (1.0 detector + per-viewer memory)
-- ✅ Synthesis: sentence-split **sync generation with pipelining** (measured 7–8× faster than VCP streaming on the target PC); streaming option + "Auto" benchmark + warm-up ⏳
+- ✅ Synthesis: sentence-split **sync generation with pipelining** (measured 7–8× faster than VCP streaming on the target PC); streaming option, "Auto" benchmark (measured here: sentences 1.97 s × 0.56, streaming 1.0 s × 4.3 → sentences), warm-up on connect ✅
 - ✅ Audio output to a chosen device (cpal), resampling, per-voice loudness matching (gain measured when a voice is computed)
 - ✅ Queue, skip, pause, clear, history with reasons for filtered messages, mod commands, timeouts/bans/deletions (replay + approval mode ⏳)
 

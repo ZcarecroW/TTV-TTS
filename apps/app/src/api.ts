@@ -241,6 +241,8 @@ export const api = {
   setHotkey: (action: string, accel: string | null) => invoke<AppView>("set_hotkey", { action, accel }),
   setRemote: (enabled: boolean, port: number, lan: boolean, newToken = false) => invoke<AppView>("set_remote", { enabled, port, lan, newToken }),
   remoteStatus: () => invoke<{ listening: string | null; error: string | null }>("remote_status"),
+  generationInfo: () => invoke<Measured | null>("generation_info"),
+  measureGeneration: () => invoke<Measured>("measure_generation"),
   skip: () => invoke<void>("skip"),
 };
 
@@ -667,6 +669,18 @@ export const EVENT_TEXTS: Record<string, [string, string]> = {
   raid: ["{user} is raiding with {viewers} viewers!", "{user} raidet mit {viewers} Zuschauern!"],
   bits: ["{user} cheered {bits} bits!", "{user} hat {bits} Bits gespendet!"],
 };
+
+/** Whole sentences against streaming, measured on this voice host. */
+export interface Measured {
+  host: string;
+  model: string;
+  at: number;
+  sentences_first_ms: number;
+  sentences_rtf: number;
+  streaming_first_ms: number | null;
+  streaming_rtf: number | null;
+  pick: "sentences" | "streaming";
+}
 
 /** What a global hotkey can do (same order as the backend). */
 export const HOTKEY_ACTIONS = ["skip", "pause", "clear", "replay", "approve", "reject"] as const;

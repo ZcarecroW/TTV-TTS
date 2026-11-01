@@ -321,6 +321,11 @@ const de: typeof en = {
     add: "Hinzufügen",
   },
   settings: {
+    genMeasured: "Gemessen: ganze Sätze {s1} s (×{r1})",
+    genMeasuredStream: "Streaming {s2} s bis zum ersten Ton (×{r2})",
+    genStreamingFailed: "Streaming ging nicht",
+    genNotMeasured: "Noch nicht gemessen – \u201eAutomatisch\u201c misst, sobald der Chat zwei Minuten ruhig war.",
+    genMeasure: "Jetzt messen",
     remoteTitle: "Fernsteuerung (Stream Deck, Streamer.bot)",
     remoteOn: "Fernsteuerung erlauben",
     remotePort: "Port",
