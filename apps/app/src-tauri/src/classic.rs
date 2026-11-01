@@ -68,6 +68,82 @@ fn neutral(description: &str) -> String {
     d.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 
+/// Whether a VCP transcript is a voice description (what the 1.0 voice lab
+/// stored) and not the words spoken in the sample (what later 1.x tools
+/// stored).
+fn is_description(text: &str) -> bool {
+    const WORDS: &[&str] = &["voice", "tone", "pitch", "timbre", "speaks", "speaking", "baritone", "tenor", "alto", "soprano", "bass", "accent", "raspy", "husky"];
+    // whole words: "stone" is no "tone"
+    text.to_lowercase().split(|c: char| !c.is_alphanumeric()).any(|w| WORDS.contains(&w))
+}
+
+/// Role words of the 1.x role voices (German labels like
+/// "Trailer-Erzähler", "Raumschiff-KI"): English name, gender, typical age,
+/// and how such a voice sounds.
+const ROLE_NOUNS: &[(&str, &str, &str, u8, &str)] = &[
+    ("erzählerin", "narrator", "f", 45, "expressive storyteller, clear and engaging, measured pace"),
+    ("erzähler", "narrator", "m", 50, "expressive storyteller, clear and engaging, measured pace"),
+    ("märchenerzählerin", "fairy-tale narrator", "f", 55, "warm, gentle storyteller with a soft, inviting tone"),
+    ("sprecherin", "narrator", "f", 40, "clear, warm and professional, calm pace"),
+    ("sprecher", "narrator", "m", 45, "clear, warm and professional, calm pace"),
+    ("ki", "AI", "n", 35, "calm, precise and slightly synthetic"),
+    ("detektiv", "detective", "m", 45, "dry, low and world-weary, unhurried"),
+    ("detektivin", "detective", "f", 42, "dry, cool and observant, unhurried"),
+    ("elfenkönigin", "elf queen", "f", 40, "ethereal, graceful and regal, soft and clear"),
+    ("kriegerkönigin", "warrior queen", "f", 38, "commanding, proud and fierce"),
+    ("königin", "queen", "f", 45, "regal, composed and commanding"),
+    ("könig", "king", "m", 55, "regal, deep and commanding"),
+    ("schurke", "villain", "m", 45, "smooth, charming and quietly menacing"),
+    ("schurkin", "villain", "f", 40, "smooth, charming and quietly menacing"),
+    ("heldin", "heroine", "f", 30, "brave, energetic and determined"),
+    ("held", "hero", "m", 30, "brave, warm and determined"),
+    ("revolverheld", "gunslinger", "m", 42, "low, gravelly drawl, slow and confident"),
+    ("general", "general", "m", 58, "commanding, firm and authoritative"),
+    ("radio", "late-night radio host", "n", 40, "warm, intimate and relaxed"),
+    ("dj", "DJ", "m", 32, "warm, smooth and relaxed, easy flow"),
+    ("orakel", "oracle", "n", 60, "ethereal, mysterious and serene, slow"),
+    ("mentor", "mentor", "m", 65, "wise, warm and patient"),
+    ("mentorin", "mentor", "f", 62, "wise, warm and patient"),
+    ("hackerin", "hacker", "f", 26, "quick, witty and confident"),
+    ("hacker", "hacker", "m", 26, "quick, witty and confident"),
+    ("marine", "space marine", "m", 32, "tough, loud and commanding"),
+    ("agentin", "secret agent", "f", 35, "cool, controlled and confident"),
+    ("agent", "secret agent", "m", 38, "cool, controlled and confident"),
+    ("schmuggler", "smuggler", "m", 38, "roguish, charming and laid-back"),
+    ("kapitänin", "captain", "f", 45, "calm authority, clear and commanding"),
+    ("kapitän", "captain", "m", 50, "calm authority, clear and commanding"),
+    ("abenteurerin", "adventurer", "f", 28, "lively, bright and adventurous"),
+    ("abenteurer", "adventurer", "m", 30, "lively, warm and adventurous"),
+    ("imperator", "emperor", "m", 60, "imperious, deep and commanding"),
+    ("söldner", "mercenary", "m", 40, "rough, gravelly and terse"),
+    ("himmelsstimme", "heavenly being", "n", 35, "ethereal, luminous and serene"),
+];
+
+const ROLE_PREFIXES: &[(&str, &str)] = &[
+    ("trailer", "movie-trailer"),
+    ("noir", "film-noir"),
+    ("doku", "documentary"),
+    ("dark", "dark"),
+    ("fantasy", "fantasy"),
+    ("gothic", "gothic"),
+    ("thriller", "thriller"),
+    ("nacht", "late-night"),
+    ("raumschiff", "spaceship"),
+    ("gentleman", "gentleman"),
+    ("action", "action"),
+];
+
+/// Gender, age and an English description from a 1.x role label.
+fn from_label(label: &str) -> Option<(&'static str, u8, String)> {
+    let parts: Vec<String> = label.split(['-', ' ']).filter(|p| !p.is_empty()).map(str::to_lowercase).collect();
+    let noun = parts.last()?;
+    let (_, en, gender, age, style) = ROLE_NOUNS.iter().find(|(de, ..)| de == noun)?;
+    let adjectives: Vec<&str> = parts[..parts.len() - 1].iter().filter_map(|p| ROLE_PREFIXES.iter().find(|(de, _)| de == p).map(|(_, en)| *en)).collect();
+    let who = if adjectives.is_empty() || en.contains(' ') { en.to_string() } else { format!("{} {en}", adjectives.join(" ")) };
+    let article = if who.starts_with(['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U']) { "an" } else { "a" };
+    Some((gender, *age, format!("Voice of {article} {who}: {style}.")))
+}
+
 fn guess_gender(text: &str) -> &'static str {
     let t = format!(" {} ", text.to_lowercase().replace(|c: char| !c.is_alphanumeric(), " "));
     let has = |words: &[&str]| words.iter().any(|w| t.contains(&format!(" {w} ")));
@@ -132,14 +208,21 @@ pub fn build(voices: &[ttv_vcp::Voice]) -> Option<(Preset, Vec<LibraryEntry>)> {
     let mut index_of: BTreeMap<u32, usize> = BTreeMap::new();
     for (role, v) in &roles {
         let label = v.label.clone().unwrap_or_default();
-        let mut description = neutral(&v.voice.transcript);
-        if description.chars().count() < 20 {
-            description = format!("A {} voice, natural and clear, friendly and easy to listen to.", if label.is_empty() { "warm" } else { label.as_str() });
-        }
-        let basis = format!("{label} {description}");
         let name = if label.is_empty() { v.name.clone() } else { format!("{} ({label})", v.name) };
         index_of.insert(*role, defs.len());
-        defs.push(VoiceDef { name, gender: guess_gender(&basis).into(), age: guess_age(&basis), description, fx: None });
+        let stored = neutral(&v.voice.transcript);
+        // The 1.0 voice lab kept the description; later voices keep the
+        // spoken words – then the role label tells who the voice is.
+        if is_description(&stored) && stored.chars().count() >= 20 {
+            let basis = format!("{label} {stored}");
+            defs.push(VoiceDef { name, gender: guess_gender(&basis).into(), age: guess_age(&basis), description: stored, fx: None });
+        } else if let Some((gender, age, description)) = from_label(&label) {
+            defs.push(VoiceDef { name, gender: gender.into(), age, description, fx: None });
+        } else {
+            let description = format!("A {} voice, natural and clear, friendly and easy to listen to.", if label.is_empty() { "warm" } else { label.as_str() });
+            let basis = format!("{label} {description}");
+            defs.push(VoiceDef { name, gender: guess_gender(&basis).into(), age: guess_age(&basis), description, fx: None });
+        }
     }
     // Two roles with the same text would be one voice: keep them apart.
     let mut seen = std::collections::HashSet::new();
@@ -187,6 +270,36 @@ pub fn build(voices: &[ttv_vcp::Voice]) -> Option<(Preset, Vec<LibraryEntry>)> {
     Some((preset, entries))
 }
 
+/// Whether an adopted Classic preset was built by the old rules (spoken
+/// words as descriptions, no genders) and should be rebuilt.
+pub fn outdated(p: &Preset) -> bool {
+    let n = p.defs.len().max(1);
+    p.defs.iter().filter(|d| d.gender == "n" && !is_description(&d.description)).count() * 5 >= n * 4
+}
+
+/// Rebuilds an outdated Classic preset from the 1.x voices and moves its
+/// library entries to the new definitions (same VCP voices, nothing is
+/// generated or deleted). Returns how many entries moved.
+pub fn migrate(old: &Preset, voices: &[ttv_vcp::Voice], library: &[LibraryEntry]) -> Option<(Preset, Vec<LibraryEntry>, Vec<String>)> {
+    if !outdated(old) {
+        return None;
+    }
+    let (mut preset, fresh) = build(voices)?;
+    preset.name.clone_from(&old.name);
+    let by_voice: std::collections::HashMap<&str, &LibraryEntry> = library.iter().filter(|e| e.preset_id == ID).map(|e| (e.voice_id.as_str(), e)).collect();
+    let entries: Vec<LibraryEntry> = fresh
+        .into_iter()
+        .map(|e| match by_voice.get(e.voice_id.as_str()) {
+            // keep what was measured; the quality report belonged to the old definition
+            Some(o) => LibraryEntry { gain: o.gain, level: o.level, wer: o.wer, backup: o.backup, created: o.created, duration: o.duration, quality: None, ..e },
+            None => e,
+        })
+        .collect();
+    let keep: std::collections::HashSet<&str> = entries.iter().map(|e| e.key.as_str()).collect();
+    let remove: Vec<String> = library.iter().filter(|e| e.preset_id == ID && !keep.contains(e.key.as_str())).map(|e| e.key.clone()).collect();
+    Some((preset, entries, remove))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -220,5 +333,72 @@ mod tests {
         let lena = entries.iter().find(|e| e.voice_id == "voice_1").unwrap();
         assert_eq!(lena.key, p.defs[0].key("de"));
         assert_eq!(lena.index, 0);
+    }
+
+    #[test]
+    fn role_labels_give_descriptions_genders_and_ages() {
+        // later 1.x voices keep the spoken words in the transcript
+        let voices = vec![
+            v("voice_1", "TTS-en 01 Marcus (Trailer-Erzähler)", "In a world on the edge of darkness, one single choice will decide everything."),
+            v("voice_2", "TTS-de 01 Konrad (Trailer-Erzähler)", "In einer Welt am Rande der Dunkelheit entscheidet eine einzige Wahl alles."),
+            v("voice_3", "TTS-en 02 Scarlett (Noir-Erzählerin)", "The rain hadn't stopped for three days."),
+            v("voice_4", "TTS-en 04 Nova (Raumschiff-KI)", "All systems are online."),
+            v("voice_5", "TTS-en 15 Cole (Space Marine)", "Hold the line."),
+        ];
+        let (p, entries) = build(&voices).unwrap();
+        let d = |i: usize| (&p.defs[i].gender[..], p.defs[i].age, &p.defs[i].description[..]);
+        assert_eq!(d(0), ("m", 50, "Voice of a movie-trailer narrator: expressive storyteller, clear and engaging, measured pace."));
+        assert_eq!(d(1).0, "f");
+        assert!(d(1).2.starts_with("Voice of a film-noir narrator"));
+        assert_eq!(d(2), ("n", 35, "Voice of a spaceship AI: calm, precise and slightly synthetic."));
+        assert_eq!(d(3).0, "m");
+        assert!(d(3).2.starts_with("Voice of a space marine"));
+        assert_eq!(entries.len(), 5);
+        assert_eq!(p.defs[0].name, "Marcus (Trailer-Erzähler)");
+    }
+
+    #[test]
+    fn migrates_an_old_adoption_without_touching_vcp() {
+        let voices = vec![
+            v("voice_1", "TTS-en 01 Marcus (Trailer-Erzähler)", "In a world on the edge of darkness, one single choice will decide everything."),
+            v("voice_2", "TTS-en 02 Scarlett (Noir-Erzählerin)", "The rain hadn't stopped for three days."),
+        ];
+        // what the old rules made: spoken words as description, gender n
+        let old_defs: Vec<VoiceDef> = voices.iter().map(|x| VoiceDef { name: x.name.clone(), gender: "n".into(), age: 35, description: x.transcript.clone(), fx: None }).collect();
+        let old = Preset { id: ID.into(), name: "Classic 2".into(), description: String::new(), icon: "ClockRotate".into(), builtin: false, target: 2, defs: old_defs.clone() };
+        let lib: Vec<LibraryEntry> = old_defs
+            .iter()
+            .zip(&voices)
+            .map(|(d, x)| LibraryEntry { key: d.key("en"), def_hash: d.hash(), lang: "en".into(), preset_id: ID.into(), voice_id: x.id.clone(), gain: 1.3, level: Some(-22.0), ..Default::default() })
+            .collect();
+        assert!(outdated(&old));
+        let (p, entries, remove) = migrate(&old, &voices, &lib).unwrap();
+        assert!(!outdated(&p), "rebuilt");
+        assert_eq!(remove.len(), 2, "old keys go");
+        assert_eq!(entries.len(), 2);
+        assert!(entries.iter().all(|e| e.gain == 1.3 && e.level == Some(-22.0) && e.quality.is_none()), "measurements stay");
+        assert_eq!(entries[0].voice_id, "voice_1");
+        assert!(migrate(&p, &voices, &entries).is_none(), "only once");
+        assert!(!is_description("Long ago, legends were written in fire and stone."));
+        assert!(is_description("A warm, low voice with a calm tone."));
+    }
+}
+
+#[cfg(test)]
+mod real {
+    /// `TTV_VOICES=.work/diag/voices.json cargo test -p ttv-tts --lib classic_real -- --ignored --nocapture`
+    #[test]
+    #[ignore]
+    fn classic_real() {
+        #[derive(serde::Deserialize)]
+        struct L {
+            voices: Vec<ttv_vcp::Voice>,
+        }
+        let l: L = serde_json::from_slice(&std::fs::read(std::env::var("TTV_VOICES").unwrap()).unwrap()).unwrap();
+        let (p, entries) = super::build(&l.voices).unwrap();
+        for d in &p.defs {
+            println!("{} | {} | {} | {}", d.name, d.gender, d.age, d.description);
+        }
+        println!("{} defs, {} entries", p.defs.len(), entries.len());
     }
 }

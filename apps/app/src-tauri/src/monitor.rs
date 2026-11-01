@@ -67,8 +67,9 @@ async fn proxy_session(state: &Arc<AppState>, address: &str, fingerprint: &str, 
                         if std::mem::take(&mut fresh) {
                             let st = state.clone();
                             tokio::spawn(async move {
-                                if let Err(e) = st.library.refresh(&st).await {
-                                    log::warn!("library: {e}");
+                                match st.library.refresh(&st).await {
+                                    Ok(()) => crate::preset_cmds::migrate_classic(&st).await,
+                                    Err(e) => log::warn!("library: {e}"),
                                 }
                             });
                         }
@@ -146,7 +147,7 @@ async fn direct_poll(state: &Arc<AppState>) {
     };
     let error = v.error.clone();
     state.set_host_status(HostStatus { kind: "direct".into(), connected, error, proxy: None, vcp: Some(v) });
-    if !state.library.loaded() {
-        let _ = state.library.refresh(state).await;
+    if !state.library.loaded() && state.library.refresh(state).await.is_ok() {
+        crate::preset_cmds::migrate_classic(state).await;
     }
 }

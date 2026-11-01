@@ -190,3 +190,37 @@ pub async fn adopt_classic(state: St<'_>) -> Result<ClassicResult, String> {
     log::info!("classic: {roles} roles, {adopted} voices adopted");
     Ok(ClassicResult { roles, adopted })
 }
+
+/// Rebuilds a Classic preset adopted by 2.0.0-alpha.8 or older (spoken words
+/// as descriptions, no genders) once the library is loaded. Moves the library
+/// entries to the new definitions; nothing changes in VCP.
+pub async fn migrate_classic(state: &Arc<AppState>) {
+    static DONE: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+    let Some(old) = state.presets.get(crate::classic::ID).filter(crate::classic::outdated) else { return };
+    if DONE.swap(true, std::sync::atomic::Ordering::SeqCst) {
+        return;
+    }
+    let Some(vcp) = state.vcp() else { return DONE.store(false, std::sync::atomic::Ordering::SeqCst) };
+    let voices = match vcp.voices().await {
+        Ok(v) => v,
+        Err(e) => {
+            log::warn!("classic: can't list VCP's voices: {e}");
+            return DONE.store(false, std::sync::atomic::Ordering::SeqCst);
+        }
+    };
+    let entries: Vec<ttv_link::LibraryEntry> = state.library.with(|map, _| map.values().filter(|e| e.preset_id == crate::classic::ID).cloned().collect());
+    let Some((preset, moved, remove)) = crate::classic::migrate(&old, &voices, &entries) else { return };
+    // an older proxy can't re-key: then nothing changes and it's tried again next time
+    match state.library.rekey(state, moved, remove).await {
+        Ok(n) => {
+            if let Err(e) = state.presets.put(preset) {
+                log::warn!("classic: {e}");
+            }
+            log::info!("classic: rebuilt the definitions from the role names, {n} voices moved");
+        }
+        Err(e) => {
+            log::info!("classic: not rebuilt yet ({e})");
+            DONE.store(false, std::sync::atomic::Ordering::SeqCst);
+        }
+    }
+}
