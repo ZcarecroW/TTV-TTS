@@ -1,0 +1,37 @@
+[package]
+name = "ttv-plugins"
+description = "Hosts VST3 and CLAP effect plugins for TTV-TTS (offline processing of speech, editor windows)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+clack-host = "0.2.0"
+clack-extensions = { version = "0.2.0", features = ["clack-host", "audio-ports", "gui", "log", "params", "state", "timer"] }
+vst3-host = { version = "0.10.0", default-features = false }
+log = { workspace = true }
+serde = { workspace = true }
+tokio = { workspace = true, default-features = false, features = ["sync"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_Graphics_Gdi", "Win32_System_LibraryLoader", "Win32_UI_WindowsAndMessaging"] }
+
+[dev-dependencies]
+tokio = { workspace = true }
+clack-plugin = "0.2.0"
+clack-extensions = { version = "0.2.0", features = ["clack-plugin", "audio-ports", "gui", "state"] }
+vst3 = "0.3.0"
+
+[target.'cfg(windows)'.dev-dependencies]
+windows = { version = "0.62.2", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging"] }
+
+[[example]]
+name = "test_clap"
+crate-type = ["cdylib"]
+
+[[example]]
+name = "test_vst3"
+crate-type = ["cdylib"]
