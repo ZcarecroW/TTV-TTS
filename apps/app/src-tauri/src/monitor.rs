@@ -149,7 +149,7 @@ async fn direct_poll(state: &Arc<AppState>) {
     if v.model_loaded
         && let Some(name) = v.model_name.as_deref()
     {
-        ttv_vcp::perf::set_model(name);
+        ttv_vcp::perf::set_loaded(v.model_kind.as_deref(), name);
     }
     let sp = ttv_vcp::perf::speed();
     let round = |x: Option<f32>| x.map(|x| (x * 20.0).round() / 20.0);

@@ -79,6 +79,20 @@ pub fn set_model(name: &str) {
     }
 }
 
+fn is_design(kind: Option<&str>, name: &str) -> bool {
+    kind.is_some_and(|k| k.contains("design")) || name.to_ascii_lowercase().starts_with("design")
+}
+
+/// What VCP has loaded (its model status). Only a speaking model decides
+/// whose speed is measured: during jobs VCP loads its design model for each
+/// design and the speaking model again afterwards, and that mustn't start
+/// the measurement over every time.
+pub fn set_loaded(kind: Option<&str>, name: &str) {
+    if !is_design(kind, name) {
+        set_model(name);
+    }
+}
+
 /// After a restart the old measurements no longer apply.
 pub fn clear_recent() {
     lock().recent.clear();
@@ -92,7 +106,8 @@ pub fn usual() -> HashMap<String, f32> {
 pub fn set_usual(map: HashMap<String, f32>) {
     let mut s = lock();
     for (k, v) in map {
-        if v.is_finite() && v > 0.0 {
+        // (older versions also kept the design model's)
+        if v.is_finite() && v > 0.0 && !is_design(None, &k) {
             let e = s.best.entry(k).or_insert(v);
             *e = e.min(v);
         }
@@ -211,5 +226,18 @@ mod tests {
         record(5.0, 0.5);
         record(f32::NAN, 3.0);
         assert_eq!(speed().recent, 0);
+        // a design between the sentences (as in jobs) doesn't start over
+        for _ in 0..5 {
+            record(2.0, 4.0);
+        }
+        set_loaded(Some("voice_design"), "design Higher Quality (1.7B)");
+        set_loaded(None, "design Higher Quality (1.7B)");
+        assert_eq!(speed().recent, 5);
+        assert_eq!(speed().usual, Some(0.5));
+        set_loaded(Some("base"), "test-model");
+        assert_eq!(speed().recent, 5);
+        // design speeds kept by older versions are dropped
+        set_usual(HashMap::from([("design Higher Quality (1.7B)".to_string(), 3.75)]));
+        assert!(!usual().keys().any(|k| k.starts_with("design")));
     }
 }

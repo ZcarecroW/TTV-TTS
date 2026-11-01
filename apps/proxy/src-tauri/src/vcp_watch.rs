@@ -167,7 +167,7 @@ async fn tick(state: &Arc<AppState>, sys: &mut Option<System>, last_detail: &mut
     if s.model_loaded
         && let Some(name) = s.model_name.as_deref()
     {
-        ttv_vcp::perf::set_model(name);
+        ttv_vcp::perf::set_loaded(s.model_kind.as_deref(), name);
     }
     // rounded, so the status isn't sent again for every clip
     let sp = ttv_vcp::perf::speed();
