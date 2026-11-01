@@ -5335,7 +5335,7 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 
 [[package]]
 name = "ttv-link"
-version = "2.0.0-alpha.2"
+version = "2.0.0-alpha.3"
 dependencies = [
  "hex",
  "rustls",
@@ -5346,7 +5346,7 @@ dependencies = [
 
 [[package]]
 name = "ttv-tts-proxy"
-version = "2.0.0-alpha.2"
+version = "2.0.0-alpha.3"
 dependencies = [
  "axum",
  "base64 0.23.1",
@@ -5391,7 +5391,7 @@ dependencies = [
 
 [[package]]
 name = "ttv-vcp"
-version = "2.0.0-alpha.2"
+version = "2.0.0-alpha.3"
 dependencies = [
  "bytes",
  "futures-util",
