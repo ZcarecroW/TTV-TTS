@@ -14,8 +14,9 @@ import { fileURLToPath } from "node:url";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const repo = "ZcarecroW/TTV-TTS";
 const keyDir = process.env.TTV_UPDATER_KEY_DIR ?? join(homedir(), "Downloads", "TTV-TTS-updater-key");
-const sh = (cmd, args, opts = {}) => execFileSync(cmd, args, { cwd: root, stdio: "inherit", shell: process.platform === "win32", ...opts });
-const out = (cmd, args) => execFileSync(cmd, args, { cwd: root, encoding: "utf8", shell: process.platform === "win32" }).trim();
+// Only npx needs a shell on Windows (it is a .cmd file); gh and git run directly.
+const sh = (cmd, args, opts = {}) => execFileSync(cmd, args, { cwd: root, stdio: "inherit", shell: cmd === "npx" && process.platform === "win32", ...opts });
+const out = (cmd, args) => execFileSync(cmd, args, { cwd: root, encoding: "utf8" }).trim();
 
 // 1. version
 const cargoPath = join(root, "Cargo.toml");
