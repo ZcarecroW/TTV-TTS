@@ -241,13 +241,12 @@ impl VoiceLibrary {
         }
     }
 
-    pub async fn verify(&self, state: &AppState) -> Result<u32, String> {
+    pub async fn verify(&self, state: &AppState) -> Result<ttv_link::Verified, String> {
         match Self::backend(state)? {
             Backend::Local => self.local.verify().await,
-            Backend::Remote(c) => {
-                let v: serde_json::Value = c.post("/ttv/v1/library/verify", &(), T_LONG).await.map_err(|e| e.to_string())?;
-                Ok(v["removed"].as_u64().unwrap_or(0) as u32)
-            }
+            // Older proxies answer only {"removed": n}; the rest stays 0.
+            // Measuring older voices downloads each reference sample once.
+            Backend::Remote(c) => c.post("/ttv/v1/library/verify", &(), Duration::from_secs(1800)).await.map_err(|e| e.to_string()),
         }
     }
 

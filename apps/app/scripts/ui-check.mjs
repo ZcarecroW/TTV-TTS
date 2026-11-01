@@ -91,6 +91,9 @@ check(await adopt.isVisible(), "voices from TTV-TTS 1.x are offered for adoption
 await adopt.click();
 await page.waitForTimeout(400);
 check((await page.locator("main").innerText()).includes("Classic 30"), "adopted voices become the preset Classic 30");
+await page.locator("main").getByRole("button", { name: /^(check voices|stimmen prüfen)$/i }).click();
+await page.waitForTimeout(1000);
+check(/measured for loudness|Lautstärke gemessen/.test(await page.locator("body").innerText()), "checking the voices reports what it repaired");
 
 await page.locator("article", { hasText: "Cinematic" }).getByRole("button", { name: /^(voices|stimmen)$/i }).click();
 await page.waitForTimeout(400);
@@ -102,10 +105,11 @@ const filtered = await dlg.locator("ul li").count();
 check(filtered > 5 && filtered < 120, "filter by sound narrows the list", String(filtered));
 await dlg.getByPlaceholder(/filter/i).fill("");
 await page.waitForTimeout(150);
-await dlg.locator("ul li").first().getByRole("button").click();
+await dlg.locator("ul li").first().getByRole("button", { name: /^(listen|anhören)$/i }).click();
 await page.waitForTimeout(300);
 check((await dlg.locator("ul li").first().locator(".spin").count()) === 1, "listening to a computed voice shows progress");
 await page.waitForTimeout(1500);
+check((await dlg.locator("ul li").first().getByRole("button", { name: /^(design again|neu entwerfen)$/i }).count()) === 1, "a computed voice can be designed again");
 await dlg.getByRole("button", { name: /^(compute|berechnen)$/i }).click();
 await page.waitForTimeout(500);
 const cd = page.locator("[role=dialog]");

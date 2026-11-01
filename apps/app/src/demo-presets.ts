@@ -81,6 +81,9 @@ const engine: EngineStatus = {
       state: "done",
       phase: "",
       current: null,
+      batch: 0,
+      step: 0,
+      steps: 0,
       created: Math.floor(Date.now() / 1000) - 7200,
       finished: Math.floor(Date.now() / 1000) - 5400,
       secs_per_voice: 10.8,
@@ -109,6 +112,7 @@ function tick(emit: Emit) {
     library.add(`${hash(next[0])}:${next[1]}`);
     job.done++;
     job.phase = ["design", "check", "save", "prime"][job.done % 4]!;
+    Object.assign(job, { batch: 16, step: job.done % 16, steps: 16 });
     job.current = `${next[0].name} · ${next[1]}`;
     job.eta_secs = Math.round((job.total - job.done) * 10.8);
     engine.library_size = library.size;
@@ -181,6 +185,9 @@ export function presetCommand(cmd: string, args: Record<string, unknown>, emit: 
         state: "queued",
         phase: "",
         current: null,
+        batch: 0,
+        step: 0,
+        steps: 0,
         created: Math.floor(Date.now() / 1000),
         finished: null,
         secs_per_voice: 10.8,
@@ -202,6 +209,15 @@ export function presetCommand(cmd: string, args: Record<string, unknown>, emit: 
       }
       return { value: undefined };
     }
+    case "redo_voice": {
+      const p = find(args.presetId);
+      const def = p.defs[Number(args.index)];
+      if (!def) throw "This voice doesn't exist (any more).";
+      library.delete(`${hash(def)}:${args.lang}`);
+      return presetCommand("compute", { request: { preset_id: p.id, count: Number(args.index) + 1, languages: [args.lang], options: { speech_check: true, takes: 2, backup: true } } }, emit);
+    }
+    case "verify_library":
+      return { value: new Promise((res) => setTimeout(() => res({ checked: library.size, removed: 0, measured: 90 }), 600)) };
     case "listen":
       return { value: new Promise((res) => setTimeout(() => res({ pieces: 1, first_audio_ms: 1120, total_ms: 3900, audio_secs: 3.1, rtf: 0.52 }), 1500)) };
     case "detect_classic":

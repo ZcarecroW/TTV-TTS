@@ -119,6 +119,24 @@ pub async fn job_control(state: St<'_>, id: String, action: String) -> Result<()
     state.library.control(&state, &id, &action).await
 }
 
+/// Designs one computed voice again: deletes it (in VCP too) and queues a
+/// job for just this voice and language. For voices that came out different
+/// from their description.
+#[tauri::command]
+pub async fn redo_voice(state: St<'_>, preset_id: String, index: u32, lang: String) -> Result<JobView, String> {
+    if ttv_engine::langs::get(&lang).is_none() {
+        return Err(format!("Voices can't be designed for the language \"{lang}\" yet."));
+    }
+    let (id, name, def) = state
+        .presets
+        .with(&preset_id, |p| p.defs.get(index as usize).map(|d| (p.id.clone(), p.name.clone(), d.clone())))
+        .flatten()
+        .ok_or("This voice doesn't exist (any more).")?;
+    state.library.delete(&state, vec![def.key(&lang)]).await?;
+    let job = JobRequest { preset_id: id, preset_name: name, defs: vec![JobDef { index, def }], languages: vec![lang], options: JobOptions::default() };
+    state.library.submit(&state, job).await
+}
+
 #[tauri::command]
 pub async fn delete_voices(state: St<'_>, keys: Vec<String>) -> Result<u32, String> {
     state.library.delete(&state, keys).await
@@ -126,7 +144,7 @@ pub async fn delete_voices(state: St<'_>, keys: Vec<String>) -> Result<u32, Stri
 
 /// Removes library entries whose VCP voice was deleted in VCP.
 #[tauri::command]
-pub async fn verify_library(state: St<'_>) -> Result<u32, String> {
+pub async fn verify_library(state: St<'_>) -> Result<ttv_link::Verified, String> {
     state.library.verify(&state).await
 }
 

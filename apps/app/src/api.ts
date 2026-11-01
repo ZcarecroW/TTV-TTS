@@ -387,11 +387,22 @@ export interface JobView {
   state: JobState;
   phase: string;
   current: string | null;
+  /** Voices in the current batch; step/steps = progress inside its phase. */
+  batch: number;
+  step: number;
+  steps: number;
   created: number;
   finished: number | null;
   secs_per_voice: number | null;
   eta_secs: number | null;
   error: string | null;
+}
+
+/** Result of checking the computed voices against VCP. */
+export interface Verified {
+  checked: number;
+  removed: number;
+  measured: number;
 }
 
 export interface EngineStatus {
@@ -435,7 +446,8 @@ export const presets = {
   compute: (request: { preset_id: string; count: number; languages: string[]; options: JobOptions }) => invoke<JobView>("compute", { request }),
   job: (id: string, action: "pause" | "resume" | "cancel" | "remove") => invoke<void>("job_control", { id, action }),
   deleteVoices: (keys: string[]) => invoke<number>("delete_voices", { keys }),
-  verify: () => invoke<number>("verify_library"),
+  redo: (presetId: string, index: number, lang: string) => invoke<JobView>("redo_voice", { presetId, index, lang }),
+  verify: () => invoke<Verified>("verify_library"),
   listen: (presetId: string, index: number, lang: string, text: string) => invoke<SayReport>("listen", { presetId, index, lang, text }),
   detectClassic: () => invoke<ClassicFound>("detect_classic"),
   adoptClassic: () => invoke<{ roles: number; adopted: number }>("adopt_classic"),

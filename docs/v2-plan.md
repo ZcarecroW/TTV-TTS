@@ -34,10 +34,11 @@ Decisions come from the interview of 2026-11-01 (see the project notes); this fi
 - ✅ Own presets: manual editor, AI prompt builder (parts of 60), paste + validation (line format), export as text
 - ✅ Viewer list per profile: assigned voice, reassign by preset voice name, mute, forget; pinned voices shown; assignments stable when a preset grows
 
-## M5 – Computing voices 🔨 (needs a test run on the real VCP PC)
+## M5 – Computing voices 🔨 (first real run 2026-11-01: Cinematic 60 × de+en on the VCP PC, ~22 s per voice)
 - ✅ Job engine (`crates/engine`, runs on the proxy, or in the app for single-PC setups): design → speech check → save → prime, in phases, resumable; library as append-only log with incremental change events
 - ✅ ETA (benchmark, then measured), live progress, pause/resume/cancel; chat first, jobs in the gaps; every batch ends with priming, so the speaking checkpoint is loaded again for chat; a batch where VCP designs nothing is retried later instead of failing voices
 - ✅ Best of 1–3 takes; long-job warnings
+- ✅ Hardened after the first real run: a take VCP could not transcribe is never saved unchecked (broken speech recognition retries the batch); every new voice is primed until VCP reports its clone prompt (the first voice after a checkpoint swap lost it); a voice VCP can't speak with is deleted again; failed batches back off up to 10 min; progress inside a batch (phase step/steps); "Check voices" removes voices deleted in VCP and re-primes voices without clone prompt; engine tests against a fake VCP (`crates/engine/tests/fake_vcp.rs`)
 - ✅ Lossless sample backup (FLAC) on the computing PC; export/import of computed packs ⏳
 - ✅ Update the proxy from the app (check + install now)
 

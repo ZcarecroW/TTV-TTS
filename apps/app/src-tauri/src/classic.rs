@@ -169,6 +169,7 @@ pub fn build(voices: &[ttv_vcp::Voice]) -> Option<(Preset, Vec<LibraryEntry>)> {
                 wer: None,
                 gain: 1.0,
                 backup: false,
+                level: None,
             }
         })
         .collect();

@@ -16,7 +16,17 @@ const jobs = computed(() => {
   return [...open, ...closed.slice(0, 3)];
 });
 
-const pct = (j: JobView) => (j.total ? Math.round(((j.done + j.failed) / j.total) * 100) : 100);
+// Voices are designed, checked and saved per batch, so "done" grows in
+// jumps; the bar also counts the progress inside the running batch.
+function partial(j: JobView) {
+  if (!j.batch || !j.steps || !["running", "waiting"].includes(j.state)) return 0;
+  const p = Math.min(1, j.step / j.steps);
+  const design = j.options.speech_check ? 0.75 : 0.85;
+  if (j.phase === "design") return j.batch * design * p;
+  if (j.phase === "check") return j.batch * (0.75 + 0.1 * p);
+  return Math.max(0, j.batch - j.step) * 0.85; // saved voices already count as done
+}
+const pct = (j: JobView) => (j.total ? Math.min(100, Math.round(((j.done + j.failed + partial(j)) / j.total) * 100)) : 100);
 const badge: Record<string, string> = { running: "badge-accent", waiting: "badge-warn", paused: "badge-warn", queued: "", done: "badge-ok", cancelled: "", failed: "badge-err" };
 
 async function act(j: JobView, action: "pause" | "resume" | "cancel" | "remove") {
@@ -44,7 +54,7 @@ async function act(j: JobView, action: "pause" | "resume" | "cancel" | "remove")
       <div class="bar mt-2.5"><i :style="{ width: `${pct(j)}%` }" /></div>
       <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted">
         <span>{{ t("jobs.progress", { done: j.done, total: j.total }) }}<template v-if="j.failed"> · {{ t("jobs.failed", { n: j.failed }) }}</template></span>
-        <span v-if="j.state === 'running' && j.current">{{ t(`jobs.phase.${j.phase || "design"}`) }}: {{ j.current }}</span>
+        <span v-if="j.state === 'running' && j.current" :data-tip="t('jobs.batchTip', { n: j.batch })">{{ t(`jobs.phase.${j.phase || "design"}`) }}<template v-if="j.steps"> {{ Math.min(j.step + 1, j.steps) }}/{{ j.steps }}</template>: {{ j.current }}</span>
         <span v-if="j.state === 'waiting'">{{ t("jobs.waitingText") }}</span>
         <span v-if="j.eta_secs != null && !['done', 'cancelled', 'failed'].includes(j.state)" class="ml-auto">{{ t("jobs.eta", { time: duration(j.eta_secs) }) }}</span>
         <span v-else-if="j.secs_per_voice" class="ml-auto">{{ t("jobs.speed", { s: j.secs_per_voice.toFixed(1) }) }}</span>

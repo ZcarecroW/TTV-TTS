@@ -242,7 +242,7 @@ async fn library_adopt(State(state): S, Json(entries): Json<Vec<ttv_link::Librar
 
 async fn library_verify(State(state): S) -> Response {
     match state.engine.verify().await {
-        Ok(n) => Json(serde_json::json!({ "removed": n })).into_response(),
+        Ok(report) => Json(report).into_response(),
         Err(e) => api_error(StatusCode::BAD_GATEWAY, "vcp_unreachable", e),
     }
 }

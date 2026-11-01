@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { duration } from "@ttv-tts/ui/format";
-import { Bolt, ClockRotate, Gauge, iconByName, Plus, Sparkle, Spinner, Warning } from "@ttv-tts/ui/icons";
+import { Bolt, CircleCheck, ClockRotate, Gauge, iconByName, Plus, Sparkle, Spinner, Warning } from "@ttv-tts/ui/icons";
 import { api, presets, type ClassicFound, type PresetView } from "../api";
 import ComputeDialog from "../components/ComputeDialog.vue";
 import JobList from "../components/JobList.vue";
@@ -53,6 +53,15 @@ async function measure() {
   }
 }
 
+// Compares the library with VCP and repairs what it can.
+async function verify() {
+  const r = await run("verify", () => presets.verify());
+  if (!r) return;
+  toast("ok", r.removed || r.measured ? t("presets.verifiedFixed", { n: r.checked, removed: r.removed, measured: r.measured }) : t("presets.verified", { n: r.checked }));
+  await loadPresets();
+}
+
+const librarySize = computed(() => store.library?.size ?? store.engine?.library_size ?? 0);
 const builtin = computed(() => store.presets.filter((p) => p.builtin));
 const own = computed(() => store.presets.filter((p) => !p.builtin));
 const langs = (p: PresetView) => Object.entries(p.computed).sort((a, b) => b[1] - a[1]);
@@ -102,6 +111,10 @@ function openEditor(id?: string) {
         <Spinner v-if="store.busy === 'benchmark'" :size="14" class="spin" /><Bolt v-else :size="14" />{{ store.busy === "benchmark" ? t("compute.measuring") : t("compute.measure") }}
       </button>
       <span v-if="store.library" class="text-sm text-muted">· {{ t("presets.librarySize", store.library.size) }}</span>
+      <button v-if="connected && librarySize" class="btn btn-ghost btn-sm" :disabled="store.busy === 'verify'" @click="verify">
+        <Spinner v-if="store.busy === 'verify'" :size="14" class="spin" /><CircleCheck v-else :size="14" />{{ store.busy === "verify" ? t("presets.verifying") : t("presets.verify") }}
+      </button>
+      <UiTip v-if="connected && librarySize" :text="t('tips.verify')" />
       <button class="btn btn-primary ml-auto" @click="openEditor()"><Plus :size="16" />{{ t("presets.new") }}</button>
     </div>
 

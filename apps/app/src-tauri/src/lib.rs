@@ -118,6 +118,7 @@ pub fn run() {
             preset_cmds::delete_voices,
             preset_cmds::verify_library,
             preset_cmds::listen,
+            preset_cmds::redo_voice,
             preset_cmds::detect_classic,
             preset_cmds::adopt_classic,
         ])

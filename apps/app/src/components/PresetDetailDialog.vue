@@ -3,9 +3,9 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import UiModal from "@ttv-tts/ui/components/UiModal.vue";
 import { copyText } from "@ttv-tts/ui/clipboard";
-import { Copy, Layers, Pen, Play, Spinner, Sparkle, Stop, Trash } from "@ttv-tts/ui/icons";
+import { Copy, Layers, Pen, Play, Refresh, Spinner, Sparkle, Stop, Trash } from "@ttv-tts/ui/icons";
 import { api, DESIGN_LANGS, presets, type PresetDetail, type VoiceView } from "../api";
-import { host, loadPresets, run, store, toast } from "../store";
+import { host, loadEngine, loadPresets, run, store, toast } from "../store";
 
 const props = defineProps<{ presetId: string }>();
 const emit = defineEmits<{ close: []; compute: [id: string]; edit: [id: string] }>();
@@ -50,6 +50,16 @@ async function listen(v: VoiceView) {
     await run("listen", () => presets.listen(d.value!.id, v.index, lang.value, text.value));
   } finally {
     if (playing.value === v.index) playing.value = null;
+  }
+}
+
+// A voice that came out different from its description: design it anew.
+async function redo(v: VoiceView) {
+  if (!d.value || !confirm(t("presets.redoConfirm", { name: v.name, lang: t(`lang.${lang.value}`) }))) return;
+  const job = await run(`redo-${v.index}`, () => presets.redo(d.value!.id, v.index, lang.value));
+  if (job) {
+    toast("ok", t("presets.redoQueued", { name: v.name }));
+    await Promise.all([loadEngine(), load()]);
   }
 }
 
@@ -130,6 +140,16 @@ const genderLabel = (g: string) => t(`presets.gender.${g}`);
             <Spinner v-if="playing === v.index && store.busy === 'listen'" :size="15" class="spin" />
             <Stop v-else-if="playing === v.index" :size="15" />
             <Play v-else :size="15" />
+          </button>
+          <button
+            v-if="v.langs.includes(lang)"
+            class="btn btn-ghost btn-sm btn-icon shrink-0"
+            :disabled="!canListen || store.busy === `redo-${v.index}`"
+            :aria-label="t('presets.redo')"
+            :data-tip="t('presets.redoTip')"
+            @click="redo(v)"
+          >
+            <Refresh :size="15" />
           </button>
         </li>
       </ul>

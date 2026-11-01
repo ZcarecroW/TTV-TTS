@@ -107,6 +107,12 @@ pub struct JobView {
     pub phase: String,
     /// The voice being worked on ("Vic Malone · de").
     pub current: Option<String>,
+    /// Voices in the current batch (they are designed, checked and saved
+    /// together, so `done` grows in steps of a batch).
+    pub batch: u32,
+    /// Progress inside the current phase of the batch (take 12 of 32).
+    pub step: u32,
+    pub steps: u32,
     /// Unix seconds.
     pub created: i64,
     pub finished: Option<i64>,
@@ -137,6 +143,9 @@ pub struct LibraryEntry {
     pub wer: Option<f32>,
     /// Loudness correction (linear gain) so all voices play equally loud.
     pub gain: f32,
+    /// Speech loudness of the reference sample in dBFS (None = not measured
+    /// yet; "Check voices" measures it once and corrects the gain).
+    pub level: Option<f32>,
     /// A lossless copy of the sample exists on the engine's PC.
     pub backup: bool,
 }
@@ -187,4 +196,16 @@ mod tests {
         assert_eq!(a.key("de"), format!("{}:de", a.hash()));
         assert_eq!(a.hash().len(), 13);
     }
+}
+
+/// Result of checking the library against VCP.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct Verified {
+    /// Library entries looked at.
+    pub checked: u32,
+    /// Entries removed because their VCP voice is gone.
+    pub removed: u32,
+    /// Voices whose loudness was measured (once) and gain corrected.
+    pub measured: u32,
 }

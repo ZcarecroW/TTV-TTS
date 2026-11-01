@@ -30,12 +30,15 @@ pub fn loudness_db(samples: &[f32]) -> Option<f32> {
 
 /// Linear gain that brings speech to the target loudness (−20 dBFS RMS),
 /// limited so quiet takes aren't pushed into clipping.
+#[cfg(test)]
 pub fn gain_for(samples: &[f32]) -> f32 {
+    loudness_db(samples).map_or(1.0, gain_from_db)
+}
+
+/// Gain for speech measured at `db` dBFS.
+pub fn gain_from_db(db: f32) -> f32 {
     const TARGET: f32 = -20.0;
-    match loudness_db(samples) {
-        Some(db) => 10f32.powf((TARGET - db) / 20.0).clamp(0.4, 2.5),
-        None => 1.0,
-    }
+    10f32.powf((TARGET - db) / 20.0).clamp(0.4, 2.5)
 }
 
 /// Lossless FLAC of mono 16-bit samples.
