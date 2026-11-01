@@ -16,3 +16,6 @@ target/
 apps/*/dist/
 apps/*/src-tauri/gen/
 .vitest/
+
+# local work files (diagnostics, downloads)
+.work/

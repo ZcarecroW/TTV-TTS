@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import UiModal from "@ttv-tts/ui/components/UiModal.vue";
 import { copyText } from "@ttv-tts/ui/clipboard";
@@ -19,16 +19,41 @@ const lang = ref("en");
 const text = ref("");
 const playing = ref<number | null>(null);
 
-async function load() {
-  const r = await run("preset", () => presets.get(props.presetId));
-  if (!r) return emit("close");
+/** "index:lang" of voices being designed again. */
+const redoing = reactive(new Set<string>());
+
+async function load(quiet = false) {
+  const r = quiet ? await presets.get(props.presetId).catch(() => null) : await run("preset", () => presets.get(props.presetId));
+  if (!r) return quiet ? undefined : emit("close");
   d.value = r;
-  const langs = Object.entries(r.computed).sort((a, b) => b[1] - a[1]);
-  if (langs.length && !r.computed[lang.value]) lang.value = langs[0]![0];
+  if (!quiet) {
+    const langs = Object.entries(r.computed).sort((a, b) => b[1] - a[1]);
+    if (langs.length && !r.computed[lang.value]) lang.value = langs[0]![0];
+  }
+  for (const k of [...redoing]) {
+    const [i, l] = k.split(":");
+    if (r.voices[Number(i)]?.langs.includes(l!)) redoing.delete(k);
+  }
 }
-onMounted(load);
-// Counts change while a job computes this preset.
-watch(() => store.presets.find((p) => p.id === props.presetId)?.ready, load);
+onMounted(() => load());
+// Every library change (a job saved a voice, a voice was designed again or
+// deleted) refreshes the list – debounced, a batch saves 16 voices in a row.
+let reloadTimer = 0;
+watch(
+  () => store.library?.rev,
+  () => {
+    clearTimeout(reloadTimer);
+    reloadTimer = window.setTimeout(() => load(true), 250);
+  },
+);
+onBeforeUnmount(() => clearTimeout(reloadTimer));
+// A redo that ended without a new voice (failed, cancelled) isn't "being designed" any more.
+watch(
+  () => store.engine?.jobs.some((j) => j.preset_id === props.presetId && ["queued", "running", "waiting", "paused"].includes(j.state)),
+  (open) => {
+    if (!open) redoing.clear();
+  },
+);
 
 const shown = computed(() => {
   const f = filter.value.trim().toLowerCase();
@@ -56,10 +81,12 @@ async function listen(v: VoiceView) {
 // A voice that came out different from its description: design it anew.
 async function redo(v: VoiceView) {
   if (!d.value || !confirm(t("presets.redoConfirm", { name: v.name, lang: t(`lang.${lang.value}`) }))) return;
-  const job = await run(`redo-${v.index}`, () => presets.redo(d.value!.id, v.index, lang.value));
+  const l = lang.value;
+  const job = await run(`redo-${v.index}`, () => presets.redo(d.value!.id, v.index, l));
   if (job) {
+    redoing.add(`${v.index}:${l}`);
     toast("ok", t("presets.redoQueued", { name: v.name }));
-    await Promise.all([loadEngine(), load()]);
+    await Promise.all([loadEngine(), load(true)]);
   }
 }
 
@@ -125,6 +152,7 @@ const genderLabel = (g: string) => t(`presets.gender.${g}`);
               <span class="text-xs text-muted">{{ genderLabel(v.gender) }} · {{ v.age }}</span>
               <span v-if="v.fx" class="badge">{{ v.fx }}</span>
               <span class="ml-auto flex flex-wrap gap-1">
+                <span v-if="redoing.has(`${v.index}:${lang}`)" class="badge badge-accent"><Spinner :size="12" class="spin" />{{ t("presets.redoing") }}</span>
                 <span v-for="l in v.langs" :key="l" class="badge" :class="l === lang && 'badge-ok'">{{ l }}</span>
               </span>
             </div>
@@ -142,7 +170,7 @@ const genderLabel = (g: string) => t(`presets.gender.${g}`);
             <Play v-else :size="15" />
           </button>
           <button
-            v-if="v.langs.includes(lang)"
+            v-if="v.langs.includes(lang) && !redoing.has(`${v.index}:${lang}`)"
             class="btn btn-ghost btn-sm btn-icon shrink-0"
             :disabled="!canListen || store.busy === `redo-${v.index}`"
             :aria-label="t('presets.redo')"

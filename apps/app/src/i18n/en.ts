@@ -348,6 +348,7 @@ export default {
     redoTip: "Sounds different from the description? Design this voice again in the selected language (about half a minute).",
     redoConfirm: "Design {name} ({lang}) again? The current voice is deleted; a new one is designed, checked and saved.",
     redoQueued: "{name} is being designed again.",
+    redoing: "being designed …",
     export: "Copy as text",
     exported: "Copied – paste it anywhere to share or back up the preset.",
     duplicate: "Duplicate to edit",

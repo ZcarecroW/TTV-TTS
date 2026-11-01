@@ -350,6 +350,7 @@ const de: typeof en = {
     redoTip: "Klingt anders als beschrieben? Entwirf diese Stimme in der gewählten Sprache neu (etwa eine halbe Minute).",
     redoConfirm: "{name} ({lang}) neu entwerfen? Die jetzige Stimme wird gelöscht; eine neue wird entworfen, geprüft und gespeichert.",
     redoQueued: "{name} wird neu entworfen.",
+    redoing: "wird entworfen …",
     export: "Als Text kopieren",
     exported: "Kopiert – füg es irgendwo ein, um das Preset zu teilen oder zu sichern.",
     duplicate: "Zum Bearbeiten kopieren",
