@@ -1,3 +1,4 @@
+#![allow(clippy::all)]
 //! The gain example of the vst3 crate (MIT OR Apache-2.0, adapted to edition
 //! 2024), built by `cargo test` as a VST3 to test the host.
 #![allow(unsafe_op_in_unsafe_fn)]

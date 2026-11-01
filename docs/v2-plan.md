@@ -53,7 +53,7 @@ Decisions come from the interview of 2026-11-01 (see the project notes); this fi
 - ✅ Emotions from chat cues (VCP emotional clone; emotes, emojis, words, shouting; capped per profile)
 - ✅ Translate for me: MyMemory (free, ~0.5 s), DeepL (own key) or VCP (offline; ~20 s because VCP holds one model); read the translation, both, or show it
 - ✅ Built-in voice effects (radio, telephone, megaphone, robot, cave, hall, walkie-talkie, underwater, whisper): per preset voice, per viewer in the viewer list, switch per profile; loudness matched on 60 real voices, < 0.1 % of real time
-- ⏳ VST3 + CLAP hosting
+- ✅ VST3 + CLAP hosting: effect chain after the voice effects (Settings → Audio plugins), own plugin thread at the device rate, editors embedded in a TTV-TTS window on Windows, settings kept per plugin; no VST2, no instruments
 - ✅ Global hotkeys (skip, pause, clear, play again, approve, drop), approval queue, play again from memory, system-voice fallback (Windows WinRT, macOS say, Linux espeak-ng)
 - ✅ Event announcements (optional, off by default): subs, resubs, gifted subs (community gifts once), raids, cheers over anonymous IRC; announcer voice, own sentences, examples
 - ✅ Remote control API (Stream Deck, Streamer.bot): local HTTP, token, GET+POST, say

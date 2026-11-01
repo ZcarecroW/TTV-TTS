@@ -8,6 +8,7 @@ import { CircleInfo, Copy, Download, ExternalLink, Globe, Keyboard, Link, Sparkl
 import { api, HOTKEY_ACTIONS, isTauri, updates, type Measured } from "../api";
 import { apply, config, run, store, toast } from "../store";
 import { copyText } from "@ttv-tts/ui/clipboard";
+import PluginsCard from "../components/PluginsCard.vue";
 import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
 
 const { t, locale } = useI18n();
@@ -253,6 +254,8 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
         </UiField>
       </div>
     </section>
+
+    <PluginsCard />
 
     <section class="card p-5 md:col-span-2">
       <div class="card-head"><CircleInfo />{{ t("settings.aboutTitle") }}</div>

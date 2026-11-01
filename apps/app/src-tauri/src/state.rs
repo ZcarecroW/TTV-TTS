@@ -32,6 +32,9 @@ pub struct HostStatus {
     pub vcp: Option<VcpState>,
 }
 
+/// Plugin settings handed over by the plugin thread: (slot id, settings).
+pub type PluginStates = std::sync::mpsc::Receiver<(String, Vec<u8>)>;
+
 pub struct AppState {
     pub cfg: RwLock<Config>,
     cfg_path: PathBuf,
@@ -50,6 +53,12 @@ pub struct AppState {
     pub watch_system: AtomicBool,
     /// "Translate for me" (MyMemory, DeepL or VCP), with a small cache.
     pub translator: crate::translate::Translator,
+    /// Audio plugins on all speech (their own thread).
+    pub rack: Arc<ttv_plugins::Rack>,
+    /// Plugins that couldn't be loaded, and why.
+    pub plugin_errors: parking_lot::Mutex<std::collections::HashMap<String, String>>,
+    /// Plugin settings handed over by the plugin thread, to keep.
+    pub plugin_states: parking_lot::Mutex<Option<PluginStates>>,
     app: OnceLock<AppHandle>,
 }
 
@@ -59,7 +68,14 @@ impl AppState {
         let audio = Arc::new(Audio::start(cfg.audio.device.clone(), cfg.audio.volume));
         let vcp = crate::host::client(&cfg.host, |k| secrets.get(k));
         let web = reqwest::Client::builder().user_agent(concat!("TTV-TTS/", env!("CARGO_PKG_VERSION"))).build().unwrap_or_default();
+        let (state_tx, state_rx) = std::sync::mpsc::channel();
+        let rack = Arc::new(ttv_plugins::Rack::start(move |id, data| {
+            let _ = state_tx.send((id, data));
+        }));
         Arc::new(Self {
+            rack,
+            plugin_errors: parking_lot::Mutex::new(Default::default()),
+            plugin_states: parking_lot::Mutex::new(Some(state_rx)),
             translator: crate::translate::Translator::new(web),
             reader: ReaderData::load(&data_dir),
             presets: PresetStore::load(&data_dir),

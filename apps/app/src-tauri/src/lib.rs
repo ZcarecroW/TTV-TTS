@@ -17,6 +17,7 @@ pub mod fx;
 #[cfg(desktop)]
 mod hotkeys;
 mod os_voice;
+mod plugin_cmds;
 mod remote;
 mod translate;
 mod pack_cmds;
@@ -84,6 +85,26 @@ pub fn run() {
             tauri::async_runtime::spawn(updater::run(app.handle().clone(), state.clone()));
             let st = state.clone();
             tauri::async_runtime::spawn(async move { remote::apply(&st).await });
+            // audio plugins: load the chain once the output device runs, keep
+            // the settings the plugin thread hands over
+            let st = state.clone();
+            tauri::async_runtime::spawn(async move {
+                tokio::time::sleep(std::time::Duration::from_millis(800)).await;
+                if !st.cfg.read().plugins.is_empty() {
+                    plugin_cmds::apply(&st).await;
+                }
+            });
+            if let Some(rx) = state.plugin_states.lock().take() {
+                let st = state.clone();
+                std::thread::Builder::new()
+                    .name("ttv-plugin-states".into())
+                    .spawn(move || {
+                        while let Ok((id, data)) = rx.recv() {
+                            plugin_cmds::keep_state(&st, &id, &data);
+                        }
+                    })
+                    .ok();
+            }
             #[cfg(desktop)]
             for a in hotkeys::apply(app.handle(), &state) {
                 log::warn!("hotkey for {a} not available (taken by another program?)");
@@ -123,6 +144,17 @@ pub fn run() {
             commands::reader_replay,
             commands::set_hotkey,
             commands::set_remote,
+            plugin_cmds::plugins_list,
+            plugin_cmds::plugins_scan,
+            plugin_cmds::plugins_pick,
+            plugin_cmds::plugins_add,
+            plugin_cmds::plugins_remove,
+            plugin_cmds::plugins_toggle,
+            plugin_cmds::plugins_move,
+            plugin_cmds::plugins_edit,
+            plugin_cmds::debug_plugin_file,
+            plugin_cmds::debug_plugins_probe,
+            plugin_cmds::debug_plugin_editor,
             commands::generation_info,
             commands::measure_generation,
             commands::remote_status,
@@ -183,7 +215,10 @@ pub fn run() {
         .expect("error while building TTV-TTS")
         .run(|app, event| {
             if let tauri::RunEvent::Exit = event {
-                reader::flush(&app.state::<std::sync::Arc<AppState>>());
+                let st = app.state::<std::sync::Arc<AppState>>().inner().clone();
+                // the plugins' latest settings (an open editor may have changed them)
+                tauri::async_runtime::block_on(async { tokio::time::timeout(std::time::Duration::from_secs(2), plugin_cmds::save_all(&st)).await.ok() });
+                reader::flush(&st);
             }
         });
 }

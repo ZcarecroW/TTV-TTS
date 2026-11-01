@@ -306,7 +306,7 @@ pub fn set_deepl_key(state: St, key: Option<String>) -> AppResult<AppView> {
 #[tauri::command]
 pub async fn speak_test(state: St<'_>, utterance: Utterance) -> Result<SayReport, String> {
     let vcp = state.vcp().ok_or("No voice host set up yet.")?;
-    speech::say(vcp, state.audio.clone(), utterance).await
+    speech::say(vcp, &state, utterance).await
 }
 
 #[tauri::command]

@@ -133,12 +133,12 @@ fn clap_files(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>, depth: u
     }
 }
 
-/// The effects of one plugin file (.vst3 or .clap).
-pub fn scan_file(path: &std::path::Path) -> Vec<PluginInfo> {
+/// The effects of one plugin file (.vst3 or .clap), or why it can't be used.
+pub fn scan_file(path: &std::path::Path) -> Result<Vec<PluginInfo>, String> {
     match path.extension().and_then(|x| x.to_str()).map(str::to_ascii_lowercase).as_deref() {
         Some("vst3") => vst3::scan_file(path),
         Some("clap") => clap::scan_file(path),
-        _ => Vec::new(),
+        _ => Err("not a .vst3 or .clap file".into()),
     }
 }
 
@@ -151,7 +151,15 @@ pub fn scan() -> Vec<PluginInfo> {
     }
     files.sort();
     files.dedup();
-    let mut out: Vec<PluginInfo> = files.iter().flat_map(|f| scan_file(f)).collect();
+    let mut out: Vec<PluginInfo> = files
+        .iter()
+        .flat_map(|f| {
+            scan_file(f).unwrap_or_else(|e| {
+                log::info!("plugin {}: {e}", f.display());
+                Vec::new()
+            })
+        })
+        .collect();
     out.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()).then((a.format == Format::Vst3).cmp(&(b.format == Format::Vst3))));
     out
 }
@@ -331,18 +339,21 @@ fn run(rx: std::sync::mpsc::Receiver<Cmd>, active: Arc<AtomicU32>, on_state: imp
             Ok(Cmd::Tail(reply)) => {
                 let max = chain.iter().filter(|l| l.spec.enabled).map(|l| l.effect.tail()).fold(0f32, f32::max).min(5.0);
                 let block = ((rate as f32 * 0.05) as usize).max(1);
+                // until 0.3 s stay quiet (a delay's next echo may follow a
+                // short gap), without that trailing quiet
+                let enough = (rate as f32 * 0.3) as usize;
                 let mut out = Vec::new();
-                while (out.len() as f32) < max * rate as f32 {
+                let mut quiet_run = 0;
+                while (out.len() as f32) < max * rate as f32 && quiet_run < enough {
                     let mut b = vec![0.0f32; block];
                     for l in chain.iter_mut().filter(|l| l.spec.enabled) {
                         l.effect.process(&mut b);
                     }
                     let quiet = b.iter().map(|s| s * s).sum::<f32>() / b.len() as f32 <= 1e-8;
+                    quiet_run = if quiet { quiet_run + b.len() } else { 0 };
                     out.extend(b.iter().map(|s| if s.is_finite() { s.clamp(-1.0, 1.0) } else { 0.0 }));
-                    if quiet && out.len() >= block * 2 {
-                        break;
-                    }
                 }
+                out.truncate(out.len() - quiet_run);
                 let fade = (rate as usize / 50).min(out.len());
                 let n = out.len();
                 for (i, s) in out[n - fade..].iter_mut().enumerate() {

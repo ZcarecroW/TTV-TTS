@@ -66,6 +66,30 @@ check(await page.locator("#ttv-tip").isVisible(), "tooltip appears on hover");
   check(!/demoToken123/.test(await rc.locator("code").first().innerText()), "a new token replaces the old one");
 }
 {
+  const pc = page.locator("main [data-plugins]");
+  check((await pc.locator("[data-plugin]").count()) === 1 && /Clean EQ/.test(await pc.innerText()) && /VST3/.test(await pc.innerText()), "the plugin chain is listed", await pc.innerText());
+  await pc.getByRole("button", { name: /^(Add plugin|Plugin hinzufügen)/ }).click();
+  await page.waitForTimeout(150);
+  check(/(Looking in the usual|Suche in den üblichen)/.test(await page.locator("[data-plugin-list]").innerText()), "the add dialog shows that it is scanning");
+  await page.waitForTimeout(900);
+  const pl = page.locator("[data-plugin-list]");
+  check((await pl.locator("li").count()) === 3, "scanned plugins are offered", await pl.innerText());
+  await pl.locator("input").fill("verb");
+  check((await pl.locator("li").count()) === 1, "the scanned list can be searched");
+  await pl.locator("li button").first().click();
+  await page.waitForTimeout(300);
+  check((await pc.locator("[data-plugin]").count()) === 2 && /Room Verb/.test(await pc.locator("[data-plugin]").nth(1).innerText()) && (await page.locator("[data-plugin-list]").count()) === 0, "a plugin is added at the end of the chain");
+  await pc.locator("[data-plugin]").nth(1).getByRole("button", { name: /^(Earlier in the chain|Früher in der Kette)$/ }).click();
+  await page.waitForTimeout(250);
+  check(/Room Verb/.test(await pc.locator("[data-plugin]").first().innerText()), "plugins can be reordered");
+  await pc.locator("[data-plugin]").first().getByRole("switch").click();
+  await page.waitForTimeout(250);
+  check((await pc.locator("[data-plugin]").first().getByRole("button", { name: /^(Edit|Bearbeiten)$/ }).isDisabled()), "a switched-off plugin can't be edited");
+  await pc.locator("[data-plugin]").first().getByRole("button", { name: /^(Remove|Entfernen)$/ }).click();
+  await page.waitForTimeout(250);
+  check((await pc.locator("[data-plugin]").count()) === 1 && /Clean EQ/.test(await pc.innerText()), "a plugin can be removed");
+}
+{
   const hk = page.locator("main [data-hotkeys]");
   check(/Ctrl \+ Alt \+ S/.test(await hk.locator("[data-hotkey=skip]").innerText()), "hotkeys are shown readably", await hk.locator("[data-hotkey=skip]").innerText());
   await hk.locator("[data-hotkey=pause]").click();

@@ -5996,6 +5996,7 @@ dependencies = [
  "tokio-tungstenite 0.30.0",
  "ttv-engine",
  "ttv-link",
+ "ttv-plugins",
  "ttv-vcp",
  "unicode-segmentation",
  "url",

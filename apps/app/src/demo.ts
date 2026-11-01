@@ -40,6 +40,13 @@ const vcp = {
   exe: "C:\\Games\\Voice Creator Pro\\VoiceCreatorPro.exe",
 };
 
+const demoFound = [
+  { format: "vst3" as const, path: "C:/Program Files/Common Files/VST3/Clean EQ.vst3", id: "1", name: "Clean EQ", vendor: "Example Audio" },
+  { format: "clap" as const, path: "C:/Program Files/Common Files/CLAP/Room Verb.clap", id: "room.verb", name: "Room Verb", vendor: "Example Audio" },
+  { format: "clap" as const, path: "C:/Plugins/Soft Comp.clap", id: "soft.comp", name: "Soft Comp", vendor: "Studio Nine" },
+];
+const demoPlugins = { slots: [{ id: "eq1", plugin: demoFound[0]!, enabled: true, state: null as string | null }], errors: {} as Record<string, string>, editors: true };
+
 const state: AppView = {
   version: "2.0.0",
   data_dir: "C:\\Users\\you\\AppData\\Roaming\\io.github.zcarecrow.ttvtts",
@@ -226,6 +233,32 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
       const hit = Object.entries(known).find(([k]) => text.toLowerCase().includes(k));
       return r({ text: hit ? hit[1] + "!" : "(Übersetzung) " + text, ms: 480 });
     }
+    case "plugins_list":
+      return r(structuredClone(demoPlugins));
+    case "plugins_scan":
+      await new Promise((res) => setTimeout(res, 600));
+      return r(demoFound);
+    case "plugins_pick":
+      return r([demoFound[2]]);
+    case "plugins_add":
+      demoPlugins.slots.push({ id: "p" + Date.now(), plugin: args.plugin as never, enabled: true, state: null });
+      return r(structuredClone(demoPlugins));
+    case "plugins_remove":
+      demoPlugins.slots = demoPlugins.slots.filter((s) => s.id !== args.id);
+      return r(structuredClone(demoPlugins));
+    case "plugins_toggle": {
+      const s = demoPlugins.slots.find((x) => x.id === args.id);
+      if (s) s.enabled = !!args.enabled;
+      return r(structuredClone(demoPlugins));
+    }
+    case "plugins_move": {
+      const i = demoPlugins.slots.findIndex((x) => x.id === args.id);
+      const j = Math.max(0, Math.min(demoPlugins.slots.length - 1, i + Number(args.delta)));
+      [demoPlugins.slots[i], demoPlugins.slots[j]] = [demoPlugins.slots[j]!, demoPlugins.slots[i]!];
+      return r(structuredClone(demoPlugins));
+    }
+    case "plugins_edit":
+      return r(undefined);
     case "generation_info":
       return r({ host: "proxy:demo", model: "Higher Quality (1.7B)", at: Math.floor(Date.now() / 1000) - 3600, sentences_first_ms: 2600, sentences_rtf: 0.51, streaming_first_ms: 2800, streaming_rtf: 3.6, pick: "sentences" });
     case "measure_generation":

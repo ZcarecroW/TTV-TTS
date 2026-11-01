@@ -26,7 +26,10 @@ async fn main() {
         .collect();
     for f in &files {
         let t0 = Instant::now();
-        let found = ttv_plugins::scan_file(std::path::Path::new(f));
+        let found = ttv_plugins::scan_file(std::path::Path::new(f)).unwrap_or_else(|e| {
+            println!("{f}: {e}");
+            Vec::new()
+        });
         println!("{f}: {} effect(s) in {} ms", found.len(), t0.elapsed().as_millis());
         let Some(info) = found.into_iter().next() else { continue };
         println!("  {:?} {} by {} ({})", info.format, info.name, info.vendor, info.id);

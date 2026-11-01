@@ -166,7 +166,7 @@ pub async fn listen(state: St<'_>, preset_id: String, index: u32, lang: String, 
     let e = state.library.get(&key).ok_or("This voice isn't computed for this language yet.")?;
     let language = ttv_engine::langs::get(&lang).map(|l| l.vcp).unwrap_or("Auto").to_string();
     let text = if text.trim().is_empty() { ttv_engine::langs::get(&lang).map(|l| l.verify.to_string()).unwrap_or_default() } else { text };
-    speech::say(vcp, state.audio.clone(), Utterance { text, voice: e.voice_id, language, emotion: None, intensity: None, gain: e.gain, fx }).await
+    speech::say(vcp, &state, Utterance { text, voice: e.voice_id, language, emotion: None, intensity: None, gain: e.gain, fx }).await
 }
 
 // ── let me pick ─────────────────────────────────────────────────────────

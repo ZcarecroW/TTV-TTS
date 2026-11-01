@@ -11,7 +11,6 @@ use base64::Engine;
 use serde::{Deserialize, Serialize};
 use ttv_vcp::{GenerationResult, wav};
 
-use crate::audio::Audio;
 
 /// One piece of text to generate.
 #[derive(Debug, Clone, PartialEq)]
@@ -297,7 +296,9 @@ fn translations(v: &serde_json::Value) -> Option<Vec<String>> {
 
 /// Says `u` now: generates piece by piece and plays as soon as the first one
 /// is ready. Returns when the last piece finished playing (or was skipped).
-pub async fn say(vcp: ttv_vcp::Client, audio: Arc<Audio>, u: Utterance) -> Result<SayReport, String> {
+pub async fn say(vcp: ttv_vcp::Client, state: &Arc<crate::state::AppState>, u: Utterance) -> Result<SayReport, String> {
+    let audio = state.audio.clone();
+    let stage = crate::plugin_cmds::Stage::new(state).await;
     let pieces = split(&u.text);
     if pieces.is_empty() {
         return Ok(SayReport::default());
@@ -325,13 +326,18 @@ pub async fn say(vcp: ttv_vcp::Client, audio: Arc<Audio>, u: Utterance) -> Resul
         let (samples, rate, took) = r?;
         gen_time += took;
         report.audio_secs += samples.len() as f32 / rate.max(1) as f32;
-        last_id = match fx {
-            Some(f) => {
-                let c = chain.get_or_insert_with(|| crate::fx::Chain::new(f, rate));
-                audio.play(c.process(samples, u.gain), rate, 1.0)
+        let out = match fx {
+            Some(f) => chain.get_or_insert_with(|| crate::fx::Chain::new(f, rate)).process(samples, u.gain),
+            None => {
+                let mut s = samples;
+                if u.gain != 1.0 {
+                    s.iter_mut().for_each(|x| *x *= u.gain);
+                }
+                s
             }
-            None => audio.play(samples, rate, u.gain),
         };
+        let (out, out_rate) = stage.run(state, out, rate).await;
+        last_id = audio.play(out, out_rate, 1.0);
         if report.first_audio_ms == 0 {
             report.first_audio_ms = t0.elapsed().as_millis() as u64;
         }
@@ -341,8 +347,12 @@ pub async fn say(vcp: ttv_vcp::Client, audio: Arc<Audio>, u: Utterance) -> Resul
         let rate = c.rate;
         let tail = c.finish();
         if !tail.is_empty() {
-            last_id = audio.play(tail, rate, 1.0);
+            let (tail, r) = stage.run(state, tail, rate).await;
+            last_id = audio.play(tail, r, 1.0);
         }
+    }
+    if let Some((t, r)) = stage.tail(state).await {
+        last_id = audio.play(t, r, 1.0);
     }
     if last_id != 0 {
         audio.wait(last_id).await;
@@ -417,10 +427,12 @@ mod live {
         let bad = crate::host::client(&wrong_pin, |_| Some(token.clone())).unwrap();
         assert!(bad.voices().await.is_err(), "a wrong certificate pin must fail");
 
-        let audio = Arc::new(Audio::start(None, 0.25));
+        let audio = Arc::new(crate::audio::Audio::start(None, 0.25));
         let u = Utterance { text: "Hello from TTV-TTS. This sentence was generated on the other PC.".into(), voice, language: "English".into(), emotion: None, intensity: None, gain: 1.0, fx: None };
-        let r = say(vcp, audio, u).await.expect("say");
-        println!("say: {r:?}");
-        assert!(r.audio_secs > 1.0);
+        let t0 = Instant::now();
+        let (samples, rate) = generate(&vcp, &u, &u.text).await.expect("generate");
+        println!("generated {:.1} s in {} ms", samples.len() as f32 / rate as f32, t0.elapsed().as_millis());
+        audio.wait(audio.play(samples.clone(), rate, 1.0)).await;
+        assert!(samples.len() as f32 / rate as f32 > 1.0);
     }
 }

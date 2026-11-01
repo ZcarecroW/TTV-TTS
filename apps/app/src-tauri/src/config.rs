@@ -85,6 +85,18 @@ pub struct Config {
     pub hotkeys: std::collections::BTreeMap<String, String>,
     /// Remote control API (Stream Deck, Streamer.bot).
     pub remote: RemoteConfig,
+    /// Audio plugins (VST3, CLAP) on all speech, in this order.
+    pub plugins: Vec<PluginSlot>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct PluginSlot {
+    pub id: String,
+    pub plugin: ttv_plugins::PluginInfo,
+    pub enabled: bool,
+    /// The plugin's settings as it saved them (base64).
+    #[serde(default)]
+    pub state: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -119,6 +131,7 @@ impl Default for Config {
             translate_email: String::new(),
             hotkeys: Default::default(),
             remote: RemoteConfig::default(),
+            plugins: Vec::new(),
         }
     }
 }

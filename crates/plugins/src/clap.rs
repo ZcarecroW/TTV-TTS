@@ -113,12 +113,12 @@ impl HostTimerImpl for Main<'_> {
 }
 
 /// The plugins of a .clap file.
-pub fn scan_file(path: &std::path::Path) -> Vec<PluginInfo> {
+pub fn scan_file(path: &std::path::Path) -> Result<Vec<PluginInfo>, String> {
     // SAFETY: loading a plugin library runs its code; we only load files the
     // user put into a plugin folder or picked.
-    let Ok(entry) = (unsafe { PluginEntry::load(path) }) else { return Vec::new() };
-    let Some(factory) = entry.get_plugin_factory() else { return Vec::new() };
-    factory
+    let entry = unsafe { PluginEntry::load(path) }.map_err(|e| format!("can't load it: {e}"))?;
+    let factory = entry.get_plugin_factory().ok_or("it has no CLAP plugins")?;
+    Ok(factory
         .plugin_descriptors()
         .filter_map(|d| {
             let id = d.id()?.to_string_lossy().into_owned();
@@ -132,7 +132,7 @@ pub fn scan_file(path: &std::path::Path) -> Vec<PluginInfo> {
                 vendor: d.vendor().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default(),
             })
         })
-        .collect()
+        .collect())
 }
 
 pub struct ClapEffect {

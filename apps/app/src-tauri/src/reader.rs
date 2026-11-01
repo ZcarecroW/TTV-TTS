@@ -1336,6 +1336,7 @@ async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
         // what was played, for "play again"
         let mut played: Vec<Vec<f32>> = Vec::new();
         let mut played_rate = 0;
+        let stage = crate::plugin_cmds::Stage::new(&state).await;
         while let Some(r) = clips.recv().await {
             if item.cancel.load(Ordering::Relaxed) {
                 break;
@@ -1362,11 +1363,12 @@ async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
                             s
                         }
                     };
-                    if played_rate == 0 || played_rate == rate {
-                        played_rate = rate;
+                    let (out, out_rate) = stage.run(&state, out, rate).await;
+                    if played_rate == 0 || played_rate == out_rate {
+                        played_rate = out_rate;
                         played.push(out.clone());
                     }
-                    last_clip = state.audio.play(out, rate, 1.0);
+                    last_clip = state.audio.play(out, out_rate, 1.0);
                     if item.view.first_audio_ms.is_none() {
                         item.view.first_audio_ms = Some(t0.elapsed().as_millis() as u64);
                         state.reader.status.write().current = Some(item.view.clone());
@@ -1385,11 +1387,20 @@ async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
             let rate = c.rate;
             let tail = c.finish();
             if !tail.is_empty() {
-                if played_rate == rate {
+                let (tail, tail_rate) = stage.run(&state, tail, rate).await;
+                if played_rate == tail_rate {
                     played.push(tail.clone());
                 }
-                last_clip = state.audio.play(tail, rate, 1.0);
+                last_clip = state.audio.play(tail, tail_rate, 1.0);
             }
+        }
+        if !item.cancel.load(Ordering::Relaxed)
+            && let Some((t, r)) = stage.tail(&state).await
+        {
+            if played_rate == r {
+                played.push(t.clone());
+            }
+            last_clip = state.audio.play(t, r, 1.0);
         }
         if last_clip != 0 {
             state.audio.wait(last_clip).await;

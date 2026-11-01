@@ -4,20 +4,17 @@
 
 use crate::{Editor, Effect, PluginInfo};
 
-pub fn scan_file(path: &std::path::Path) -> Vec<PluginInfo> {
+pub fn scan_file(path: &std::path::Path) -> Result<Vec<PluginInfo>, String> {
     match vst3_host::discovery::get_plugin_info(path) {
-        Ok(i) if !i.category.to_ascii_lowercase().contains("instrument") => vec![PluginInfo {
+        Ok(i) if !i.category.to_ascii_lowercase().contains("instrument") => Ok(vec![PluginInfo {
             format: crate::Format::Vst3,
             path: path.to_string_lossy().into_owned(),
             id: i.uid,
             name: i.name,
             vendor: i.vendor,
-        }],
-        Ok(_) => Vec::new(),
-        Err(e) => {
-            log::debug!("VST3 {}: {e}", path.display());
-            Vec::new()
-        }
+        }]),
+        Ok(_) => Ok(Vec::new()),
+        Err(e) => Err(format!("can't load it: {e}")),
     }
 }
 

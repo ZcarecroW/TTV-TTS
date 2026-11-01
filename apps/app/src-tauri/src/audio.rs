@@ -54,6 +54,8 @@ pub struct Audio {
     tx: Sender<Cmd>,
     shared: Arc<Shared>,
     next_id: AtomicU64,
+    /// For callers that resample themselves (the plugin stage).
+    resamplers: parking_lot::Mutex<HashMap<(u32, u32), Fft<f32>>>,
 }
 
 impl Audio {
@@ -71,12 +73,22 @@ impl Audio {
             .name("ttv-audio".into())
             .spawn(move || audio_thread(rx, sh, device))
             .expect("audio thread");
-        Self { tx, shared, next_id: AtomicU64::new(1) }
+        Self { tx, shared, next_id: AtomicU64::new(1), resamplers: parking_lot::Mutex::new(HashMap::new()) }
     }
 
     /// Switches to another output device (None = system default).
     pub fn open(&self, device: Option<String>) {
         let _ = self.tx.send(Cmd::Open(device));
+    }
+
+    /// The output device's sample rate.
+    pub fn rate(&self) -> u32 {
+        self.shared.rate.load(Ordering::Relaxed)
+    }
+
+    /// Mono samples from one rate to another.
+    pub fn resample(&self, samples: Vec<f32>, from: u32, to: u32) -> Vec<f32> {
+        resample(&mut self.resamplers.lock(), samples, from, to)
     }
 
     pub fn set_volume(&self, v: f32) {

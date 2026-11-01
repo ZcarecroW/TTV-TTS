@@ -682,6 +682,40 @@ export interface Measured {
   pick: "sentences" | "streaming";
 }
 
+// ── audio plugins ───────────────────────────────────────────────────────
+
+export interface PluginInfo {
+  format: "vst3" | "clap";
+  path: string;
+  id: string;
+  name: string;
+  vendor: string;
+}
+
+export interface PluginSlot {
+  id: string;
+  plugin: PluginInfo;
+  enabled: boolean;
+  state: string | null;
+}
+
+export interface PluginsView {
+  slots: PluginSlot[];
+  errors: Record<string, string>;
+  editors: boolean;
+}
+
+export const plugins = {
+  list: () => invoke<PluginsView>("plugins_list"),
+  scan: () => invoke<PluginInfo[]>("plugins_scan"),
+  pick: () => invoke<PluginInfo[]>("plugins_pick"),
+  add: (plugin: PluginInfo) => invoke<PluginsView>("plugins_add", { plugin }),
+  remove: (id: string) => invoke<PluginsView>("plugins_remove", { id }),
+  toggle: (id: string, enabled: boolean) => invoke<PluginsView>("plugins_toggle", { id, enabled }),
+  move: (id: string, delta: number) => invoke<PluginsView>("plugins_move", { id, delta }),
+  edit: (id: string) => invoke<void>("plugins_edit", { id }),
+};
+
 /** What a global hotkey can do (same order as the backend). */
 export const HOTKEY_ACTIONS = ["skip", "pause", "clear", "replay", "approve", "reject"] as const;
 

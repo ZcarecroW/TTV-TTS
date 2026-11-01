@@ -14,6 +14,7 @@ repository = "https://github.com/ZcarecroW/TTV-TTS"
 ttv-vcp = { path = "crates/vcp" }
 ttv-link = { path = "crates/link" }
 ttv-engine = { path = "crates/engine" }
+ttv-plugins = { path = "crates/plugins" }
 
 tauri = { version = "2.12.5", features = ["tray-icon"] }
 tauri-build = { version = "2.7.4", features = [] }
