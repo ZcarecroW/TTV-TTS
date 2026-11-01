@@ -8,10 +8,14 @@ mod error;
 mod host;
 mod logbuf;
 mod monitor;
+mod profile;
+mod reader;
 mod secrets;
 mod speech;
 mod state;
 mod storage;
+mod text;
+mod twitch;
 
 use tauri::Manager;
 
@@ -53,6 +57,8 @@ pub fn run() {
             state.set_app(app.handle().clone());
             app.manage(state.clone());
             tauri::async_runtime::spawn(monitor::run(state.clone()));
+            let st = state.clone();
+            tauri::async_runtime::spawn(async move { reader::start(st) });
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -70,7 +76,21 @@ pub fn run() {
             commands::list_voices,
             commands::speak_test,
             commands::skip,
+            commands::get_reader,
+            commands::save_profile,
+            commands::delete_profile,
+            commands::set_active_profiles,
+            commands::reader_skip,
+            commands::reader_clear,
+            commands::reader_pause,
+            commands::test_message,
+            commands::mute_viewer,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running TTV-TTS");
+        .build(tauri::generate_context!())
+        .expect("error while building TTV-TTS")
+        .run(|app, event| {
+            if let tauri::RunEvent::Exit = event {
+                reader::flush(&app.state::<std::sync::Arc<AppState>>());
+            }
+        });
 }

@@ -11,8 +11,9 @@ use tokio::sync::Notify;
 use ttv_link::{ProxyStatus, VcpState};
 
 use crate::audio::Audio;
-use crate::config::{Config, HostConfig};
+use crate::config::Config;
 use crate::error::AppResult;
+use crate::reader::ReaderData;
 use crate::secrets::Secrets;
 
 /// What the window shows about the voice host.
@@ -35,6 +36,7 @@ pub struct AppState {
     pub data_dir: PathBuf,
     pub secrets: Secrets,
     pub audio: Arc<Audio>,
+    pub reader: ReaderData,
     pub host: RwLock<HostStatus>,
     vcp: RwLock<Option<ttv_vcp::Client>>,
     /// The host setting changed: reconnect.
@@ -50,6 +52,7 @@ impl AppState {
         let audio = Arc::new(Audio::start(cfg.audio.device.clone(), cfg.audio.volume));
         let vcp = crate::host::client(&cfg.host, |k| secrets.get(k));
         Arc::new(Self {
+            reader: ReaderData::load(&data_dir),
             cfg: RwLock::new(cfg),
             cfg_path,
             data_dir,
@@ -96,14 +99,6 @@ impl AppState {
             if let Some(app) = self.app() {
                 let _ = app.emit("app://host", &s);
             }
-        }
-    }
-
-    pub fn host_kind(&self) -> &'static str {
-        match self.cfg.read().host {
-            HostConfig::None => "none",
-            HostConfig::Proxy { .. } => "proxy",
-            HostConfig::Direct { .. } => "direct",
         }
     }
 

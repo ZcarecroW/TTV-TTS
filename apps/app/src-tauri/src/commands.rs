@@ -223,3 +223,101 @@ pub async fn speak_test(state: St<'_>, utterance: Utterance) -> Result<SayReport
 pub fn skip(state: St) {
     state.audio.skip_all();
 }
+
+// ── chat reader ─────────────────────────────────────────────────────────
+
+#[derive(Serialize)]
+pub struct ReaderView {
+    pub store: crate::reader::ProfileStore,
+    pub status: crate::reader::ReaderStatus,
+    pub history: Vec<crate::reader::ItemView>,
+}
+
+fn reader_view(state: &AppState) -> ReaderView {
+    ReaderView { store: state.reader.store.read().clone(), status: state.reader.status(), history: state.reader.history() }
+}
+
+#[tauri::command]
+pub fn get_reader(state: St) -> ReaderView {
+    reader_view(&state)
+}
+
+/// Creates or updates a profile (an empty id creates a new one).
+#[tauri::command]
+pub fn save_profile(state: St, profile: crate::profile::Profile) -> ReaderView {
+    let mut p = profile;
+    p.normalize();
+    {
+        let mut s = state.reader.store.write();
+        match s.profiles.iter_mut().find(|x| x.id == p.id) {
+            Some(existing) => *existing = p,
+            None => s.profiles.push(p),
+        }
+    }
+    state.reader.save_store();
+    crate::reader::apply_channels(&state);
+    reader_view(&state)
+}
+
+#[tauri::command]
+pub fn delete_profile(state: St, id: String) -> ReaderView {
+    {
+        let mut s = state.reader.store.write();
+        if s.profiles.len() > 1 {
+            s.profiles.retain(|p| p.id != id);
+            s.active.retain(|a| *a != id);
+        }
+    }
+    state.reader.save_store();
+    crate::reader::apply_channels(&state);
+    reader_view(&state)
+}
+
+/// Which profiles read their channels now (several at once are fine).
+#[tauri::command]
+pub fn set_active_profiles(state: St, ids: Vec<String>) -> ReaderView {
+    {
+        let mut s = state.reader.store.write();
+        let known: Vec<String> = s.profiles.iter().map(|p| p.id.clone()).collect();
+        s.active = ids.into_iter().filter(|i| known.contains(i)).collect();
+    }
+    state.reader.save_store();
+    crate::reader::apply_channels(&state);
+    reader_view(&state)
+}
+
+#[tauri::command]
+pub fn reader_skip(state: St) {
+    crate::reader::skip(&state);
+}
+
+#[tauri::command]
+pub fn reader_clear(state: St) {
+    crate::reader::clear(&state, "app");
+}
+
+#[tauri::command]
+pub fn reader_pause(state: St, on: bool) {
+    crate::reader::set_paused(&state, on);
+}
+
+/// Sends a test message through the pipeline of a profile's first channel.
+#[tauri::command]
+pub fn test_message(state: St, profile: String, user: String, text: String) -> Result<(), String> {
+    let channel = {
+        let s = state.reader.store.read();
+        let p = s.profiles.iter().find(|p| p.id == profile).ok_or("unknown profile")?;
+        if !s.active.contains(&p.id) {
+            return Err("Switch this profile on first.".into());
+        }
+        p.channels.first().cloned().ok_or("Add a channel to this profile first.")?
+    };
+    crate::reader::test_message(&state, &channel, if user.trim().is_empty() { "TestUser" } else { user.trim() }, &text);
+    Ok(())
+}
+
+#[tauri::command]
+pub fn mute_viewer(state: St, profile: String, login: String, on: bool) -> ReaderView {
+    crate::reader::set_muted(&state, &profile, &login.to_ascii_lowercase(), on);
+    reader_view(&state)
+}

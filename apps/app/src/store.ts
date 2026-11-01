@@ -1,13 +1,14 @@
 import { computed, reactive } from "vue";
-import { api, errText, listen, type AppView, type HostStatus, type SystemStats } from "./api";
+import { api, errText, listen, reader, type AppView, type HostStatus, type ItemView, type ReaderStatus, type ReaderView, type SystemStats } from "./api";
 import { i18n, setLocale } from "./i18n";
 import { setTheme } from "@ttv-tts/ui/theme";
 
-export type View = "live" | "voices" | "host" | "settings";
+export type View = "live" | "profiles" | "voices" | "host" | "settings";
 
 export const store = reactive({
   app: null as AppView | null,
   hostSystem: null as SystemStats | null,
+  reader: null as ReaderView | null,
   view: "live" as View,
   toast: null as { kind: "ok" | "err" | "info"; text: string } | null,
   busy: "" as string,
@@ -51,6 +52,20 @@ export async function init() {
     if (store.app) store.app.host = h;
   });
   await listen<SystemStats>("app://host-system", (s) => (store.hostSystem = s));
+  store.reader = await reader.get();
+  await listen<ReaderStatus>("app://reader", (s) => {
+    if (store.reader) store.reader.status = s;
+  });
+  await listen<ItemView>("app://history", (item) => {
+    const h = store.reader?.history;
+    if (!h) return;
+    const i = h.findIndex((x) => x.id === item.id);
+    if (i >= 0) h[i] = item;
+    else {
+      h.push(item);
+      if (h.length > 150) h.splice(0, h.length - 150);
+    }
+  });
 }
 
 export const t = (key: string, values?: Record<string, unknown>) => i18n.global.t(key, values ?? {});

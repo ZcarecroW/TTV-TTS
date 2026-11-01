@@ -37,6 +37,7 @@ pub fn get() -> &'static LogBuf {
     })
 }
 
+#[allow(dead_code)] // the log view comes with a later build
 impl LogBuf {
     pub fn lines(&self) -> Vec<LogLine> {
         self.inner.lock().lines.iter().cloned().collect()

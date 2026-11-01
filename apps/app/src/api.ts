@@ -186,3 +186,97 @@ export const LANGUAGES = [
   ["Chinese", "zh"],
   ["Korean", "ko"],
 ] as const;
+
+// ── chat reader ─────────────────────────────────────────────────────────
+
+export type Role = "broadcaster" | "moderator" | "vip" | "subscriber" | "everyone";
+
+export interface Profile {
+  id: string;
+  name: string;
+  channels: string[];
+  reading: {
+    mode: "all" | "command" | "privileged";
+    command: string;
+    allowed_roles: Role[];
+    reward_id: string;
+    ignore_broadcaster: boolean;
+    ignore_users: string[];
+    ignore_prefixes: string[];
+    read_sub_messages: boolean;
+    max_chars: number;
+    max_seconds: number;
+    user_cooldown_secs: number;
+    max_queue: number;
+  };
+  names: { announce: "on_change" | "always" | "never"; reset_secs: number; cleanup: boolean; aliases: Record<string, string> };
+  language: { default: string; unsupported: string; remember_minutes: number };
+  emotes: { mode: "once" | "remove" | "keep"; max_per_message: number; split_words: boolean; skip_emote_only: boolean; bttv: boolean; ffz: boolean; seventv: boolean; aliases: Record<string, string> };
+  emojis: { mode: "describe" | "remove" | "keep"; max_per_message: number };
+  text: {
+    links: "replace" | "remove" | "skip";
+    mentions: "name" | "remove";
+    collapse_repeats: boolean;
+    fix_shouting: boolean;
+    replacements: Record<string, Record<string, string>>;
+    blocked_words: string[];
+    blocked_mode: "skip" | "beep";
+  };
+  mod_commands: { enabled: boolean; roles: Role[]; skip: string; clear: string; pause: string; resume: string; volume: string; mute: string; unmute: string; skip_on_timeout: boolean };
+  voices: {
+    mode: "per_user_language" | "per_user" | "per_language" | "single";
+    prefix: string;
+    fallback_language: string;
+    exclude: string[];
+    default_voice: string | null;
+    per_language: Record<string, string>;
+    users: Record<string, string>;
+    emotions: boolean;
+  };
+  muted: string[];
+}
+
+export type ItemState = "queued" | "speaking" | "spoken" | "skipped" | "removed" | "failed" | "filtered";
+
+export interface ItemView {
+  id: number;
+  channel: string;
+  login: string;
+  display: string;
+  color: string | null;
+  original: string;
+  speech: string;
+  lang: string;
+  voice: string | null;
+  state: ItemState;
+  reason: string | null;
+  at: number;
+  first_audio_ms: number | null;
+}
+
+export interface ReaderStatus {
+  connected: boolean;
+  error: string | null;
+  channels: { name: string; joined: boolean; room_id: string | null }[];
+  paused: boolean;
+  queue: ItemView[];
+  current: ItemView | null;
+}
+
+export interface ReaderView {
+  store: { profiles: Profile[]; active: string[] };
+  status: ReaderStatus;
+  history: ItemView[];
+}
+
+export const reader = {
+  get: () => invoke<ReaderView>("get_reader"),
+  saveProfile: (profile: Profile) => invoke<ReaderView>("save_profile", { profile }),
+  deleteProfile: (id: string) => invoke<ReaderView>("delete_profile", { id }),
+  setActive: (ids: string[]) => invoke<ReaderView>("set_active_profiles", { ids }),
+  skip: () => invoke<void>("reader_skip"),
+  clear: () => invoke<void>("reader_clear"),
+  pause: (on: boolean) => invoke<void>("reader_pause", { on }),
+  test: (profile: string, user: string, text: string) => invoke<void>("test_message", { profile, user, text }),
+  mute: (profile: string, login: string, on: boolean) => invoke<ReaderView>("mute_viewer", { profile, login, on }),
+};

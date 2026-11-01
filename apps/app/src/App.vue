@@ -2,17 +2,18 @@
 import { computed, type Component } from "vue";
 import { useI18n } from "vue-i18n";
 import TipLayer from "@ttv-tts/ui/components/TipLayer.vue";
-import { CircleCheck, CircleInfo, CircleX, Gear, Play, Server, Waveform } from "@ttv-tts/ui/icons";
+import { CircleCheck, CircleInfo, CircleX, Devices, Gear, Play, Server, Waveform } from "@ttv-tts/ui/icons";
 import logo from "./assets/logo.svg";
 import { host, store, type View } from "./store";
 import LiveView from "./views/LiveView.vue";
+import ProfilesView from "./views/ProfilesView.vue";
 import VoicesView from "./views/VoicesView.vue";
 import HostView from "./views/HostView.vue";
 import SettingsView from "./views/SettingsView.vue";
 
 const { t } = useI18n();
 
-const views: Record<View, Component> = { live: LiveView, voices: VoicesView, host: HostView, settings: SettingsView };
+const views: Record<View, Component> = { live: LiveView, profiles: ProfilesView, voices: VoicesView, host: HostView, settings: SettingsView };
 
 const hostDot = computed(() => {
   const h = host.value;
@@ -22,7 +23,8 @@ const hostDot = computed(() => {
 });
 
 const nav = computed(() => [
-  { id: "live" as View, icon: Play, dot: "" },
+  { id: "live" as View, icon: Play, dot: store.reader?.status.connected ? "dot-ok" : "" },
+  { id: "profiles" as View, icon: Devices, dot: "" },
   { id: "voices" as View, icon: Waveform, dot: "" },
   { id: "host" as View, icon: Server, dot: hostDot.value },
   { id: "settings" as View, icon: Gear, dot: "" },

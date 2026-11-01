@@ -19,13 +19,13 @@ Decisions come from the interview of 2026-11-01 (see the project notes); this fi
 - ✅ Proxy monitor in the app (VCP state, GPU, processes), Wake-on-LAN
 - ✅ Audio output (cpal 0.18, rubato FFT resampling, gapless queue, fade on skip), sentence-pipelined sync generation: first audio 1.4 s, RTF 0.65 through the real proxy
 
-## M3 – Chat to speech ⏳
-- ⏳ Twitch IRC (anonymous, several channels), profiles per streamer
-- ⏳ Text pipeline from 1.0: emotes (Twitch/BTTV/FFZ/7TV + 7TV live), emojis, links, mentions, repeats, caps, replacements, blocked words, name announcements
-- ⏳ Language detection (1.0 detector + per-viewer memory)
+## M3 – Chat to speech 🔨 (slice B done: chat → speech works end to end)
+- ✅ Twitch IRC (anonymous, several channels on one connection, reconnect), profiles per streamer (auto-saved editor)
+- ✅ Text pipeline from 1.0: emotes (Twitch/BTTV/FFZ/7TV), emojis, links, mentions, repeats, caps, replacements, blocked words, name announcements (7TV live updates still ⏳)
+- ✅ Language detection (1.0 detector + per-viewer memory)
 - ⏳ Synthesis engine: sentence-split **sync generation with pipelining** (measured 7–8× faster than VCP streaming on the target PC), streaming as option, "Auto" benchmark, warm-up
 - ⏳ Audio output to a chosen device (cpal), resampling, per-voice loudness matching
-- ⏳ Queue, skip, pause, history/replay, approval mode, mod commands, timeouts/bans/deletions
+- ✅ Queue, skip, pause, clear, history with reasons for filtered messages, mod commands, timeouts/bans/deletions (replay + approval mode ⏳)
 
 ## M4 – Presets & voices ⏳
 - ⏳ 20 built-in presets × 240 language-neutral definitions, nested balanced tiers 30/60/120/240

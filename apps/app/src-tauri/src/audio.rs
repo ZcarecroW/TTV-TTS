@@ -96,11 +96,6 @@ impl Audio {
         self.shared.skip_upto.fetch_max(last, Ordering::Relaxed);
     }
 
-    /// Skips clips up to and including `id`.
-    pub fn skip_upto(&self, id: u64) {
-        self.shared.skip_upto.fetch_max(id, Ordering::Relaxed);
-    }
-
     pub fn is_finished(&self, id: u64) -> bool {
         self.shared.finished.load(Ordering::Relaxed) >= id
     }
