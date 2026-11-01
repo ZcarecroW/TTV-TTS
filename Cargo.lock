@@ -5878,6 +5878,7 @@ dependencies = [
 name = "ttv-vcp"
 version = "2.0.0-alpha.11"
 dependencies = [
+ "base64 0.23.1",
  "bytes",
  "futures-util",
  "reqwest",
