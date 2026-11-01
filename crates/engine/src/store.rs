@@ -131,6 +131,10 @@ impl Library {
         self.state.lock().map.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.state.lock().map.is_empty()
+    }
+
     pub fn entries(&self) -> Vec<LibraryEntry> {
         self.state.lock().map.values().cloned().collect()
     }

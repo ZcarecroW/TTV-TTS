@@ -47,7 +47,8 @@ fn main() {
                 analyses.insert(r.file.clone(), a);
             }
         }
-        let mut reports: std::collections::BTreeMap<(String, String), (ttv_link::VoiceDef, Vec<(String, ttv_link::Quality, &Row, ttv_engine::quality::Analysis)>)> = Default::default();
+        type Report<'a> = (ttv_link::VoiceDef, Vec<(String, ttv_link::Quality, &'a Row, ttv_engine::quality::Analysis)>);
+        let mut reports: std::collections::BTreeMap<(String, String), Report> = Default::default();
         for r in &rows {
             let Some(a) = analyses.get(&r.file) else { continue };
             let def = ttv_link::VoiceDef { name: r.name.clone(), gender: r.gender.clone(), age: r.age, description: r.description.clone(), fx: None };
@@ -68,7 +69,7 @@ fn main() {
             });
             reports.entry((r.name.clone(), r.description.clone())).or_insert_with(|| (def.clone(), Vec::new())).1.push((r.lang.clone(), q, r, a.clone()));
         }
-        for (_, (def, group)) in reports.iter_mut() {
+        for (def, group) in reports.values_mut() {
             let mut qs: Vec<(String, ttv_link::Quality)> = group.iter().map(|(l, q, _, _)| (l.clone(), q.clone())).collect();
             ttv_engine::quality::relate(def, &mut qs);
             for ((_, q, r, a), (_, related)) in group.iter_mut().zip(qs) {

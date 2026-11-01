@@ -141,6 +141,9 @@ struct Item {
     cancel: Arc<AtomicBool>,
 }
 
+/// (id, user_id, msg_id, login, cancel) of a message being generated or played.
+type Inflight = (u64, String, String, String, Arc<AtomicBool>);
+
 struct Prepared {
     item: Item,
     clips: mpsc::Receiver<Result<(Vec<f32>, u32), String>>,
@@ -178,8 +181,8 @@ pub struct ReaderData {
     /// Who spoke last and when (name announcements).
     last: Mutex<Option<(String, Instant)>>,
     voices: RwLock<VoiceCache>,
-    /// Items being generated or played: (id, user_id, msg_id, login, cancel)
-    inflight: Mutex<Vec<(u64, String, String, String, Arc<AtomicBool>)>>,
+    /// Items being generated or played.
+    inflight: Mutex<Vec<Inflight>>,
     seq: AtomicU64,
 }
 
@@ -338,7 +341,7 @@ fn handle_event(state: &Arc<AppState>, ev: ChatEvent) {
                 tokio::spawn(async move { st.reader.emotes.ensure(&room_id, prov).await });
             }
         }
-        ChatEvent::Message(m) => on_message(state, m),
+        ChatEvent::Message(m) => on_message(state, *m),
         ChatEvent::ClearUser { channel, user_id } => {
             if profile_for(state, &channel).is_some_and(|p| p.mod_commands.skip_on_timeout) {
                 match user_id {
@@ -755,7 +758,7 @@ pub fn viewers(state: &AppState, profile: &str, query: &str, limit: usize) -> (V
         .map(|m| m.iter().filter(|(_, v)| q.is_empty() || v.login.contains(&q) || v.display.to_lowercase().contains(&q)).collect())
         .unwrap_or_default();
     let total = rows.len();
-    rows.sort_unstable_by(|x, y| y.1.last_seen.cmp(&x.1.last_seen));
+    rows.sort_unstable_by_key(|x| std::cmp::Reverse(x.1.last_seen));
     rows.truncate(limit.max(1));
     let fxs = a.fx.get(profile);
     let rows: Vec<(String, Viewer, Option<u32>, Option<String>)> = rows.into_iter().map(|(id, v)| (id.clone(), v.clone(), roles.and_then(|r| r.get(id).copied()), fxs.and_then(|m| m.get(id).cloned()))).collect();

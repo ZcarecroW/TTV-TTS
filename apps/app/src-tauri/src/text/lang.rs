@@ -1,6 +1,6 @@
 //! Offline language detection for short chat messages (from TTV-TTS 1.0):
-//! 1. writing system (Cyrillic, CJK, …), 2. typical words, 3. special letters.
-//! Short or ambiguous messages ("gg", "ok") return None; the caller then uses
+//! first the writing system (Cyrillic, CJK, …), then typical words, then
+//! special letters. Short or ambiguous messages ("gg", "ok") return None; the caller then uses
 //! the viewer's last detected language or the profile default.
 
 use std::collections::{HashMap, HashSet};
@@ -57,7 +57,7 @@ fn scripts(text: &str) -> Scripts {
     for c in text.chars() {
         match c as u32 {
             0x41..=0x5A | 0x61..=0x7A | 0xC0..=0x24F | 0x1E00..=0x1EFF => s.latin += 1,
-            0x400..=0x4FF | 0x500..=0x52F => s.cyrillic += 1,
+            0x400..=0x52F => s.cyrillic += 1,
             0xAC00..=0xD7AF | 0x1100..=0x11FF | 0x3130..=0x318F => s.hangul += 1,
             0x3040..=0x30FF | 0x31F0..=0x31FF => s.kana += 1,
             0x4E00..=0x9FFF | 0x3400..=0x4DBF | 0xF900..=0xFAFF => s.han += 1,
@@ -123,7 +123,7 @@ pub fn detect(text: &str) -> Option<&'static str> {
             s.1 += b.min(4);
         }
     }
-    scores.sort_by(|a, b| b.1.cmp(&a.1));
+    scores.sort_by_key(|a| std::cmp::Reverse(a.1));
     let (best, second) = (scores[0], scores[1]);
     if best.1 < 1 || best.1 == second.1 { None } else { Some(best.0) }
 }

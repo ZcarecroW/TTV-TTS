@@ -227,7 +227,7 @@ pub fn set_audio(state: St, patch: AudioPatch) -> AppResult<AppView> {
 pub async fn list_voices(state: St<'_>) -> AppResult<Vec<ttv_vcp::Voice>> {
     let vcp = state.vcp().ok_or_else(|| AppError::msg("No voice host set up yet."))?;
     let mut v = vcp.voices().await?;
-    v.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    v.sort_by_cached_key(|a| a.name.to_lowercase());
     Ok(v)
 }
 

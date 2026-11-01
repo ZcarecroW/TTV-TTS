@@ -56,7 +56,7 @@ pub struct ChatMessage {
 
 #[derive(Debug, Clone)]
 pub enum ChatEvent {
-    Message(ChatMessage),
+    Message(Box<ChatMessage>),
     /// The channel's room id (needed for emote lists) – once per join.
     Joined { channel: String, room_id: String },
     /// A viewer was timed out or banned (None = whole chat cleared).
@@ -193,7 +193,7 @@ async fn session(want: &mut watch::Receiver<BTreeSet<String>>, events: &mpsc::Se
                         }
                         "PRIVMSG" | "USERNOTICE" => {
                             if let Some(msg) = to_message(&m, &rooms) {
-                                let _ = events.send(ChatEvent::Message(msg)).await;
+                                let _ = events.send(ChatEvent::Message(Box::new(msg))).await;
                             }
                         }
                         "CLEARCHAT" => {

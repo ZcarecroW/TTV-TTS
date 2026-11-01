@@ -123,7 +123,7 @@ impl StreamDecoder {
 #[inline]
 fn decode_pcm16(bytes: &[u8], out: &mut Vec<f32>) {
     out.reserve(bytes.len() / 2);
-    out.extend(bytes.chunks_exact(2).map(|b| i16::from_le_bytes([b[0], b[1]]) as f32 / 32768.0));
+    out.extend(bytes.as_chunks::<2>().0.iter().map(|b| i16::from_le_bytes(*b) as f32 / 32768.0));
 }
 
 /// Duration of a complete WAV file in seconds (uses the real byte count).
