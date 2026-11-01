@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { duration } from "@ttv-tts/ui/format";
 import { Bolt, CircleCheck, ClockRotate, Download, Gauge, iconByName, Plus, Sparkle, Spinner, Warning } from "@ttv-tts/ui/icons";
-import { api, packs, presets, type ClassicFound, type PresetView } from "../api";
+import { api, packs, presets, type CatalogPack, type ClassicFound, type PresetView } from "../api";
 import ComputeDialog from "../components/ComputeDialog.vue";
 import JobList from "../components/JobList.vue";
 import PresetDetailDialog from "../components/PresetDetailDialog.vue";
@@ -12,6 +12,7 @@ import PresetEditorDialog from "../components/PresetEditorDialog.vue";
 import ReviewDialog from "../components/ReviewDialog.vue";
 import ImportDialog from "../components/ImportDialog.vue";
 import ExportDialog from "../components/ExportDialog.vue";
+import DownloadDialog from "../components/DownloadDialog.vue";
 import { activeJobs, host, loadEngine, loadPresets, run, store, toast } from "../store";
 
 const { t } = useI18n();
@@ -24,6 +25,12 @@ const review = ref<string | null>(null);
 /** A pack file to import (picked). */
 const importing = ref<string | null>(null);
 const exporting = ref<{ id: string; keys: string[] } | null>(null);
+/** Ready-made packs (GitHub); empty while unknown or offline. */
+const catalog = ref<CatalogPack[]>([]);
+const downloading = ref<string | null>(null);
+packs.catalog().then((c) => (catalog.value = c.packs)).catch(() => {});
+/** Ready-made voices this preset could still get. */
+const downloadable = (p: PresetView) => catalog.value.some((c) => c.preset === p.id && (p.computed[c.lang] ?? 0) < c.to);
 async function pickPack() {
   const p = await run("pick", () => packs.pick());
   if (p) importing.value = p;
@@ -161,6 +168,7 @@ function openEditor(id?: string) {
             </div>
             <div class="mt-3.5 flex gap-2">
               <button class="btn btn-sm flex-1" @click="detail = p.id">{{ t("presets.details") }}</button>
+              <button v-if="downloadable(p)" class="btn btn-sm flex-1" :disabled="!connected" :data-tip="t('downloads.tip')" @click="downloading = p.id"><Download :size="14" />{{ t("downloads.button") }}</button>
               <button class="btn btn-sm btn-primary flex-1" :disabled="!connected" @click="openCompute(p.id)"><Sparkle :size="14" />{{ t("presets.compute") }}</button>
             </div>
           </article>
@@ -171,6 +179,7 @@ function openEditor(id?: string) {
     <PresetDetailDialog v-if="detail" :preset-id="detail" @close="detail = null" @compute="openCompute" @edit="openEditor" @export="(id, keys) => (exporting = { id, keys })" />
     <ExportDialog v-if="exporting" :preset-id="exporting.id" :keys="exporting.keys.length ? exporting.keys : undefined" @close="exporting = null" />
     <ComputeDialog v-if="computeFor" :preset-id="computeFor" @close="computeFor = null" />
+    <DownloadDialog v-if="downloading" :preset-id="downloading" :catalog="catalog" @close="downloading = null" />
     <ImportDialog v-if="importing" :path="importing" @close="importing = null" />
     <ReviewDialog v-if="review !== null" :preset-id="review || null" @close="review = null" />
     <PresetEditorDialog v-if="editor" :preset-id="editor.id" @close="editor = null" @saved="(id) => ((editor = null), (detail = id))" />

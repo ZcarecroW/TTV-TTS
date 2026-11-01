@@ -316,6 +316,16 @@ export default {
     newRandom: "{name} gets a new random voice with the next message.",
     reassigned: "{name} now speaks as {voice}.",
   },
+  downloads: {
+    button: "Get",
+    tip: "Ready-made voices for this preset: download them instead of computing them (a few MB, a minute to import).",
+    title: "Ready-made voices for “{name}”",
+    intro: "Computed with Voice Creator Pro by TTV-TTS, with the quality check. They are downloaded from GitHub and saved in your Voice Creator Pro – no computing needed.",
+    first: "first {n}",
+    haveAll: "You have all of these already.",
+    start: "Download | Download {n} voice | Download {n} voices",
+    started: "Importing {n} downloaded voices – see the job list.",
+  },
   packs: {
     import: "Import pack",
     importTip: "Adds a voice pack (.ttvpack) from a friend or a download: its presets and its computed voices – nothing has to be computed again.",
@@ -519,6 +529,7 @@ export default {
     saved: "“{name}” saved with {n} voices.",
   },
   tips: {
+    downloads: "Packs of 30 voices per preset and language. Each download is checked (SHA-256) before it's imported; voices you have already are skipped.",
     packVoices: "The preset's first 30, 60, 120 voices or all – only computed ones go into the pack.",
     packContents: "One lossless sample (FLAC) per voice and language plus the preset; about 0.2 MB per voice.",
     qualityCheck: "After saving, every voice speaks a new sentence and TTV-TTS listens to it: pitch for the gender and age, loudness, pauses, pace, pronunciation and how alike its languages sound. Voices that may sound odd are listed on the Presets page so you can listen and decide. Adds about 15 % to the time.",

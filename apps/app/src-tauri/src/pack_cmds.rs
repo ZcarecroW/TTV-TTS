@@ -175,3 +175,114 @@ pub async fn export_pack(app: AppHandle, state: St<'_>, preset_id: String, langu
     let bytes = state.library.export_pack(&state, req, &to).await?;
     Ok(Some(ExportResult { path: to.to_string_lossy().into_owned(), voices: n, bytes }))
 }
+
+// ── ready-made packs (GitHub release "voice-packs") ─────────────────────
+
+/// Where the ready-made packs live. Only files listed in its catalog, with
+/// their SHA-256, are downloaded.
+const CATALOG: &str = "https://github.com/ZcarecroW/TTV-TTS/releases/download/voice-packs/catalog.json";
+const DOWNLOADS: &str = "https://github.com/ZcarecroW/TTV-TTS/releases/download/voice-packs/";
+
+/// One ready-made pack: voices `from`–`to` (1-based) of a built-in preset in one language.
+#[derive(Debug, Clone, Serialize, serde::Deserialize)]
+pub struct CatalogPack {
+    pub file: String,
+    pub preset: String,
+    pub lang: String,
+    pub from: u32,
+    pub to: u32,
+    pub voices: u32,
+    pub bytes: u64,
+    pub sha256: String,
+}
+
+#[derive(Debug, Clone, Default, Serialize, serde::Deserialize)]
+#[serde(default)]
+pub struct Catalog {
+    pub version: u32,
+    pub updated: String,
+    pub packs: Vec<CatalogPack>,
+}
+
+fn web() -> reqwest::Client {
+    reqwest::Client::builder()
+        .connect_timeout(std::time::Duration::from_secs(15))
+        .user_agent(concat!("TTV-TTS/", env!("CARGO_PKG_VERSION"), " (+https://github.com/ZcarecroW/TTV-TTS)"))
+        .build()
+        .expect("web client")
+}
+
+/// The list of ready-made packs (kept for 10 minutes).
+#[tauri::command]
+pub async fn pack_catalog() -> Result<Catalog, String> {
+    static CACHE: parking_lot::Mutex<Option<(std::time::Instant, Catalog)>> = parking_lot::Mutex::new(None);
+    if let Some((t, c)) = CACHE.lock().as_ref()
+        && t.elapsed() < std::time::Duration::from_secs(600)
+    {
+        return Ok(c.clone());
+    }
+    let r = web().get(CATALOG).timeout(std::time::Duration::from_secs(20)).send().await.map_err(|e| format!("The list of ready-made voices can't be loaded: {e}"))?;
+    if r.status() == reqwest::StatusCode::NOT_FOUND {
+        return Ok(Catalog::default());
+    }
+    let c: Catalog = r.error_for_status().map_err(|e| e.to_string())?.json().await.map_err(|e| e.to_string())?;
+    *CACHE.lock() = Some((std::time::Instant::now(), c.clone()));
+    Ok(c)
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct DownloadProgress {
+    file: String,
+    done: u64,
+    total: u64,
+}
+
+/// Downloads ready-made packs (checks each one's SHA-256) and imports them.
+#[tauri::command]
+pub async fn download_packs(app: AppHandle, state: St<'_>, files: Vec<String>) -> Result<Vec<JobView>, String> {
+    use sha2::Digest;
+    use tauri::Emitter;
+    use tokio::io::AsyncWriteExt;
+    let catalog = pack_catalog().await?;
+    let dir = std::env::temp_dir().join("ttv-tts-downloads");
+    tokio::fs::create_dir_all(&dir).await.map_err(|e| e.to_string())?;
+    let http = web();
+    let mut jobs = Vec::new();
+    for name in &files {
+        let pack = catalog.packs.iter().find(|p| &p.file == name).ok_or_else(|| format!("{name} isn't in the list of ready-made voices."))?;
+        if pack.file.contains(['/', '\\']) || pack.file.contains("..") {
+            return Err("The list of ready-made voices is broken.".into());
+        }
+        let path = dir.join(&pack.file);
+        let mut r = http.get(format!("{DOWNLOADS}{}", pack.file)).timeout(std::time::Duration::from_secs(3600)).send().await.map_err(|e| e.to_string())?.error_for_status().map_err(|e| e.to_string())?;
+        let mut f = tokio::fs::File::create(&path).await.map_err(|e| e.to_string())?;
+        let mut hash = sha2::Sha256::new();
+        let mut done = 0u64;
+        let mut last = std::time::Instant::now();
+        while let Some(chunk) = r.chunk().await.map_err(|e| e.to_string())? {
+            hash.update(&chunk);
+            done += chunk.len() as u64;
+            if done > pack.bytes + (1 << 20) {
+                return Err(format!("{}: larger than announced", pack.file));
+            }
+            f.write_all(&chunk).await.map_err(|e| e.to_string())?;
+            if last.elapsed() > std::time::Duration::from_millis(250) {
+                last = std::time::Instant::now();
+                let _ = app.emit("app://download", DownloadProgress { file: pack.file.clone(), done, total: pack.bytes });
+            }
+        }
+        f.sync_all().await.map_err(|e| e.to_string())?;
+        drop(f);
+        if hex::encode(hash.finalize()) != pack.sha256.to_lowercase() {
+            let _ = tokio::fs::remove_file(&path).await;
+            return Err(format!("{}: the download is damaged (checksum) – try again.", pack.file));
+        }
+        let _ = app.emit("app://download", DownloadProgress { file: pack.file.clone(), done, total: pack.bytes });
+        let m = ttv_engine::pack::read_manifest(&path)?;
+        add_presets(&state, &m);
+        let job = state.library.import_pack(&state, &path).await;
+        let _ = tokio::fs::remove_file(&path).await;
+        jobs.push(job?);
+    }
+    Ok(jobs)
+}

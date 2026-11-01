@@ -318,6 +318,16 @@ const de: typeof en = {
     newRandom: "{name} bekommt mit der nächsten Nachricht eine neue zufällige Stimme.",
     reassigned: "{name} spricht jetzt als {voice}.",
   },
+  downloads: {
+    button: "Holen",
+    tip: "Fertige Stimmen für dieses Preset: herunterladen statt berechnen (ein paar MB, eine Minute zum Importieren).",
+    title: "Fertige Stimmen für „{name}“",
+    intro: "Von TTV-TTS mit Voice Creator Pro berechnet, mit Qualitätsprüfung. Sie werden von GitHub geladen und in deinem Voice Creator Pro gespeichert – ohne Berechnung.",
+    first: "erste {n}",
+    haveAll: "Diese hast du schon alle.",
+    start: "Herunterladen | {n} Stimme herunterladen | {n} Stimmen herunterladen",
+    started: "Importiere {n} heruntergeladene Stimmen – siehe Auftragsliste.",
+  },
   packs: {
     import: "Paket importieren",
     importTip: "Fügt ein Stimmenpaket (.ttvpack) von Freunden oder aus einem Download hinzu: seine Presets und berechneten Stimmen – nichts muss neu berechnet werden.",
@@ -521,6 +531,7 @@ const de: typeof en = {
     saved: "„{name}“ mit {n} Stimmen gespeichert.",
   },
   tips: {
+    downloads: "Pakete mit 30 Stimmen pro Preset und Sprache. Jeder Download wird geprüft (SHA-256), bevor er importiert wird; Stimmen, die du schon hast, werden übersprungen.",
     packVoices: "Die ersten 30, 60, 120 Stimmen des Presets oder alle – nur berechnete kommen ins Paket.",
     packContents: "Eine verlustfreie Probe (FLAC) pro Stimme und Sprache plus das Preset; etwa 0,2 MB pro Stimme.",
     qualityCheck: "Nach dem Speichern spricht jede Stimme einen neuen Satz und TTV-TTS hört zu: Tonlage für Geschlecht und Alter, Lautstärke, Pausen, Tempo, Aussprache und wie ähnlich ihre Sprachen klingen. Stimmen, die seltsam klingen könnten, stehen dann auf der Presets-Seite – zum Anhören und Entscheiden. Kostet etwa 15 % mehr Zeit.",

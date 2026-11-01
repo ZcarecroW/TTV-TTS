@@ -444,7 +444,21 @@ export interface PackInfo {
   presets: PackPresetInfo[];
 }
 
+/** A ready-made pack: voices from–to of a built-in preset in one language. */
+export interface CatalogPack {
+  file: string;
+  preset: string;
+  lang: string;
+  from: number;
+  to: number;
+  voices: number;
+  bytes: number;
+  sha256: string;
+}
+
 export const packs = {
+  catalog: () => invoke<{ version: number; updated: string; packs: CatalogPack[] }>("pack_catalog"),
+  download: (files: string[]) => invoke<JobView[]>("download_packs", { files }),
   /** null when the user cancels */
   pick: () => invoke<string | null>("pick_pack"),
   info: (path: string) => invoke<PackInfo>("pack_info", { path }),

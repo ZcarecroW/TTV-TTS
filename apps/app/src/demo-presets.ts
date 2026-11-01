@@ -1,6 +1,6 @@
 // Demo backend: presets, computing jobs and the library. Used by demo.ts.
 // Reads the real built-in preset files; jobs progress on a timer.
-import type { EngineStatus, Issue, JobKind, JobView, Parsed, Preset, PresetDetail, PresetView, Quality, ReviewItem, VoiceDef } from "./api";
+import type { CatalogPack, EngineStatus, Issue, JobKind, JobView, Parsed, Preset, PresetDetail, PresetView, Quality, ReviewItem, VoiceDef } from "./api";
 
 const files = import.meta.glob("../src-tauri/presets/*.txt", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 
@@ -147,7 +147,7 @@ function tick(emit: Emit) {
     // improve / review: one voice per tick
     job.state = "running";
     // like the engine: a batch of voices per step
-    const batch = keys.splice(0, 16);
+    const batch = keys.splice(0, 32);
     const k = batch[batch.length - 1];
     for (const x of batch.slice(0, -1)) {
       if (job.kind === "improve") (quality.set(x, report(0.91, [], 120)), job.improved++);
@@ -301,6 +301,25 @@ export function presetCommand(cmd: string, args: Record<string, unknown>, emit: 
       engine.jobs.push(j);
       if (!timer) timer = window.setInterval(() => tick(emit), 700);
       return { value: [structuredClone(j)] };
+    }
+    case "pack_catalog": {
+      const c: CatalogPack[] = [];
+      for (const id of ["fantasy-tavern", "starship-crew"]) for (const lang of ["de", "en"]) c.push({ file: `${id}-${lang}-1-30.ttvpack`, preset: id, lang, from: 1, to: 30, voices: 30, bytes: 5_900_000, sha256: "0".repeat(64) });
+      return { value: { version: 1, updated: "2026-11-01", packs: c } };
+    }
+    case "download_packs": {
+      const out: JobView[] = [];
+      for (const f of args.files as string[]) {
+        const [id, lang] = [f.split("-").slice(0, -3).join("-"), f.split("-").slice(-3)[0]!];
+        const p = find(id);
+        const keys = p.defs.slice(0, 30).map((d) => `${hash(d)}:${lang}`).filter((k) => !library.has(k));
+        const j = job("import", p, [lang], keys.length, { speech_check: false, takes: 1, backup: true });
+        pending.set(j.id, keys);
+        engine.jobs.push(j);
+        out.push(structuredClone(j));
+      }
+      if (!timer) timer = window.setInterval(() => tick(emit), 700);
+      return { value: new Promise((res) => setTimeout(() => res(out), 600)) };
     }
     case "pick_pack":
       return { value: "C:\\Users\\demo\\Downloads\\Saturday Cartoons de en.ttvpack" };

@@ -81,6 +81,22 @@ check(/Mikey_TV/.test(vw) && /LenaPlays/.test(vw), "viewer list shows who chatte
 check((await page.locator("main table select").count()) >= 2, "voices can be reassigned by name (preset mode)", String(await page.locator("main table select").count()));
 check((await page.locator("main table select").first().locator("option").count()) === 31, "reassign offers the profile's 30 preset voices", String(await page.locator("main table select").first().locator("option").count()));
 
+// Ready-made voices: download instead of computing.
+await nav("presets");
+await page.waitForTimeout(500);
+const tavern = page.locator("article", { hasText: "Fantasy Tavern" });
+await tavern.getByRole("button", { name: /^(get|holen)$/i }).click();
+await page.waitForTimeout(500);
+let dl = page.locator("[role=dialog]");
+check(/Download 30 voices|30 Stimmen herunterladen/.test(await dl.innerText()), "ready-made voices are offered per preset", (await dl.innerText()).split("\n").slice(-3).join(" / "));
+await dl.getByRole("button", { name: /^(german|englisch)$/i }).click();
+await page.waitForTimeout(150);
+check(/Download 60 voices|60 Stimmen herunterladen/.test(await dl.innerText()), "more languages, more voices");
+await dl.getByRole("button", { name: /download 60 voices|60 stimmen herunterladen/i }).click();
+await page.waitForTimeout(6500);
+const tv = await tavern.innerText();
+check(/de 30/.test(tv) && /en 30/.test(tv) && !(await tavern.getByRole("button", { name: /^(get|holen)$/i }).count()), "downloaded voices are imported and the offer disappears", tv.replace(/\n/g, " ").slice(0, 120));
+
 // Voice packs: import one (preview first), share voices.
 await nav("presets");
 await page.waitForTimeout(300);

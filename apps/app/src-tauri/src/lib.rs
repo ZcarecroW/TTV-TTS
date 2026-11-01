@@ -126,6 +126,8 @@ pub fn run() {
             pack_cmds::pack_info,
             pack_cmds::import_pack,
             pack_cmds::export_pack,
+            pack_cmds::pack_catalog,
+            pack_cmds::download_packs,
             quality_cmds::quality_list,
             quality_cmds::keep_voices,
             quality_cmds::improve_voices,
