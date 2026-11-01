@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Midnight Horror
+desc: Haunted houses, creepy caretakers, ghosts, monsters and survivors of the night
+icon: Ghost
+---
+The Caretaker|m|71|Dry, rasping old baritone, slow and patient, every word a warning nobody listens to.
+Abigail Thorne|f|12|Soft, eerie child voice, slow and sing-song, a little girl who knows how the story ends.
+Dr. Morrow|m|55|Cold, precise baritone, calm and clinical, a doctor who enjoys his experiments too much.
+Clara Winters|f|28|Breathless, trembling mezzo, fast and frightened, a survivor hiding in the dark.
+The Hollow Man|n|50|Whispery, hollow androgynous voice, very slow, sounding like it comes from inside the walls.
+Father Ignatius|m|63|Grave, resonant older baritone, slow and solemn, a priest who has seen evil.
+Madame Lucille|f|67|Smoky, theatrical older alto, slow and ominous, a medium leading a séance.
+Danny Greer|m|17|Cracking, panicked young voice, fast and jokey, a teen who laughs when scared.
+Widow Blackwood|f|74|Thin, icy elderly soprano, slow and bitter, a widow who never left her house.
+Silas Crane|m|44|Low, gravelly baritone, quiet and menacing, a gravedigger with secrets.
+Nurse Edith|f|50|Sweet, too-calm alto, slow and soothing, a nurse whose kindness feels wrong.
+Tommy Pike|m|10|High, curious little voice, quick and brave, a boy who follows strange lights.
+The Count|m|58|Velvet-dark bass, slow and elegant, an ancient vampire who savors every syllable.
+Lilith Grey|f|33|Sultry, low mezzo, slow and hungry, a vampire countess.
+Old Mother Hagg|f|88|Cackling, cracked elderly voice, slow and wicked, a witch in the woods.
+Detective Hal Rourke|m|46|Tired, steady baritone, slow and skeptical, a detective who doesn't believe in ghosts.
+Ivy Marsh|f|21|Quick, nervous soprano, chatty and scared, a ghost-hunting streamer.
+Mr. Pickering|m|60|Polite, nasal tenor, slow and unsettling, a landlord who smiles too much.
+Rag Doll|n|8|Tiny, scratchy voice, slow and giggly, a doll that talks when nobody looks.
+Professor Grimsby|m|69|Excited, wheezy older tenor, fast and rambling, an occult scholar.
+Sarah Bell|f|39|Warm, worried mezzo, quick and protective, a mother defending her children.
+Jasper the Butler|m|77|Formal, slow old baritone, hollow and polite, a butler who died years ago.
+Margot Fell|f|45|Cold, controlled alto, slow and sharp, a scientist who opened the wrong door.
+Ezekiel Hart|m|36|Rough, intense baritone, short and fierce, a monster hunter.
+Annabelle Crowe|f|16|Whispery, dreamy young voice, slow and sad, a ghost girl on the stairs.
+Brother Malachi|m|52|Chanting, deep baritone, slow and fanatical, a cult leader.
+Grandma Rose|f|80|Sweet, wavering elderly voice, slow and unsettling, a grandmother who knows the old curse.
+The Stranger|m|40|Smooth, quiet baritone, slow and charming, a visitor who shouldn't exist.
+Ellie Foster|f|25|Bright, sarcastic mezzo, quick and brave, a reporter investigating disappearances.
+Whisperer|n|99|Barely audible, layered androgynous voice, very slow, the voice in the static.
+Victor Stein|m|48|Manic, intense baritone, fast and feverish, a scientist bringing back the dead.
+Agatha Mold|f|61|Damp, croaky older voice, slow and nosy, a landlady in a rotting boarding house.
+Billy Hatchet|m|29|Flat, slow tenor, quiet and blank, a farmhand who stares too long.
+Constance Vail|f|53|Prim, brittle soprano, slow and proper, a headmistress of a haunted school.
+Gregor the Ferryman|m|85|Deep, slow ancient bass, grim and patient, a ferryman across a black river.
+Lydia Shade|f|30|Soft, echoing soprano, slow and lost, a ghost bride.
+Officer Kowalski|m|34|Nervous, quick baritone, loud and jumpy, a cop on the night shift.
+Mother Superior|f|72|Severe, slow elderly alto, cold and pious, a nun guarding a terrible secret.
+Ambrose Lark|m|22|Shaky, soft young tenor, slow and polite, a student who found a diary.
+The Thing in the Basement|n|60|Gurgling, wet, low androgynous voice, slow and hungry.
+Harriet Doyle|f|42|Calm, firm mezzo, practical and brave, a paranormal investigator.
+Cyrus Graves|m|65|Hoarse, slow older baritone, cruel and amused, an undertaker.
+Penny Lockhart|f|19|Giggly, quick young voice, reckless and loud, a teen who says the name three times.
+Lucius Mortlake|m|57|Hissing, slow baritone, ancient and polite, a demon in a gentleman's coat.
+Dolores Crane|f|36|Husky, slow alto, sad and haunted, a woman who hears her lost son.
+Walter Finch|m|73|Quavering, slow old voice, frightened and kind, a neighbor who saw everything.
+Eve Nightingale|f|27|Clear, steady mezzo, calm and clever, a medium who is actually real.
+Grubb|m|41|Grunting, slow, low voice, simple and loyal, the asylum orderly.
+Miss Primrose|f|58|Sugary, slow older soprano, sweet and wrong, a teacher of a class no one leaves.
+Corbin Hale|m|31|Dry, sarcastic baritone, quick and tired, a skeptic filming everything.
+Old Jeb|m|82|Creaky, rambling old voice, slow and cryptic, a man at the gas station who warns you.
+Rosalind Mire|f|47|Smoky, slow alto, mysterious and cold, a swamp witch.
+Static|n|35|Crackling, broken androgynous voice, fast and glitching, a ghost in the radio.
+Dr. Helena Voss|f|51|Clinical, cold soprano, slow and exact, an asylum director.
+Marcus Black|m|38|Low, hunted baritone, quick and paranoid, a man running from something.
+Katie Bloom|f|14|Quick, scared young voice, whispering and brave, a girl hiding under the bed.
+Lord Ashcombe|m|66|Plummy, slow baritone, cold and proud, a lord of a cursed manor.
+Bertha Grimes|f|70|Raspy, slow older alto, grumpy and suspicious, a cook in a haunted hotel.
+Jonah Wilde|m|26|Hoarse, wild young voice, fast and terrified, a camper who lost his friends.
+Sister Agnes|f|64|Soft, chanting older voice, slow and eerie, a nun praying in the dark.
+The Puppeteer|m|54|Sing-song, creepy tenor, slow and playful, a man whose puppets move by themselves.
+Wren Hollis|n|24|Quiet, flat androgynous voice, slow and odd, a kid who talks to the dead.
+Captain Morrow|m|59|Weathered, slow baritone, hollow and sad, a ghost ship captain.
+Opal Graves|f|35|Sweet, slow mezzo, too calm, a woman who can't remember dying.
+Professor Lindqvist|m|62|Measured, dry older baritone, slow and curious, a scientist recording ghosts.
+Ruby Sallow|f|23|Chatty, quick mezzo, nervous and funny, a night clerk in a motel.
+Mr. Hush|m|45|Whispered, slow baritone, calm and threatening, a man who only whispers.
+Maggie Thorne|f|55|Gruff, slow alto, tough and dry, a farmer with a shotgun.
+Seth Ambrose|m|19|Soft, eerie young tenor, slow and smiling, a boy who came back wrong.
+Lady Morwen|f|76|Slow, regal elderly soprano, cold and ghostly, a portrait that speaks.
+Hector Lamb|m|35|Warm, quick baritone, brave and loyal, a best friend who never runs.
+The Crow|n|70|Croaking, slow androgynous voice, ominous and knowing, a crow who speaks prophecies.
+Elsa Marlow|f|40|Low, steady alto, calm and cold, a woman who sold her soul.
+Gideon Shaw|m|50|Rough, slow baritone, drunk and haunted, a lighthouse keeper.
+Chloe Webb|f|9|Tiny, sweet voice, slow and creepy, a girl with an imaginary friend.
+Barnabas Crowley|m|68|Deep, theatrical baritone, slow and grand, a magician of dark arts.
+Felicity Ward|f|32|Breathy, quick soprano, panicked and loud, a woman in a broken-down car.
+Doc Halloway|m|75|Wheezy, slow old voice, kind and tired, a country doctor who knows the town's secret.
+Regina Black|f|49|Commanding, slow mezzo, cruel and elegant, a coven leader.
+Toby Grubbs|m|13|Squeaky, quick young voice, scared and funny, a kid on a dare.
+Vesper Lune|f|29|Velvety, slow soprano, dreamy and dangerous, a ghost singer in an old theater.
+Mortimer Glass|m|43|Dry, flat baritone, slow and morbid, a coroner who talks to bodies.
+Ursula Fenn|f|62|Croaky, slow older voice, sly and cackling, a fortune teller at a carnival.
+Leon Duval|m|27|Charming, quick tenor, nervous and sweet, a boyfriend who wants to leave.
+The Bride|f|24|Soft, sobbing soprano, slow and echoing, a bride who never got married.
+Cal Rourke|m|52|Gruff, steady baritone, tough and brave, a sheriff in a cursed town.
+Martha Pell|f|86|Very slow, thin elderly voice, sweet and wrong, a grandmother in a rocking chair.
+Ash|n|20|Hoarse, quick androgynous voice, survivor-tough and blunt, the last one left.
+Rupert Hale|m|39|Polite, smooth baritone, slow and creepy, a real estate agent selling a haunted house.
+Noelle Frost|f|18|Clear, quick young voice, brave and stubborn, a girl who fights back.
+Dr. Ezra Cole|m|56|Calm, warm baritone, slow and kind, a psychiatrist who starts to believe.
+Hilda Bramble|f|69|Thick, slow older alto, folksy and ominous, a village wise woman.
+Jack Lantern|m|33|Crackling, quick tenor, mischievous and spooky, a pumpkin-headed trickster.
+Beatrix Moss|f|44|Earthy, slow alto, calm and strange, a woman who lives in the swamp.
+Gunther Graves|m|80|Rumbling, slow old bass, grim and tired, a tomb keeper.
+Nadia Volkov|f|31|Low, quiet alto, slow and serious, an exorcist.
+Pete Malloy|m|24|Joking, quick tenor, loud and scared, the funny guy who goes into the cellar.
+Selene Ashby|f|52|Hypnotic, slow mezzo, calm and seductive, a werewolf pack leader.
+Brother Thomas|m|37|Shaky, soft baritone, slow and doubtful, a young priest losing faith.
+Evelyn Marsh|f|60|Proper, slow older soprano, cold and polite, the hostess of a cursed dinner party.
+Kurt Wolfe|m|42|Growling, rough baritone, slow and restrained, a man fighting the beast inside.
+Millie Tate|f|11|Quick, curious little voice, brave and chatty, a girl with a flashlight.
+Edgar Pallid|m|64|Hollow, slow older tenor, poetic and morbid, a poet who writes about the dead.
+Ghostlight|n|45|Faint, flickering androgynous voice, slow and calm, a spirit that leads you astray.
+Ingrid Holm|f|38|Cool, steady alto, slow and wary, a scientist in an arctic station.
+Raymond Cutter|m|47|Flat, cold baritone, quiet and unsettling, a man who collects things.
+Daisy Rhodes|f|26|Bubbly, quick mezzo, cheerful and doomed, a camp counselor.
+Old Man Elmwood|m|90|Creaking, very slow ancient voice, deep and patient, a tree that remembers.
+Gwen Archer|f|34|Firm, quick mezzo, brave and smart, a ghost hunter with gadgets.
+Barnaby Thorn|m|58|Sly, slow tenor, polite and wicked, a shopkeeper selling cursed objects.
+Lucy Graves|f|15|Soft, sad young voice, slow and lonely, a ghost who wants a friend.
+Jeremiah Black|m|72|Thundering, slow old baritone, fanatical and loud, a preacher of doom.
+Mara Quill|f|46|Dry, slow alto, sarcastic and tough, a horror writer living the story.
+Dexter Cole|m|30|Nervous, quick tenor, nerdy and smart, the one who reads the old book.
+Lady Grimwald|f|79|Brittle, slow elderly soprano, proud and ghostly, the last of a cursed family.
+Samson Pike|m|49|Big, slow bass, quiet and gentle, a gentle giant groundskeeper.
+Holly Banks|f|20|Panicked, quick young voice, crying and brave, a final girl running through the woods.
+Vladimir Orsk|m|81|Rasping, very slow old voice, ancient and hungry, an old vampire.
+Iris Dunmore|f|57|Calm, kind older alto, slow and sad, a woman who sees the future in mirrors.
+The Collector|n|65|Smooth, slow androgynous voice, polite and terrifying, something that collects souls.
+Frank Hollister|m|61|Gruff, slow baritone, cynical and brave, a retired priest called back.
+Sadie Rooke|f|37|Raspy, quick alto, tough and loud, a biker fighting zombies.
+Pip Doyle|m|8|Tiny, giggly voice, slow and odd, a boy who laughs at nothing.
+Harlow Vance|f|43|Elegant, slow mezzo, cold and proud, a ghost of a movie star.
+Augustus Bleak|m|70|Dusty, slow older baritone, gloomy and formal, a funeral home owner.
+Cassidy Lane|f|22|Sarcastic, quick young mezzo, brave and funny, a goth girl who knows the rules.
+Mr. Teeth|m|50|Grinning, slow, wet baritone, polite and monstrous, a smiling creature.
+Prudence Cobb|f|65|Pinched, quick older voice, nosy and fearful, a neighbor peeking through blinds.
+Emmett Shaw|m|28|Soft, kind tenor, slow and doomed, a young husband in a cursed house.
+Mother Moth|n|55|Fluttery, breathy androgynous voice, slow and creepy, a spirit that lives in lamps.
+Celia Hart|f|30|Steady, warm mezzo, calm and caring, a nurse in a haunted hospital.
+Ignatius Bone|m|77|Clattering, dry old voice, slow and funny, a cheerful skeleton.
+Raven Ashford|f|17|Low, moody young voice, slow and dark, a teen witch.
+Boris Kull|m|53|Heavy, slow bass, menacing and silent, a mute giant who speaks once.
+Delilah Hush|f|48|Purring, slow alto, seductive and cruel, a siren of the swamp.
+Ricky Vance|m|16|Fast, cocky young voice, loud and scared, a teen who breaks into the old house.
+Grandpa Mortimer|m|84|Slow, kindly old voice, gentle and wrong, a grandfather who is a ghost.
+Opaline Vey|f|41|Glassy, slow soprano, calm and eerie, a woman made of mirrors.
+Zeke Crowley|m|35|Twangy, quick baritone, cocky and brave, a cowboy vampire hunter.
+Hattie Mae|f|73|Warm, slow elderly voice, folksy and spooky, a storyteller on the porch.
+Nightshade|n|28|Silky, slow androgynous voice, sweet and poisonous, a forest spirit.
+Desmond Graves|m|46|Calm, cold baritone, slow and empty, a man with no reflection.
+Elodie Mourne|f|59|Soft, slow older soprano, mournful and kind, a woman who sings to ghosts.
+Benji Russo|m|21|Laughing, quick tenor, jokey and nervous, a pizza delivery guy at the wrong house.
+Winona Blackhart|f|35|Strong, low alto, slow and fierce, a witch hunter.
+Uncle Ozzie|m|67|Wheezy, jolly older baritone, slow and suspicious, an uncle with a locked shed.
+Paige Turner|f|25|Quick, bookish mezzo, nervous and smart, a librarian who found the forbidden book.
+Grendel|m|45|Deep, growling bass, slow and furious, a monster from the marsh.
+Ophelia Drowned|f|19|Bubbling, soft young voice, slow and sad, a ghost from the lake.
+Inspector Lowe|m|59|Clipped, slow baritone, methodical and cold, a detective tracking a ripper.
+Vera Klein|f|54|Firm, slow older alto, stern and protective, a grandmother with silver bullets.
+Moss|n|12|Small, rustling androgynous voice, slow and shy, a creature in the garden.
+Sebastian Crane|m|32|Silky, slow tenor, charming and deadly, a vampire at a party.
+Bonnie Fields|f|28|Warm, quick mezzo, brave and sweet, a babysitter on the worst night.
+Mr. Lacey|m|63|Polite, slow tenor, fussy and creepy, a dollmaker.
+Magda Vrana|f|66|Rough, slow older alto, superstitious and wise, a woman with garlic in every pocket.
+Owen Marsh|m|11|Quick, curious little voice, brave and chatty, a boy with a walkie-talkie.
+The Lady in White|f|45|Faint, airy soprano, very slow and sad, a ghost on the road.
+Thaddeus Rook|m|56|Raspy, slow baritone, ominous and wise, a raven keeper.
+Lila Pierce|f|36|Sharp, quick alto, skeptical and brave, a journalist exposing a cult.
+Wendigo|n|80|Hoarse, hollow androgynous voice, slow and starving, a creature of the winter woods.
+Calvin Boyd|m|42|Plain, quiet baritone, slow and haunted, a father who hears his lost daughter.
+Edna Pruitt|f|78|Shrill, quick elderly voice, gossipy and scared, a church lady.
+Felix Graves|m|25|Smooth, slow tenor, dreamy and cold, a ghost who doesn't know he's dead.
+Josephine Hale|f|50|Rich, slow alto, calm and powerful, a healer of the bayou who keeps the spirits quiet.
+Hank Barlow|m|57|Gruff, slow baritone, tough and tired, a trucker who saw something on the road.
+Maisie Lowe|f|13|Soft, curious young voice, slow and odd, a girl who draws the future.
+Dr. Basil Wren|m|71|Shaky, slow older tenor, guilty and frail, a doctor who created the monster.
+Carmen Vasquez|f|33|Fiery, quick mezzo, brave and loud, a survivor with a crowbar.
+The Shadow on the Wall|n|40|Slithery, low androgynous whisper, slow and patient, a shadow that moves alone.
+Ronan Black|m|38|Low, brooding baritone, quiet and cursed, a man who turns at full moon.
+Flora Wickham|f|61|Sweet, slow older soprano, kind and strange, a gardener whose flowers whisper.
+Gus Haller|m|30|Rough, quick baritone, loud and brave, a mechanic fighting the night.
+Mirabel Ash|f|23|Breathy, slow young voice, frightened and soft, a girl in a dream that won't end.
+Edwin Fogg|m|74|Slow, foggy old voice, confused and creepy, a man lost in time.
+Sister Mercy|f|39|Gentle, warm mezzo, slow and steady, a nun who fights demons.
+Grim|n|99|Deep, slow, ancient androgynous voice, calm and final, death itself, polite and patient.
+Todd Pemberton|m|19|Cracking, scared young voice, quick and loud, a boy who heard the scream.
+Wilhelmina Dark|f|70|Thin, slow elderly voice, proud and cold, the last witch of the village.
+Lars Lindgren|m|44|Calm, steady baritone, slow and practical, a ranger in the dark forest.
+Penelope Ash|f|9|Tiny, sing-song voice, slow and creepy, a girl jumping rope alone.
+Victor Hale|m|52|Smooth, rich baritone, slow and sinister, a host of a cursed hotel.
+Esme Gallow|f|27|Quiet, slow mezzo, sad and calm, a hangman's daughter.
+Oswald Pike|m|66|Gravelly, slow older voice, grumpy and spooky, a man who lives in the cemetery.
+Nora Quill|f|31|Clear, quick soprano, smart and determined, a scientist recording EVP.
+Rattle|n|30|Clicking, dry androgynous voice, quick and creepy, a skeleton in the closet.
+Harvey Bone|m|23|Slow, flat young tenor, empty and polite, a zombie who still has manners.
+Matilda Crowhurst|f|58|Sharp, slow older alto, clever and cold, a lady who hosts séances.
+Jacob Thorne|m|40|Warm, steady baritone, calm and brave, a father protecting his family.
+Rosemary Fell|f|63|Gentle, slow older voice, sweet and sinister, a neighbor with cookies.
+Clifford Mott|m|35|Nervous, quick tenor, chatty and scared, a podcaster in a haunted asylum.
+The Organist|m|69|Hollow, slow old baritone, mournful and grand, a ghost who plays at midnight.
+Yvette Moreau|f|42|Smoky, slow alto, sad and haunting, a ghost of a jazz singer.
+Caleb Frost|m|14|Soft, scared young voice, quiet and brave, a boy alone in a snowbound house.
+Bertram Gloom|m|61|Dreary, slow baritone, pessimistic and funny, a gloomy innkeeper.
+Ivy Thornfield|f|21|Bright, quick young voice, curious and reckless, a girl who opens the attic.
+Sable|n|33|Velvet, slow androgynous voice, smooth and dangerous, a demon who makes deals.
+Lorenzo Vale|m|48|Theatrical, slow baritone, dramatic and creepy, a horror movie director.
+Mabel Grimshaw|f|81|Croaky, slow elderly voice, cackling and kind, a witch who likes children too much.
+Joel Hart|m|27|Steady, warm tenor, brave and calm, a survivor leading others.
+Celeste Moon|f|44|Calm, ethereal soprano, slow and wise, a medium with a crystal ball.
+Ambrose Fell|m|79|Thin, slow old voice, frail and frightening, a man who never dies.
+Pearl Dobbs|f|16|Quick, gum-chewing young voice, sassy and scared, a teen at a sleepover.
+Gideon Crowe|m|54|Low, slow baritone, cold and calm, a hunter of witches.
+Lenora Black|f|37|Dark, slow mezzo, poetic and sad, a widow who talks to ravens.
+Tobias Wick|m|31|Flickering, quick tenor, nervous and kind, a candle maker in a cursed town.
+The Nanny|f|56|Calm, sing-song older soprano, slow and wrong, a nanny who arrived uninvited.
+Hugo Barrow|m|36|Rough, slow baritone, haunted and sad, a soldier who came back.
+Marlowe|n|47|Smooth, slow androgynous voice, polite and eerie, the hotel's eternal concierge.
+Agnes Cole|f|29|Soft, quick mezzo, kind and frightened, a young teacher in a creepy village.
+Augusta Pale|f|67|Icy, slow older soprano, polite and chilling, a hostess who never lets guests leave.
+Ned Hollow|m|29|Dull, slow tenor, sleepy and empty, a night watchman who sleepwalks.
+Thea Locke|f|24|Quick, steady young mezzo, brave and smart, a girl who maps the haunted tunnels.
+Barnaby Spool|m|58|Squeaky, quick older tenor, nervous and odd, a tailor sewing with black thread.
+Odessa Bloom|f|45|Rich, slow alto, calm and knowing, a woman who reads the bones.
+Caspar Wren|m|12|Soft, scared little voice, quick and whispering, a boy hiding in the wardrobe.
+Mildred Vane|f|83|Shrill, slow elderly voice, sharp and spooky, a woman who counts the dead.
+Ezra Grimm|m|36|Hoarse, quick baritone, desperate and brave, a man buying time from a demon.
+Lucinda Marsh|f|31|Silky, slow soprano, cold and lovely, a ghost in a ballroom.
+Wallace Peck|m|74|Creaky, slow old baritone, cheerful and wrong, a carnival owner.
+Bridget Fane|f|19|Breathless, quick young voice, scared and stubborn, a girl lost in the corn maze.
+Nathaniel Crowe|m|50|Deep, slow baritone, grim and calm, a gravekeeper reading names.
+Evangeline Rot|f|55|Damp, slow older alto, sweet and decaying, a woman in a flooded house.
+Toby Marsh|m|33|Jumpy, quick tenor, funny and scared, a guy who keeps saying "nope".
+Rosalie Crane|f|40|Calm, firm mezzo, steady and brave, a nurse on the last ward.
+Igor Petrov|m|62|Rough, slow older baritone, loyal and grim, a lab assistant who carries too many secrets.
+Willa Graves|f|15|Flat, slow young voice, eerie and calm, a girl who is never surprised.
+Morgan Ashe|m|44|Smooth, slow baritone, persuasive and false, a cult recruiter.
+Hazel Pruitt|f|72|Kind, slow elderly voice, warm and haunted, a widow setting a plate for her husband.
+Dmitri Lukin|m|39|Low, steady baritone, calm and cold, a soldier in an abandoned bunker.
+Gemma Holt|f|27|Bright, quick mezzo, chatty and scared, a tour guide in a haunted castle.
+Arthur Gaunt|m|81|Very slow, rasping old voice, bitter and frail, an old man who made a deal.
+Polly Sedge|f|10|Tiny, giggly voice, quick and odd, a girl who plays with the ghost.
+Lionel Thorne|m|26|Quiet, polite tenor, slow and sad, a young man who keeps seeing his double.
+Margery Kemp|f|49|Gruff, slow alto, stubborn and brave, a woman who won't leave her farm.
+Jasper Lowe|m|53|Velvet, slow baritone, charming and cruel, an auctioneer of cursed things.
+Clementine Dusk|f|35|Soft, slow mezzo, dreamy and sad, a ghost who waits at the window.
+Fergus Mould|m|68|Wet, slow older voice, cheerful and gross, a cellar keeper.
+Ingrid Sorrow|f|22|Thin, quiet young voice, slow and lost, a girl from an old photograph.
+Hollowmouth|n|50|Echoing, deep androgynous voice, slow and cavernous, a voice from the well.

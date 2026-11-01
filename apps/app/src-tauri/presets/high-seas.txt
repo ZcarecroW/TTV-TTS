@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: High Seas
+desc: Pirate captains, sailors, sea witches, merchants and harbor folk
+icon: Anchor
+---
+Captain Redmane Harlow|m|54|Booming, salt-cracked baritone, slow and commanding, a pirate captain who enjoys the sound of his own voice.
+Annie Blackwater|f|32|Husky, fierce alto, fast and fearless, a pirate quartermaster who never loses a fight.
+Finn Rigby|m|17|Cracking, eager young voice, quick and breathless, a cabin boy on his first voyage.
+Granny Kelp|f|78|Croaky, gurgling elderly voice, slow and cackling, a sea witch in a shell hut.
+Old Barnacle Bill|m|72|Gravelly, wheezing old baritone, slow and rambling, a sailor with a thousand tall tales.
+Marisol Tidewell|f|27|Bright, quick mezzo, clever and daring, a navigator who reads the stars.
+Silas Grimtide|m|46|Cold, hissing baritone, slow and cruel, a captain of a ghost ship.
+Pearl Saltwhistle|f|40|Warm, brassy alto, loud and cheerful, the owner of a harbor tavern.
+Shellby|n|20|Bubbly, gurgling androgynous voice, quick and curious, a talking crab.
+Jonah Halyard|m|35|Rough, steady baritone, calm and loyal, a bosun who keeps the crew in line.
+Lady Coral Vance|f|55|Polished, cool soprano, slow and scheming, a governor's wife who funds pirates.
+Ned Bilge|m|29|Dopey, slow tenor, cheerful and confused, a deckhand who swabs the wrong deck.
+Morwenna Deep|f|64|Low, hypnotic alto, slow and haunting, a siren who has grown old.
+Gus Hookhand|m|60|Growly, loud bass, short and grumpy, a pirate cook with a hook.
+Nell Spindrift|f|19|Breezy, quick young voice, bold and laughing, a stowaway who climbs the rigging.
+Admiral Thaddeus Crowe|m|66|Stiff, clipped baritone, slow and proud, a navy admiral hunting pirates.
+Rosa Tempest|f|36|Stormy, loud mezzo, fast and passionate, a captain of a rival ship.
+Tobias Mudd|m|44|Squelchy, nasal tenor, quick and sneaky, a harbor fence buying stolen goods.
+Isla Marrow|f|23|Soft, lilting soprano, dreamy and sad, a fisherman's daughter waiting at the pier.
+Davy Sorrow|m|50|Hollow, echoing baritone, slow and mournful, a drowned sailor's ghost.
+Mother Brine|f|70|Rough, salty older alto, slow and wise, a lighthouse keeper.
+Cutlass Kate|f|30|Sharp, fast alto, cocky and dangerous, the best sword on the ship.
+Lucky Pete|m|38|Cheerful, quick baritone, gambling and grinning, a sailor who always wins at dice.
+Wavecrest|n|45|Rolling, deep androgynous voice, slow and vast, the voice of the ocean itself.
+Hamish Fogg|m|57|Thick, foggy baritone, slow and mumbling, a ferry master.
+Sabine Corsair|f|47|Silky, slow mezzo, elegant and cold, a privateer with a royal letter.
+Billy Two-Barrels|m|24|Loud, brash tenor, fast and reckless, a gunner who loves cannons.
+Evangeline Shoal|f|62|Gentle, wavering older soprano, slow and kind, a sailor's widow selling shells.
+Quartermaster Bones|m|69|Dry, rattling old voice, slow and creepy, a skeleton pirate.
+Tilly Tarbuck|f|15|Squeaky, quick young voice, nosy and brave, a harbor urchin.
+Captain Elias Vane|m|42|Smooth, charming baritone, slow and confident, a gentleman pirate.
+Maeve O'Driscoll|f|51|Hearty, quick alto, loud and warm, a fishmonger who knows every rumor.
+Crabbe the Cook|m|58|Bubbly, slurpy baritone, slow and jolly, a ship's cook who tastes everything.
+Delphine Azure|f|28|Clear, musical soprano, light and playful, a mermaid curious about humans.
+Ironbeard Gunnar|m|63|Huge, rolling bass, slow and fierce, a northern sea raider.
+Sally Seagrass|f|33|Easygoing, warm mezzo, slow and relaxed, a beachcomber.
+Squawk|n|30|Screechy, rapid androgynous voice, repeating words, a parrot with opinions.
+Benedict Plank|m|26|Nervous, high tenor, fast and polite, a navy clerk captured by pirates.
+Black Moira|f|45|Smoky, slow alto, menacing and calm, a pirate queen.
+Old Salt Sullivan|m|81|Very slow, crusty old voice, raspy and kind, a retired whaler.
+Captain Ophelia Drake|f|39|Commanding, clear mezzo, quick and decisive, a captain of the royal navy.
+Jem Marlinspike|m|21|Earnest, bright young baritone, quick and helpful, a rope boy.
+Sister Tide|f|58|Soft, chanting older voice, slow and mystical, a sea priestess.
+Rook Gallagher|m|36|Gruff, short baritone, suspicious and dry, a lookout in the crow's nest.
+Fleur Bonnaire|f|25|Charming, quick soprano, flirty and clever, a smuggler's daughter.
+Bartholomew Squall|m|67|Booming, theatrical old baritone, loud and grand, a pirate turned storyteller.
+Wanda Wavelet|f|20|Giggly, bubbly young voice, fast and silly, a dolphin trainer.
+Kraken Whisperer|n|60|Low, gurgling androgynous voice, slow and eerie, a hermit who talks to sea monsters.
+Mungo Barrel|m|48|Round, slurring baritone, slow and jolly, a rum barrel keeper.
+Esmeralda Reef|f|43|Rich, warm alto, slow and mysterious, a pearl diver.
+Captain Jory Thornbury|m|31|Cocky, quick tenor, smug and funny, a young captain with a stolen ship.
+Hester Galleon|f|73|Firm, slow older alto, proud and strict, the harbor master.
+Pip Gull|m|13|High, quick little voice, excited and chatty, a boy who feeds the seagulls.
+Ingrid Fathom|f|37|Cool, steady alto, calm and precise, a deep-sea diver.
+Grisly Graves|m|55|Hoarse, slow baritone, cruel and laughing, a slaver captain everyone hates.
+Clementine Salt|f|29|Bright, cheerful mezzo, quick and kind, a sailmaker.
+Admiral Pelican|m|80|Pompous, wobbly old voice, slow and confused, a retired admiral at the docks.
+Selkie Morn|f|24|Breathy, soft voice, slow and wistful, a seal woman.
+Jasper Driftwood|m|41|Laid-back, warm baritone, slow and dreamy, a castaway who loves his island.
+Gloria Mainsail|f|53|Loud, theatrical soprano, dramatic and fast, a ship's figurehead come alive.
+Cap'n Patch|m|65|Raspy, rolling older baritone, slow and sly, a one-eyed captain.
+Rosie Riggings|f|18|Quick, bright young voice, adventurous and loud, a deck girl.
+Mortimer Kelpie|m|52|Wet, slithery baritone, slow and sneaky, a sea monster in disguise.
+Theodora Fairwind|f|61|Warm, breezy older alto, slow and kind, a sea captain's mother.
+Gale|n|25|Whistling, quick androgynous voice, playful and wild, the wind spirit of the sails.
+Duncan Brigg|m|34|Steady, plain baritone, honest and calm, a navy sailor.
+Valentina Stormsong|f|35|Powerful, singing mezzo, slow and soaring, a sea shanty singer.
+Ezra Longboat|m|76|Slow, creaky old baritone, gentle and patient, a rowboat maker.
+Juniper Cove|f|16|Shy, quiet young voice, slow and kind, a girl who finds a treasure map.
+Ruben Cannonball|m|39|Booming, explosive baritone, loud and happy, a cannoneer.
+Mabel Mussel|f|67|Chatty, quick older voice, nosy and warm, a mussel farmer.
+Captain Lars Ebbe|m|58|Calm, deep baritone, slow and steady, a merchant captain.
+Nerissa Pearlgate|f|31|Silky, slow soprano, elegant and cool, a mermaid princess.
+Scurvy Sam|m|45|Toothless, mumbling baritone, slow and funny, a sick old pirate.
+Agnes Anchor|f|49|Heavy, firm alto, slow and stern, a dock foreman.
+Flint Harrow|m|27|Sharp, quick tenor, ambitious and sly, a mutineer.
+Tidecaller Ysra|n|50|Resonant, slow androgynous voice, mystical and calm, an ocean shaman.
+Ahab Greywell|m|71|Intense, gravelly old baritone, obsessed and slow, a whale hunter.
+Lottie Lantern|f|22|Warm, quick mezzo, cheerful and helpful, a lamp lighter on the pier.
+Horace Hull|m|62|Grumbling, slow baritone, cranky and kind, a shipwright.
+Coraline Bay|f|26|Bright, airy soprano, quick and curious, a young marine scientist.
+Bosun Brakk|m|47|Barking, loud baritone, short and strict, a bosun with a whistle.
+Old Mother Gull|f|84|Shrill, cackling elderly voice, slow and odd, a woman who speaks with birds.
+Rafe Saltmarsh|m|30|Smooth, slow baritone, brooding and handsome, a smuggler.
+Winnie Windlass|f|44|Practical, quick alto, busy and kind, a ship's carpenter.
+Dregs|m|23|Slurring, quick young voice, drunk and silly, a tavern regular.
+Lady Marina Wells|f|59|Refined, slow older soprano, sad and noble, a lady who lost her fleet.
+Captain Hollow|n|40|Echoing, cold androgynous voice, slow and ghostly, captain of a phantom ship.
+Gideon Gunwale|m|52|Gruff, steady baritone, slow and dry, a coast guard sergeant.
+Bess Brineberry|f|38|Hearty, loud alto, quick and laughing, a fish soup cook.
+Toby Tarpaulin|m|19|Nervous, quick young tenor, clumsy and kind, a sail boy.
+Cassia Wake|f|34|Cool, quiet alto, watchful and smart, a spy in the harbor.
+Gregor Maelstrom|m|68|Thunderous, slow bass, wild and proud, a storm captain.
+Pippa Prawn|f|11|Tiny, quick little voice, giggly and cheeky, a fisher kid.
+Captain Ivo Stern|m|49|Firm, clipped baritone, quick and efficient, a navy frigate captain.
+Delia Driftnet|f|56|Weathered, slow alto, tired and wise, a net mender.
+Kip Keelhaul|m|28|Wiry, fast tenor, sly and jumpy, a pickpocket sailor.
+Serafina Sunfish|f|21|Sunny, quick soprano, cheerful and loud, a tropical island girl.
+Wilbur Whalebone|m|74|Deep, slow old bass, kindly and sad, a scrimshaw carver.
+Marguerite Tide|f|42|Elegant, warm mezzo, slow and charming, a harbor inn hostess.
+Orca|n|35|Deep, clicking androgynous voice, slow and powerful, a whale who learned to speak.
+Barnaby Boatswain|m|59|Jolly, rolling baritone, loud and singing, a shanty leader.
+Ruby Rumrunner|f|29|Smoky, quick alto, sly and fun, a rum smuggler.
+Captain Nathaniel Crane|m|43|Polished, smooth baritone, slow and noble, an explorer captain.
+Hattie Hornpipe|f|66|Lively, quick older voice, dancing and cheerful, a fiddle player.
+Gill|m|12|Squeaky, wet little voice, quick and silly, a fish boy.
+Seraphine Storm|f|50|Intense, low alto, slow and fierce, a storm witch.
+Bruno Barnes|m|37|Thick, loud baritone, bullying and slow, a dock bully.
+Annabel Shore|f|19|Soft, dreamy young soprano, slow and romantic, a girl by the sea.
+Captain Rusty Pike|m|61|Creaky, slow baritone, rusty and kind, a captain of an old tugboat.
+Fiona Fathomlight|f|33|Bright, clear mezzo, adventurous and quick, a treasure diver.
+Sharkey|m|40|Grinning, slick baritone, slow and dangerous, a loan shark of the docks.
+Clam|n|8|Tiny, shy, mumbling voice, slow and closed-up, a clam who rarely talks.
+Henrietta Hawser|f|71|Firm, crackly older alto, quick and bossy, a ship owner.
+Tom Topsail|m|25|Bright, cheerful tenor, quick and strong, a top-mast climber.
+Lorelei Rocks|f|46|Haunting, singing alto, slow and alluring, a siren on the cliffs.
+Gaspard Mistral|m|53|Smooth, windy baritone, slow and dramatic, a wind-weathered smuggler captain.
+Meg Mackerel|f|27|Chatty, quick mezzo, loud and funny, a fish market girl.
+Ulysses Coldwater|m|78|Weary, slow old baritone, wise and sad, a sailor who never came home.
+Daisy Dinghy|f|14|Bright, quick young voice, brave and bossy, a girl with her own little boat.
+Captain Felix Fortune|m|35|Charming, quick baritone, lucky and bold, a treasure-hunting captain.
+Sybil Seafoam|f|60|Airy, slow older soprano, dreamy and odd, a sea fortune teller.
+Brick Breakwater|m|44|Heavy, slow baritone, stubborn and strong, a harbor wall builder.
+Coralie Bright|f|24|Bubbly, quick soprano, cheerful and excited, a reef guide.
+Stormy Petrel|n|29|Sharp, quick androgynous voice, restless and witty, a messenger bird.
+Augustus Ballast|m|64|Pompous, heavy baritone, slow and boring, a merchant guild master.
+Molly Mizzen|f|30|Warm, quick alto, friendly and capable, a sailing instructor.
+Captain Grimsby|m|73|Grumpy, gravelly old bass, slow and stubborn, a ferry captain who refuses to retire.
+Lina Lagoon|f|20|Soft, calm young voice, slow and gentle, a lagoon swimmer.
+Fergal Flotsam|m|33|Scruffy, quick baritone, cheerful and broke, a beachcomber thief.
+Odile Abyss|f|57|Deep, slow alto, cold and ancient, a queen of the deep.
+Jolly Roger Jones|m|50|Laughing, booming baritone, loud and fun, a pirate who loves parties.
+Beatrix Bowline|f|41|Precise, crisp alto, quick and smart, a knot master.
+Neville Brine|m|18|Quiet, curious young voice, slow and thoughtful, a boy who wants to explore the deep.
+Old Ma Mackintosh|f|82|Raspy, slow elderly voice, sharp and funny, an island hermit.
+Corvin Blackmast|m|39|Cold, quiet baritone, slow and calculating, a pirate strategist.
+Lily Lighthouse|f|17|Bright, clear young voice, brave and quick, a lighthouse keeper's daughter.
+Sea Shanty Sid|m|56|Singing, rolling baritone, rhythmic and jolly, a sailor who sings everything.
+Rhoda Rudder|f|52|Firm, steady alto, calm and steering, a helmswoman.
+Marlin|n|38|Smooth, swift androgynous voice, quick and proud, a talking swordfish.
+Hector Harpoon|m|47|Rough, short baritone, tough and dry, a harpooner.
+Amelia Ashore|f|28|Warm, clear mezzo, wistful and brave, a sailor who returned home.
+Captain Bluebeard Moss|m|60|Deep, slow bass, mysterious and grand, a legendary pirate.
+Pearlie Mae|f|35|Sweet, lilting alto, slow and warm, a pearl seller.
+Inky|n|15|Squirty, quick, nervous voice, shy and silly, a young octopus.
+Edmund Ebbtide|m|69|Soft, slow older baritone, gentle and poetic, a tide watcher.
+Greta Gangplank|f|45|Loud, blunt alto, quick and rough, a pirate who guards the plank.
+Matthias Mast|m|22|Strong, clear young baritone, steady and proud, a mast climber.
+Siren Solenne|f|38|Hypnotic, slow soprano, alluring and dangerous, a siren queen.
+Ignatius Eel|m|54|Slippery, hissing tenor, slow and sly, a harbor informant.
+Tamsin Trawler|f|49|Practical, gruff alto, quick and dry, a fishing boat captain.
+Ollie Oar|m|10|Puffing, small voice, quick and determined, a boy rowing his first boat.
+Vivienne Voyage|f|63|Elegant, slow older soprano, worldly and kind, a famous explorer.
+Bertie Buoy|m|32|Bouncy, cheerful tenor, quick and silly, a harbor pilot.
+Mira Moonwater|f|26|Soft, silvery soprano, slow and dreamy, a night swimmer.
+Captain Kestwell|m|48|Charming, slick baritone, slow and greedy, a pirate who buries everything.
+Ashore Annie|f|75|Warm, slow elderly voice, kind and chatty, a sailors' boarding house mother.
+Cormorant|n|55|Dark, croaking androgynous voice, slow and ominous, a bird of bad omens.
+Duke Dunmore|m|65|Plummy, slow baritone, arrogant and rich, a shipping magnate.
+Wren Wavedancer|f|23|Light, quick young voice, joyful and free, a sailboat racer.
+Rory Riptide|m|29|Fast, rough tenor, wild and reckless, a surfer-pirate.
+Gwendolyn Gale|f|54|Strong, windy older alto, slow and proud, a storm chaser captain.
+Lemuel Lanyard|m|36|Fussy, quick tenor, precise and nervous, a ship's purser.
+Calypso Reyes|f|40|Rhythmic, warm alto, slow and mysterious, an island queen.
+Toothless Tim|m|77|Lisping, slow old voice, funny and kind, a retired pirate.
+Bella Bilgewater|f|18|Sassy, quick young voice, loud and messy, a ship's cleaner.
+Captain Isidore Ash|m|56|Hoarse, slow baritone, tired and honest, a captain who lost a war.
+Opaline Shell|f|69|Delicate, slow older soprano, fragile and kind, a shell collector.
+Whitecap|n|22|Foamy, quick androgynous voice, bubbly and restless, a wave spirit.
+Murdoch Keel|m|42|Gravelly, slow baritone, hard and loyal, a first mate.
+Saffron Spice|f|31|Warm, quick mezzo, persuasive and fun, a spice trader.
+Admiral Wexford|m|70|Commanding, slow old bass, proud and stern, an admiral of the fleet.
+Dottie Dock|f|13|Quick, chirpy young voice, nosy and smart, a harbor messenger girl.
+Barnabas Bell|m|51|Ringing, loud baritone, steady and clear, the harbor bell ringer.
+Imogen Inlet|f|36|Calm, gentle alto, slow and soothing, a sailor's nurse.
+Cap'n Crusty|m|83|Grumbling, very slow old voice, cranky and funny, the oldest pirate alive.
+Nixie Spray|f|19|Splashy, giggly young voice, fast and playful, a water nymph.
+Victor Vortex|m|38|Swirling, dramatic baritone, fast and wild, a whirlpool pirate.
+Constance Compass|f|47|Steady, precise alto, calm and sure, a navigator who never gets lost.
+Salty|n|42|Rough, salty androgynous voice, slow and sarcastic, a talking ship's cat.
+Augustin Spar|m|26|Bright, quick tenor, eager and polite, a navy midshipman.
+Mother Maelstrom|f|80|Ancient, deep, swirling voice, slow and terrible, the spirit of a whirlpool.
+Jebediah Jib|m|58|Folksy, slow baritone, warm and chatty, a sailmaker.
+Kaia Seaborne|f|25|Strong, clear young mezzo, bold and steady, a harpooner girl.
+Lord Longshore|m|67|Refined, slow baritone, cold and rich, a lord who owns the harbor.
+Flora Flotilla|f|34|Bright, organized mezzo, quick and bossy, a fleet coordinator.
+Squidge|n|7|Tiny, squishy voice, giggly and slow, a baby squid.
+Rex Reefbreaker|m|45|Booming, proud baritone, loud and bold, a ship that never sank's captain.
+Hermione Harbor|f|58|Warm, refined older alto, slow and kind, a harbor school teacher.
+Caspian Crest|m|20|Light, dreamy young tenor, slow and romantic, a poet sailor.
+Mara Mudflat|f|43|Low, earthy alto, slow and secretive, a smuggler's lookout.
+Bosco Bollard|m|30|Thick, slow baritone, simple and kind, a dock worker.
+Celestine Sail|f|72|Graceful, slow older soprano, wistful and proud, a retired racing captain.
+Gunwhale Greg|m|40|Rough, quick baritone, loud and joking, a cannon crew chief.
+Ivy Islewood|f|29|Fresh, quick mezzo, cheerful and curious, a botanist on an island.
+Captain Mortlake|m|63|Dark, slow baritone, cursed and grim, a captain who can't die.
+Bonnie Brig|f|21|Feisty, quick young alto, rebellious and loud, a pirate recruit.
+Tidewater Tom|m|71|Slow, rolling old baritone, kind and knowing, a fisherman who predicts storms.
+Sable Sound|n|33|Dark, quiet androgynous voice, slow and secretive, a smuggler of secrets.
+Nils Northwind|m|37|Cold, steady baritone, calm and tough, a polar sailor.
+Pandora Plunder|f|39|Greedy, quick alto, sly and fun, a treasure hunter.
+Baxter Bilge|m|16|Squeaky, nervous young voice, clumsy and polite, a bilge boy.
+Lady Seaspray|f|50|Airy, slow mezzo, elegant and mysterious, a noblewoman who sails alone.
+Captain Gallant|m|33|Heroic, clear baritone, bold and kind, a navy hero.
+Mabel Mooring|f|64|Gruff, slow older voice, practical and dry, a dock lady.
+Captain Wilhelmina Frost|f|48|Icy, commanding alto, slow and precise, a captain of an ice-breaker ship.
+Rollo Rumbelow|m|52|Booming, merry bass, loud and laughing, a pirate who sings while he fights.
+Kitty Kedge|f|22|Quick, scrappy young voice, sharp and funny, a ship's thief.
+Hugo Hightide|m|35|Bright, confident baritone, quick and proud, a racing yacht captain.
+Pearl Diver Pia|f|27|Breathy, calm young voice, slow and focused, a diver holding her breath.
+Old Tom Tackle|m|79|Raspy, slow old voice, warm and joking, a bait shop owner.
+Zelda Zephyrine|f|61|Airy, dramatic older soprano, slow and grand, a retired figurehead carver.
+Ronan Rockpool|m|14|Bright, quick young voice, curious and loud, a boy catching crabs.
+Magda Mainbrace|f|55|Gruff, loud older alto, short and strict, a pirate ship's cook.
+Silvio Squid|m|41|Inky, slithery baritone, slow and sneaky, a squid pirate.
+Florence Fairhaven|f|33|Warm, refined mezzo, slow and kind, a harbor doctor.
+Bartley Barrelhouse|m|46|Slurry, cheerful baritone, slow and loud, a tavern rum taster.
+Thessaly Tidepool|f|19|Soft, curious young voice, slow and dreamy, a girl who talks to starfish.
+Gregory Grog|m|60|Wheezy, jolly old baritone, slow and rambling, a grog brewer.
+Isadora Ironsides|f|44|Strong, booming alto, loud and proud, a warship captain.
+Lennox Ledger|m|28|Precise, nervous tenor, quick and polite, a ship's bookkeeper.
+Agatha Albatross|f|70|Croaky, slow older voice, ominous and wise, a woman who reads omens.
+Captain Dashwood|m|39|Dashing, smooth baritone, fast and charming, a captain who escapes every prison.
+Rina Rainsquall|f|31|Stormy, quick mezzo, fiery and loud, a weather mage on a ship.
+Benny Bowsprit|m|24|Cheerful, quick tenor, loud and silly, a lookout who sees too much.
+Morgana Mooncove|f|57|Smoky, slow older alto, secretive and calm, a smuggler queen.
+Hobb Hawsepipe|m|67|Creaky, slow old baritone, grumpy and funny, an anchor keeper.
+Daria Deepwater|f|36|Cool, steady alto, quiet and brave, a submarine pilot.
+Tobiah Trident|m|50|Deep, regal bass, slow and proud, a king of the sea.
+Emmeline Ebb|f|25|Gentle, airy soprano, slow and sad, a ghost bride on the shore.
+Cecil Seawall|m|58|Dry, slow baritone, cautious and kind, a harbor engineer.
+Polly Powderkeg|f|21|Fizzy, fast young voice, explosive and fun, a gunpowder girl.
+Marcus Moorhen|m|32|Calm, kind baritone, slow and quiet, a river boatman.
+Gertie Galley|f|74|Chatty, warm elderly voice, quick and loving, a galley cook grandma.
+Rupert Riggs|m|20|Lively, bright young tenor, quick and daring, a rigging climber.
+Nadia Nautilus|f|42|Mysterious, low alto, slow and clever, a captain of a strange submarine.
+Wally Waterline|m|45|Steady, warm baritone, slow and reliable, a ship inspector.
+Shoal|n|26|Murmuring, many-voiced androgynous tone, quick and shimmering, a school of fish speaking as one.
+Tidebound|n|65|Slow, heavy, ancient androgynous voice, patient and deep, a sunken statue that speaks.
+Brine|n|31|Salty, rough androgynous voice, dry and blunt, a pirate who refuses to give a name.

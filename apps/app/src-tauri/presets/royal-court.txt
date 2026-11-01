@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Royal Court
+desc: Kings, queens, knights, advisors, jesters and servants of a medieval palace
+icon: Crown
+---
+King Aldemar the Third|m|61|Deep, regal bass, slow and weighty, a king who expects silence when he speaks.
+Queen Isabeau|f|48|Cool, elegant mezzo, measured and precise, a queen who rules from behind the throne.
+Prince Lucan|m|19|Bright, impatient young tenor, quick and proud, a prince who wants adventure.
+Dowager Queen Mathilde|f|79|Brittle, cutting elderly soprano, slow and imperious, a grandmother who still runs the court.
+Sir Gawen Ironheart|m|36|Strong, honest baritone, steady and loyal, a knight of the royal guard.
+Lady Rosalind Vere|f|27|Silvery, charming soprano, quick and witty, a lady-in-waiting who hears every secret.
+Chancellor Morvane|m|57|Silky, low baritone, slow and scheming, an advisor who whispers to the king.
+Pip the Jester|n|30|Bouncy, sing-song androgynous voice, rapid and cheeky, a jester who mocks everyone.
+Brother Anselm|m|68|Soft, chanting older tenor, slow and gentle, the royal confessor.
+Princess Elowen|f|16|Clear, spirited young voice, fast and stubborn, a princess who refuses to marry.
+Lord Bertrand Ashcombe|m|50|Pompous, plummy baritone, slow and self-important, a duke with too many titles.
+Mistress Agnes Hearth|f|63|Brisk, warm older alto, quick and bossy, the head of the palace kitchens.
+Squire Tobin|m|14|Cracking, eager young voice, quick and nervous, a squire carrying armor.
+Lady Morgause Thorne|f|44|Velvety, dark alto, slow and dangerous, a sorceress at court.
+Captain Garrick Hale|m|42|Gruff, commanding baritone, short and clipped, the captain of the palace guard.
+Countess Viviane Delacourt|f|38|Refined, slow mezzo, haughty and amused, a foreign countess on a visit.
+Master Oswin the Scribe|m|74|Reedy, precise old tenor, slow and fussy, a royal scribe who corrects everyone.
+Maid Bettany|f|20|Shy, soft young voice, quick and polite, a chambermaid.
+Herald Barnaby Trumpet|m|47|Loud, ringing baritone, theatrical and slow, a herald announcing guests.
+Sister Ermengarde|f|71|Thin, stern older voice, slow and pious, the abbess of the royal chapel.
+Sir Percival Dunstan|m|55|Booming, jovial baritone, loud and boastful, an old knight with endless war stories.
+Lady Catrin Wolfe|f|33|Low, steady alto, calm and clever, the queen's spymistress.
+Falconer Wren|n|41|Quiet, husky androgynous voice, slow and watchful, the keeper of the royal falcons.
+Baron Ulfric Grimsby|m|64|Gravelly, cold bass, slow and greedy, a baron who taxes the poor.
+Princess Seraphine|f|24|Warm, graceful soprano, gentle and kind, the beloved eldest princess.
+Royal Physician Hollis|m|59|Calm, dry baritone, slow and careful, the king's doctor.
+Old Nurse Tilda|f|83|Wobbly, warm elderly voice, slow and loving, the nurse who raised the king.
+Sir Kael Blackthorn|m|29|Cold, quiet baritone, slow and menacing, a black knight in disgrace.
+Lady Marigold Fenwick|f|52|Chatty, bright older soprano, fast and gossipy, a court matron.
+Jester Motley|m|25|Squeaky, rapid tenor, silly and sharp, a jester who juggles insults.
+Cardinal Severin|m|70|Grave, resonant older baritone, slow and powerful, a church leader with ambitions.
+Queen Consort Adela|f|35|Soft, careful mezzo, gentle and wise, a young queen learning to rule.
+Stable Master Hob|m|46|Rough, warm baritone, slow and plain, the keeper of the royal horses.
+Lady Isolde Varrick|f|28|Sharp, quick soprano, ambitious and cold, a lady plotting to become queen.
+Grand Duke Leopold|m|66|Rich, aristocratic baritone, slow and condescending, the king's uncle.
+Minstrel Elian|m|23|Melodic, light tenor, dreamy and romantic, a court musician.
+Marchioness Hildegard|f|60|Severe, crisp older alto, slow and disapproving, a guardian of etiquette.
+Kitchen Boy Wat|m|12|High, quick little voice, cheeky and hungry, a boy who steals pastries.
+Lady Yseult Moreland|f|41|Rich, warm alto, slow and confident, a widow who owns half the kingdom.
+The Royal Astrologer|n|58|Breathy, mystical androgynous voice, slow and cryptic, a stargazer who predicts doom.
+Sir Roland Fairbright|m|31|Heroic, clear baritone, bold and kind, the realm's champion.
+Lady Philippa Grey|f|57|Cool, dry older mezzo, slow and amused, the queen's oldest friend.
+Master of Coin Fennick|m|53|Nasal, precise tenor, quick and stingy, a treasurer counting every coin.
+Princess Lark|f|9|Squeaky, giggly little voice, fast and bossy, the youngest princess.
+Executioner Gorm|m|49|Deep, slow, flat bass, quiet and grim, a royal executioner who loves gardening.
+Lady Beatrix Holloway|f|32|Bright, quick mezzo, cheerful and clever, the queen's translator.
+Archbishop Theobald|m|76|Frail, solemn old baritone, slow and dignified, the oldest priest of the realm.
+Washerwoman Mags|f|50|Loud, rough alto, fast and funny, a laundress who knows everything.
+Sir Aldous Penhallow|m|62|Dry, wry older baritone, slow and sarcastic, a retired knight.
+Lady Celestine Moray|f|22|Airy, sweet soprano, dreamy and naive, a young bride at court.
+Royal Cook Bramwell|m|58|Thick, jolly baritone, loud and fussy, the royal chef.
+Duchess Ottilie|f|67|Imperious, slow older soprano, cold and grand, a duchess who hates the queen.
+Page Ellery|m|15|Clear, polite young voice, quick and formal, a royal page.
+Lady Ravenna Sloane|f|46|Smoky, slow alto, sly and seductive, a courtier with dangerous friends.
+Master-at-Arms Brodrick|m|44|Barking, loud baritone, short and strict, the trainer of knights.
+Abbess Hildegunde|f|75|Calm, chanting elderly voice, slow and wise, a healer nun.
+Prince Regent Edmund|m|40|Smooth, controlled baritone, slow and careful, a regent hiding a secret.
+Mistress Juniper|f|36|Warm, earthy alto, slow and kind, the royal herbalist.
+Court Fool Bumble|m|54|Wobbly, silly baritone, slow and confused, a fool who is secretly the wisest.
+Lady Gwendolyn Ashby|f|26|Clear, determined mezzo, quick and brave, a lady who wants to be a knight.
+Sir Mordred Vale|m|38|Silky, cold tenor, slow and treacherous, a knight plotting against the king.
+Royal Seamstress Odile|f|43|Precise, quick alto, fussy and sharp, a dressmaker with pins in her mouth.
+Gatekeeper Ulf|m|63|Gruff, slow bass, suspicious and dull, the keeper of the castle gate.
+Princess Marguerite|f|30|Cool, measured soprano, intelligent and dry, a scholar princess.
+Lord Chamberlain Fitzroy|m|69|Prim, clipped older baritone, slow and exact, the master of ceremonies.
+Lady Wynne Tallow|f|19|Bright, chatty young voice, fast and silly, a lady obsessed with fashion.
+Bard Corwyn|m|45|Rich, storytelling baritone, rhythmic and warm, a bard singing of old wars.
+Queen Mother Ysolde|f|72|Warm, regal older alto, slow and loving, a beloved former queen.
+Knight Errant Tamsin|f|34|Strong, low alto, short and fearless, a wandering knight.
+Bishop Ignatius|m|56|Nasal, slow baritone, pious and greedy, a bishop who loves gold.
+Lady Elinor Graves|f|61|Hollow, slow older soprano, sad and eerie, a lady who talks to ghosts.
+Sir Hugh Montclair|m|27|Charming, quick tenor, flirty and bold, a young knight who loves tournaments.
+Royal Nanny Prudence|f|55|Firm, warm older alto, slow and strict, the nanny of the royal children.
+Count Vladislav Orsini|m|51|Velvet, slow baritone, elegant and threatening, a foreign count.
+Maid of Honor Clare|f|23|Gentle, sweet soprano, quick and loyal, the princess's closest friend.
+Royal Armorer Hask|m|60|Clanking, rough baritone, slow and proud, a smith who forges crowns and swords.
+Lady Sabine d'Arcy|f|39|Silky, low mezzo, slow and clever, a diplomat from across the sea.
+Hermit Advisor Ambrose|n|85|Ancient, slow, papery androgynous voice, wise and odd, an old sage summoned to court.
+Prince Corin|m|11|Bright, high little voice, curious and loud, the youngest prince.
+Lady Evangeline Pryce|f|47|Sharp, cold alto, quick and cutting, the queen's rival.
+Sir Brannock the Bold|m|33|Loud, hearty baritone, fast and reckless, a knight who charges first.
+Lady Ottoline Swift|f|64|Brisk, chirpy older voice, fast and nosy, a court gossip.
+Treasurer Silas Crane|m|48|Dry, careful tenor, slow and suspicious, a treasurer who trusts no one.
+Lady Mirabel Sunfield|f|21|Radiant, warm soprano, cheerful and kind, a lady who feeds the poor.
+Grand Inquisitor Malachai|m|67|Cold, hissing old baritone, slow and terrifying, a judge of heretics.
+Lady Rowena Ash|f|37|Calm, warm mezzo, steady and protective, the princess's bodyguard.
+Royal Gardener Tobias|m|71|Soft, earthy old baritone, slow and kind, a gardener who talks to roses.
+Lady Delphine Marchbank|f|53|Theatrical, rich soprano, dramatic and loud, a court poet.
+Sir Eamon Greystone|m|45|Weary, low baritone, slow and honest, a knight tired of war.
+Little Lady Posy|f|7|Tiny, sweet voice, slow and shy, a duke's little daughter.
+Steward Garrow|m|58|Plain, firm baritone, slow and dependable, the castle steward.
+Lady Sybilla Nightshade|f|42|Whispery, dark soprano, slow and sinister, a poisoner disguised as a lady.
+Jester Pomfrey|m|62|Raspy, cackling older voice, quick and bitter, an old jester who has seen three kings.
+Princess Aurelia|f|18|Bright, bold young voice, quick and adventurous, a princess who sneaks out at night.
+Lord Admiral Seaborne|m|59|Booming, salty baritone, loud and proud, the commander of the royal fleet.
+Lady Henrietta Vane|f|69|Precise, cool older soprano, slow and calculating, a lady who arranges marriages.
+Sir Lancelin du Pré|m|30|Smooth, gallant tenor, slow and romantic, a knight in love with the queen.
+Kitchen Maid Dorrie|f|17|Quick, cheerful young voice, chatty and kind, a kitchen maid.
+Lord Protector Varn|m|52|Hard, commanding baritone, slow and cold, a protector who wants the throne.
+Lady Iolanthe Bright|f|29|Musical, lilting soprano, quick and playful, a singer at court.
+Brother Cuthbert|m|40|Gentle, soft tenor, slow and humble, a monk who keeps the library.
+Lady Magdalena Rook|f|58|Low, slow older alto, sly and patient, a spymaster's wife.
+Prince Valerian|m|24|Arrogant, smooth tenor, slow and lazy, a spoiled prince.
+Lady Clementine Hale|f|45|Warm, motherly mezzo, slow and kind, a lady who runs an orphanage.
+Sir Godric Hammerfell|m|65|Thunderous, slow bass, gruff and loyal, an old warlord knight.
+Lady Isadora Quince|f|26|Breathy, nervous soprano, quick and frightened, a lady who saw a murder.
+Royal Tutor Alcott|m|57|Patient, precise baritone, slow and clear, the tutor of the princes.
+Lady Lavinia Crow|f|73|Croaky, sharp elderly voice, slow and cruel, a bitter old aunt.
+Sir Tristram Lyle|m|35|Melancholy, soft baritone, slow and poetic, a knight who lost his love.
+Royal Midwife Bess|f|49|Calm, warm alto, steady and practical, the royal midwife.
+Prince Hadrian|m|33|Calm, wise baritone, measured and kind, the heir who will be a good king.
+Lady Fenella Marsh|f|31|Quick, dry mezzo, sarcastic and clever, a lady who mocks the court.
+Lord Justice Penrose|m|74|Slow, stern old baritone, grave and fair, the highest judge.
+Lady Arabella Finch|f|20|Chirpy, quick young soprano, cheerful and naive, a lady who loves birds.
+Mercenary Captain Roth|m|43|Rough, quiet baritone, slow and dangerous, a hired sword at court.
+Lady Winifred Oakes|f|80|Thin, kind elderly voice, slow and wise, the eldest lady of the court.
+Sir Basil Featherstone|m|47|Fussy, nasal baritone, quick and cowardly, a knight who avoids fighting.
+Lady Rosamund Blythe|f|36|Elegant, warm mezzo, slow and charming, the queen's favorite.
+Court Painter Lorenzo|m|39|Expressive, warm tenor, quick and passionate, a painter of royal portraits.
+Lady Gisela Stark|f|54|Firm, cold older alto, slow and stern, a warrior queen's sister.
+Sir Fergus Thornwood|m|28|Eager, bright baritone, quick and brave, a young knight on his first quest.
+Lady Ophelia Wren|f|25|Soft, wistful soprano, slow and sad, a lady who writes poems.
+Sir Ector Brandon|m|70|Kindly, slow old baritone, warm and proud, a foster father to a king.
+Lady Hester Gale|f|40|Brisk, sharp alto, quick and efficient, the castle's housekeeper.
+Guard Wilkins|m|26|Bored, slow tenor, sleepy and dull, a guard at the treasure room.
+Lady Fiora Bellamy|f|33|Lively, quick soprano, dancing and bright, the court's best dancer.
+Lord Malvern Hawke|m|55|Sneering, nasal baritone, slow and arrogant, a lord who hates commoners.
+Princess Juniper|f|13|Clever, quick young voice, bossy and curious, a princess who reads too much.
+Royal Falconer Bryn|m|37|Calm, quiet baritone, slow and patient, a falconer.
+Lady Tatiana Volkov|f|50|Rich, slow mezzo, cool and regal, a foreign queen in exile.
+Sir Owain Redcliff|m|41|Warm, steady baritone, honest and calm, a knight from the borderlands.
+Lady Primrose Dell|f|62|Sweet, chirpy older voice, quick and kind, a lady who hosts tea.
+Jester Twitch|m|19|Nervous, squeaky young voice, fast and jumpy, a jester's apprentice.
+Lady Morgana Blackwood|f|56|Deep, hypnotic alto, slow and powerful, a witch who advises the queen.
+Sir Reynard Fox|m|32|Sly, smooth tenor, quick and charming, a knight who cheats at games.
+Lady Constance Weller|f|44|Prim, crisp soprano, quick and proper, the queen's secretary.
+Royal Huntsman Garth|m|51|Rough, low baritone, slow and quiet, a huntsman.
+Lady Eleanor Ashdown|f|27|Clear, confident mezzo, quick and bold, a lady who leads a rebellion.
+Sir Cedric Holm|m|60|Gruff, slow baritone, stubborn and loyal, an old castle knight.
+Lady Belinda Frost|f|38|Icy, slow soprano, cold and beautiful, a lady called the Winter Rose.
+Prince Florian|m|21|Gentle, soft tenor, slow and shy, a prince who loves music.
+Lady Sigrid Halvard|f|47|Strong, steady alto, slow and fierce, a shieldmaiden queen's envoy.
+Bellringer Quasim|m|39|Rough, slow baritone, shy and kind, the castle bellringer.
+Lady Rosalie Marchand|f|65|Warm, refined older soprano, slow and wistful, a former queen of a lost kingdom.
+Sir Aldric Stormborne|m|46|Booming, proud baritone, loud and grand, a knight who fought a dragon.
+Lady Hyacinth Bloom|f|24|Sweet, quick soprano, giggly and bright, a lady who arranges flowers.
+Lord Treasurer Mott|m|68|Wheezy, slow older tenor, stingy and fussy, a treasurer.
+Lady Imelda Crane|f|59|Sharp, slow older alto, judgmental and dry, a lady of the old nobility.
+Sir Galen Wyn|m|34|Calm, wise baritone, slow and kind, a healer knight.
+Lady Esme Larkin|f|18|Bright, quick young voice, rebellious and loud, a lady who wants to sail.
+Castle Ghost Lady Grey|n|90|Faint, hollow androgynous voice, very slow and sad, a ghost who walks the halls.
+Sir Osric Fell|m|53|Hard, cold baritone, slow and cruel, a knight who enjoys battle.
+Lady Augustina Reed|f|71|Firm, slow elderly alto, wise and proud, a matriarch.
+Royal Messenger Kit|m|17|Breathless, fast young voice, urgent and loud, a royal messenger.
+Lady Selene Moonvale|f|35|Dreamy, slow soprano, mysterious and calm, a lady who studies the moon.
+Sir Wendel Brook|m|49|Mild, quiet baritone, slow and gentle, a scholar knight.
+Lady Thea Ravensworth|f|28|Cool, quick mezzo, witty and sharp, a duelist lady.
+Lord Bastian Greaves|m|63|Gravelly, slow older baritone, cunning and calm, a lord of spies.
+Lady Mabel Hearthwood|f|52|Warm, cheerful alto, quick and loud, the queen's cook.
+Sir Ivo Merrow|m|27|Bright, quick tenor, eager and silly, a knight who trips over his sword.
+Lady Cordelia Lane|f|43|Calm, firm mezzo, slow and just, a lady judge.
+Abbot Ranulf|m|78|Soft, slow old voice, gentle and tired, an old abbot.
+Lady Daphne Tilsworth|f|22|Breathy, quick young soprano, nervous and kind, a lady new at court.
+Sir Lucius Grimm|m|58|Low, slow baritone, ominous and calm, a knight of the dark order.
+Lady Ursula Bane|f|61|Raspy, slow older alto, bitter and sharp, a lady who lost her lands.
+Prince Ansel|m|8|Tiny, quick little voice, giggly and brave, a little prince playing knight.
+Lady Viola Ashgrove|f|32|Musical, warm mezzo, slow and charming, a lute player.
+Sir Rufus Blackwater|m|44|Rough, loud baritone, quick and angry, a knight with a temper.
+Lady Edith Pellham|f|76|Wobbly, slow elderly soprano, kind and confused, a lady who forgets names.
+Lord Cassius Vane|m|36|Smooth, cold baritone, slow and ambitious, a young lord rising fast.
+Lady Gemma Stone|f|29|Steady, clear alto, honest and calm, a lady who keeps the royal records.
+Sir Jasper Wilde|m|23|Cocky, quick young tenor, loud and charming, a tournament favorite.
+Lady Honoria Fitch|f|57|Pompous, slow older soprano, grand and silly, a lady who loves titles.
+Royal Locksmith Dunstan|m|50|Quiet, careful baritone, slow and secretive, a locksmith who knows all doors.
+Lady Alys Thorncastle|f|39|Firm, warm alto, steady and brave, a lady defending her castle.
+Sir Edric Valemont|m|66|Weathered, slow baritone, tired and wise, an old general.
+Lady Elspeth Moor|f|19|Soft, dreamy young voice, slow and kind, a lady who reads stories to children.
+Royal Alchemist Nereus|n|47|Bubbly, quick androgynous voice, excited and odd, a palace alchemist.
+Sir Hector Lindqvist|m|38|Steady, firm baritone, slow and serious, the queen's champion.
+Lady Clarissa Dawe|f|46|Chatty, quick mezzo, gossipy and warm, a lady who knows every scandal.
+Lord Gideon Ashe|m|72|Slow, raspy old baritone, cold and powerful, a lord who outlived his enemies.
+Lady Saffron Hale|f|26|Warm, quick soprano, kind and curious, a lady who learns from servants.
+Sir Merrick Thorne|m|31|Brooding, quiet baritone, slow and sad, a knight with a curse.
+Lady Agatha Pembury|f|83|Brittle, sharp elderly voice, slow and witty, a lady who outsmarts everyone.
+Prince Rowan|m|26|Warm, steady baritone, calm and kind, a prince loved by the people.
+Lady Marisol Vega|f|37|Passionate, quick mezzo, fiery and bold, an ambassador from the south.
+Sir Ulric Bram|m|54|Heavy, slow bass, simple and loyal, a giant knight.
+Lady Tessaly Grey|f|23|Clear, quick young soprano, witty and bright, a lady scholar.
+Royal Barber Figgis|m|45|Chatty, quick tenor, gossiping and funny, the king's barber.
+Lady Rosaline Ward|f|51|Cool, slow mezzo, distant and sad, a lady married against her will.
+Sir Alaric Dunmore|m|29|Bright, heroic tenor, quick and brave, a knight who saves the princess.
+Lady Sophronia Kett|f|66|Shrill, quick older voice, fussy and loud, a lady who complains about everything.
+Captain of Archers Fenn|m|37|Sharp, clear baritone, quick and precise, the captain of the royal archers.
+Lady Lucinda Fairfax|f|30|Silky, slow soprano, alluring and cold, a lady who breaks hearts.
+Sir Thaddeus Moss|m|77|Slow, creaky old baritone, kind and rambling, the oldest knight alive.
+Lady Brianna Holt|f|25|Lively, quick mezzo, sporty and loud, a lady who rides better than knights.
+Lord Ignatius Wexley|m|60|Plummy, slow baritone, scheming and polite, a lord who bribes everyone.
+Lady Odessa Crane|f|42|Plain, warm alto, slow and wise, the queen's astronomer who counts the stars aloud.
+Sir Benedict Rowe|m|43|Measured, warm baritone, slow and thoughtful, a knight philosopher.
+Princess Celandine|f|10|Bright, quick little voice, bossy and sweet, a princess who commands her toys.
+Royal Cupbearer Linus|m|20|Nervous, soft young tenor, polite and shaky, the king's cupbearer.
+Lady Eudora Pike|f|70|Stern, slow elderly alto, cold and strict, a lady of the old rules.
+Sir Gareth Lowe|m|35|Plain, honest baritone, slow and kind, a knight from a farm.
+Lady Melisande Rose|f|34|Dreamy, slow soprano, romantic and soft, a lady in love with a commoner.
+Lord High Steward Crabbe|m|64|Gruff, slow baritone, grumpy and exact, the lord high steward.
+Lady Vivienne Lake|f|48|Mysterious, slow alto, calm and powerful, a lady of the enchanted lake.
+Sir Peregrine Holt|m|40|Light, quick tenor, cheerful and clever, a knight who loves riddles.
+Lady Irmgard Stahl|f|58|Hard, slow older alto, cold and disciplined, a lady general.
+Court Jester Nim|n|22|Light, playful androgynous voice, fast and teasing, a jester who sings riddles.
+Lady Bryony Fields|f|21|Warm, quick young mezzo, cheerful and helpful, a lady of the gardens.
+Sir Wystan Grey|m|56|Dry, slow baritone, cynical and sharp, a knight who has seen too much.
+Lady Aveline Marsh|f|63|Gentle, slow older soprano, kind and wise, a lady who heals the sick.
+Lord Roderick Blaine|m|47|Commanding, slow baritone, cold and proud, a lord of the northern march.
+Lady Juliana Sorrel|f|28|Bright, warm soprano, quick and kind, a lady who teaches the princess.
+Sir Calder Mace|m|39|Rough, loud baritone, blunt and loyal, a knight with a mace.
+Lady Tamsin Hart|f|41|Clear, warm mezzo, steady and loving, a lady who protects her children.
+Royal Cartographer Penn|m|52|Precise, curious baritone, slow and excited, a mapmaker of the realm.
+Sir Dorian Ashcroft|m|44|Velvety, slow baritone, courteous and cold, a knight who serves only himself.
+Lady Winslow Hartley|f|33|Crisp, quick mezzo, efficient and dry, the keeper of the queen's diary.
+Squire Alden|m|16|Bright, eager young tenor, quick and loyal, a squire who polishes everything twice.
+Queen Ingeborg the Elder|f|74|Commanding, slow elderly alto, grand and fierce, a warrior queen in retirement.
+Lord Percival Maddox|m|58|Wheezy, slow older baritone, greedy and nervous, a lord in debt.
+Lady Fiorella Bianchi|f|27|Warm, lively soprano, quick and musical, a singer from a sunny kingdom.
+Sir Hamish Brodie|m|50|Hearty, rough baritone, loud and joking, a knight from the highlands.
+Lady Quenby Vale|f|45|Calm, low alto, slow and patient, a lady who mediates feuds.
+Royal Dog Keeper Ned|m|31|Cheerful, simple tenor, slow and kind, the keeper of the royal hounds.
+Lady Theodora Ames|f|62|Haughty, cool older soprano, slow and proud, the head of an old house.
+Sir Gerallt Wynne|m|25|Lilting, light baritone, quick and romantic, a knight-poet.
+Lady Marjorie Cobb|f|54|Brusque, quick alto, loud and practical, the castle's linen mistress.
+Prince Leander|m|14|Bright, cheeky young voice, quick and spoiled, a prince who plays pranks.
+Lady Helewise Strand|f|38|Soft, kind mezzo, slow and gentle, a lady who tends the chapel.
+Sir Bartholomew Crane|m|67|Rumbling, slow old bass, slow and wise, the king's oldest friend.
+Lady Ilse Drummond|f|20|Shy, soft young soprano, slow and careful, a lady who is secretly a mage.
+Royal Vintner Oswald|m|61|Mellow, slow baritone, cheerful and tipsy, the keeper of the royal wine.
+Lady Perpetua Lowe|f|69|Thin, prim elderly voice, quick and correcting, a lady who teaches manners.
+Sir Evander Grey|m|30|Steady, warm baritone, calm and brave, a knight of the queen's guard.
+Lady Nerys Bevan|f|24|Melodic, quick young mezzo, cheerful and warm, a harpist.
+Lord Hugo Battenberg|m|42|Stiff, clipped baritone, quick and formal, an envoy of the empire.
+Lady Gwenllian Rhys|f|50|Proud, rich alto, slow and stirring, a princess of the western hills.
+Court Mime Silence|n|35|Whispered, airy androgynous voice, slow and theatrical, a mime who almost never speaks.

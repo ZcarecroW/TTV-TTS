@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Arena Casters
+desc: Esports casters, sports commentators, coaches, pros, hype men and superfans
+icon: Trophy
+---
+Max Volt|m|34|Explosive, high-energy baritone, rapid-fire and roaring, a play-by-play caster who screams at every clutch.
+Jade Archer|f|29|Crisp, analytical mezzo, fast and confident, a color commentator who breaks down every play.
+Big Ron Dawson|m|58|Booming, gravelly bass, slow and legendary, a veteran sports announcer with a famous catchphrase.
+Kiki Blaze|f|22|Bubbly, rapid soprano, giggly and hyped, a host who loves every moment.
+Coach Hammond|m|52|Gruff, barking baritone, short and intense, a coach yelling from the sideline.
+Lena Park|f|36|Smooth, polished alto, warm and steady, a studio anchor keeping everyone on time.
+Zed Rush|m|19|Cocky, quick young tenor, smug and loud, a teenage pro who knows he's the best.
+Grandpa Gus|m|77|Rambling, raspy old voice, slow and nostalgic, a retired commentator remembering the old days.
+Nova Hart|f|25|Sharp, quick mezzo, sarcastic and witty, a caster who roasts the players.
+Vox|n|30|Deep, smooth androgynous voice, dramatic and slow, the arena announcer introducing the teams.
+Duke Malone|m|44|Hype-man baritone, loud and rhythmic, pumping up the crowd between rounds.
+Priya Shah|f|31|Calm, precise soprano, quick and clear, a stats analyst who has every number.
+Tommy Two-Tap|m|26|Laid-back, drawling tenor, chill and funny, a sniper pro chatting in a post-game interview.
+Margaret Lowell|f|61|Refined, slow older alto, elegant and dry, a golf commentator who whispers.
+Rico Fuentes|m|38|Passionate, fast baritone, rolling and emotional, a football commentator shouting the goal.
+Mia Chen|f|17|Bright, nervous young voice, quick and excited, a rookie pro at her first major.
+Hank Steele|m|65|Folksy, slow baritone, warm and wise, a baseball broadcaster with endless stories.
+Roxy Riot|f|28|Raspy, wild mezzo, loud and chaotic, a hype caster who can't sit still.
+Professor Pixel|m|45|Nerdy, quick tenor, precise and excited, an analyst explaining frame data.
+Bella Stone|f|50|Firm, resonant alto, authoritative and calm, a tournament referee.
+Jaxon Reed|m|23|Energetic, bright tenor, fast and friendly, a desk host with a big smile.
+Old Coach Bertha|f|70|Raspy, loud older voice, tough and funny, a legendary coach who still yells.
+Frag|n|21|Quick, gritty androgynous voice, intense and terse, an anonymous pro who never shows a face.
+Sully O'Brien|m|56|Rough, enthusiastic baritone, loud and joking, a boxing commentator.
+Tessa Vaughn|f|33|Smooth, cool mezzo, measured and sharp, an esports journalist.
+Kenji Mori|m|30|Calm, quick tenor, polite and precise, a strategy caster.
+Ruby Blaze|f|40|Fiery, quick alto, loud and opinionated, a sports radio host.
+Chuck Barrow|m|62|Blustering, slow baritone, loud and outdated, a commentator who mixes up names.
+Ava Sterling|f|20|Clear, quick young voice, confident and focused, a team captain giving orders.
+Brick McGraw|m|47|Thick, slow bass, simple and loyal, a former tank player turned coach.
+Zoe Harper|f|35|Quick, witty mezzo, playful and smart, a caster who loves underdogs.
+DJ Thunderclap|m|29|Rhythmic, booming baritone, loud and musical, the arena DJ.
+Agnes Pickett|f|74|Chirpy, quick elderly voice, cheerful and sharp, a grandma who watches every match.
+Leo Martel|m|41|Smooth, warm baritone, charming and quick, a halftime show host.
+Sasha Volkova|f|27|Cool, controlled alto, dry and tactical, a pro who explains her strategy.
+Marty Fizz|m|36|Nasal, rapid tenor, excitable and funny, a caster who talks too fast to breathe.
+Hailey Brooks|f|24|Warm, bright mezzo, cheerful and kind, a sideline interviewer.
+The Commissioner|m|68|Grave, slow baritone, formal and weighty, the league commissioner announcing rules.
+Pixie Spark|f|19|Squeaky, fast young voice, energetic and silly, a streamer cohosting the event.
+Rocco Benz|m|50|Gravelly, quick baritone, cynical and dry, a betting analyst.
+Imani Clarke|f|38|Rich, confident alto, smooth and strong, a basketball analyst.
+Teddy Turbo|m|15|Cracking, hyper young voice, loud and excited, a kid fan who won a meet-and-greet.
+Wendy Walsh|f|55|Brisk, quick older alto, organized and stern, a tournament organizer.
+Ghost|n|26|Whispery, calm androgynous voice, slow and cold, a silent pro known for no emotion.
+Bruno Kraft|m|43|Booming, proud baritone, slow and dramatic, a wrestling announcer.
+Lucy Lin|f|21|Soft, quick young mezzo, shy and smart, an analyst intern.
+Earl Hutchins|m|80|Very slow, crackling old voice, kind and funny, the oldest season-ticket holder.
+Danielle Fox|f|42|Sharp, fast soprano, critical and witty, a sports critic.
+Kai Nakamura|m|28|Bright, quick tenor, upbeat and nerdy, a speedrun commentator.
+Gloria Mendez|f|63|Warm, rolling older alto, passionate and loud, a radio commentator shouting goals.
+Spike Wilson|m|32|Rough, loud baritone, aggressive and funny, a trash-talking pro.
+Elle Monroe|f|30|Polished, smooth mezzo, calm and elegant, a red-carpet host.
+Bones Bradley|m|60|Gravelly, slow baritone, deadpan and dry, a veteran caster who has seen everything.
+Kat Rivera|f|26|Quick, loud mezzo, hyped and loyal, a fan club leader.
+Rex Hollister|m|48|Smooth, deep baritone, slow and confident, a fight announcer.
+Molly Banks|f|18|Bright, quick young voice, nervous and funny, a fan cam girl.
+Oliver Grant|m|39|Measured, warm baritone, calm and thoughtful, a chess commentator.
+Yuna Kim|f|23|Crisp, rapid soprano, focused and fierce, a fighting game pro.
+Captain Flex|m|35|Heroic, booming baritone, loud and theatrical, a mascot with a microphone.
+Nan Whitaker|f|82|Slow, cheerful elderly voice, warm and proud, a grandmother of a champion.
+Echo|n|33|Smooth, cool androgynous voice, quick and precise, an AI caster on the big screen.
+Frankie Russo|m|46|Fast, nasal baritone, jokey and loud, a pre-game show comedian.
+Dana Price|f|37|Steady, clear alto, calm and fair, a lead referee.
+Tyler Swann|m|22|Smooth, cocky tenor, flirty and loud, a rising star pro.
+Rosalind Wexford|f|58|Plummy, slow older soprano, posh and dry, a tennis commentator.
+Moose Malloy|m|54|Big, slow bass, jolly and loud, a former linebacker on the panel.
+Ivy Chen|f|29|Quick, clear mezzo, bright and precise, a draft analyst.
+Rocket Ray|m|27|Explosive, fast tenor, loud and fun, a racing commentator.
+Hilda Krause|f|66|Firm, slow older alto, stern and precise, a figure skating judge.
+Nico Bellucci|m|31|Passionate, lilting baritone, emotional and fast, a cycling commentator.
+Tasha Bell|f|33|Warm, laughing mezzo, quick and friendly, a podcast cohost.
+Gordon Fairweather|m|71|Slow, refined old baritone, calm and wise, a cricket commentator.
+Skye Rivers|f|16|Bubbly, quick young voice, giggly and loud, a teen fan screaming for her team.
+Viktor Lane|m|49|Cold, heavy baritone, slow and intimidating, a rival coach.
+Penny Carter|f|45|Quick, clever alto, witty and warm, a quiz show host.
+Bolt|n|19|Fast, electric androgynous voice, jittery and hyped, a speedrunner on the mic.
+Jimmy Blum|m|25|Nervous, quick tenor, stammering and kind, a substitute player.
+Carla Ortiz|f|51|Rich, steady alto, proud and warm, a team owner.
+Rusty Haynes|m|64|Twangy, slow baritone, folksy and funny, a rodeo announcer.
+Mina Petrova|f|24|Cool, quick soprano, confident and cold, a chess prodigy.
+Sergio Lopez|m|37|Rolling, fast baritone, joyful and loud, a commentator who sings the score.
+Bea Holloway|f|69|Crisp, slow older voice, sharp and funny, a retired sports star.
+Dex Carter|m|20|Lazy, slow young tenor, sleepy and funny, a pro who just woke up.
+Natalie Shore|f|34|Polished, smooth mezzo, quick and professional, a broadcast producer in the ear.
+Big Mike Torres|m|42|Booming, warm baritone, loud and laughing, a hype host.
+Zara Malik|f|28|Sharp, quick alto, fierce and determined, a team captain after a loss.
+Harold Pinch|m|59|Dry, nasal tenor, pedantic and slow, a rules official.
+Lulu Fang|f|22|High, quick soprano, squeaky and excited, a cosplayer at the event.
+Rhino Rhodes|m|53|Grunting, slow bass, tough and simple, a strongman commentator.
+Fiona Grey|f|47|Calm, warm alto, slow and kind, a sports psychologist.
+Pip Arrow|n|14|Bright, quick androgynous young voice, eager and nervous, a junior league champion.
+Theo Banks|m|40|Smooth, quick baritone, confident and slick, a sponsor spokesperson.
+Darla Jean|f|60|Twangy, warm older voice, loud and funny, a southern sports host.
+Vince Kowal|m|33|Rough, quick baritone, angry and loud, a player arguing with the ref.
+Hana Sato|f|31|Gentle, precise soprano, calm and smart, a replay analyst.
+Grant Dalton|m|57|Polished, resonant baritone, slow and dramatic, a documentary narrator of the season.
+Josie Kline|f|19|Quick, peppy young voice, cheerful and loud, a cheer captain.
+Coach Ivanov|m|69|Thick, slow older bass, stern and proud, a coach who trained champions.
+Riley Storm|f|26|Fast, edgy mezzo, competitive and loud, a battle royale pro.
+Ozzie Pratt|m|44|Goofy, quick baritone, silly and warm, a mascot performer.
+Celeste Moreau|f|39|Elegant, slow mezzo, poised and cool, a fashion sponsor host.
+Joey Banter|m|28|Chatty, fast tenor, joking and quick, a comedy caster.
+Lorraine Hunt|f|54|Steady, firm alto, calm and fair, a tournament judge.
+Brooklyn Ace|m|18|Cocky, fast young voice, street-smart and loud, a street ball player.
+Mabel Grant|f|76|Slow, warm elderly voice, sweet and proud, a grandma knitting team scarves.
+Dmitri Volkov|m|35|Cool, flat baritone, calm and focused, a pro explaining nothing.
+Sunny Delgado|f|30|Bright, warm mezzo, sunny and quick, a beach volleyball host.
+Ace Mitchell|m|51|Smooth, slow baritone, cool and wise, a retired champion on the panel.
+Rae Kim|n|24|Quick, smart androgynous voice, nerdy and calm, a data analyst.
+Bobby Blitz|m|23|Explosive, quick tenor, loud and hyped, a caster yelling "what a play".
+Edith Marlowe|f|72|Precise, slow elderly voice, dry and funny, a chess grandmaster commentator.
+Raj Patel|m|38|Warm, quick baritone, friendly and smart, a cricket stats man.
+Brianna Cole|f|25|Confident, quick mezzo, bold and clear, a sideline reporter in the rain.
+Buzz Kowalczyk|m|63|Raspy, loud older baritone, excited and old-school, a hockey announcer.
+Lexi Volt|f|20|High, fast young voice, chaotic and funny, a hype streamer.
+Marcus Holloway|m|46|Deep, steady baritone, calm and respected, a lead analyst.
+Gwen Hartley|f|43|Warm, quick alto, encouraging and kind, a youth coach.
+Pistol Pete Garza|m|30|Twangy, quick tenor, cocky and fun, a shooter pro.
+Odette Lane|f|57|Smooth, slow older mezzo, elegant and wry, a ballroom dance commentator.
+Rizzo|m|41|Gravelly, fast baritone, street-smart and funny, a pool hall commentator.
+Ella Fitch|f|35|Soulful, warm alto, slow and smooth, an anthem singer before the match.
+Champ|n|50|Booming, proud androgynous voice, slow and grand, the voice of the trophy ceremony.
+Lars Eriksen|m|39|Calm, dry baritone, quick and precise, a winter sports commentator.
+Kimmy Tran|f|17|Excited, rapid young voice, nerdy and loud, a fan who knows every stat.
+Sal Romano|m|66|Thick, slow older baritone, warm and joking, a boxing trainer.
+Monica Reyes|f|40|Professional, quick mezzo, sharp and composed, an esports CEO.
+Tank|m|31|Deep, slow bass, quiet and heavy, a support player who rarely talks.
+Daisy Morrow|f|23|Bubbly, quick young soprano, sweet and loud, a mascot's partner.
+Bert Kowalski|m|74|Gruff, slow old voice, grumpy and loyal, an old fan in the front row.
+Sienna Brooks|f|32|Clear, fast mezzo, intense and focused, a racing team strategist.
+Flash Pike|m|26|Fast, bright tenor, energetic and silly, a sprinter on the panel.
+Patricia Wynn|f|65|Composed, slow older alto, calm and authoritative, a sports federation chief.
+Johnny Rampage|m|36|Roaring, loud baritone, wild and theatrical, a wrestler cutting a promo.
+Mei Watanabe|f|28|Soft, precise soprano, calm and clever, a puzzle game champion.
+Cyrus Gold|m|55|Smooth, rich baritone, slow and slick, a gambling show host.
+Anya Petrenko|f|21|Cool, quick young alto, competitive and blunt, a pro shooter.
+Wiz|n|35|Nasal, rapid androgynous voice, nerdy and precise, a theorycrafter.
+Harvey Blunt|m|58|Blunt, slow baritone, honest and harsh, a critic who gives zero stars.
+Lily Rose|f|13|Squeaky, quick young voice, shy and excited, a kid asking a pro for an autograph.
+Ray Delgado|m|49|Warm, rolling baritone, fast and passionate, a soccer radio voice.
+Nora Fischer|f|46|Crisp, clear alto, efficient and calm, a broadcast director.
+Spud Murphy|m|27|Goofy, slow tenor, silly and sleepy, a gamer who lags in real life.
+Valerie Steele|f|38|Steely, cool mezzo, slow and confident, a champion boxer.
+Mister Clutch|m|33|Cool, smooth baritone, slow and confident, a pro who wins in the last second.
+Tilly Banner|f|67|Cheerful, loud older voice, waving and shouting, a superfan grandma with a banner.
+Ken Ito|m|42|Calm, measured baritone, polite and deep, a fighting game legend.
+Jess Rowan|f|27|Quick, warm mezzo, friendly and witty, a co-streaming caster.
+Barry Bellows|m|61|Bellowing, loud older baritone, slow and pompous, a stadium announcer.
+Kira Vale|f|19|Cool, quick young voice, aloof and skilled, a solo queue legend.
+Gage Mercer|m|45|Gritty, slow baritone, tough and wise, a military shooter analyst.
+Hope Adeyemi|f|34|Warm, uplifting alto, slow and inspiring, a motivational coach.
+Nugget|m|11|Tiny, squeaky voice, fast and proud, a kid who beat a pro.
+Sandra Kowal|f|52|Brisk, loud alto, practical and funny, a team manager.
+Jet Lin|n|23|Quick, sharp androgynous voice, focused and fast, a racing game pro.
+Arthur Pembrook|m|78|Slow, posh old baritone, dignified and dry, a horse racing commentator.
+Becca Dunn|f|24|Snappy, quick mezzo, sarcastic and smart, a meme reviewer on the desk.
+Lance Hardwick|m|37|Strong, clear baritone, heroic and bold, a team captain's speech.
+Rhonda Mae|f|59|Booming, warm older alto, loud and proud, a mom of a pro player.
+Dizzy|m|21|Fast, jittery young tenor, hyper and silly, a pro on energy drinks.
+Shirley Vance|f|71|Wry, slow elderly voice, dry and witty, a retired referee.
+Gareth Owens|m|44|Lilting, warm baritone, rhythmic and kind, a rugby commentator.
+Paloma Cruz|f|30|Fiery, fast mezzo, emotional and loud, a fan who cries at every win.
+Quincy Webb|m|53|Steady, deep baritone, calm and clear, a college football voice.
+Zelda Pike|f|42|Sharp, fast alto, critical and dry, a performance analyst.
+Sparky|n|16|Bouncy, high androgynous young voice, cheerful and quick, an event mascot.
+Victor Kane|m|60|Slow, dramatic baritone, deep and grand, a trailer voice for the tournament.
+Tara Quinn|f|25|Bright, quick mezzo, energetic and loud, a crowd interviewer.
+Hugo Marsh|m|39|Dry, slow baritone, sarcastic and smart, a caster who hates the meta.
+Bonnie Ray|f|48|Twangy, slow alto, folksy and warm, a fishing tournament host.
+Junior Diaz|m|16|Quick, eager young voice, excited and loud, a ball boy.
+Greta Lund|f|56|Calm, firm older alto, measured and wise, a ski jump commentator.
+Rocky Bianchi|m|47|Gravelly, quick baritone, loud and rough, a fight coach.
+Lacey Monroe|f|29|Silky, slow mezzo, cool and poised, a luxury brand host.
+Owen Price|m|24|Polite, quick tenor, nervous and nerdy, a first-time caster.
+Doris Kemp|f|78|Shaky, slow elderly voice, sweet and loud, a grandma cheering too loud.
+Fang Li|m|30|Calm, sharp tenor, quick and strategic, a MOBA analyst.
+Juliet Park|f|37|Smooth, warm alto, slow and calm, a late-night recap host.
+Tyrone Banks|m|52|Deep, booming baritone, warm and confident, a basketball legend on the panel.
+Nikki Flash|f|22|Fast, sparkly young voice, giggly and loud, a cosplay contest host.
+Reggie Hale|m|65|Folksy, slow older baritone, warm and joking, a minor league announcer.
+Vera Shaw|f|44|Clear, steady mezzo, calm and kind, a charity match host.
+Blaze|n|28|Smoky, fast androgynous voice, intense and cool, a fire-themed team captain.
+Colin Nash|m|34|Measured, quick baritone, smart and dry, an esports lawyer.
+Sophie Hart|f|18|Bright, quick young voice, nervous and kind, a youth champion.
+Bud Larkin|m|72|Slow, gravelly old baritone, funny and kind, a bowling commentator.
+Rina Takagi|f|26|Calm, crisp soprano, quick and focused, a rhythm game champion.
+Mack Daddy Lee|m|40|Smooth, rhythmic baritone, cool and loud, a street dance battle host.
+Opal Harper|f|61|Warm, slow older voice, proud and kind, a coach's mother in the stands.
+Ethan Ward|m|29|Clear, quick tenor, friendly and calm, a tournament admin.
+Maxine Gold|f|50|Polished, quick alto, glamorous and sharp, a gala host.
+Rumble|m|45|Thunderous, slow bass, dramatic and loud, a monster truck announcer.
+Alexa Ruiz|f|23|Bright, quick mezzo, hyped and clever, a co-caster for the finals.
+Wes Holden|m|36|Drawling, slow baritone, laid-back and funny, a golf caddie on the mic.
+Ingrid Bauer|f|64|Precise, slow older alto, stern and fair, a gymnastics judge.
+Pixel|n|12|Beepy, quick androgynous voice, playful and bright, the event's robot mascot.
+Clint Rourke|m|57|Gruff, slow baritone, tough and honest, a rodeo veteran.
+Kayla Moss|f|20|Sassy, quick young voice, loud and funny, a fan heckling the rival team.
+Dominic Shaw|m|43|Smooth, dramatic baritone, slow and serious, a pre-match hype video narrator.
+Emma Lindqvist|f|33|Calm, clear mezzo, steady and smart, a biathlon commentator.
+Benny Ruckus|m|25|Loud, chaotic tenor, fast and wild, a caster who gets muted.
+Delphine Ray|f|47|Smooth, cool alto, slow and wry, a post-match interviewer.
+Hank Ironside|m|70|Booming, slow old bass, proud and loud, a hall-of-fame inductee.
+Joy Okafor|f|31|Warm, laughing mezzo, quick and joyful, a fan zone host.
+Sly Martinez|m|38|Smooth, quick baritone, sneaky and funny, a gambler betting on the underdog.
+Maeve Doyle|f|55|Lilting, quick older alto, warm and loud, a hurling commentator.
+Turbo|n|40|Revving, fast androgynous voice, loud and intense, a drag race announcer.
+Archie Bell|m|19|Cracking, quick young voice, excited and loud, a caster making his debut.
+Rosa Kline|f|68|Gravelly, slow older voice, tough and warm, a legendary coach.
+Simon Hayes|m|48|Precise, measured baritone, calm and serious, a snooker commentator.
+Whitney Cross|f|36|Quick, sharp mezzo, energetic and fun, a game show co-host.
+Dutch Van Dyke|m|62|Thick, slow older baritone, gruff and funny, a darts commentator.
+Lena Moss|f|21|Soft, quick young mezzo, shy and smart, a support player on the mic.
+Bruno Diaz|m|33|Passionate, fast baritone, loud and emotional, a fan who calls into the radio.
+Cora Fielding|f|45|Clear, warm alto, steady and confident, a tournament presenter.
+Gus Thunderford|m|58|Rumbling, enthusiastic bass, loud and fatherly, a commentator who adopts every rookie.
+Lottie Spark|f|27|Snappy, quick mezzo, clever and upbeat, a caster known for perfect puns.
+Rafe Donovan|m|31|Smooth, fast baritone, cool and precise, a play-by-play voice for racing games.
+Imelda Cortez|f|62|Warm, rolling older alto, proud and emotional, a commentator who cries at finals.
+Ziggy Lowe|m|20|Hyper, cracking young tenor, chaotic and loud, a rookie caster.
+Harriet Brand|f|45|Cool, analytical alto, slow and exact, a tournament statistician.
+Dwayne Pickett|m|39|Deep, booming baritone, energetic and warm, a hype man for the finals.
+Sakura Ito|f|24|Bright, quick soprano, cheerful and focused, a bilingual caster.
+Ambrose Fenwick|m|73|Slow, posh old baritone, gentle and witty, a retired chess champion.
+Becky Thorne|f|33|Brash, loud mezzo, fast and fun, a fighting game hype caster.
+Mason Webb|m|26|Calm, smart tenor, measured and clear, a strategy analyst.
+Clara Voigt|f|57|Firm, slow older alto, dry and fair, a veteran referee.
+Toby Fletcher|m|14|Bright, excited young voice, fast and loud, a kid reporter at the arena.
+Gemma Rhodes|f|19|Breezy, quick young voice, giggly and sharp, a fan cam host.
+Cecil Barnaby|m|66|Dry, slow older baritone, sarcastic and old-school, a radio veteran.
+Nina Kowalski|f|38|Quick, steady mezzo, organized and calm, a stage manager in the headset.
+Rex Jordan|m|47|Commanding, clear baritone, slow and serious, a league director.
+Paige Wilder|f|29|Sharp, quick alto, edgy and smart, a battle royale analyst.
+Hector Ruiz-Vega|m|52|Passionate, quick baritone, rolling and loud, a boxing radio voice.
+Mildred Sparks|f|80|Slow, crackly elderly voice, cheerful and proud, a fan who has seen every final.
+Jonah Kim|m|23|Soft, quick tenor, nerdy and kind, a puzzle game caster.
+Sabrina Cole|f|41|Smooth, warm mezzo, slow and elegant, an awards show host.
+Bash Bradley|m|35|Rough, quick baritone, cocky and loud, a trash-talking caster.
+Ruth Ainsley|f|70|Measured, slow elderly alto, calm and wise, a former olympian on the panel.
+Kade Rivers|m|28|Smooth, quick baritone, chill and funny, a co-caster for late-night matches.
+Spin|n|22|Whirling, quick androgynous voice, energetic and playful, a yo-yo champion on the mic.
