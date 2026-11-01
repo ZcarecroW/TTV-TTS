@@ -145,6 +145,16 @@ async fn direct_poll(state: &Arc<AppState>) {
             false
         }
     };
+    // VCP on this PC: the speed this app measured itself
+    if v.model_loaded
+        && let Some(name) = v.model_name.as_deref()
+    {
+        ttv_vcp::perf::set_model(name);
+    }
+    let sp = ttv_vcp::perf::speed();
+    let round = |x: Option<f32>| x.map(|x| (x * 20.0).round() / 20.0);
+    v.speed = round(sp.now);
+    v.usual_speed = round(sp.usual);
     let error = v.error.clone();
     state.set_host_status(HostStatus { kind: "direct".into(), connected, error, proxy: None, vcp: Some(v) });
     if !state.library.loaded() && state.library.refresh(state).await.is_ok() {

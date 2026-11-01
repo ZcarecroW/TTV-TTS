@@ -61,15 +61,15 @@ async fn engine_events(state: Arc<AppState>) {
 /// VCP's API answers but its work hangs (requests time out): restart it,
 /// at most every 30 minutes, so computing doesn't stall for hours.
 async fn restart_stuck_vcp(state: &Arc<AppState>, why: &str) {
-    static LAST: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(0);
-    let now = chrono::Utc::now().timestamp();
-    if !state.vcp_state.read().reachable || now - LAST.load(std::sync::atomic::Ordering::Relaxed) < 1800 {
+    if !state.vcp_state.read().reachable || !vcp_watch::auto_restart_due() {
         return;
     }
-    LAST.store(now, std::sync::atomic::Ordering::Relaxed);
     log::warn!("Voice Creator Pro answers but its work hangs ({why}) – restarting it");
     match vcp_watch::restart(state).await {
-        Ok(m) => log::info!("{m}"),
+        Ok(m) => {
+            ttv_vcp::perf::clear_recent();
+            log::info!("{m}");
+        }
         Err(e) => log::warn!("restarting VCP failed: {e}"),
     }
 }

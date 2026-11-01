@@ -55,6 +55,7 @@ check(/1.2 s|1,2 s/.test(await page.locator("main").innerText()), "speech test s
 await nav("host");
 await page.waitForTimeout(600);
 check((await page.locator("main").innerText()).includes("VoiceCreatorPro.exe"), "host page shows GPU processes of the VCP PC");
+check(/0.52 s (per s of speech|pro s Sprache)/.test(await page.locator("main [data-speed]").innerText()), "host page shows how fast VCP speaks", await page.locator("main [data-speed]").innerText());
 
 // Live: current message, queue and history with reasons; test message appears.
 await nav("live");

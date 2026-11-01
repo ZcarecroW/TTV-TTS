@@ -6,6 +6,7 @@
 
 mod client;
 mod types;
+pub mod perf;
 pub mod wav;
 
 pub use client::{Client, Error, is_work, turn};

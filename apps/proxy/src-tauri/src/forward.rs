@@ -110,6 +110,8 @@ pub async fn handler(State(state): State<Arc<AppState>>, req: Request) -> Respon
         rb = rb.body(reqwest::Body::wrap_stream(body.into_data_stream()));
     }
 
+    // speaking with a saved voice: how fast VCP is (see ttv_vcp::perf)
+    let meter = (turn.is_some() && parts.uri.path().starts_with("/api/v1/generation/clone") && !parts.uri.path().contains("stream")).then(|| Arc::new(parking_lot::Mutex::new(Meter::new())));
     let sent = rb.send().await;
     if turn.is_some() {
         // the quiet gap counts from the end of a long generation
@@ -125,10 +127,23 @@ pub async fn handler(State(state): State<Arc<AppState>>, req: Request) -> Respon
                     }
                 }
             }
-            let stream = res.bytes_stream().map(move |chunk| {
-                let _held = &turn;
-                chunk
-            });
+            let fed = meter.clone();
+            let stream = res
+                .bytes_stream()
+                .map(move |chunk| {
+                    let _held = &turn;
+                    if let (Some(m), Ok(b)) = (&fed, &chunk) {
+                        m.lock().feed(b);
+                    }
+                    chunk
+                })
+                .chain(futures_util::stream::once(async move {
+                    // the whole answer went through
+                    if let Some(m) = meter {
+                        m.lock().done();
+                    }
+                    Ok(bytes::Bytes::new())
+                }));
             builder.body(Body::from_stream(stream)).unwrap_or_else(|e| {
                 api_error(StatusCode::BAD_GATEWAY, "internal", format!("bad answer from VCP: {e}"))
             })
@@ -146,9 +161,72 @@ pub async fn handler(State(state): State<Arc<AppState>>, req: Request) -> Respon
     }
 }
 
+/// Keeps the start and end of a speech answer and its length, to measure
+/// the audio in it without holding it.
+struct Meter {
+    t0: std::time::Instant,
+    head: Vec<u8>,
+    tail: Vec<u8>,
+    total: usize,
+}
+
+impl Meter {
+    fn new() -> Self {
+        Self { t0: std::time::Instant::now(), head: Vec::with_capacity(1024), tail: Vec::with_capacity(512), total: 0 }
+    }
+
+    fn feed(&mut self, b: &[u8]) {
+        self.total += b.len();
+        if self.head.len() < 1024 {
+            let n = (1024 - self.head.len()).min(b.len());
+            self.head.extend_from_slice(&b[..n]);
+        }
+        if b.len() >= 512 {
+            self.tail.clear();
+            self.tail.extend_from_slice(&b[b.len() - 512..]);
+        } else {
+            self.tail.extend_from_slice(b);
+            let extra = self.tail.len().saturating_sub(512);
+            self.tail.drain(..extra);
+        }
+    }
+
+    fn done(&self) {
+        if let Some(audio) = ttv_vcp::perf::audio_secs(&self.head, &self.tail, self.total) {
+            ttv_vcp::perf::record(self.t0.elapsed().as_secs_f32(), audio);
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn meter_reads_the_audio_length_across_chunks() {
+        use base64::Engine as _;
+        // 2.5 s of 24 kHz 16-bit mono
+        let n: u32 = 60_000;
+        let mut wav = Vec::new();
+        wav.extend_from_slice(b"RIFF");
+        wav.extend_from_slice(&(36 + n * 2).to_le_bytes());
+        wav.extend_from_slice(b"WAVEfmt ");
+        for v in [16u32.to_le_bytes().to_vec(), 1u16.to_le_bytes().to_vec(), 1u16.to_le_bytes().to_vec(), 24_000u32.to_le_bytes().to_vec(), 48_000u32.to_le_bytes().to_vec(), 2u16.to_le_bytes().to_vec(), 16u16.to_le_bytes().to_vec()] {
+            wav.extend_from_slice(&v);
+        }
+        wav.extend_from_slice(b"data");
+        wav.extend_from_slice(&(n * 2).to_le_bytes());
+        wav.resize(44 + n as usize * 2, 7);
+        let json = format!("{{\"success\":true,\"status\":\"completed\",\"audio_base64\":\"{}\",\"error_code\":null}}", base64::engine::general_purpose::STANDARD.encode(&wav));
+        for chunk in [7usize, 300, 4096, 65_536] {
+            let mut m = Meter::new();
+            for c in json.as_bytes().chunks(chunk) {
+                m.feed(c);
+            }
+            let secs = ttv_vcp::perf::audio_secs(&m.head, &m.tail, m.total).unwrap();
+            assert!((secs - 2.5).abs() < 0.01, "chunks of {chunk}: {secs}");
+        }
+    }
 
     #[test]
     fn strips_api_key() {

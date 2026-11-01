@@ -110,6 +110,11 @@ async function forget() {
           <dl v-if="vcp" class="space-y-2 text-sm">
             <div class="flex justify-between gap-3"><dt class="muted">{{ t("host.version") }}</dt><dd class="font-medium">{{ vcp.version ?? "–" }}</dd></div>
             <div class="flex justify-between gap-3"><dt class="muted">{{ t("host.model") }}</dt><dd class="truncate font-medium">{{ vcp.model_loaded ? vcp.model_name : t("host.modelNone") }}</dd></div>
+            <div v-if="vcp.speed != null" class="flex justify-between gap-3" data-speed>
+              <dt class="muted">{{ t("host.speed") }}<UiTip :text="t('tips.vcpSpeed')" /></dt>
+              <dd class="text-right font-medium">{{ t("host.speedValue", { s: vcp.speed.toFixed(2) }) }}<span v-if="vcp.usual_speed != null" class="font-normal text-muted"> · {{ t("host.speedUsual", { s: vcp.usual_speed.toFixed(2) }) }}</span></dd>
+            </div>
+            <p v-if="vcp.speed != null && vcp.usual_speed != null && vcp.speed > vcp.usual_speed * 1.8 && vcp.speed > 0.7" class="notice notice-warn text-xs">{{ h.kind === "proxy" ? t("host.slowProxy") : t("host.slowDirect") }}</p>
             <div class="flex justify-between gap-3"><dt class="muted">{{ t("host.queue") }}</dt><dd class="font-medium">{{ vcp.generating ? t("host.queueBusy", { n: vcp.queue_size }) : t("host.queueIdle") }}</dd></div>
             <div v-if="vcp.hardware" class="flex justify-between gap-3"><dt class="muted">{{ t("host.hardware") }}</dt><dd class="text-right text-xs">{{ vcp.hardware.split("\n")[0] }}</dd></div>
           </dl>

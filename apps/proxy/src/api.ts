@@ -35,6 +35,8 @@ export interface VcpState {
   generating: boolean;
   hardware: string | null;
   starting: boolean;
+  speed: number | null;
+  usual_speed: number | null;
 }
 
 export interface NetAddress {
@@ -83,6 +85,7 @@ export interface Config {
   start_vcp: boolean;
   keep_vcp_running: boolean;
   restart_on_hang: boolean;
+  restart_when_slow: boolean;
   hang_restart_secs: number;
   http_port: number;
   autostart: boolean;

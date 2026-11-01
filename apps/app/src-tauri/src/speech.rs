@@ -150,6 +150,7 @@ pub fn last_vcp_use() -> Option<Instant> {
 /// Generates one piece with VCP (sync clone of a saved voice).
 pub async fn generate(vcp: &ttv_vcp::Client, u: &Utterance, text: &str) -> Result<(Vec<f32>, u32), String> {
     touch();
+    let t0 = Instant::now();
     let mut body = serde_json::json!({ "voice_id": u.voice, "target_text": text, "language": u.language });
     if let Some(e) = u.emotion.as_deref().filter(|e| *e != "neutral") {
         body["emotion"] = e.into();
@@ -176,6 +177,7 @@ pub async fn generate(vcp: &ttv_vcp::Client, u: &Utterance, text: &str) -> Resul
         let ch = f.channels as usize;
         samples = samples.chunks(ch).map(|c| c.iter().sum::<f32>() / ch as f32).collect();
     }
+    ttv_vcp::perf::record(t0.elapsed().as_secs_f32(), samples.len() as f32 / f.sample_rate.max(1) as f32);
     Ok((samples, f.sample_rate))
 }
 

@@ -63,6 +63,7 @@ async function clearKey() {
 const startWith = computed({ get: () => config.value!.start_vcp, set: (x: boolean) => void save({ start_vcp: x }) });
 const keep = computed({ get: () => config.value!.keep_vcp_running, set: (x: boolean) => void save({ keep_vcp_running: x }) });
 const hang = computed({ get: () => config.value!.restart_on_hang, set: (x: boolean) => void save({ restart_on_hang: x }) });
+const whenSlow = computed({ get: () => config.value!.restart_when_slow, set: (x: boolean) => void save({ restart_when_slow: x }) });
 const hangSecs = computed({ get: () => config.value!.hang_restart_secs, set: (x: number) => void save({ hang_restart_secs: x }) });
 
 function saveUrl() {
@@ -87,6 +88,12 @@ function saveExe() {
         <dd>{{ v.version ?? "–" }}</dd>
         <dt class="muted">{{ t("overview.model") }}</dt>
         <dd>{{ v.model_loaded ? [v.active_model, v.model_name].filter(Boolean).join(" · ") : t("overview.modelNone") }}</dd>
+        <dt class="muted">{{ t("vcp.speed") }}<UiTip :text="t('tips.speed')" /></dt>
+        <dd data-speed>
+          <template v-if="v.speed != null">{{ t("vcp.speedValue", { s: v.speed.toFixed(2) }) }}<span v-if="v.usual_speed != null" class="text-muted"> · {{ t("vcp.speedUsual", { s: v.usual_speed.toFixed(2) }) }}</span></template>
+          <template v-else>{{ t("vcp.speedNone") }}</template>
+          <span v-if="v.speed != null && v.usual_speed != null && v.speed > v.usual_speed * 1.8 && v.speed > 0.7" class="badge badge-warn ml-1.5">{{ t("vcp.speedSlow") }}</span>
+        </dd>
         <dt class="muted">{{ t("overview.hardware") }}</dt>
         <dd class="whitespace-pre-line">{{ v.hardware ?? "–" }}</dd>
         <dt class="muted">{{ t("vcp.program") }}</dt>
@@ -134,6 +141,7 @@ function saveExe() {
           </div>
           <UiToggle v-model="startWith" :label="t('vcp.startWith')" :tip="t('tips.startWith')" />
           <UiToggle v-model="keep" :label="t('vcp.keepRunning')" :tip="t('tips.keepRunning')" />
+          <UiToggle v-model="whenSlow" :label="t('vcp.restartSlow')" :tip="t('tips.restartSlow')" />
           <div class="flex flex-wrap items-center gap-3">
             <UiToggle v-model="hang" :label="t('vcp.restartHang')" :tip="t('tips.restartHang')" />
             <label v-if="hang" class="flex items-center gap-2 text-sm text-muted">

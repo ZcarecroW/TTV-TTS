@@ -164,9 +164,96 @@ async fn tick(state: &Arc<AppState>, sys: &mut Option<System>, last_detail: &mut
         s.running = true;
     }
 
+    if s.model_loaded
+        && let Some(name) = s.model_name.as_deref()
+    {
+        ttv_vcp::perf::set_model(name);
+    }
+    // rounded, so the status isn't sent again for every clip
+    let sp = ttv_vcp::perf::speed();
+    let round = |v: Option<f32>| v.map(|x| (x * 20.0).round() / 20.0);
+    s.speed = round(sp.now);
+    s.usual_speed = round(sp.usual);
+
     let changed = s != before;
     *state.vcp_state.write() = s;
     changed
+}
+
+/// Automatic restarts (hanging or slow VCP) at most this often.
+const AUTO_RESTART_EVERY: i64 = 1800;
+static LAST_AUTO_RESTART: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(0);
+
+/// Claims the next automatic restart; false if one happened recently.
+pub fn auto_restart_due() -> bool {
+    let now = chrono::Utc::now().timestamp();
+    let last = LAST_AUTO_RESTART.load(Ordering::Relaxed);
+    if now - last < AUTO_RESTART_EVERY {
+        return false;
+    }
+    LAST_AUTO_RESTART.compare_exchange(last, now, Ordering::Relaxed, Ordering::Relaxed).is_ok()
+}
+
+static SLOW_RESTART: AtomicBool = AtomicBool::new(false);
+
+/// VCP has become clearly slower than usual: restart it once chat has been
+/// quiet for a minute, while nobody else may use it, and warm it up again.
+async fn restart_slow(state: Arc<AppState>) {
+    loop {
+        if !ttv_vcp::perf::speed().slow() || !state.cfg.read().restart_when_slow {
+            return;
+        }
+        if crate::forward::last_work().is_none_or(|t| t.elapsed() > Duration::from_secs(60)) {
+            break;
+        }
+        tokio::time::sleep(Duration::from_secs(5)).await;
+    }
+    if !auto_restart_due() {
+        return;
+    }
+    let _turn = ttv_vcp::turn().await;
+    let sp = ttv_vcp::perf::speed();
+    let (now, usual) = (sp.now.unwrap_or(0.0), sp.usual.unwrap_or(0.0));
+    log::warn!(
+        "Voice Creator Pro has become {:.1}x slower than usual ({now:.2} instead of {usual:.2} s per second of speech) - restarting it",
+        if usual > 0.0 { now / usual } else { 0.0 }
+    );
+    let t0 = Instant::now();
+    match restart(&state).await {
+        Ok(m) => {
+            ttv_vcp::perf::clear_recent();
+            warm_up(&state).await;
+            log::info!("{m} (restart and warm-up took {:.0} s)", t0.elapsed().as_secs_f32());
+        }
+        Err(e) => log::warn!("restarting VCP failed: {e}"),
+    }
+    state.publish();
+}
+
+/// One short sentence with a saved voice: VCP loads its speaking model now,
+/// not with the next chat message. Called while holding the turn, so it goes
+/// to VCP directly.
+pub async fn warm_up(state: &Arc<AppState>) {
+    let vcp = state.vcp();
+    let Ok(voices) = vcp.voices().await else { return };
+    let Some(v) = voices.iter().find(|v| v.has_voice_clone_prompt) else { return };
+    let body = serde_json::json!({ "voice_id": v.id, "target_text": "Hello, this is a short test.", "language": "English" });
+    let t0 = Instant::now();
+    let r = vcp.request(ttv_vcp::Method::POST, "/api/v1/generation/clone?sync=true").json(&body).timeout(Duration::from_secs(300)).send().await;
+    match r {
+        Ok(r) if r.status().is_success() => {
+            let _ = r.bytes().await;
+            log::info!("VCP warmed up in {:.1} s", t0.elapsed().as_secs_f32());
+        }
+        Ok(r) => log::info!("warming VCP up: HTTP {}", r.status()),
+        Err(e) => log::info!("warming VCP up: {e}"),
+    }
+}
+
+/// Usual speeds per model are kept, so a proxy restart doesn't forget what
+/// a fresh VCP manages.
+fn perf_path(state: &AppState) -> std::path::PathBuf {
+    state.data_dir.join("vcp-speed.json")
 }
 
 pub async fn run(state: Arc<AppState>) {
@@ -175,6 +262,10 @@ pub async fn run(state: Arc<AppState>) {
     let mut last_scan = None;
     let mut down_since: Option<Instant> = None;
     let mut first = true;
+    if let Some(m) = std::fs::read(perf_path(&state)).ok().and_then(|b| serde_json::from_slice(&b).ok()) {
+        ttv_vcp::perf::set_usual(m);
+    }
+    let mut saved_usual = ttv_vcp::perf::usual();
     loop {
         if tick(&state, &mut sys, &mut last_detail, &mut last_scan).await {
             state.publish();
@@ -183,10 +274,24 @@ pub async fn run(state: Arc<AppState>) {
             let s = state.vcp_state.read();
             (s.running, s.reachable, s.starting)
         };
-        let (start_vcp, keep, hang, hang_secs) = {
+        let (start_vcp, keep, hang, hang_secs, when_slow) = {
             let c = state.cfg.read();
-            (c.start_vcp, c.keep_vcp_running, c.restart_on_hang, c.hang_restart_secs)
+            (c.start_vcp, c.keep_vcp_running, c.restart_on_hang, c.hang_restart_secs, c.restart_when_slow)
         };
+        let usual = ttv_vcp::perf::usual();
+        if usual != saved_usual {
+            if let Ok(b) = serde_json::to_vec(&usual) {
+                let _ = std::fs::write(perf_path(&state), b);
+            }
+            saved_usual = usual;
+        }
+        if when_slow && reachable && !starting && ttv_vcp::perf::speed().slow() && !SLOW_RESTART.swap(true, Ordering::Relaxed) {
+            let st = state.clone();
+            tokio::spawn(async move {
+                restart_slow(st).await;
+                SLOW_RESTART.store(false, Ordering::Relaxed);
+            });
+        }
         if first {
             first = false;
             if start_vcp && !running && !reachable {

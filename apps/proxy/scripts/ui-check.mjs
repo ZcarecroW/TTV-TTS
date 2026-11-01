@@ -56,6 +56,12 @@ if (shot) {
   console.log(`screenshot: ${shot}`);
 }
 
+// VCP page: speed and the restart-when-slow switch
+await page.locator("nav button").nth(navItems.findIndex((n) => /VCP|Voice Creator/i.test(n))).click();
+await page.waitForTimeout(300);
+const vcpText = await page.locator("main").innerText();
+check(/0\.55 s (per second of speech|pro Sekunde Sprache)/.test(vcpText) && /(usually|sonst) 0\.50/.test(vcpText), "the VCP page shows its speed", vcpText.match(/0\.55[^\n]*/)?.[0] ?? "");
+check(/Restart VCP when it gets slow|VCP neu starten, wenn es langsam wird/.test(vcpText), "VCP can be restarted when it gets slow");
 check(errors.length === 0, "no console errors", errors.slice(0, 3).join(" / "));
 await browser.close();
 process.exit(failed ? 1 : 0);

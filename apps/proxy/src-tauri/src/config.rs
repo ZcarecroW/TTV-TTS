@@ -40,6 +40,9 @@ pub struct Config {
     /// Restart VCP when its API stops answering for `hang_restart_secs`.
     pub restart_on_hang: bool,
     pub hang_restart_secs: u32,
+    /// Restart VCP at a quiet moment when it has become clearly slower than
+    /// usual (it slows down the longer it runs).
+    pub restart_when_slow: bool,
     /// Also accept plain-HTTP connections on this port (0 = off). For older
     /// tools that can't use the proxy's certificate; the key still applies.
     pub http_port: u16,
@@ -77,6 +80,7 @@ impl Default for Config {
             keep_vcp_running: false,
             restart_on_hang: false,
             hang_restart_secs: 180,
+            restart_when_slow: true,
             http_port: 0,
             autostart: true,
             update_channel: "preview".into(),

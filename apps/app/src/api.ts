@@ -19,6 +19,8 @@ export interface VcpState {
   hardware: string | null;
   starting: boolean;
   exe: string | null;
+  speed: number | null;
+  usual_speed: number | null;
 }
 
 export interface ProxyInfo {

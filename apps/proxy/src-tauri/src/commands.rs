@@ -61,6 +61,7 @@ pub struct SettingsPatch {
     keep_vcp_running: Option<bool>,
     restart_on_hang: Option<bool>,
     hang_restart_secs: Option<u32>,
+    restart_when_slow: Option<bool>,
     http_port: Option<u16>,
     autostart: Option<bool>,
     update_channel: Option<String>,
@@ -118,6 +119,9 @@ pub fn update_settings(app: AppHandle, state: St, patch: SettingsPatch) -> AppRe
         }
         if let Some(v) = patch.hang_restart_secs {
             c.hang_restart_secs = v;
+        }
+        if let Some(v) = patch.restart_when_slow {
+            c.restart_when_slow = v;
         }
         if let Some(v) = patch.http_port {
             if v != 0 && (v < 1024 || v == c.port) {

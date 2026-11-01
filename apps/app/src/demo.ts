@@ -30,6 +30,8 @@ const vcp = {
   model_loaded: true,
   model_kind: "clone",
   model_name: "Higher Quality (1.7B)",
+  speed: 0.52,
+  usual_speed: 0.5,
   active_model: "qwen3-tts",
   queue_size: 0,
   generating: false,
