@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Calm & Cozy
+desc: Soft, soothing, unhurried voices for chill streams, rainy evenings and late-night chats
+icon: Mug
+---
+Willow Hart|f|34|Soft, breathy mezzo, slow and soothing, like a friend talking quietly by a fireplace.
+Elias Brooke|m|45|Low, velvety baritone, calm and unhurried, a voice that slows your heartbeat.
+Juniper Moss|f|26|Gentle, airy soprano, slow and dreamy, a voice like morning mist.
+Grandpa Olin|m|78|Warm, crackling old voice, slow and kind, telling stories with a cup of tea.
+Sage|n|30|Smooth, neutral voice, calm and even, a meditation guide counting breaths.
+Rosalie Fern|f|52|Warm, round alto, slow and motherly, a voice that says everything will be fine.
+Noah Vale|m|29|Soft-spoken tenor, quiet and thoughtful, a friend who listens more than he talks.
+Clementine Ash|f|19|Light, whispery young voice, slow and shy, a girl reading poetry by candlelight.
+Henrik Lund|m|60|Deep, slow bass-baritone, steady and peaceful, like a lighthouse keeper on a quiet night.
+Ivy Laurent|f|41|Silky, low mezzo, slow and relaxed, a late-night radio voice.
+Theo Amber|m|35|Mellow, warm baritone, easygoing and gentle, a barista on a slow rainy afternoon.
+Nana Bea|f|81|Very soft, kind elderly voice, slow and loving, a grandmother humming while knitting.
+Rowan Kestrel|n|24|Gentle, light androgynous voice, slow and curious, someone describing the stars.
+Marigold Wren|f|29|Sweet, soft mezzo, cheerful and calm, a florist arranging flowers.
+Samuel Oak|m|52|Rich, warm baritone, slow and grounded, a woodworker sanding a table.
+Luna Quill|f|23|Breathy, slow soprano, dreamy and quiet, an ASMR artist whispering softly.
+Arthur Dune|m|67|Weathered, soft older baritone, slow and wise, a sailor remembering calm seas.
+Hazel Brightwater|f|47|Clear, gentle alto, slow and nurturing, a yoga teacher ending class.
+Felix Cotton|m|21|Soft, relaxed young tenor, sleepy and kind, a student studying late at night.
+Opal Linden|f|63|Warm, slow older soprano, peaceful and sweet, a woman feeding birds at dawn.
+Caspian Rain|m|38|Low, hushed baritone, slow and intimate, the sound of someone reading in the rain.
+Daisy Meadows|f|15|Soft, quiet young voice, gentle and polite, a girl telling a bedtime story to her brother.
+Ezra Pine|m|73|Slow, earthy old voice, calm and patient, a gardener talking to his plants.
+Celeste Moon|f|36|Floating, silvery mezzo, slow and serene, a voice for falling asleep.
+Milo Hearth|m|44|Warm, crackly baritone, cozy and slow, a man by a campfire.
+Ember|n|40|Warm, soft androgynous voice, slow and glowing, like embers in a stove.
+Poppy Field|f|27|Light, warm mezzo, slow and cheerful, a baker taking bread out of the oven.
+Lucas Fog|m|31|Muted, gentle baritone, slow and dreamy, someone talking from under a blanket.
+Wilhelmina Tea|f|70|Brisk but soft older voice, slow and comforting, a tea shop owner.
+Basil Thorne|m|56|Calm, soft baritone, wise and gentle, a librarian whispering recommendations.
+Aurora Snow|f|31|Soft, cool soprano, slow and calm, like snow falling at night.
+Jasper Cloud|m|25|Easygoing, airy tenor, relaxed and sleepy, a guy watching clouds.
+Matilda Honey|f|58|Sweet, golden alto, slow and warm, a beekeeper in summer.
+Ollie Brookside|m|11|Soft, sleepy little voice, slow and sweet, a boy almost asleep.
+Serena Tide|f|43|Flowing, calm mezzo, slow and steady, like waves on a quiet beach.
+Gideon Ember|m|64|Deep, smoky older voice, slow and kind, a man stoking a fireplace.
+Bramble|n|50|Soft, rustling androgynous voice, slow and earthy, the voice of a quiet forest.
+Lily Pond|f|22|Gentle, clear young soprano, calm and sweet, a girl by a lily pond.
+Rufus Velvet|m|48|Plush, deep baritone, slow and smooth, a jazz lounge voice at closing time.
+Agnes Lavender|f|76|Soft, fragrant elderly voice, slow and peaceful, a grandmother tending lavender.
+Finn Driftwood|m|33|Relaxed, warm tenor, slow and calm, a beachcomber at sunset.
+Iris Dew|f|28|Soft, sparkling mezzo, slow and fresh, a voice like morning dew.
+Edmund Quiet|m|81|Very slow, soft old voice, gentle and wise, a retired monk.
+Wren Willowby|f|17|Shy, soft young voice, quiet and kind, a girl feeding ducks.
+Rafael Sol|m|40|Warm, sunny baritone, slow and relaxed, a man on a hammock.
+Esme Candlewick|f|50|Low, glowing alto, slow and soothing, a candle maker.
+Toby Snug|m|27|Cozy, soft tenor, sleepy and content, a guy in a hoodie with cocoa.
+Margot Wool|f|65|Warm, soft older voice, slow and cozy, a knitter by the window.
+Quinn Hush|n|35|Barely-there, whispery androgynous voice, slow and calming, a voice for sleep.
+Ansel Birch|m|58|Calm, clear baritone, slow and kind, a forest ranger at dusk.
+Hannah Brook|f|38|Soft, warm mezzo, gentle and steady, a nurse on a quiet night shift.
+Leo Starling|m|19|Gentle, light young voice, dreamy and calm, a boy stargazing.
+Evangeline Rose|f|72|Sweet, slow elderly soprano, tender and kind, a woman reading old letters.
+Desmond Moss|m|46|Low, mossy baritone, slow and peaceful, a man fishing on a lake.
+Nora Lantern|f|33|Warm, soft alto, slow and gentle, a voice guiding you home.
+Pip Cozy|m|8|Tiny, sleepy voice, slow and sweet, a little boy hugging his teddy.
+Vivian Velour|f|45|Smooth, rich mezzo, slow and luxurious, a voice like velvet curtains.
+Benedict Hollow|m|69|Soft, slow older baritone, wise and calm, a clockmaker in a quiet shop.
+Saffron Glow|f|26|Warm, bright mezzo, slow and happy, a voice like candlelight.
+Ash Ridge|n|28|Calm, low androgynous voice, slow and steady, a hiker resting on a peak.
+Theodore Fable|m|51|Warm, storytelling baritone, slow and rhythmic, a narrator of quiet tales.
+Lotte Pebble|f|61|Gentle, slow older voice, calm and cheerful, a woman collecting stones on the shore.
+Marcus Ember|m|37|Soft, warm baritone, slow and caring, a dad singing a lullaby.
+Bella Snowdrop|f|12|Soft, quiet little voice, slow and gentle, a girl watching the first snow.
+Cyril Thistle|m|74|Crisp, slow older tenor, kind and dry, a gardener with a quiet sense of humor.
+Delphine Mist|f|39|Dreamy, slow soprano, airy and soft, a voice like fog over a lake.
+Owen Hearthstone|m|42|Warm, steady baritone, calm and reassuring, a man reading a recipe aloud.
+Mabel Cinnamon|f|68|Warm, spicy older alto, slow and cozy, a grandmother baking cookies.
+Kai Driftwood|m|23|Mellow, relaxed young tenor, slow and chill, a surfer on a calm day.
+Seraphine Silk|f|47|Silky, slow alto, soothing and elegant, a voice for meditation.
+Lumen|n|45|Soft, glowing androgynous voice, slow and gentle, a voice of a night light.
+Abel Fernwood|m|85|Very slow, creaky old voice, kind and peaceful, an old man on his porch.
+Holly Hush|f|30|Whispery, soft mezzo, slow and calm, a librarian reading aloud.
+Jonah Rainfall|m|34|Low, steady baritone, slow and soft, a voice like rain on the roof.
+Primrose Bell|f|20|Light, sweet young soprano, gentle and happy, a girl humming in a garden.
+Silas Woodsmoke|m|62|Smoky, low older baritone, slow and warm, a man by a wood stove.
+Tessa Mellow|f|55|Smooth, warm older alto, slow and kind, a voice for a long drive at night.
+Gabriel Stillwater|m|47|Calm, deep baritone, slow and serene, a voice like a still lake.
+Winnie Teacup|f|10|Small, sweet voice, slow and polite, a girl at a tea party with her dolls.
+Ferdinand Feather|m|77|Gentle, slow old tenor, soft and kind, an old man feeding pigeons.
+Elowen Starlight|f|35|Starry, slow soprano, peaceful and kind, a voice under the night sky.
+Cedar|n|55|Deep, woody androgynous voice, slow and calm, a voice like an old tree.
+Hugo Blanket|m|30|Soft, cozy baritone, sleepy and warm, someone wrapped in a blanket.
+Rosemary Hill|f|64|Warm, gentle older voice, slow and wise, a herbalist making tea.
+Benji Puddle|m|14|Soft, curious young voice, slow and happy, a boy jumping in puddles.
+Anouk Linen|f|42|Clean, soft mezzo, slow and calm, a voice like fresh laundry.
+Walter Ember|m|90|Very slow, soft old voice, warm and fragile, a great-grandfather by the fire.
+Sienna Glow|f|25|Warm, soft mezzo, slow and sweet, a voice for a sunset.
+Lionel Hush|m|53|Low, whispery baritone, slow and peaceful, a voice for sleeping.
+Mira Chamomile|f|32|Soft, calming soprano, slow and gentle, a tea brewer.
+Oscar Fireside|m|66|Warm, rumbling older baritone, slow and kind, a man in a leather armchair.
+Gwen Cottontail|f|18|Soft, fluffy young voice, slow and shy, a girl with a pet rabbit.
+Silvan Brook|n|33|Flowing, soft androgynous voice, slow and calm, like a stream in the woods.
+Bernard Lullaby|m|71|Gentle, slow older baritone, singing softly, a grandfather singing to a baby.
+Freya Fjord|f|44|Cool, calm alto, slow and clear, like a quiet northern lake.
+Sebastian Sleep|m|39|Very soft, slow baritone, drowsy and calm, a voice that helps you sleep.
+Penelope Plum|f|73|Sweet, slow elderly voice, warm and dotty, a grandmother making jam.
+Timothy Toast|m|26|Warm, gentle tenor, slow and content, a guy making breakfast on Sunday.
+Aria Breeze|f|29|Airy, soft soprano, slow and light, like a summer breeze.
+Graham Gravel|m|59|Low, gravelly but soft baritone, slow and kind, a gentle giant.
+Lily Lavender|f|24|Soft, floral mezzo, slow and dreamy, a voice for a bath.
+Old Tom Kettle|m|82|Slow, bubbling old voice, warm and chatty, an old man waiting for his tea.
+Clara Quilt|f|58|Warm, patchwork older alto, slow and cozy, a quilter.
+Reed|n|21|Soft, light androgynous voice, slow and gentle, a young poet.
+Morris Mug|m|43|Warm, round baritone, slow and comfy, a man holding a hot mug.
+Daphne Dawn|f|37|Soft, waking mezzo, slow and hopeful, a voice at sunrise.
+Alfie Acorn|m|9|Tiny, sleepy voice, slow and sweet, a boy in his pajamas.
+Beatrice Bloom|f|66|Warm, slow older soprano, peaceful and kind, a gardener among roses.
+Quentin Calm|m|50|Even, soothing baritone, slow and steady, a therapist.
+Ophelia Pillow|f|31|Soft, plush mezzo, sleepy and warm, a voice like a pillow.
+Gus Firewood|m|70|Crackling, slow old voice, warm and folksy, a man chopping firewood.
+Sophie Snowfall|f|20|Hushed, soft young voice, slow and wonder-filled, a girl in a snowy forest.
+Aldric Lantern|m|57|Warm, slow baritone, guiding and kind, a lamplighter.
+Coco Cocoa|f|28|Rich, sweet mezzo, slow and warm, a voice like hot chocolate.
+Ellis Evergreen|n|60|Calm, slow androgynous voice, steady and timeless, a voice like a pine forest.
+Harvey Hammock|m|36|Lazy, relaxed baritone, very slow and content, a man in a hammock.
+Mabel Moonbeam|f|79|Very soft, slow elderly voice, dreamy and kind, a grandmother looking at the moon.
+Ronan Rainwood|m|28|Soft, misty tenor, slow and calm, a hiker in light rain.
+Dulcie Dove|f|46|Cooing, soft mezzo, slow and gentle, a voice of peace.
+Fergus Fleece|m|63|Woolly, warm older baritone, slow and kind, a shepherd at night.
+Tilly Tealight|f|16|Soft, warm young voice, quiet and sweet, a girl lighting candles.
+August Amber|m|54|Golden, warm baritone, slow and soothing, an autumn voice.
+Nadia Nightingale|f|33|Soft, singing soprano, slow and lovely, a voice that hums lullabies.
+Ivo Ivy|m|41|Calm, green baritone, slow and quiet, a botanist in a greenhouse.
+Hope Harbor|f|51|Steady, warm alto, slow and reassuring, a voice like a safe harbor.
+Kit Cushion|n|26|Soft, plush androgynous voice, sleepy and warm, a cozy gamer voice.
+Barnaby Blanket|m|74|Slow, warm old voice, comforting and kind, a grandfather tucking you in.
+Elsie Embers|f|67|Warm, crackly older voice, slow and cozy, a woman by the fire.
+Max Meadowlark|m|22|Light, gentle young tenor, slow and happy, a boy in a meadow.
+Paloma Peace|f|40|Calm, rich mezzo, slow and steady, a voice of peace.
+Victor Velvet|m|61|Plush, slow older baritone, smooth and warm, an old radio host.
+Rosie Raindrop|f|13|Soft, quiet young voice, slow and dreamy, a girl watching rain on the window.
+Stanley Stillness|m|86|Very slow, soft old voice, peaceful and wise, a man who has learned to be still.
+Gemma Glimmer|f|27|Soft, sparkling mezzo, slow and dreamy, a voice under fairy lights.
+Lowell Low|m|48|Deep, quiet baritone, slow and grounded, a voice for deep breathing.
+Wisteria|f|55|Soft, flowing older alto, slow and graceful, a garden voice.
+Sunny Hollow|n|38|Warm, sunny androgynous voice, slow and kind, a voice for lazy afternoons.
+Patrick Puddingstone|m|65|Warm, round older voice, slow and jolly, a man baking pudding.
+Isla Inlet|f|36|Calm, watery mezzo, slow and soft, a voice like a quiet bay.
+Charlie Chestnut|m|17|Soft, warm young voice, slow and shy, a boy roasting chestnuts.
+Grace Gentle|f|62|Kind, slow older alto, gentle and patient, a voice of comfort.
+Rupert Rocking-Chair|m|80|Creaky, slow old voice, warm and sleepy, a grandfather in a rocking chair.
+Bonnie Blossom|f|21|Light, sweet young mezzo, slow and cheerful, a voice of spring.
+Atlas Calm|m|44|Steady, deep baritone, slow and strong, a voice that carries your worries.
+Maple Syrup|f|50|Sweet, slow alto, warm and sticky-sweet, a pancake-morning voice.
+Haven|n|42|Calm, safe-sounding androgynous voice, slow and warm, a voice of shelter.
+Edgar Ember-Eyes|m|71|Glowing, slow old baritone, wise and warm, a storyteller.
+Fern Fiddlehead|f|30|Soft, curly mezzo, slow and green, a forest walker.
+Joel Jasmine|m|33|Gentle, fragrant tenor, slow and kind, a tea house host.
+Hattie Hearth|f|75|Warm, slow elderly voice, cozy and kind, a grandmother stirring soup.
+Simon Sandman|m|58|Soft, sandy baritone, slow and drowsy, a voice that brings sleep.
+Lottie Lullaby|f|26|Soft, singing soprano, slow and sweet, a nanny singing to a baby.
+Neville Nook|m|47|Quiet, slow baritone, bookish and calm, a man in a reading nook.
+Ruby Rose-Hip|f|59|Warm, tart older voice, slow and kind, a woman making rosehip tea.
+Bodhi|n|31|Calm, centered androgynous voice, slow and present, a mindfulness teacher.
+Duncan Dusk|m|55|Low, evening baritone, slow and soothing, a voice at twilight.
+Pearl Pebblebrook|f|69|Gentle, slow older soprano, calm and sweet, a woman by a babbling brook.
+Freddie Feathers|m|12|Soft, light little voice, slow and gentle, a boy holding a baby bird.
+Marlowe Mist|f|43|Hazy, slow alto, dreamy and soft, a voice from a foggy morning.
+Cosmo Comfort|m|36|Warm, cozy tenor, slow and kind, a friend who brings soup.
+Una Umber|f|52|Earthy, warm alto, slow and grounded, a potter at her wheel.
+Ignatius Inkwell|m|68|Soft, scratchy older voice, slow and thoughtful, a man writing letters by hand.
+Bluebell Banks|f|19|Light, airy young voice, slow and sweet, a girl among bluebells.
+Thatcher|n|47|Warm, rustic androgynous voice, slow and calm, a voice from a thatched cottage.
+Leopold Lark|m|28|Gentle, morning tenor, slow and bright, a voice at dawn.
+Gloria Glade|f|41|Calm, open mezzo, slow and peaceful, a voice in a forest clearing.
+Old Ben Bramble|m|88|Very slow, soft old voice, warm and wise, a man who has seen many winters.
+Felicity Fireside|f|35|Warm, crackly mezzo, slow and cozy, a voice by the fire.
+Rory Rainboots|m|10|Soft, small voice, slow and happy, a boy in rain boots.
+Agatha Afternoon|f|71|Slow, warm elderly voice, sleepy and content, a woman napping in the sun.
+Hector Hearthrug|m|49|Warm, low baritone, slow and comfy, a man lying by the fire with his dog.
+Pansy Petal|f|23|Soft, sweet young mezzo, slow and gentle, a flower shop girl.
+Colm Cove|m|64|Calm, salty older baritone, slow and kind, a fisherman mending nets.
+Sabine Solace|f|48|Soothing, calm alto, slow and kind, a voice of solace.
+Tenzin Tranquil|m|53|Calm, clear baritone, slow and serene, a meditation teacher.
+Marianne Murmur|f|37|Murmuring, soft mezzo, slow and close, a voice whispering secrets.
+Dewdrop|n|14|Tiny, soft androgynous voice, slow and pure, a voice like a dewdrop.
+Arlo Autumn|m|39|Warm, rustling baritone, slow and cozy, a man raking leaves.
+Ingrid Igloo|f|57|Cool, calm older alto, slow and cozy, a woman in a snow cabin.
+Percy Porridge|m|72|Warm, slow old voice, gentle and simple, a grandfather making breakfast.
+Nell Nightfall|f|29|Soft, dark mezzo, slow and calm, a voice at nightfall.
+Reginald Rest|m|60|Calm, slow baritone, relaxed and deep, a voice for resting.
+Cora Cradle|f|34|Soft, rocking mezzo, slow and loving, a mother rocking a cradle.
+Barley|n|52|Warm, golden androgynous voice, slow and soft, a voice from a wheat field.
+Oscar Overcoat|m|45|Muffled, warm baritone, slow and kind, a man walking in the snow.
+Lavinia Lamplight|f|66|Warm, glowing older voice, slow and kind, a woman reading under a lamp.
+Ben Brightfire|m|24|Warm, soft young baritone, slow and friendly, a camp counselor by the fire.
+Delia Daydream|f|31|Dreamy, floaty mezzo, slow and distracted, a woman lost in thought.
+Fitzgerald Fog|m|76|Hazy, slow old voice, gentle and odd, a man on a misty pier.
+Heather Hilltop|f|45|Breezy, calm alto, slow and open, a woman on a windy hill.
+Moss Murmur|n|65|Low, quiet androgynous voice, very slow and peaceful, a voice of an old garden.
+Clifford Cushion|m|35|Soft, cushy baritone, slow and comfy, a guy on a big sofa.
+Josephine Jam|f|61|Sweet, slow older voice, warm and kind, a jam maker in her kitchen.
+Elliot Eiderdown|m|27|Soft, fluffy tenor, sleepy and gentle, a voice under a duvet.
+Willa Windchime|f|25|Tinkling, light mezzo, slow and airy, a voice like windchimes.
+Gerald Glow|m|83|Very slow, warm old voice, peaceful and kind, an old man smiling at the sunset.
+Thea Thyme|f|38|Herbal, warm mezzo, slow and calm, a cook in a herb garden.
+Lyle Lullwater|m|42|Calm, flowing baritone, slow and soothing, a voice like a gentle river.
+Pixie Pillowcase|f|9|Tiny, sleepy voice, slow and giggly, a little girl at a sleepover.
+Ambrose Armchair|m|74|Slow, plush old voice, warm and comfy, a grandfather in a big armchair.
+Clover Cozyhill|f|46|Warm, soft alto, slow and cheerful, a farmhouse voice.
+Snowberry|n|19|Soft, cool androgynous young voice, slow and gentle, a voice from a winter garden.
+Vincent Vespers|m|57|Low, chanting baritone, slow and peaceful, a voice of evening prayers.
+Matilda Mittens|f|14|Soft, warm young voice, slow and cozy, a girl with mittens and cocoa.
+Hollis Haven|m|51|Warm, steady baritone, slow and protective, a voice of home.
+Ottilie Oatmeal|f|77|Warm, slow elderly voice, gentle and plain, a grandmother serving oatmeal.
+Rainer Rainfall|m|32|Soft, pattering baritone, slow and calm, a voice for rainy days.
+Celandine Calm|f|53|Smooth, slow alto, peaceful and kind, a calm voice in a busy world.
+Basil Breadcrumb|m|20|Soft, warm young tenor, slow and gentle, a baker's apprentice early in the morning.
+Gwendolyn Glowworm|f|63|Soft, glowing older voice, slow and dreamy, a woman watching fireflies.
+Tobias Twilight|m|65|Soft, fading older baritone, slow and calm, a voice at the end of the day.
+Eamon Ember|m|41|Low, warm baritone, slow and steady, a man reading the weather forecast by candlelight.
+Saskia Snowglobe|f|24|Soft, wondering young mezzo, slow and quiet, a girl shaking a snow globe.
+Walden Woods|m|58|Earthy, calm baritone, slow and reflective, a man writing in a cabin journal.
+Bettina Biscuit|f|69|Sweet, crumbly older voice, slow and kind, a grandmother offering biscuits.
+Corwin Crackle|m|33|Warm, crackling baritone, relaxed and gentle, a voice like a vinyl record.
+Liesel Lantern|f|40|Soft, glowing mezzo, slow and kind, a woman walking with a lantern.
+Peregrine Pond|m|72|Slow, quiet old voice, patient and calm, a birdwatcher at the pond.
+Fiona Featherbed|f|29|Soft, sleepy mezzo, slow and warm, a voice for a lazy morning in bed.
+Jude Juniper|m|26|Calm, fresh tenor, slow and kind, a forager in the woods.
+Odette Owlwood|f|56|Hushed, slow older alto, wise and gentle, a night owl reading till dawn.
+Rafferty Rug|m|45|Warm, round baritone, slow and comfy, a man sitting on a thick rug by the fire.
+Celia Seashell|f|17|Soft, airy young voice, slow and dreamy, a girl listening to a seashell.
+Horace Honeypot|m|67|Sweet, slow older baritone, warm and jolly, a beekeeper with honey on his toast.
+Imogen Inglenook|f|62|Cozy, warm older alto, slow and content, a woman in a fireside nook.
+Albie Applewood|m|13|Soft, cheerful young voice, slow and sweet, a boy picking apples.
+Esther Evensong|f|74|Gentle, singing elderly voice, slow and peaceful, a choir singer at evening.
+Tristan Tidewater|m|38|Calm, flowing baritone, slow and soft, a voice on a quiet boat.
+Gretchen Gingerbread|f|50|Warm, spicy alto, slow and cheerful, a baker decorating cookies.
+Lowen Lakeside|m|54|Calm, deep baritone, slow and reflective, a man skipping stones.
+Ada Afterglow|f|33|Soft, warm mezzo, slow and dreamy, a voice after the sunset.
+Barnaby Bookshop|m|61|Soft, papery older baritone, slow and kind, a bookshop owner recommending a novel.
+Wilma Woolsock|f|80|Very soft, warm elderly voice, slow and cozy, a grandmother knitting socks.
+Felix Frost|m|22|Soft, cool young tenor, slow and calm, a boy watching frost on the window.
+Nina Nightlight|f|11|Small, soft voice, slow and sleepy, a girl with a night light.
+Henry Hush-a-bye|m|50|Low, singing baritone, slow and soothing, a father humming a lullaby.
+Clarabelle Cloud|f|44|Airy, soft alto, slow and floating, a voice like drifting clouds.
+Grover Greenhouse|m|69|Earthy, slow older baritone, gentle and content, a gardener in a warm greenhouse.
+Primula Puddle|f|19|Light, soft young voice, slow and happy, a girl jumping softly in puddles.
+Hearthkeeper|n|58|Warm, steady androgynous voice, slow and kind, the keeper of a cozy inn.

@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Everyday Neighbors
+desc: Ordinary, natural voices – the people next door, at work, at school and in the shop
+icon: House
+---
+Mark Henderson|m|45|Natural, relaxed mid-range voice, friendly and clear, the neighbor who waves every morning.
+Julia Weber|f|38|Warm, clear mezzo, calm and natural, a mother chatting at the school gate.
+Ben Carter|m|24|Casual, easygoing tenor, upbeat and relaxed, a guy who works at the coffee shop.
+Margaret Ellis|f|71|Soft, kind elderly voice, unhurried and warm, a retired teacher who tends her roses.
+Sam Patel|m|33|Clear, friendly baritone, quick and helpful, a pharmacist who knows everyone's name.
+Emily Novak|f|27|Bright, natural mezzo, cheerful and quick, a nurse on her way to a shift.
+Frank Mueller|m|63|Gruff, warm baritone, slow and plainspoken, a retired mechanic in his garage.
+Sophie Laurent|f|19|Light, quick young voice, casual and chatty, a student with headphones around her neck.
+Alex Rivera|n|30|Neutral, calm voice, clear and friendly, a bus driver announcing the next stop.
+David Kim|m|41|Steady, warm baritone, patient and kind, a dad helping with homework.
+Linda Schultz|f|56|Brisk, practical alto, quick and warm, the office manager who keeps everything running.
+Tom Becker|m|17|Mumbling, casual young voice, laid-back and dry, a teenager who answers in short sentences.
+Grace Okafor|f|44|Warm, rich mezzo, cheerful and steady, a hairdresser who loves to chat.
+Peter Lindqvist|m|52|Calm, soft baritone, thoughtful and slow, a librarian.
+Anna Kowalski|f|31|Clear, quick mezzo, efficient and friendly, a delivery driver in a hurry.
+George Hall|m|78|Slow, warm old voice, gentle and chatty, a grandfather feeding pigeons in the park.
+Mia Fischer|f|12|Bright, quick little voice, curious and honest, a kid selling lemonade.
+Chris Morgan|m|36|Relaxed, natural tenor, friendly and quick, a gym trainer.
+Helen Brooks|f|65|Kind, slow older alto, motherly and calm, a woman who runs the corner bakery.
+Ryan O'Connell|m|28|Cheerful, quick baritone, joking and warm, a plumber fixing a sink.
+Laura Jensen|f|42|Calm, clear soprano, professional and kind, a dentist putting patients at ease.
+Jake Turner|m|21|Easygoing, young baritone, casual and friendly, a waiter at a diner.
+Ruth Goldberg|f|83|Thin, sharp elderly voice, witty and slow, a grandmother who still beats everyone at cards.
+Nina Petrova|f|35|Low, calm alto, dry and friendly, a software developer on a video call.
+Paul Dubois|m|59|Measured, warm baritone, polite and calm, a bank clerk.
+Olivia Grant|f|23|Bright, upbeat mezzo, quick and friendly, a shop assistant.
+Michael Adeyemi|m|48|Deep, warm baritone, calm and reassuring, a family doctor.
+Sarah Klein|f|29|Natural, quick mezzo, slightly nervous and kind, a new employee on her first day.
+Henry Walsh|m|70|Gravelly, slow old voice, friendly and folksy, a retired farmer.
+Jordan Lee|n|25|Easy, natural voice, calm and modern, a barista taking orders.
+Kevin Brown|m|39|Plain, steady baritone, honest and practical, a carpenter.
+Rachel Stein|f|47|Warm, clear alto, organized and kind, a primary school teacher.
+Max Hoffmann|m|14|Cracking, quick young voice, excited and awkward, a boy talking about his game.
+Patricia Moore|f|60|Soft, slow older soprano, polite and gentle, a church choir member.
+Luis Herrera|m|32|Warm, quick baritone, friendly and lively, a taxi driver.
+Emma Clarke|f|36|Clear, natural mezzo, calm and capable, a project manager.
+Walter Schmidt|m|81|Slow, quavering old voice, kind and proud, a war-era grandfather telling stories.
+Chloe Martin|f|16|Quick, casual young voice, sarcastic and bright, a teen texting while talking.
+Daniel Wright|m|44|Calm, friendly baritone, steady and clear, a postman.
+Mei Chen|f|52|Precise, warm alto, quick and kind, a restaurant owner.
+Oscar Nilsson|m|26|Soft, thoughtful tenor, quiet and polite, a graduate student.
+Barbara Wilson|f|74|Chatty, warm elderly voice, quick and nosy, the neighbor who knows all the news.
+Tim Walker|m|50|Plain, slightly tired baritone, friendly and dry, an office worker on Monday morning.
+Isabel Santos|f|28|Warm, lively mezzo, cheerful and quick, a yoga teacher.
+Arthur Price|m|67|Measured, polite older baritone, calm and precise, a retired accountant.
+Jenny Lam|f|21|Bright, quick young mezzo, friendly and casual, a cashier at the supermarket.
+Steve Murphy|m|55|Rough, friendly baritone, loud and warm, a builder on a coffee break.
+Hannah Berg|f|40|Calm, soft mezzo, patient and kind, a kindergarten teacher.
+Leo Russo|m|9|Small, curious voice, quick and cheerful, a boy with a new bike.
+Diane Foster|f|58|Brisk, warm alto, practical and kind, a school secretary.
+Robert Taylor|m|73|Slow, gentle old voice, wise and calm, a retired doctor.
+Lisa Hughes|f|33|Natural, warm mezzo, friendly and clear, a veterinarian.
+Nick Andersen|m|30|Casual, quick tenor, joking and relaxed, a guy at a barbecue.
+Monica Reyes|f|49|Warm, rich alto, motherly and loud, a cook in a school cafeteria.
+Simon Clark|m|37|Soft-spoken, calm baritone, careful and kind, a pharmacist.
+Ella Thompson|f|18|Light, nervous young voice, polite and quick, a student at a job interview.
+Joseph Bauer|m|62|Gruff, slow baritone, stubborn and kind, a hardware store owner.
+Victoria Hart|f|45|Polished, clear alto, confident and calm, a real estate agent.
+Ahmed Hassan|m|35|Warm, quick baritone, friendly and helpful, a shop owner.
+Katie Moss|f|26|Bright, bubbly mezzo, cheerful and fast, a flower shop assistant.
+Gerald Hughes|m|85|Very slow, frail elderly voice, gentle and humorous, a great-grandfather.
+Amy Fischer|f|39|Calm, steady mezzo, warm and practical, a nurse.
+Mason Reid|m|22|Casual, quick young baritone, friendly and relaxed, a delivery rider.
+Carol Bennett|f|69|Warm, slow older voice, kind and chatty, a grandmother at the park.
+Ian Fraser|m|46|Natural, dry baritone, calm and witty, a high school teacher.
+Sandra Lopez|f|53|Warm, quick alto, lively and caring, a midwife.
+Felix Wagner|m|19|Mumbled, shy young voice, slow and polite, a boy working his first job.
+Joan Parker|f|80|Soft, thin elderly voice, slow and sweet, a widow who bakes for the neighbors.
+Eric Johansson|m|43|Calm, steady baritone, friendly and plain, an electrician.
+Natalie Ross|f|31|Clear, natural soprano, friendly and organized, a receptionist.
+Tony Marino|m|57|Warm, loud baritone, cheerful and generous, a pizza shop owner.
+Priya Sharma|f|24|Bright, quick mezzo, smart and friendly, a junior doctor.
+Charlie Evans|m|11|Quick, excited little voice, cheeky and loud, a kid on a playground.
+Brenda Scott|f|64|Brisk, warm older alto, practical and funny, a lunch lady.
+Martin Vogel|m|51|Measured, calm baritone, polite and dry, an engineer.
+Lucy Ward|f|20|Soft, quick young voice, shy and kind, a waitress.
+Phil Coleman|m|68|Friendly, slow older baritone, chatty and warm, a retired bus driver.
+Sabine Koch|f|46|Clear, firm alto, efficient and kind, a nurse supervisor.
+Josh Miller|m|27|Easygoing, warm tenor, friendly and quick, a bartender.
+Greta Lund|f|76|Gentle, slow elderly voice, calm and wise, a grandmother knitting by the window.
+Omar Farouk|m|40|Warm, steady baritone, calm and kind, a taxi company owner.
+Rosie Turner|f|15|Bright, quick young voice, chatty and silly, a girl at a sleepover.
+Graham Mills|m|60|Plain, slow baritone, dry and honest, a farmer at the market.
+Kate Sullivan|f|34|Natural, warm mezzo, friendly and quick, a café owner.
+Andrew Novak|m|29|Clear, quick tenor, nerdy and friendly, an IT support guy.
+Doris Hall|f|88|Very slow, cracked elderly voice, sweet and funny, the oldest woman on the street.
+Lukas Meyer|m|38|Calm, soft baritone, polite and quiet, a nurse.
+Fiona Burke|f|41|Warm, quick alto, chatty and kind, a hairdresser.
+Raj Mehta|m|54|Warm, quick baritone, cheerful and talkative, a grocer.
+Jessica Allen|f|30|Bright, clear mezzo, upbeat and friendly, a fitness instructor.
+Brian Kelly|m|65|Gruff, warm older voice, slow and kind, a retired policeman.
+Tara Nguyen|f|22|Light, quick young voice, cheerful and polite, a nail salon worker.
+Hugo Bergström|m|47|Calm, slow baritone, thoughtful and kind, a carpenter.
+Mary O'Brien|f|72|Warm, lilting elderly voice, slow and cheerful, a church volunteer.
+Ethan Brooks|m|16|Cracking, casual young voice, shy and polite, a paperboy.
+Claire Dubois|f|37|Elegant, calm soprano, polite and warm, a bookshop owner.
+Victor Ramos|m|33|Friendly, quick baritone, lively and warm, a football coach for kids.
+Ingrid Holm|f|61|Brisk, clear older alto, practical and kind, a pharmacist.
+Stanley Moore|m|79|Slow, crackly old voice, grumpy and kind, a man who complains about the weather.
+Zoe Bennett|f|13|Bright, quick young voice, clever and chatty, a girl explaining her science project.
+Neil Harrison|m|42|Plain, friendly baritone, calm and steady, a dad at a football match.
+Agnes Weber|f|84|Slow, kind elderly voice, gentle and proud, a grandmother showing photos.
+Marco Bianchi|m|25|Warm, quick tenor, friendly and lively, a waiter.
+Heather Gray|f|50|Calm, warm alto, steady and kind, a social worker.
+Bill Foster|m|71|Folksy, slow old baritone, joking and warm, a retired truck driver.
+Yuki Tanaka|f|28|Soft, clear soprano, polite and calm, a florist.
+Adam Schwarz|m|35|Clear, steady baritone, friendly and professional, a bank advisor.
+Penny Collins|f|44|Cheerful, quick mezzo, warm and loud, a market stall seller.
+Dennis Kraus|m|58|Gruff, slow baritone, plain and honest, a butcher.
+Lily Andersson|f|17|Light, quick young voice, giggly and friendly, a babysitter.
+Oliver Hunt|m|31|Relaxed, natural tenor, friendly and calm, a gardener.
+Rita Gómez|f|66|Warm, rich older alto, loving and lively, a grandmother cooking for the family.
+Paul Fischer|m|48|Steady, clear baritone, calm and helpful, a driving instructor.
+Sienna Clarke|f|25|Bright, quick mezzo, cheerful and kind, a veterinary nurse.
+Harold Webb|m|82|Slow, kind old voice, gentle and wise, a retired clockmaker.
+Amelia Fox|f|10|Small, sweet voice, curious and brave, a girl walking her dog.
+Greg Patterson|m|53|Friendly, slow baritone, warm and dry, a hardware shop clerk.
+Elena Popescu|f|38|Warm, clear mezzo, kind and practical, a cleaner who sings while working.
+Kyle Morgan|m|20|Casual, quick young voice, laid-back and funny, a skateboarder.
+Hilda Berg|f|77|Firm, slow elderly voice, strict and kind, a retired headmistress.
+Jamal Wright|m|34|Warm, smooth baritone, friendly and calm, a youth worker.
+Laura Kim|f|29|Clear, quick soprano, friendly and efficient, a bank teller.
+Fred Baker|m|66|Gravelly, warm older baritone, cheerful and slow, a retired fisherman.
+Megan Price|f|32|Natural, warm mezzo, friendly and quick, a dental hygienist.
+Lars Eriksson|m|44|Calm, low baritone, quiet and kind, a forester.
+Dorothy Simmons|f|91|Very slow, frail elderly voice, sweet and sharp, a woman celebrating her birthday.
+Will Thompson|m|23|Friendly, casual tenor, upbeat and relaxed, a barista.
+Karen Hughes|f|49|Brisk, clear alto, organized and friendly, a school principal.
+Theo Becker|m|8|Tiny, excited voice, quick and honest, a boy who lost his first tooth.
+Angela Rossi|f|57|Warm, lively older alto, loud and caring, a mother calling her kids for dinner.
+Martin Clarke|m|62|Measured, gentle baritone, slow and polite, a retired banker.
+Noah Fischer|m|27|Soft, natural tenor, calm and friendly, a nurse in a children's ward.
+Susan Wright|f|68|Kind, slow older voice, warm and patient, a grandmother at the bus stop.
+Riley Cooper|n|19|Casual, quick neutral young voice, friendly and modern, a student at the library.
+Edward Lane|m|75|Slow, cultured old baritone, kind and dry, a retired professor.
+Paula Schneider|f|43|Calm, clear mezzo, friendly and practical, a pharmacist's assistant.
+Jack Russell|m|36|Cheerful, quick baritone, friendly and loud, a dog walker.
+Ivy Morris|f|24|Soft, quick young mezzo, shy and kind, a library assistant.
+Tom Richardson|m|51|Friendly, steady baritone, calm and helpful, a train conductor.
+Betty Clarke|f|86|Very slow, warm elderly voice, sweet and chatty, a grandmother who remembers everything.
+Matteo Ricci|m|29|Warm, lively tenor, friendly and quick, a gelato shop worker.
+Rebecca Hall|f|36|Clear, steady mezzo, calm and kind, a counselor.
+Dennis Ward|m|69|Gruff, slow old voice, grumpy and funny, a man who fixes bikes for the neighborhood kids.
+Hailey Ross|f|21|Bright, quick young voice, cheerful and chatty, a student nurse.
+Joe Nowak|m|46|Plain, friendly baritone, calm and steady, a factory worker.
+Marjorie Bell|f|79|Soft, slow elderly voice, gentle and kind, a retired seamstress.
+Aaron Cohen|m|40|Warm, quick baritone, friendly and clever, a pharmacist who jokes.
+Leah Sorensen|f|27|Calm, clear mezzo, kind and relaxed, a physiotherapist.
+Dylan Hughes|m|15|Casual, cracking young voice, sarcastic and friendly, a teen gamer.
+Carmen Delgado|f|51|Warm, rich alto, friendly and quick, a market vendor.
+Harvey Mitchell|m|58|Steady, warm baritone, calm and kind, a school caretaker.
+Ella Kowalczyk|f|33|Bright, natural mezzo, quick and friendly, a hairdresser.
+Ralph Stevens|m|83|Slow, gravelly old voice, kind and proud, a grandfather at a family dinner.
+Molly Graham|f|9|Small, bright voice, giggly and chatty, a girl at a birthday party.
+Jonathan Pierce|m|37|Calm, clear baritone, professional and kind, a lawyer at a school meeting.
+Wendy Clarke|f|62|Warm, chatty older voice, friendly and loud, a bingo hall regular.
+Sean Byrne|m|26|Friendly, quick tenor, cheerful and warm, a postman.
+Astrid Nilsson|f|45|Calm, cool alto, quiet and friendly, an architect.
+Ray Douglas|m|71|Warm, slow old baritone, folksy and kind, a retired carpenter.
+Chiara Conti|f|30|Warm, quick mezzo, friendly and lively, a café waitress.
+Tobias Klein|m|34|Calm, soft tenor, thoughtful and friendly, a teacher.
+Valerie Shaw|f|55|Clear, warm older alto, practical and kind, a nurse practitioner.
+Ollie Bennett|m|12|Quick, excited young voice, curious and loud, a boy at a museum.
+Gloria Martinez|f|73|Warm, slow elderly voice, loving and cheerful, a grandmother at church.
+Kenneth Young|m|47|Plain, calm baritone, friendly and dry, an insurance agent.
+Freya Larsen|f|18|Light, quick young voice, friendly and casual, a student at a festival.
+Albert Weiss|m|88|Very slow, thin old voice, kind and witty, a retired watchmaker.
+Nora Fitzgerald|f|41|Warm, clear mezzo, friendly and steady, a librarian.
+Jason Price|m|30|Easygoing, warm tenor, friendly and calm, a park ranger.
+Elsie Turner|f|64|Kind, slow older voice, gentle and warm, a volunteer at the shelter.
+Malik Johnson|m|23|Casual, smooth young baritone, friendly and relaxed, a basketball player at the court.
+Anja Hoffmann|f|49|Clear, firm alto, efficient and friendly, a pharmacy owner.
+Gordon Fraser|m|56|Friendly, slow baritone, warm and joking, a taxi driver.
+Bella Moretti|f|14|Bright, quick young voice, chatty and dramatic, a girl telling a story about school.
+Dmitri Ivanov|m|61|Deep, slow baritone, calm and kind, a chess player in the park.
+Ruby Collins|f|26|Natural, warm mezzo, friendly and quick, a shop manager.
+Stuart Bell|m|39|Calm, plain baritone, polite and dry, a civil servant.
+Edith Moore|f|90|Very slow, soft elderly voice, kind and gentle, a woman in a care home.
+Pablo Romero|m|28|Warm, lively tenor, friendly and quick, a cook in a tapas bar.
+Jane Mitchell|f|37|Calm, clear mezzo, friendly and steady, a mother at swimming lessons.
+Frank Dawson|m|74|Gravelly, slow old voice, grumpy and kind, a man who feeds stray cats.
+Lena Schulz|f|23|Bright, quick young voice, friendly and casual, a trainee.
+Marcus Hill|m|44|Steady, warm baritone, calm and friendly, a fire fighter at an open day.
+Irene Papadopoulos|f|67|Warm, lively older alto, generous and loud, a grandmother with a full fridge.
+Elias Brandt|m|18|Soft, shy young voice, polite and quiet, an apprentice.
+Chloe Dupont|f|40|Elegant, calm mezzo, friendly and polite, a perfume shop assistant.
+Roy Barker|m|66|Plain, slow older voice, dry and friendly, a retired postman.
+Ava Mitchell|f|11|Bright, quick little voice, curious and polite, a girl asking lots of questions.
+Peter Novak|m|53|Calm, friendly baritone, steady and patient, a bus driver.
+Theresa Bauer|f|59|Warm, brisk older alto, practical and kind, a nurse at a clinic.
+Sam Morgan|n|35|Calm, neutral voice, friendly and plain, a call center agent.
+Kurt Lehmann|m|70|Gruff, slow old baritone, stubborn and kind, a retired engineer.
+Holly Jenkins|f|28|Cheerful, quick mezzo, friendly and warm, a dog groomer.
+Benjamin Ross|m|32|Clear, friendly tenor, quick and smart, a journalist.
+Ida Svensson|f|81|Soft, slow elderly voice, kind and humble, a grandmother baking cinnamon buns.
+Luca Ferrari|m|21|Warm, quick young tenor, lively and friendly, a mechanic's apprentice.
+Michelle Grant|f|46|Clear, warm alto, friendly and organized, a travel agent.
+Eddie Carter|m|59|Friendly, rough baritone, warm and loud, a market trader.
+Sophia Reyes|f|19|Light, quick young voice, cheerful and friendly, a college student.
+Douglas Ward|m|77|Slow, warm old voice, kind and patient, a grandfather fishing with his grandson.
+Kim Fischer|f|34|Natural, clear mezzo, friendly and calm, a pharmacist.
+Tyler Brooks|m|25|Casual, quick young baritone, friendly and funny, a delivery driver.
+Agatha Price|f|73|Brisk, slow elderly voice, sharp and kind, a retired nurse.
+Harry Collins|m|10|Small, quick voice, cheerful and brave, a boy scout.
+Nadia Ali|f|42|Warm, steady mezzo, kind and practical, a primary school teacher.
+Gary Turner|m|50|Plain, friendly baritone, calm and dry, a plumber.
+Elise Moreau|f|27|Soft, clear soprano, friendly and calm, a bakery assistant.
+Jim Hawkins|m|64|Folksy, slow older baritone, warm and chatty, a retired sailor.
+Tess Walker|f|52|Warm, quick alto, friendly and loud, a waitress at a truck stop.
+Robin Clarke|n|41|Calm, natural voice, friendly and clear, a radio traffic reporter.
+Erik Holm|m|36|Calm, soft baritone, quiet and kind, a nurse.
+Maggie Doyle|f|60|Warm, chatty older voice, quick and kind, a shop owner.
+Colin Baxter|m|43|Mild, friendly baritone, slightly hesitant and polite, a neighbor asking to borrow a ladder.
+Rosa Lindgren|f|35|Clear, relaxed mezzo, warm and easygoing, a mom packing lunches.
+Pete Sanders|m|61|Hearty, slow baritone, cheerful and loud, the man who runs the allotment garden.
+Yasmin Khan|f|26|Bright, friendly mezzo, quick and warm, a pharmacist's trainee.
+Nils Hagen|m|19|Quiet, soft young voice, polite and calm, a boy who mows lawns for pocket money.
+Brigitte Roth|f|70|Firm, slow elderly voice, practical and warm, a woman who runs the neighborhood watch.
+Darren Cole|m|38|Casual, quick baritone, friendly and joking, a dad coaching the school team.
+Lucia Marino|f|47|Warm, lively alto, quick and friendly, a seamstress repairing a coat.
+Felix Hart|m|12|Quick, bright young voice, curious and polite, a boy delivering flyers.
+Ann Whitaker|f|83|Soft, slow elderly voice, kind and humorous, a grandmother on her porch swing.
+Ravi Iyer|m|50|Calm, warm baritone, polite and kind, an accountant helping with taxes.
+Jodie Parsons|f|22|Casual, quick young voice, friendly and bubbly, a supermarket shelf stacker.
+Walter Klein|m|76|Gruff, slow old voice, dry and kind, a retired baker.
+Bettina Lorenz|f|57|Clear, brisk older alto, organized and friendly, a town hall clerk.
+Owen Price|m|29|Natural, relaxed tenor, friendly and calm, a cyclist courier.
+Marta Silva|f|41|Warm, clear mezzo, caring and steady, a nursery school teacher.
+Jacob Weiss|m|34|Soft, steady baritone, calm and helpful, a pharmacist on night duty.
+Clara Hoffmann|f|16|Light, quick young voice, cheerful and polite, a girl selling cookies for her club.
+Bernard Lucas|m|69|Warm, slow older baritone, friendly and chatty, a retired teacher in the café.
+Sofia Andersson|f|31|Calm, natural soprano, friendly and gentle, a midwife.
+Gavin Brooks|m|45|Plain, warm baritone, steady and kind, a janitor at the school.
+Hazel Pryce|f|62|Friendly, slow older alto, warm and practical, the woman at the post office counter.
+Mateo Cruz|m|24|Warm, quick young tenor, lively and kind, a cook at the diner.
+Ingrid Walsh|f|87|Very slow, gentle elderly voice, kind and clear, a great-grandmother.
+Jordan Blake|n|28|Calm, easy neutral voice, friendly and modern, a librarian assistant.
+Casey Morgan|n|33|Relaxed, natural neutral voice, warm and steady, a yoga studio receptionist.
+Sky Patel|n|22|Light, quick neutral voice, casual and friendly, a barista at the corner café.
+Ruth Hammond|f|52|Warm, steady alto, calm and kind, a nurse at the doctor's office.

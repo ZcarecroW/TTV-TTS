@@ -228,7 +228,28 @@ macro_rules! builtin {
 
 /// (id, text) – the files live in `src-tauri/presets/` (name, desc and
 /// icon in their header). Parsed once, on first use.
-const BUILTIN: &[(&str, &str)] = builtin!["cinematic", "fantasy-tavern", "starship-crew", "noir-city", "saturday-cartoons"];
+const BUILTIN: &[(&str, &str)] = builtin![
+    "cinematic",
+    "everyday-neighbors",
+    "fantasy-tavern",
+    "starship-crew",
+    "noir-city",
+    "saturday-cartoons",
+    "high-seas",
+    "royal-court",
+    "midnight-horror",
+    "arena-casters",
+    "on-air",
+    "wild-planet",
+    "storytime",
+    "frontier-west",
+    "neon-streets",
+    "olympus",
+    "capes-and-masks",
+    "grand-stage",
+    "quest-givers",
+    "calm-and-cozy",
+];
 
 pub fn builtins() -> &'static [Preset] {
     static B: OnceLock<Vec<Preset>> = OnceLock::new();
@@ -516,6 +537,48 @@ mod tests {
             for d in &b.defs {
                 assert!(all_descs.insert(d.description.to_lowercase()), "{}: description used twice: {}", b.id, d.description);
             }
+            assert!(!b.name.is_empty() && !b.description.is_empty() && b.icon != "Waveform", "{}: header (name, desc, icon) incomplete", b.id);
+            // Warnings would mean silently skipped lines or unknown effects.
+            let warnings = parse(BUILTIN.iter().find(|x| x.0 == b.id).unwrap().1).issues.into_iter().filter(|i| i.level == "warning").count();
+            assert_eq!(warnings, 0, "{} has warnings", b.id);
         }
+        assert_eq!(builtins().len(), 20);
+        // Different definitions never share a hash (the library key).
+        let hashes: HashSet<String> = builtins().iter().flat_map(|b| b.defs.iter().map(|d| d.hash())).collect();
+        assert_eq!(hashes.len(), 20 * 240);
+    }
+
+    #[test]
+    fn prompt_continues_in_parts() {
+        let first = prompt(&PromptRequest { theme: "a cozy café".into(), name: "Café".into(), total: 150, have: vec![], effects: false });
+        assert!(first.contains(MAGIC) && first.contains("Write 60 voice definitions") && !first.contains("fx="));
+        let have: Vec<VoiceDef> = (0..60).map(|i| VoiceDef { name: format!("Guest {i}"), gender: "f".into(), age: 30, description: format!("Warm voice number {i}, calm and kind."), fx: None }).collect();
+        let second = prompt(&PromptRequest { theme: "a cozy café".into(), name: "Café".into(), total: 150, have, effects: true });
+        assert!(second.contains("part 2 of 3") && second.contains("voices 61 to 120") && second.contains("Guest 59") && second.contains("fx=<effect>"));
+        assert!(!second.contains(MAGIC), "later parts only add voice lines");
+    }
+
+    /// Cost of the first parse and of one preset list (the window asks for
+    /// it after library changes). `cargo test --release -p ttv-tts preset_timing -- --ignored --nocapture`
+    #[test]
+    #[ignore]
+    fn preset_timing() {
+        let t = std::time::Instant::now();
+        let n: usize = BUILTIN.iter().map(|(_, text)| parse(text).defs.len()).sum();
+        let parse_ms = t.elapsed().as_secs_f64() * 1000.0;
+        // A library with every voice computed in 10 languages.
+        let mut by_def: HashMap<String, Vec<String>> = HashMap::new();
+        for b in builtins() {
+            for d in &b.defs {
+                by_def.insert(d.hash(), ["en", "de", "ru", "fr", "es", "it", "pt", "ja", "zh", "ko"].iter().map(|s| s.to_string()).collect());
+            }
+        }
+        let store = PresetStore { path: std::env::temp_dir().join("ttv-presets-timing.json"), own: RwLock::new(Vec::new()) };
+        let t = std::time::Instant::now();
+        let views = store.summaries(&by_def);
+        let list_ms = t.elapsed().as_secs_f64() * 1000.0;
+        let json = serde_json::to_string(&views).unwrap();
+        println!("parse {n} voices: {parse_ms:.2} ms · preset list (48 000 computed voices): {list_ms:.2} ms · {} KB JSON", json.len() / 1024);
+        assert_eq!(views.len(), 20);
     }
 }

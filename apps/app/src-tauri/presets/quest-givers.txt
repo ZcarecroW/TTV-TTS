@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Quest Givers
+desc: Village elders, merchants, guild masters, mysterious strangers and every NPC with a task for you
+icon: Atlas
+---
+Elder Thorvin|m|76|Slow, weathered old baritone, grave and kind, a village elder who has one last favor to ask.
+Merchant Saffi|f|38|Quick, cheerful mezzo, persuasive and warm, a traveling merchant with rare wares.
+Guard Captain Brannick|m|46|Gruff, clipped baritone, short and dutiful, a captain who needs volunteers for the night watch.
+Mysterious Hooded Stranger|n|50|Low, whispery androgynous voice, slow and cryptic, someone who knows your name.
+Blacksmith Hilde|f|44|Strong, loud alto, blunt and proud, a smith who needs rare ore.
+Young Tam|m|12|Bright, breathless little voice, quick and worried, a boy whose cat ran into the haunted woods.
+Archmage Velloran|m|83|Ancient, slow, resonant voice, wise and distracted, a wizard who lost his spellbook.
+Innkeeper Rosalind|f|52|Warm, bustling alto, chatty and kind, an innkeeper with rats in the cellar.
+Bounty Master Krell|m|58|Gravelly, slow baritone, dry and businesslike, a man pinning wanted posters.
+Priestess Aelin|f|35|Serene, clear soprano, calm and solemn, a priestess seeking a lost relic.
+Farmer Odo|m|61|Folksy, slow baritone, worried and plain, a farmer whose crops are being eaten by something big.
+Guildmistress Varra|f|49|Cool, sharp alto, quick and calculating, the head of the thieves' guild.
+Old Hermit Bram|m|88|Very slow, crackly old voice, odd and wise, a hermit who speaks in riddles.
+Princess Iselle|f|20|Clear, brave young soprano, quick and determined, a princess who wants to be rescued on her own terms.
+Alchemist Fennick|m|55|Nasal, rapid tenor, excited and fussy, an alchemist who needs three glowing mushrooms.
+Widow Marlow|f|67|Soft, sad older alto, slow and grateful, a widow asking you to find her husband's ring.
+Sergeant Holt|m|39|Barking, loud baritone, strict and fast, a drill sergeant recruiting adventurers.
+Huntress Kaila|f|29|Low, quiet alto, focused and terse, a huntress tracking a beast.
+Scholar Pemberton|m|64|Precise, slow older tenor, pedantic and curious, a scholar who wants an ancient tablet translated.
+Little Wila|f|9|Tiny, shy voice, slow and hopeful, a girl who wants you to find her lost doll.
+Captain Morrow|m|51|Salty, booming baritone, loud and rough, a ship captain who needs a crew.
+Seer Ysolde|f|72|Breathy, slow elderly voice, mysterious and calm, a seer who warns of danger.
+Dwarf Prospector Grunn|m|70|Gruff, slow bass, stubborn and greedy, a dwarf whose mine is overrun.
+Ranger Elowen|f|33|Clear, quick mezzo, calm and observant, a ranger who needs help guarding the pass.
+Lord Ashford|m|57|Plummy, slow baritone, arrogant and rich, a noble who wants his name restored.
+Tavern Bard Lirien|n|26|Melodic, quick androgynous voice, playful and charming, a bard who needs inspiration for a song.
+Stable Boy Pip|m|15|Cracking, eager young voice, quick and nervous, a stable boy whose horse was stolen.
+Witch Morwenna|f|60|Raspy, slow older voice, sly and amused, a witch who trades spells for favors.
+Commander Valerian|m|45|Commanding, clear baritone, slow and serious, a general preparing for war.
+Herbalist Juniper|f|41|Earthy, warm alto, slow and kind, a healer who needs rare herbs.
+Ghost of Sir Aldric|m|90|Hollow, echoing old voice, slow and mournful, a ghost who can't rest until avenged.
+Fisherwoman Marina|f|47|Salty, brisk alto, quick and practical, a fisherwoman whose nets catch strange things.
+Royal Messenger Dax|m|23|Breathless, fast young tenor, urgent and polite, a messenger with a sealed letter.
+Librarian Agatha|f|74|Prim, slow elderly voice, quiet and strict, a librarian whose forbidden book went missing.
+Mercenary Jarl|m|42|Rough, slow baritone, cynical and loyal, a sellsword looking for a partner.
+Baker Hettie|f|56|Cheerful, quick older alto, warm and flustered, a baker who needs a delivery made.
+Druid Oakheart|n|65|Deep, rustling androgynous voice, slow and patient, a druid asking you to heal the forest.
+Thief Kip|m|19|Quick, cocky young tenor, sly and fast, a pickpocket offering a shady job.
+Lady Seraphine|f|39|Elegant, slow soprano, refined and secretive, a noblewoman with a dangerous request.
+Gravekeeper Morton|m|69|Dry, slow older baritone, gloomy and odd, a gravekeeper whose graves keep opening.
+Shipwright Bea|f|50|Practical, quick alto, loud and busy, a shipwright who needs enchanted wood.
+Knight Errant Gareth|m|31|Earnest, heroic baritone, bold and kind, a knight looking for a squire.
+Fortune Teller Zara|f|63|Throaty, slow older alto, theatrical and knowing, a fortune teller offering a prophecy.
+Brewmaster Ulf|m|54|Booming, jolly bass, loud and tipsy, a brewer who needs honey from giant bees.
+Orphan Lyla|f|11|Small, brave voice, quick and earnest, an orphan who knows a secret passage.
+Wizard's Apprentice Toby|m|17|Nervous, quick young voice, apologetic and clumsy, an apprentice who broke the master's staff.
+Queen Ilvara|f|58|Regal, cool older alto, slow and commanding, a queen who needs a champion.
+Miner Grimble|m|47|Coughing, gruff baritone, slow and tired, a miner who heard something in the deep.
+Courier Wren|n|22|Quick, light androgynous voice, busy and cheerful, a courier with too many packages.
+Monk Brother Tobias|m|62|Calm, chanting older baritone, slow and gentle, a monk guarding a sacred bell.
+Shepherdess Mae|f|24|Soft, quick young voice, worried and kind, a shepherdess whose flock vanished.
+Treasure Hunter Rourke|m|36|Smooth, quick baritone, charming and greedy, a treasure hunter with half a map.
+Alderwoman Greta|f|66|Firm, slow older alto, practical and stern, the mayor of a small town.
+Smuggler Vesper|f|34|Smoky, quick alto, sly and dangerous, a smuggler offering a risky run.
+Old Soldier Bertram|m|79|Gravelly, slow old voice, proud and sad, a veteran who wants his medal back.
+Cartographer Elias|m|44|Precise, curious baritone, quick and excited, a mapmaker who needs the blank spots filled.
+Healer Sister Anwen|f|46|Gentle, warm mezzo, slow and caring, a healer at a plague house.
+Tinkerer Gizzle|n|40|Squeaky, rapid androgynous voice, excited and odd, a gnome inventor who needs spare parts.
+Lighthouse Keeper Ivo|m|73|Slow, salty old baritone, lonely and kind, a keeper whose light went out.
+Noble Child Percival|m|10|Haughty, high little voice, bossy and spoiled, a young lord who wants a dragon egg.
+Hunter Brakka|m|52|Rough, low baritone, tough and terse, a hunter who lost his hound.
+Weaver Imelda|f|59|Rhythmic, slow older alto, patient and wise, a weaver who needs golden thread.
+Spymaster Corvin|m|50|Silky, quiet baritone, slow and cunning, a spymaster with a delicate task.
+Tavern Girl Polly|f|18|Bright, quick young voice, cheerful and nosy, a girl who overheard a plot.
+Paladin Seraphis|f|37|Strong, clear alto, righteous and steady, a paladin hunting undead.
+Exiled Prince Kael|m|28|Brooding, low tenor, bitter and proud, a prince who wants his throne back.
+Gnome Merchant Fizzwick|m|58|Chirpy, quick older tenor, bargaining and fun, a gnome selling gadgets.
+Swamp Witch Hagatha|f|81|Cackling, slow elderly voice, creepy and amused, a witch who wants a frog prince.
+Elf Ambassador Thalion|m|70|Smooth, ageless baritone, slow and aloof, an elven envoy.
+Dragon Tamer Ryssa|f|31|Bold, quick mezzo, fearless and warm, a tamer whose dragon is sick.
+Hedge Knight Duncan|m|43|Plain, steady baritone, humble and brave, a poor knight with a big heart.
+Fairy Queen Briallen|f|60|Shimmering, slow older soprano, regal and playful, a fairy queen who sets riddles as tasks.
+Mayor Bumblesworth|m|65|Pompous, wheezy baritone, slow and nervous, a mayor terrified of goblins.
+Assassin Nyx|n|33|Cold, quiet androgynous voice, short and precise, an assassin who needs a distraction.
+Apothecary Wendeline|f|53|Precise, quick older alto, fussy and kind, an apothecary out of stock.
+Gatekeeper Ulric|m|60|Bored, slow baritone, dull and stubborn, a gatekeeper who wants proof of identity.
+Bard Melisande|f|27|Singing, bright soprano, cheerful and dramatic, a bard who wants a story worth singing.
+Arena Master Brutus|m|49|Booming, loud baritone, theatrical and greedy, an arena master looking for fighters.
+Nun Sister Clementine|f|70|Soft, slow elderly voice, kind and firm, a nun hiding refugees.
+Wandering Scholar Nim|n|45|Curious, quick androgynous voice, bookish and friendly, a scholar of lost languages.
+Woodcutter Hamm|m|38|Plain, warm baritone, slow and honest, a woodcutter who saw a wolf with human eyes.
+Countess Ravenna|f|48|Velvety, slow alto, seductive and cold, a countess with a vampire problem.
+Pirate Queen Isla|f|40|Rough, loud alto, cocky and bold, a pirate queen offering a share.
+Old Fisherman Gil|m|84|Very slow, wheezy old voice, cheerful and rambling, a fisherman who saw a sea monster.
+Grand Vizier Malek|m|63|Silky, slow baritone, scheming and polite, a vizier with a secret agenda.
+Ice Witch Freyja|f|55|Cold, crisp older soprano, slow and distant, a witch of the frozen peaks.
+Squire Elric|m|16|Eager, quick young voice, loyal and nervous, a squire searching for his missing knight.
+Matron Gwendolyn|f|62|Warm, firm older alto, protective and kind, the head of an orphanage.
+Necromancer Vael|m|56|Hollow, slow baritone, morbid and calm, a necromancer who wants you to fetch bones.
+Caravan Leader Amira|f|45|Warm, steady alto, practical and calm, a caravan leader who needs guards.
+Troll Bridge Keeper Grub|m|66|Rumbling, slow bass, dim and greedy, a troll who demands a toll or a riddle.
+Clockmaker Hans|m|71|Ticking, slow old tenor, precise and kind, a clockmaker whose clock tower stopped.
+Milkmaid Bonnie|f|21|Cheerful, quick young voice, simple and friendly, a milkmaid whose cows were enchanted.
+High Priest Orrin|m|68|Solemn, slow older baritone, grave and powerful, a high priest with a prophecy.
+Goblin Snitch|n|30|Squeaky, quick androgynous voice, sneaky and nervous, a goblin selling information.
+Lady of the Lake Nimue|f|90|Watery, slow ancient soprano, calm and mystical, a spirit of the lake.
+Dock Master Pike|m|53|Gruff, quick baritone, loud and busy, a dock master with smuggling troubles.
+Florist Primrose|f|30|Sweet, soft mezzo, slow and gentle, a florist who needs a moonflower.
+Barbarian Chieftain Korg|m|48|Roaring, loud bass, fierce and proud, a chieftain who respects strength.
+Tax Collector Penrose|m|52|Nasal, slow baritone, greedy and dull, a tax collector.
+Chef Bramblewick|m|44|Excited, quick tenor, passionate and loud, a chef who needs a griffin egg.
+Prophetess Cassia|f|25|Haunted, slow young soprano, urgent and sad, a young prophet nobody believes.
+Retired Adventurer Gus|m|75|Raspy, slow old voice, nostalgic and kind, an adventurer with a bad knee and good advice.
+Mapseller Ottoline|f|58|Brisk, quick older voice, sly and chatty, a map seller whose maps lead to trouble.
+Ranger Captain Dane|m|41|Calm, steady baritone, quiet and wise, the leader of the border rangers.
+Village Girl Ivy|f|13|Bright, quick young voice, curious and bold, a girl who wants to become an adventurer.
+Golem Guardian|n|99|Deep, stony androgynous voice, very slow and heavy, a golem guarding a door.
+Shadow Broker Vex|m|47|Low, hissing baritone, slow and secretive, a broker of forbidden secrets.
+Nanny Thistlewood|f|77|Warm, slow elderly voice, kind and stern, a nanny who knows old magic.
+Gladiator Rhea|f|32|Tough, quick alto, proud and fierce, a gladiator seeking freedom.
+Pilgrim Tobiah|m|59|Soft, slow baritone, humble and devout, a pilgrim lost on the road.
+Elf Archer Laenna|f|34|Clear, cool alto, quick and precise, an archer who needs help guarding the old forest.
+Count Varnholt|m|62|Cold, slow baritone, cruel and polished, a count hiring hunters for something terrible.
+Sprite Twinkle|n|8|Tiny, giggly androgynous voice, quick and silly, a sprite who lost her glow.
+Stonemason Gertrud|f|51|Gruff, slow alto, sturdy and plain, a mason building a wall against giants.
+Knight Commander Aldous|m|55|Stern, clear baritone, honorable and slow, the leader of a holy order.
+Gambler Lucky Len|m|35|Smooth, quick baritone, charming and shifty, a gambler who lost a magic die.
+Midwife Hesper|f|64|Calm, warm older alto, patient and wise, a midwife who saw a strange birth.
+Bridge Builder Otto|m|48|Practical, slow baritone, worried and plain, an engineer whose bridge keeps collapsing.
+Fire Mage Ignatia|f|36|Fiery, quick mezzo, impatient and bold, a mage who needs a phoenix feather.
+Wise Owl Barnaby|m|95|Hooting, slow ancient voice, wise and drowsy, a talking owl who gives directions.
+Kitchen Maid Molly|f|17|Shy, quick young voice, nervous and kind, a maid who found a secret door.
+Warlord Grakk|m|57|Harsh, roaring baritone, slow and menacing, a warlord offering a deal.
+Spice Trader Rahim|m|46|Warm, rich baritone, quick and friendly, a spice trader with a cursed cargo.
+Sister Ophelia|f|28|Soft, quiet soprano, slow and devoted, a young nun guarding a relic.
+Beastmaster Thorne|m|40|Growling, low baritone, wild and calm, a beastmaster whose beasts escaped.
+Lamplighter Lou|m|67|Gentle, slow older baritone, friendly and tired, a lamplighter afraid of the dark streets.
+Silversmith Delia|f|42|Precise, quick alto, clever and fussy, a silversmith making a werewolf charm.
+Ferryman Olaf|m|72|Slow, gravelly old voice, quiet and grim, a ferryman who won't cross at night.
+Duchess Elara|f|61|Regal, slow older soprano, proud and worried, a duchess whose son is missing.
+Halfling Pip Tumbleby|m|33|Cheerful, quick tenor, chatty and kind, a halfling cook.
+Druidess Sylvara|f|57|Earthy, slow alto, wise and calm, a druid of the stone circle.
+Wolf Pack Leader|n|60|Growling, deep androgynous voice, slow and proud, a talking wolf chief.
+Undertaker Silas|m|65|Dry, slow baritone, morbid and polite, an undertaker short on coffins.
+Swordmaster Kenji|m|58|Calm, precise baritone, slow and disciplined, a sword master seeking a student.
+Seamstress Lottie|f|26|Bright, quick young mezzo, chatty and helpful, a seamstress sewing a magic cloak.
+Bandit Leader Red Jack|m|39|Cocky, rough baritone, quick and dangerous, a bandit offering safe passage for a price.
+Mermaid Coralie|f|23|Bubbly, airy soprano, curious and playful, a mermaid who lost her pearl.
+Tinker Nob|m|50|Clanky, cheerful baritone, quick and odd, a tinker with a broken cart.
+Abbess Hildegard|f|80|Firm, slow elderly voice, wise and strict, an abbess guarding forbidden scrolls.
+Young Mage Corin|m|21|Excited, quick young tenor, eager and reckless, a mage who summoned something by accident.
+Dryad Willowmere|f|99|Rustling, slow ancient voice, gentle and sad, a tree spirit whose grove is dying.
+Warden Hollis|m|54|Gruff, slow baritone, stern and tired, a prison warden with an escaped prisoner.
+Shopkeeper Mabel|f|69|Warm, chatty older voice, friendly and nosy, a general store owner.
+Dwarven King Borin|m|85|Booming, slow old bass, proud and grim, a dwarf king seeking his lost hammer.
+Cook Gristle|m|48|Gruff, loud baritone, rude and funny, a cook who needs boar meat.
+Lady Knight Bryony|f|30|Firm, clear alto, honorable and steady, a lady knight on a vow.
+Shrine Maiden Aiko|f|19|Soft, clear young voice, calm and polite, a shrine keeper who needs offerings.
+Fire Lookout Bertie|m|44|Plain, quick baritone, alert and worried, a watchman who saw smoke on the mountain.
+Siren Calliope|f|35|Hypnotic, slow mezzo, alluring and sad, a siren who wants to be free.
+Hermit Monk Zhen|m|91|Very slow, calm ancient voice, wise and still, a monk on the mountaintop.
+Greta Goatherd|f|14|Bright, quick young voice, cheerful and brave, a goatherd girl.
+Rune Carver Ulla|f|48|Low, slow alto, mysterious and careful, a carver of protective runes.
+Chancellor Ravel|m|61|Smooth, slow baritone, bureaucratic and sly, a chancellor with a paperwork quest.
+Stray Dog Biscuit|n|5|Tiny, panting voice, happy and quick, a talking puppy who wants a bone.
+Retired Thief Magpie|f|73|Sly, slow elderly voice, mischievous and kind, a retired thief with one last heist.
+Watchtower Guard Sven|m|25|Bored, slow young baritone, sleepy and dry, a guard who wants someone else to take his shift.
+Lady Mortimer|f|66|Brittle, slow older soprano, cold and grieving, a lady seeking revenge.
+Gem Cutter Fenwick|m|56|Precise, slow baritone, careful and greedy, a gem cutter who needs a flawless stone.
+Healer Apprentice Rosa|f|18|Nervous, quick young voice, eager and kind, an apprentice healer in over her head.
+Giant Bumbleboots|m|40|Huge, slow, gentle bass, shy and lost, a young giant looking for his family.
+Plague Doctor Morrow|n|58|Muffled, slow androgynous voice, clinical and eerie, a plague doctor with a cure to deliver.
+Fletcher Aldwin|m|37|Plain, steady baritone, calm and precise, an arrow maker who needs eagle feathers.
+Queen of Thieves Ysolde|f|44|Silky, quick alto, clever and dangerous, a thief queen with a job.
+Wise Woman Old Nell|f|86|Very slow, cracked elderly voice, knowing and kind, a wise woman at the crossroads.
+Imp Gribble|m|9|Squeaky, fast little voice, mischievous and naughty, an imp who wants a favor.
+Bell Ringer Quentin|m|52|Shy, slow baritone, gentle and odd, a bell ringer who heard a ghost bell.
+Courtesan Lysandra|f|33|Sultry, slow mezzo, clever and calm, a courtesan who knows court secrets.
+Archdruid Thalor|m|78|Deep, slow old baritone, calm and powerful, the leader of the druids.
+Mushroom Forager Fae|f|29|Dreamy, slow mezzo, odd and gentle, a forager who found a strange mushroom ring.
+Saltmarsh Sheriff Cobb|m|51|Drawling, slow baritone, tired and fair, a sheriff in a swamp town.
+Twin Scouts Kit and Kat|n|20|Doubled, quick androgynous voice, playful and fast, twin scouts finishing each other's sentences.
+Vintner Bacchelli|m|60|Warm, merry baritone, slow and jolly, a winemaker whose vines are cursed.
+Royal Tutor Philippa|f|55|Prim, quick older alto, strict and clever, a tutor whose student ran away.
+Smith's Son Rolf|m|14|Eager, cracking young voice, proud and loud, a boy who forged his first sword.
+Snow Elf Lumi|f|26|Cool, airy soprano, gentle and quiet, a snow elf whose winter won't end.
+Highwayman Jack Dandy|m|34|Charming, quick tenor, gallant and sly, a highwayman with a code of honor.
+Oracle Bones Old Petra|f|94|Very slow, rattling ancient voice, eerie and calm, a bone reader.
+Pig Farmer Wilbur|m|63|Cheerful, slow baritone, simple and kind, a farmer whose prize pig was kidnapped.
+Duelist Valentin|m|29|Arrogant, quick tenor, proud and sharp, a duelist seeking a worthy opponent.
+Moon Priestess Selene|f|42|Silvery, slow soprano, calm and mystical, a priestess of the moon temple.
+Alchemist's Cat Whiskers|n|12|Purring, quick androgynous voice, smug and clever, a talking cat who wants fish.
+Lumberjack Big Ole|m|46|Booming, slow bass, hearty and simple, a lumberjack whose axe was stolen by fairies.
+Lady Ashgrove|f|71|Gentle, slow elderly voice, kind and sad, a lady whose garden is haunted.
+Stable Master Rourke|m|58|Gruff, slow baritone, plain and worried, a stable master with a sick unicorn.
+Scribe Ellery|n|31|Quiet, precise androgynous voice, slow and careful, a scribe copying a forbidden text.
+Wanderer Gale|f|27|Breezy, quick mezzo, restless and free, a wanderer who has seen the edge of the world.
+Captain of the Watch Varga|f|46|Firm, clear alto, quick and honest, a watch captain short on guards.
+Ogre Chef Mumbo|m|52|Grumbling, slow bass, hungry and funny, an ogre cook who wants a new recipe.
+Ghost Child Lily|f|8|Faint, echoing little voice, slow and sad, a ghost girl who wants to go home.
+King Aldebrand|m|74|Tired, regal old baritone, slow and burdened, an old king with no heir.
+Pixie Thistle|f|15|Squeaky, quick young voice, mischievous and bright, a pixie offering a deal.
+Monster Hunter Greer|m|42|Hard, low baritone, grim and practical, a hunter paid by the head.
+Glassblower Opal|f|38|Bright, careful mezzo, precise and warm, a glassblower making a magic lens.
+Banished Paladin Corwin|m|49|Weary, slow baritone, haunted and kind, a paladin who lost his oath.
+Lady Featherwick|f|58|Fluttery, quick older soprano, nervous and posh, a lady whose pet griffin escaped.
+Nomad Elder Yusuf|m|80|Calm, slow old baritone, wise and patient, a desert elder who reads the stars.
+Village Idiot Dobbin|m|30|Slow, simple tenor, cheerful and honest, a villager who accidentally knows the truth.
+Silent Monk Brother Hush|n|55|Barely spoken, soft androgynous whisper, slow and calm, a monk who breaks his vow to warn you.
+Wishing Well Spirit|f|99|Echoing, slow ancient soprano, kind and strange, a spirit who grants wishes for good deeds.
+Beekeeper Honora|f|57|Warm, buzzing older alto, slow and kind, a beekeeper whose queen bee flew into a dragon's cave.
+Cartwright Jem|m|34|Plain, quick baritone, cheerful and practical, a cart maker who needs a wheel of enchanted oak.
+Young Witch Tansy|f|16|Quick, nervous young voice, clever and clumsy, a witch whose first potion went wrong.
+Lady Margery Thorn|f|63|Cool, slow older soprano, proper and secretive, a lady who wants a letter delivered unread.
+Ranger Scout Faye|f|24|Quick, alert young mezzo, brave and terse, a scout who spotted an army.
+Mother Superior Agnes|f|76|Firm, slow elderly voice, stern and caring, an abbess who needs a relic returned.
+Toymaker Gepp|m|69|Gentle, slow old tenor, kind and dreamy, a toymaker whose toys walked away.
+Farm Girl Clover|f|12|Bright, quick little voice, brave and chatty, a girl whose chickens lay golden eggs.
+Mapmaker's Widow Ilse|f|58|Soft, slow older alto, sad and determined, a widow with her husband's last map.
+Pirate Cook Salty Sal|f|50|Rough, loud alto, salty and funny, a ship's cook who wants a sea serpent steak.
+Opera Singer Elodie|f|31|Clear, singing soprano, dramatic and proud, a singer whose voice was stolen by a witch.
+Hunter's Daughter Wren|f|19|Quiet, quick young voice, wild and brave, a girl tracking her father's killer.
+Duchess Ottoline|f|69|Pompous, slow older soprano, demanding and silly, a duchess who lost her lapdog.
+Apprentice Smith Kara|f|17|Eager, loud young voice, proud and strong, a girl who wants to forge a legendary blade.
+Elder Druid Morwen|f|88|Very slow, earthy ancient voice, calm and wise, the oldest druid of the grove.
+Tavern Owner Big Meg|f|53|Booming, hearty alto, loud and warm, an innkeeper who throws out trouble herself.
+Lost Princess Amaryllis|f|22|Soft, frightened young soprano, polite and brave, a princess who escaped a tower.
+Scholar Ingrid|f|45|Precise, quick alto, curious and dry, a scholar studying ancient ruins.
+Herb Witch Old Moll|f|82|Croaky, slow elderly voice, sly and kind, a witch who trades remedies for stories.
+Shipwreck Survivor Nell|f|28|Shaky, quick mezzo, frightened and grateful, a survivor who saw what sank the ship.
+Guard Corporal Hanne|f|34|Firm, quick alto, tired and honest, a guard who suspects her captain.
+Weaver's Girl Posy|f|10|Tiny, sweet voice, shy and curious, a girl who weaves dreams into cloth.
+Sorceress Valdris|f|47|Cold, slow mezzo, powerful and proud, a sorceress who needs a dragon's scale.
+Miller's Wife Bertha|f|60|Brisk, warm older alto, practical and chatty, a miller's wife whose mill turns by itself.
+Knight's Widow Lady Rhiannon|f|51|Regal, sad mezzo, slow and dignified, a widow seeking her husband's sword.
+Gnome Tinkerer Pipra|f|40|Squeaky, rapid alto, excited and odd, a gnome who built a flying machine.
+Hermit Fisher Bodo|m|81|Very slow, mumbling old voice, odd and kind, a fisherman who catches bottled messages.
+Guild Clerk Barnaby|m|38|Nasal, quick tenor, fussy and bureaucratic, a clerk who needs a form signed in a dungeon.
+Young Paladin Aric|m|20|Earnest, clear young tenor, brave and naive, a paladin on his first holy quest.
+Smuggler Captain Drake|m|45|Smooth, quick baritone, cocky and charming, a smuggler with a hidden cargo.
+Old Shepherd Mattias|m|77|Gentle, slow old voice, patient and wise, a shepherd who counts strange stars.
+Bandit Turned Farmer Hob|m|50|Gruff, slow baritone, ashamed and honest, a former bandit asking for help to stay good.
+Wizard Twins Alder|m|33|Bickering, quick tenor, clever and silly, one of twin wizards who split a spell.
+Masked Duelist Corvo|m|36|Low, smooth baritone, mysterious and proud, a duelist hiding his face.
+Village Doctor Hale|m|59|Calm, steady baritone, tired and kind, a doctor fighting a strange fever.
+Dwarf Brewer Thordis|m|64|Booming, merry bass, loud and proud, a dwarf brewer missing his secret recipe.
+Woodsman Leif|m|28|Quiet, steady young baritone, calm and strong, a woodsman who guards the forest path.
+Exiled Mage Oren|m|52|Bitter, slow baritone, clever and sad, a mage banished from the tower.
+Forest Spirit Fern|n|40|Rustling, soft androgynous voice, slow and gentle, a spirit asking you to remove a curse.
+Fortune Hunter Maribel|f|26|Bright, quick mezzo, adventurous and bold, a treasure seeker with a cursed coin.

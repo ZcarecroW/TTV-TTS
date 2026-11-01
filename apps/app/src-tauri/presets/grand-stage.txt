@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Grand Stage
+desc: Stage actors, opera divas, musical stars, circus ringmasters and backstage crews
+icon: TheatreMasks
+---
+Sir Ambrose Fairweather|m|68|Grand, resonant stage baritone, slow and sweeping, an old classical actor who projects to the last row.
+Dame Celestine Moreau|f|62|Soaring, dramatic older soprano, theatrical and proud, an opera diva who demands applause.
+Toby Spotlight|m|22|Bright, eager young tenor, quick and hopeful, an understudy waiting for his big night.
+Madame Odette|f|55|Precise, crisp alto, strict and elegant, a ballet mistress counting the beat.
+The Ringmaster|m|50|Booming, flamboyant baritone, loud and showy, a circus ringmaster announcing wonders.
+Lila Starlight|f|26|Sparkling, bright soprano, cheerful and quick, the lead of a musical who sings every line.
+Old Gus the Stagehand|m|73|Gravelly, slow old voice, grumpy and kind, a stagehand who has seen every show.
+Vivienne Vale|f|41|Velvety, smoky alto, slow and dramatic, a tragic heroine of the stage.
+Pip the Prompter|n|35|Whispery, quick androgynous voice, nervous and precise, the prompter hidden under the stage.
+Marcello Bravura|m|47|Rich, operatic tenor, passionate and loud, a tenor who sings even when he talks.
+Rosie Footlights|f|19|Bubbly, quick young voice, giggly and nervous, a chorus girl on opening night.
+Director Kessler|m|58|Clipped, sharp baritone, impatient and demanding, a director yelling from the dark.
+Grandma Greasepaint|f|80|Crackly, warm elderly voice, slow and theatrical, a retired actress backstage.
+Felix Fanfare|m|31|Bright, rhythmic tenor, quick and cheerful, a trumpet player in the pit.
+Countess Valentina|f|48|Haughty, cold mezzo, slow and dramatic, a villainess in a melodrama.
+Jolly Jack the Clown|m|44|Squeaky, silly tenor, fast and goofy, a clown who trips on purpose.
+Clara Curtaincall|f|33|Warm, polished mezzo, poised and gracious, a leading lady taking her bow.
+Baron Bellows|m|65|Deep, pompous bass, slow and loud, an opera villain with a cape.
+Penelope Pirouette|f|17|Light, airy young voice, graceful and shy, a young ballerina.
+The Phantom Voice|n|60|Echoing, haunting androgynous voice, slow and eerie, a mysterious voice from the theater's rafters.
+Hamish Harlequin|m|28|Playful, quick tenor, mischievous and witty, a masked comedian.
+Lady Macbride|f|52|Intense, low alto, slow and scheming, an actress playing a murderous queen.
+Barnaby Backdrop|m|39|Plain, friendly baritone, practical and dry, a set painter.
+Isadora Encore|f|70|Grand, slow older soprano, nostalgic and vain, a former star who wants one more show.
+Rico Razzle|m|25|Flashy, fast tenor, showy and loud, a tap dancer.
+Mimi Masquerade|f|29|Mysterious, slow mezzo, playful and coy, a dancer at the masked ball.
+Old Bartholomew Bard|m|81|Slow, rolling old baritone, poetic and grand, a playwright reciting his verse.
+Dotty Dazzle|f|24|Sassy, quick mezzo, loud and funny, a comic actress.
+Strongman Stanislav|m|46|Booming, slow bass, proud and cheerful, a circus strongman.
+Seraphina Swing|f|31|Breezy, light soprano, fearless and bright, a trapeze artist.
+Maestro Grimaldi|m|72|Passionate, slow older baritone, fussy and dramatic, an orchestra conductor.
+Bella Bonbon|f|20|Sweet, bubbly young soprano, cheerful and quick, a candy seller in the theater lobby.
+Lord Rumbleton|m|60|Plummy, slow baritone, pompous and silly, a lord in a comedy of manners.
+Ophelia Tremble|f|23|Fragile, trembling soprano, slow and sad, a tragic young heroine.
+Augustus Applause|m|55|Warm, booming baritone, enthusiastic and loud, a critic who loves everything.
+Esme Echo|f|38|Clear, resonant mezzo, measured and calm, a voice coach.
+Tumbles the Acrobat|m|18|Quick, breathless young voice, bouncy and cheerful, a young acrobat.
+Madame Mirage|f|57|Mysterious, slow alto, hypnotic and calm, a stage magician's assistant turned star.
+Victor Villainous|m|49|Sneering, dramatic baritone, slow and twirling, a melodrama villain.
+Gigi Glamour|f|35|Breathy, glamorous soprano, slow and vain, a showgirl.
+Theodore Thespian|m|34|Earnest, clear baritone, intense and serious, a method actor.
+Nanette Nightingale|f|44|Lyrical, soaring soprano, slow and sweet, an operetta singer.
+Bobo the Mime|n|40|Almost silent, soft androgynous whisper, slow and expressive, a mime who speaks once a show.
+Frederick Footman|m|63|Formal, slow older baritone, stiff and proper, an actor who always plays butlers.
+Polly Prop|f|28|Quick, practical mezzo, busy and dry, the props mistress.
+Captain Thunderstage|m|42|Roaring, heroic baritone, loud and bold, a swashbuckling stage hero.
+Coraline Chorus|f|21|Bright, singing young voice, cheerful and loud, a chorus member.
+Sir Percival Plume|m|76|Fussy, slow old tenor, vain and dramatic, an aging actor who wears too much makeup.
+Ruby Ringlet|f|16|Quick, giggly young voice, excited and loud, a child actress.
+Leopold Libretto|m|52|Precise, slow baritone, scholarly and dry, a librettist.
+Delphine Duet|f|39|Warm, singing mezzo, slow and romantic, half of a famous singing duo.
+Marcel Marquee|m|30|Smooth, charming tenor, quick and confident, a matinee idol.
+Agatha Aria|f|66|Rich, slow older soprano, grand and warm, an opera teacher.
+Kit Cartwheel|n|15|Bouncy, quick young voice, cheerful and wild, a circus kid.
+Lazarus Lament|m|59|Mournful, slow baritone, dramatic and deep, a tragic king of the stage.
+Fifi Feathers|f|32|Fluttery, quick soprano, flirty and silly, a cabaret dancer.
+Bertram Blunder|m|37|Clumsy, quick tenor, apologetic and funny, an actor who forgets his lines.
+Lucinda Limelight|f|46|Smooth, confident alto, slow and commanding, a theater producer.
+Oswald Overture|m|67|Rich, slow older baritone, grand and warm, a theater owner.
+Trixie Tumble|f|22|Squeaky, quick young voice, bouncy and fun, a clown girl.
+The Great Zambini|m|54|Mysterious, booming baritone, slow and theatrical, a stage magician.
+Rosalind Revue|f|40|Brassy, quick mezzo, loud and sassy, a vaudeville star.
+Archie Accordion|m|61|Wheezy, cheerful older tenor, quick and jolly, a street musician at the stage door.
+Celeste Cadenza|f|27|Clear, soaring soprano, quick and brilliant, a young opera soloist.
+Hugo Hartwell|m|36|Brooding, slow baritone, intense and poetic, an actor in a tragedy.
+Mabel Matinee|f|74|Sweet, slow elderly voice, nostalgic and kind, an usher who never misses a show.
+Dashiell Dancer|m|26|Light, quick tenor, graceful and cheerful, a ballet dancer.
+Prudence Playbill|f|50|Prim, quick alto, fussy and organized, a stage manager with a clipboard.
+Ignatius Intermission|m|45|Booming, jolly baritone, loud and chatty, a bartender in the lobby.
+Sylvie Soubrette|f|24|Bright, playful soprano, quick and cheeky, a comic maid in an opera.
+Montague Monologue|m|70|Slow, grand old baritone, long-winded and proud, an actor who loves long speeches.
+Viola Violin|f|34|Soft, musical mezzo, slow and elegant, a violinist.
+Clang the Drummer|m|29|Loud, rhythmic baritone, fast and energetic, a drummer in the pit.
+Esmeralda Twirl|f|19|Fiery, quick young voice, wild and free, a dancer with a tambourine.
+Professor Puppet|n|55|Squeaky, high androgynous voice, quick and odd, a puppeteer's puppet.
+Reginald Rehearsal|m|48|Tired, flat baritone, slow and patient, an actor in his hundredth rehearsal.
+Arabella Applegate|f|60|Warm, theatrical older alto, slow and kind, a drama teacher.
+Fritz Falsetto|m|33|High, wobbly tenor, comic and nervous, a singer who cracks on high notes.
+Bonnie Broadway|f|30|Belting, bright mezzo, loud and joyful, a musical theater star.
+Count Crescendo|m|58|Rising, dramatic baritone, slow and grand, a villain who speaks louder and louder.
+Juniper Jester|f|25|Witty, quick mezzo, playful and sharp, a jester in a royal play.
+Orville Organ|m|80|Deep, slow old bass, solemn and warm, a theater organist.
+Mira Marionette|f|18|Stiff, quick young voice, sing-song and odd, a dancer playing a puppet.
+Bartholomew Bigtop|m|62|Booming, slow showman baritone, loud and grand, a circus owner.
+Tallulah Tango|f|43|Sultry, quick alto, passionate and bold, a tango dancer.
+Sebastian Sonnet|m|27|Romantic, soft tenor, slow and poetic, a young poet actor.
+Wilhelmina Wardrobe|f|71|Brisk, slow elderly voice, fussy and kind, a costume mistress.
+Gus Gaslight|m|41|Low, sinister baritone, slow and manipulative, an actor in a thriller.
+Daisy Dimples|f|12|Sweet, bright little voice, cheerful and cute, a child star.
+Lionel Lullaby|m|53|Soft, singing baritone, slow and gentle, a crooner.
+Henrietta Heckler|f|58|Loud, sharp older voice, rude and funny, an audience member who shouts.
+Pedro Pantomime|m|38|Exaggerated, slow baritone, silly and expressive, a pantomime dame.
+Queenie Quickchange|f|36|Rapid, versatile mezzo, quick and clever, an actress who plays six roles.
+Nikolai Nocturne|m|46|Dark, slow baritone, brooding and musical, a pianist.
+Lottie Lyric|f|23|Light, quick young soprano, cheerful and musical, a songwriter.
+Cyril Cymbal|m|20|Clashing, quick young voice, loud and silly, a percussionist kid.
+The Masked Narrator|n|50|Smooth, mysterious androgynous voice, slow and calm, the narrator of the play.
+Augusta Overacting|f|65|Huge, dramatic older soprano, loud and silly, an actress who overacts everything.
+Bruno Ballad|m|44|Warm, singing baritone, slow and heartfelt, a folk singer on stage.
+Celia Spotlight|f|28|Clear, warm mezzo, calm and focused, the lighting operator.
+Eustace Encore|m|69|Wheezy, slow older baritone, nostalgic and funny, a retired comedian.
+Fleur Fandango|f|31|Lively, quick mezzo, rhythmic and bold, a flamenco dancer.
+Gideon Gallery|m|35|Loud, quick baritone, enthusiastic and rowdy, a fan in the cheap seats.
+Hattie Hatbox|f|54|Cheerful, quick older voice, chatty and loud, a milliner backstage.
+Ivan Interlude|m|23|Calm, quick young tenor, polite and soft, a pianist between acts.
+Josephine Jubilee|f|47|Joyful, booming alto, loud and warm, a gospel choir leader on stage.
+Klaus Kabuki|m|51|Stylized, slow baritone, precise and dramatic, an actor of stylized theater.
+Lavinia Lament|f|56|Weeping, slow mezzo, tragic and deep, a widow in a tragedy.
+Monty Mimic|m|32|Shifting, quick tenor, funny and clever, an impressionist.
+Nora Nostalgia|f|78|Wistful, slow elderly voice, gentle and sad, an old singer remembering her debut.
+Oliver Opener|m|19|Nervous, quick young voice, excited and loud, the opening act.
+Pandora Preview|f|37|Mysterious, quick alto, teasing and sly, a critic at the preview night.
+Quincy Quickstep|m|28|Light, quick tenor, cheerful and bouncy, a chorus dancer.
+Rosamund Rapture|f|42|Ecstatic, soaring soprano, dramatic and slow, a soprano in love.
+Silas Soliloquy|m|57|Brooding, slow baritone, deep and lonely, an actor speaking to himself.
+Tilly Tutu|f|11|Tiny, bright voice, giggly and shy, a little ballerina.
+Ulrich Understudy|m|30|Eager, quick baritone, nervous and ambitious, an understudy hoping for a break.
+Valerie Vaudeville|f|63|Brassy, quick older voice, loud and funny, a vaudeville veteran.
+Winston Wings|m|49|Hushed, slow baritone, calm and watchful, a stage manager in the wings.
+Xenia Xylophone|f|26|Plinky, quick soprano, cheerful and light, a percussionist.
+Yorick Yodel|m|40|Yodeling, loud baritone, silly and cheerful, a mountain singer act.
+Zelda Zarzuela|f|45|Rich, lively mezzo, dramatic and warm, an operetta star.
+Arnold Aside|m|62|Conspiratorial, quick older baritone, sly and funny, an actor who talks to the audience.
+Beatrix Belcanto|f|34|Smooth, lyrical soprano, slow and pure, a classical singer.
+Cornelius Cue|m|52|Precise, quick baritone, tense and focused, a sound technician.
+Dahlia Diva|f|39|Demanding, loud soprano, vain and dramatic, a diva who wants a bigger dressing room.
+Edmund Epilogue|m|74|Slow, warm old baritone, gentle and final, the actor who closes the show.
+Felicity Finale|f|30|Triumphant, soaring mezzo, bold and joyful, the star of the finale.
+Gaston Gesture|m|43|Expressive, slow baritone, dramatic and theatrical, an actor who waves his arms.
+Harriet Harmony|f|48|Warm, blending alto, calm and musical, a choir director.
+Ignatius Improv|m|29|Quick, playful tenor, witty and spontaneous, an improv comedian.
+Juliet Jubilant|f|17|Bright, romantic young voice, dreamy and quick, a young actress playing a lover.
+Kasimir Kettledrum|m|58|Booming, rhythmic bass, loud and steady, a timpani player.
+Lola Limerick|f|35|Rhythmic, quick mezzo, funny and sharp, a comic poet.
+Maximilian Mask|m|46|Hidden, low baritone, slow and mysterious, a masked singer.
+Nellie Nimble|f|21|Quick, light young voice, agile and cheerful, a contortionist.
+Orlando Oboe|m|37|Reedy, gentle tenor, slow and melancholy, an oboe player.
+Phyllis Ffolkes|f|69|Posh, slow older soprano, dry and witty, a society lady in a comedy.
+Quentin Quill|m|55|Scratchy, quick baritone, nervous and creative, a playwright on opening night.
+Rhapsody Reyes|f|27|Passionate, singing mezzo, warm and lively, a salsa singer on stage.
+Stanley Stilts|m|33|Lofty, slow tenor, wobbly and cheerful, a stilt walker.
+Tabitha Trill|f|24|Trilling, bright soprano, quick and showy, a coloratura singer.
+Umberto Usher|m|68|Polite, slow older baritone, quiet and kind, a head usher.
+Velma Ventriloquist|f|50|Doubled, quick alto, funny and odd, a ventriloquist arguing with her dummy.
+Walter Wigmaker|m|72|Fussy, slow old tenor, precise and kind, a wigmaker.
+Yvette Yearning|f|38|Longing, slow mezzo, sad and lovely, a torch singer.
+Zachary Zither|m|25|Soft, plucky tenor, calm and dreamy, a zither player.
+Ambrosia Arpeggio|f|60|Flowing, musical older soprano, graceful and slow, a harpist.
+Boris Baritone|m|50|Deep, rich bass-baritone, slow and dramatic, an opera bass.
+Cecily Cameo|f|22|Quick, bright young voice, charming and brief, an actress with one line.
+Desmond Drama|m|41|Over-the-top, loud baritone, dramatic and silly, a soap opera actor.
+Eloise Ensemble|f|33|Warm, steady mezzo, friendly and calm, the ensemble captain.
+Ferdinand Flourish|m|64|Flamboyant, slow older tenor, grand and showy, a costume designer.
+Gwendolyn Gala|f|53|Elegant, slow alto, glamorous and cool, a gala hostess.
+Horace Heartstrings|m|38|Tender, warm baritone, slow and emotional, a romantic lead.
+Imogen Interval|f|29|Chatty, quick mezzo, gossipy and fun, a theater goer at the break.
+Jasper Juggler|m|21|Quick, playful young voice, cheerful and nimble, a street juggler.
+Katarina Coloratura|f|44|Brilliant, soaring soprano, quick and fierce, an opera queen of the night.
+Lucius Lighting|m|35|Calm, technical baritone, dry and precise, a lighting designer.
+Marigold Musical|f|19|Belting, bright young voice, cheerful and loud, a musical theater student.
+Nathaniel Noir|m|48|Smoky, slow baritone, cool and dark, an actor in a crime play.
+Odalys Overture|f|57|Grand, slow older mezzo, warm and proud, an orchestra leader.
+Percy Puppeteer|m|66|Gentle, slow older tenor, kind and odd, a puppeteer.
+Rosetta Reprise|f|36|Warm, singing mezzo, nostalgic and sweet, a singer reprising a famous song.
+Sylvester Stagefright|m|26|Shaky, quick tenor, terrified and funny, an actor with stage fright.
+Theodora Tragedy|f|61|Deep, slow older alto, heavy and grand, a tragic queen.
+Victor Virtuoso|m|39|Confident, quick tenor, brilliant and proud, a piano virtuoso.
+Wren Wardrobe|n|25|Quick, practical androgynous voice, busy and kind, a dresser backstage.
+Agnes Applause|f|82|Very slow, warm elderly voice, delighted and kind, a theater patron for sixty years.
+Benedict Bravo|m|54|Hearty, loud baritone, cheerful and generous, a patron who shouts bravo.
+Clementine Cabaret|f|32|Sultry, quick mezzo, playful and bold, a cabaret host.
+Dorian Dressrehearsal|m|31|Anxious, quick tenor, nervous and fussy, an actor at the dress rehearsal.
+Esther Ensemble|f|26|Bright, clear young mezzo, friendly and eager, a new cast member.
+Fabian Fanfare|m|45|Brassy, loud baritone, proud and jolly, a brass band leader.
+Georgina Gossip|f|67|Chatty, quick older voice, nosy and fun, a dressing room gossip.
+Hector Heckelphone|m|59|Reedy, slow older baritone, odd and kind, a player of rare instruments.
+Iris Intermezzo|f|40|Gentle, flowing soprano, calm and lovely, a singer of interludes.
+Jules Jongleur|m|28|Merry, quick tenor, playful and nimble, a medieval-style entertainer.
+Katya Kaleidoscope|f|23|Sparkly, quick young voice, colorful and fun, a light show artist.
+Lambert Lute|m|47|Soft, melodic baritone, slow and romantic, a lute player.
+Mirabelle Mezzo|f|37|Warm, round mezzo, slow and rich, an opera mezzo-soprano.
+Ned Nightshow|m|33|Smooth, quick baritone, cool and witty, a late-night show host on stage.
+Olga Overture|f|73|Commanding, slow elderly alto, strict and proud, a retired prima ballerina.
+Pascal Pierrot|m|36|Sad, soft tenor, slow and gentle, a sad clown.
+Ramona Rhythm|f|28|Rhythmic, quick mezzo, energetic and loud, a step dancer.
+Sterling Showstopper|m|42|Booming, bright baritone, confident and loud, a showman with a big number.
+Trudy Trapdoor|f|51|Quick, practical alto, sly and funny, a stage technician who controls the trapdoor.
+Wolfgang Wunderkind|m|14|Bright, precise young voice, gifted and shy, a child prodigy pianist.
+Petra Pizzicato|f|30|Plucky, quick soprano, light and cheerful, a cellist.
+Rupert Raconteur|m|71|Rolling, slow old baritone, charming and long-winded, a storyteller on stage.
+Sunny Sequin|f|20|Glittery, quick young voice, bubbly and loud, a showgirl in training.
+Thaddeus Tremolo|m|56|Trembling, dramatic baritone, slow and emotional, an aging opera singer.
+Una Understatement|f|46|Dry, quiet alto, slow and witty, an actress known for subtle comedy.
+Valentino Vibrato|m|34|Smooth, singing tenor, romantic and slow, a crooner with a big vibrato.
+Winifred Wings|f|76|Brittle, slow elderly voice, sharp and kind, a retired stage manager.
+Xavier Extravaganza|m|51|Flamboyant, loud baritone, showy and fun, a revue producer.
+Yasmine Yearbook|f|17|Quick, chatty young voice, excited and nervous, a school play star.
+Zeke Zany|m|24|Wacky, fast tenor, chaotic and funny, a slapstick comedian.
+Lady Elsinore|f|58|Haunted, slow older mezzo, regal and sad, a queen in a castle tragedy.
+Gregor Greenroom|m|63|Gruff, slow baritone, tired and kind, the man who runs the green room.
+Paloma Prima|f|25|Graceful, bright soprano, light and proud, a principal dancer.
+Crispin Comedy|m|40|Bright, quick tenor, cheerful and witty, a comedy lead.
+Opaline Opera|f|85|Very slow, frail elderly soprano, grand and gentle, the oldest diva alive.
+Ferris Fogmachine|m|27|Hazy, slow tenor, laid-back and funny, a special effects tech.
+Archibald Arch|m|59|Booming, measured baritone, slow and dignified, the theater's old house manager.
+Bianca Ballerina|f|21|Light, breathy young soprano, graceful and nervous, a dancer before her first solo.
+Caspian Curtain|m|34|Smooth, dramatic baritone, slow and mysterious, an actor who loves dramatic entrances.
+Dulcie Descant|f|29|High, sweet soprano, clear and bright, a choir soloist.
+Elliot Echo|m|42|Resonant, slow baritone, calm and deep, the acoustics expert who claps in every hall.
+Francesca Forte|f|48|Powerful, loud mezzo, bold and fiery, a singer who never sings quietly.
+Gilbert Grandstand|m|66|Pompous, slow older baritone, proud and loud, a theater critic with a monocle.
+Hester Hymn|f|74|Gentle, slow elderly soprano, sweet and sacred, a church choir veteran on stage.
+Ivo Impresario|m|53|Smooth, quick baritone, persuasive and slick, a producer selling his next show.
+Jessamy Jig|f|16|Quick, bouncy young voice, cheerful and wild, a folk dancer.
+Kenneth Kazoo|m|23|Buzzy, silly young tenor, quick and goofy, a comedy band member.
+Lorelei Lute|f|35|Soft, musical mezzo, slow and dreamy, a minstrel singer.
+Marius Melodrama|m|61|Thundering, theatrical baritone, slow and absurd, a villain from old melodramas.
+Nina Nocturne|f|40|Dark, velvety alto, slow and moody, a night club pianist.
+Otto Ovation|m|47|Booming, cheerful baritone, loud and grateful, an actor soaking up applause.
+Pearl Pizzazz|f|27|Sparkling, quick mezzo, flashy and fun, a game show assistant.
+Raoul Rapier|m|30|Dashing, quick tenor, bold and charming, a stage fencer.
+Saskia Serenade|f|33|Warm, singing soprano, slow and romantic, a singer under a balcony.
+Tobias Tuba|m|55|Deep, round bass, slow and jolly, a tuba player.
+Ursula Upstage|f|52|Sharp, quick alto, competitive and catty, an actress who steals every scene.
+Vincent Voiceover|m|45|Rich, smooth baritone, slow and perfect, the voice that announces the show.
+Willa Wavering|f|62|Quavering, slow older voice, nervous and kind, an actress who doubts herself.
+Xander Xylo|m|19|Quick, bright young voice, eager and loud, a percussion student.
+Yolanda Yuletide|f|44|Festive, warm mezzo, cheerful and loud, a star of the holiday show.
+Zachariah Zenith|m|78|Grand, slow old baritone, majestic and tired, an actor at his final performance.
+Amara Aplomb|f|38|Confident, clear alto, poised and calm, a stage host.
+Bertie Bumbleshoot|m|28|Clumsy, quick tenor, apologetic and silly, an umbrella-dance comedian.
+Cosima Crescendo|f|55|Rising, dramatic older soprano, grand and loud, a soprano who builds every line.
+Dexter Drumroll|m|36|Rhythmic, quick baritone, tense and dramatic, the drummer before every trick.
+Elfrida Encore|f|69|Warm, slow older alto, proud and grateful, an actress called back for a final bow.
+Fergus Footlight|m|50|Weathered, slow baritone, warm and wise, the old lighting man.
+Gloria Glissando|f|31|Sliding, smooth soprano, playful and musical, a harp-voiced singer.
+Hal Harlequinade|m|43|Playful, quick tenor, cheeky and nimble, a comic in a patchwork costume.
+Chorus Voice|n|30|Layered, singing androgynous voice, smooth and calm, the voice of the whole chorus.
+Shadow Puppeteer|n|45|Soft, slow androgynous voice, mysterious and gentle, a shadow theater artist.
+Backstage Ghost|n|70|Faint, hollow androgynous voice, slow and kind, the friendly ghost of the old theater.
