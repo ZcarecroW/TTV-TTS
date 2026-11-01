@@ -180,7 +180,7 @@ const genderLabel = (g: string) => t(`presets.gender.${g}`);
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
               <span class="font-medium">{{ v.name }}</span>
               <span class="text-xs text-muted">{{ genderLabel(v.gender) }} · {{ v.age }}</span>
-              <span v-if="v.fx" class="badge">{{ v.fx }}</span>
+              <span v-if="v.fx" class="badge" :data-tip="t('fx.badgeTip')">{{ t(`fx.names.${v.fx}`) }}</span>
               <span class="ml-auto flex flex-wrap gap-1">
                 <span v-if="redoing.has(`${v.index}:${lang}`)" class="badge badge-accent"><Spinner :size="12" class="spin" />{{ t("presets.redoing") }}</span>
                 <span v-else-if="v.odd.includes(lang)" class="badge badge-warn" :data-tip="t('quality.oddRow')"><Warning :size="12" />{{ t("quality.maybe") }}</span>

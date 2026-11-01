@@ -172,6 +172,8 @@ export interface Utterance {
   emotion?: string | null;
   intensity?: string | null;
   gain?: number;
+  /** Voice effect (one of EFFECTS). */
+  fx?: string | null;
 }
 
 export interface SayReport {
@@ -296,6 +298,7 @@ export interface Profile {
     per_language: Record<string, string>;
     users: Record<string, string>;
     emotions: boolean;
+    effects: boolean;
   };
   muted: string[];
 }
@@ -637,10 +640,18 @@ export interface ViewerView {
   voice: string | null;
   pinned: string | null;
   muted: boolean;
+  /** Effect set for this viewer ("none" = off); null = the voice's own. */
+  fx: string | null;
+  /** The effect of the voice itself (from the preset). */
+  voice_fx: string | null;
 }
+
+/** Built-in voice effects (same order as the backend). */
+export const EFFECTS = ["radio", "telephone", "megaphone", "robot", "cave", "hall", "walkie", "underwater", "whisper"] as const;
 
 export const viewers = {
   list: (profile: string, query: string) => invoke<{ viewers: ViewerView[]; total: number }>("list_viewers", { profile, query }),
   setRole: (profile: string, userId: string, role: number | null) => invoke<void>("set_viewer_role", { profile, userId, role }),
+  setFx: (profile: string, userId: string, fx: string | null) => invoke<void>("set_viewer_fx", { profile, userId, fx }),
   forget: (profile: string, userId: string) => invoke<void>("forget_viewer", { profile, userId }),
 };

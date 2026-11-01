@@ -11,6 +11,7 @@ mod library;
 mod logbuf;
 mod monitor;
 mod friends_cmds;
+pub mod fx;
 mod pack_cmds;
 mod preset_cmds;
 mod quality_cmds;
@@ -102,6 +103,7 @@ pub fn run() {
             commands::mute_viewer,
             commands::list_viewers,
             commands::set_viewer_role,
+            commands::set_viewer_fx,
             commands::forget_viewer,
             commands::update_info,
             commands::check_update,

@@ -47,6 +47,7 @@ socket2 = { workspace = true }
 if-addrs = { workspace = true }
 cpal = { workspace = true }
 rubato = { workspace = true }
+realfft = { workspace = true }
 audioadapter-buffers = { workspace = true }
 regex = { workspace = true }
 unicode-segmentation = { workspace = true }

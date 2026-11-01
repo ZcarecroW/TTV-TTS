@@ -44,6 +44,9 @@ pub struct Assignments {
     pub roles: HashMap<String, HashMap<String, u32>>,
     /// profile -> user id -> who that is (for the viewer list).
     pub viewers: HashMap<String, HashMap<String, Viewer>>,
+    /// profile -> user id -> voice effect set in the viewer list ("none"
+    /// switches the voice's own effect off).
+    pub fx: HashMap<String, HashMap<String, String>>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -70,6 +73,10 @@ pub struct ViewerView {
     /// A fixed voice set in the profile (login -> voice).
     pub pinned: Option<String>,
     pub muted: bool,
+    /// Effect set for this viewer ("none" = off); None = the voice's own.
+    pub fx: Option<String>,
+    /// The effect of the voice itself (preset definition).
+    pub voice_fx: Option<String>,
 }
 
 // ── views for the window ────────────────────────────────────────────────
@@ -137,6 +144,9 @@ struct Item {
 struct Prepared {
     item: Item,
     clips: mpsc::Receiver<Result<(Vec<f32>, u32), String>>,
+    /// Loudness correction of the voice.
+    gain: f32,
+    fx: Option<crate::fx::Fx>,
 }
 
 #[derive(Default)]
@@ -707,6 +717,31 @@ fn role_voice(state: &AppState, p: &crate::profile::Profile, role: u32) -> Optio
         .flatten()
 }
 
+/// The effect of the voice a role stands for (preset mode).
+fn role_fx(state: &AppState, p: &crate::profile::Profile, role: u32) -> Option<String> {
+    if p.voices.mode != VoiceMode::Preset {
+        return None;
+    }
+    state
+        .presets
+        .with(&p.voices.preset, |preset| {
+            let n = match p.voices.preset_voices {
+                0 => preset.defs.len(),
+                k => (k as usize).min(preset.defs.len()),
+            };
+            (n > 0).then(|| preset.defs[role as usize % n].fx.clone()).flatten()
+        })
+        .flatten()
+}
+
+/// The effect set for a viewer in the viewer list: Some(None) = switched
+/// off, None = nothing set (the voice's own effect plays).
+fn viewer_fx(state: &AppState, profile: &str, user_id: &str) -> Option<Option<crate::fx::Fx>> {
+    let a = state.reader.assign.lock();
+    let f = a.fx.get(profile)?.get(user_id)?;
+    Some(crate::fx::Fx::parse(f))
+}
+
 /// Viewers of a profile, most recently active first. `query` filters by
 /// name; at most `limit` rows (the list can hold thousands).
 pub fn viewers(state: &AppState, profile: &str, query: &str, limit: usize) -> (Vec<ViewerView>, usize) {
@@ -722,12 +757,15 @@ pub fn viewers(state: &AppState, profile: &str, query: &str, limit: usize) -> (V
     let total = rows.len();
     rows.sort_unstable_by(|x, y| y.1.last_seen.cmp(&x.1.last_seen));
     rows.truncate(limit.max(1));
-    let rows: Vec<(String, Viewer, Option<u32>)> = rows.into_iter().map(|(id, v)| (id.clone(), v.clone(), roles.and_then(|r| r.get(id).copied()))).collect();
+    let fxs = a.fx.get(profile);
+    let rows: Vec<(String, Viewer, Option<u32>, Option<String>)> = rows.into_iter().map(|(id, v)| (id.clone(), v.clone(), roles.and_then(|r| r.get(id).copied()), fxs.and_then(|m| m.get(id).cloned()))).collect();
     drop(a);
     let out = rows
         .into_iter()
-        .map(|(user_id, info, role)| ViewerView {
+        .map(|(user_id, info, role, fx)| ViewerView {
             voice: role.and_then(|r| role_voice(state, &p, r)),
+            voice_fx: role.and_then(|r| role_fx(state, &p, r)),
+            fx,
             pinned: p.voices.users.get(&info.login).cloned(),
             muted: p.muted.contains(&info.login),
             role,
@@ -745,6 +783,22 @@ pub fn set_role(state: &AppState, profile: &str, user_id: &str, role: Option<u32
     match role {
         Some(r) => {
             map.insert(user_id.to_string(), r);
+        }
+        None => {
+            map.remove(user_id);
+        }
+    }
+    state.reader.assign_dirty.store(true, Ordering::Relaxed);
+}
+
+/// Sets a viewer's voice effect: a name, "none" (no effect) or None (the
+/// voice's own effect).
+pub fn set_fx(state: &AppState, profile: &str, user_id: &str, fx: Option<String>) {
+    let mut a = state.reader.assign.lock();
+    let map = a.fx.entry(profile.to_string()).or_default();
+    match fx.map(|f| f.trim().to_ascii_lowercase()).filter(|f| f == "none" || crate::fx::Fx::parse(f).is_some()) {
+        Some(f) => {
+            map.insert(user_id.to_string(), f);
         }
         None => {
             map.remove(user_id);
@@ -771,11 +825,13 @@ struct Picked {
     name: String,
     /// Loudness correction measured when the voice was computed.
     gain: f32,
+    /// The voice definition's effect.
+    fx: Option<crate::fx::Fx>,
 }
 
 impl From<(String, String)> for Picked {
     fn from((id, name): (String, String)) -> Self {
-        Self { id, name, gain: 1.0 }
+        Self { id, name, gain: 1.0, fx: None }
     }
 }
 
@@ -815,23 +871,25 @@ fn pick_voice(state: &AppState, p: &crate::profile::Profile, user_id: &str, logi
                     }
                     let r = role(n);
                     let hash = preset.defs[r].hash();
+                    let fx = |i: usize| preset.defs[i].fx.as_deref().and_then(crate::fx::Fx::parse);
                     let get = |l: &str| lib.get(&format!("{hash}:{l}"));
                     if let Some(e) = get(lang).or_else(|| get(fallback)) {
-                        return Some(e);
+                        return Some((e, fx(r)));
                     }
                     // This viewer's voice isn't computed yet: a computed one
                     // of the same preset stands in until it is.
                     for l in [lang, fallback] {
-                        let ready: Vec<String> = preset.defs[..n].iter().map(|d| d.key(l)).filter(|k| lib.get(k).is_some()).collect();
+                        let ready: Vec<usize> = (0..n).filter(|&i| lib.get(&preset.defs[i].key(l)).is_some()).collect();
                         if !ready.is_empty() {
-                            return lib.get(&ready[r % ready.len()]);
+                            let i = ready[r % ready.len()];
+                            return lib.get(&preset.defs[i].key(l)).map(|e| (e, fx(i)));
                         }
                     }
                     None
                 })
                 .flatten();
-            if let Some(e) = entry {
-                return Some(Picked { id: e.voice_id, name: e.name, gain: e.gain });
+            if let Some((e, fx)) = entry {
+                return Some(Picked { id: e.voice_id, name: e.name, gain: e.gain, fx });
             }
         }
         VoiceMode::PerUserLanguage => {
@@ -914,7 +972,7 @@ async fn generator(state: Arc<AppState>) {
             record(&state, item.view);
             continue;
         };
-        let Some(Picked { id: voice_id, gain, .. }) = voice else {
+        let Some(Picked { id: voice_id, gain, fx: voice_fx, .. }) = voice else {
             item.view.state = ItemState::Failed;
             item.view.reason = Some("no voice found - set a default voice in VCP or create voices".into());
             record(&state, item.view);
@@ -923,10 +981,11 @@ async fn generator(state: Arc<AppState>) {
         state.reader.inflight.lock().push((item.view.id, item.user_id.clone(), item.msg_id.clone(), item.view.login.clone(), item.cancel.clone()));
         let (ctx, crx) = mpsc::channel(8);
         let cancel = item.cancel.clone();
-        if tx.send(Prepared { item, clips: crx }).await.is_err() {
+        let fx = if p.voices.effects { viewer_fx(&state, &p.id, &item.user_id).unwrap_or(voice_fx) } else { None };
+        if tx.send(Prepared { item, clips: crx, gain, fx }).await.is_err() {
             return;
         }
-        let u = speech::Utterance { text, voice: voice_id, language: vcp_lang, emotion: None, intensity: None, gain };
+        let u = speech::Utterance { text, voice: voice_id, language: vcp_lang, emotion: None, intensity: None, gain, fx: None };
         for piece in speech::split(&u.text) {
             if cancel.load(Ordering::Relaxed) {
                 break;
@@ -941,7 +1000,7 @@ async fn generator(state: Arc<AppState>) {
 }
 
 async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
-    while let Some(Prepared { mut item, mut clips }) = rx.recv().await {
+    while let Some(Prepared { mut item, mut clips, gain, fx }) = rx.recv().await {
         let max_secs = state.reader.store.read().profiles.iter().find(|p| p.id == item.profile).map(|p| p.reading.max_seconds).unwrap_or(60) as f32;
         let t0 = Instant::now();
         item.view.state = ItemState::Speaking;
@@ -951,6 +1010,7 @@ async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
         let mut last_clip = 0;
         let mut secs = 0f32;
         let mut error = None;
+        let mut chain: Option<crate::fx::Chain> = None;
         while let Some(r) = clips.recv().await {
             if item.cancel.load(Ordering::Relaxed) {
                 break;
@@ -962,7 +1022,16 @@ async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
                         break;
                     }
                     secs += dur;
-                    last_clip = state.audio.play(samples, rate, 1.0);
+                    last_clip = match fx {
+                        Some(f) => {
+                            if chain.as_ref().is_some_and(|c| c.rate != rate) {
+                                chain = None;
+                            }
+                            let c = chain.get_or_insert_with(|| crate::fx::Chain::new(f, rate));
+                            state.audio.play(c.process(samples, gain), rate, 1.0)
+                        }
+                        None => state.audio.play(samples, rate, gain),
+                    };
                     if item.view.first_audio_ms.is_none() {
                         item.view.first_audio_ms = Some(t0.elapsed().as_millis() as u64);
                         state.reader.status.write().current = Some(item.view.clone());
@@ -973,6 +1042,15 @@ async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
                     error = Some(e);
                     break;
                 }
+            }
+        }
+        if let Some(c) = chain
+            && !item.cancel.load(Ordering::Relaxed)
+        {
+            let rate = c.rate;
+            let tail = c.finish();
+            if !tail.is_empty() {
+                last_clip = state.audio.play(tail, rate, 1.0);
             }
         }
         if last_clip != 0 {

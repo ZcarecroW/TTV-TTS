@@ -23,7 +23,7 @@ use crate::library::Counts;
 
 pub const MAGIC: &str = "#ttv-tts preset v1";
 /// Effects the player knows (M6); others are accepted with a warning.
-pub const EFFECTS: &[&str] = &["radio", "telephone", "megaphone", "robot", "cave", "hall", "walkie", "underwater", "whisper"];
+pub const EFFECTS: &[&str] = &crate::fx::NAMES;
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 #[serde(default)]

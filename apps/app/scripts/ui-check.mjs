@@ -97,6 +97,7 @@ await page.waitForTimeout(300);
 const prof = await page.locator("main").innerText();
 check(prof.includes("zcarecrow"), "profile editor shows the channel");
 check(/(Computed|Berechnet): de 41 · en 30/.test(prof), "profile shows how much of its preset is computed", prof.match(/(Computed|Berechnet):[^\n]*/)?.[0] ?? "");
+check((await page.locator("main [role=switch]", { hasText: /^(Voice effects|Stimmeffekte)$/ }).count()) + (await page.locator("main").getByText(/^(Voice effects|Stimmeffekte)$/).count()) >= 1, "voice effects can be switched per profile");
 
 // Viewers: list with voices, reassign by preset voice name.
 await nav("viewers");
@@ -105,6 +106,16 @@ const vw = await page.locator("main").innerText();
 check(/Mikey_TV/.test(vw) && /LenaPlays/.test(vw), "viewer list shows who chatted");
 check((await page.locator("main table select").count()) >= 2, "voices can be reassigned by name (preset mode)", String(await page.locator("main table select").count()));
 check((await page.locator("main table select").first().locator("option").count()) === 31, "reassign offers the profile's 30 preset voices", String(await page.locator("main table select").first().locator("option").count()));
+const fxSel = page.locator("main [data-viewer-fx]");
+check((await fxSel.count()) === 4 && (await fxSel.first().locator("option").count()) === 11, "every viewer can get a voice effect", `${await fxSel.count()} selects, ${await fxSel.first().locator("option").count()} options`);
+check(/Radio/.test(await fxSel.nth(1).locator("option:checked").innerText()) && /(Robot|Roboter)/.test(await fxSel.nth(2).locator("option:checked").innerText()), "the viewer list shows set and preset effects", `${await fxSel.nth(1).locator("option:checked").innerText()} / ${await fxSel.nth(2).locator("option:checked").innerText()}`);
+await fxSel.first().selectOption("whisper");
+await page.waitForTimeout(300);
+check(/Mikey_TV (now speaks with the effect|spricht jetzt mit dem Effekt) (Whisper|Flüstern)/.test(await page.locator("body").innerText()), "setting an effect confirms it");
+
+await nav("voices");
+await page.waitForTimeout(300);
+check((await page.locator("main [data-fx] option").count()) === 10, "voices can be tried with an effect", String(await page.locator("main [data-fx] option").count()));
 
 // Ready-made voices: download instead of computing.
 await nav("presets");

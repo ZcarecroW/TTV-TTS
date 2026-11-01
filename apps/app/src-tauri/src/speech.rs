@@ -106,6 +106,9 @@ pub struct Utterance {
     /// Loudness correction for this voice (1.0 = none).
     #[serde(default = "one")]
     pub gain: f32,
+    /// Voice effect ("radio", …).
+    #[serde(default)]
+    pub fx: Option<String>,
 }
 
 fn one() -> f32 {
@@ -200,16 +203,31 @@ pub async fn say(vcp: ttv_vcp::Client, audio: Arc<Audio>, u: Utterance) -> Resul
     let mut report = SayReport { pieces: n, ..Default::default() };
     let mut gen_time = Duration::ZERO;
     let mut last_id = 0;
+    let fx = u.fx.as_deref().and_then(crate::fx::Fx::parse);
+    let mut chain: Option<crate::fx::Chain> = None;
     while let Some(r) = rx.recv().await {
         let (samples, rate, took) = r?;
         gen_time += took;
         report.audio_secs += samples.len() as f32 / rate.max(1) as f32;
-        last_id = audio.play(samples, rate, u.gain);
+        last_id = match fx {
+            Some(f) => {
+                let c = chain.get_or_insert_with(|| crate::fx::Chain::new(f, rate));
+                audio.play(c.process(samples, u.gain), rate, 1.0)
+            }
+            None => audio.play(samples, rate, u.gain),
+        };
         if report.first_audio_ms == 0 {
             report.first_audio_ms = t0.elapsed().as_millis() as u64;
         }
     }
     let _ = producer.await;
+    if let Some(c) = chain {
+        let rate = c.rate;
+        let tail = c.finish();
+        if !tail.is_empty() {
+            last_id = audio.play(tail, rate, 1.0);
+        }
+    }
     if last_id != 0 {
         audio.wait(last_id).await;
     }
@@ -284,7 +302,7 @@ mod live {
         assert!(bad.voices().await.is_err(), "a wrong certificate pin must fail");
 
         let audio = Arc::new(Audio::start(None, 0.25));
-        let u = Utterance { text: "Hello from TTV-TTS. This sentence was generated on the other PC.".into(), voice, language: "English".into(), emotion: None, intensity: None, gain: 1.0 };
+        let u = Utterance { text: "Hello from TTV-TTS. This sentence was generated on the other PC.".into(), voice, language: "English".into(), emotion: None, intensity: None, gain: 1.0, fx: None };
         let r = say(vcp, audio, u).await.expect("say");
         println!("say: {r:?}");
         assert!(r.audio_secs > 1.0);

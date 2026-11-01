@@ -3,7 +3,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { Play, Spinner, Stop, Waveform } from "@ttv-tts/ui/icons";
-import { api, LANGUAGES, type SayReport, type Voice } from "../api";
+import { api, EFFECTS, LANGUAGES, type SayReport, type Voice } from "../api";
 import { host, run, store } from "../store";
 
 const { t } = useI18n();
@@ -13,6 +13,7 @@ const text = ref("");
 const voice = ref("");
 const language = ref("German");
 const emotion = ref("");
+const fx = ref("");
 const speaking = ref(false);
 const report = ref<SayReport | null>(null);
 
@@ -47,7 +48,7 @@ async function speak() {
   report.value = null;
   try {
     const r = await run("speak", () =>
-      api.speakTest({ text: text.value.trim() || t("voices.textPlaceholder"), voice: voice.value, language: language.value, emotion: emotion.value || null }),
+      api.speakTest({ text: text.value.trim() || t("voices.textPlaceholder"), voice: voice.value, language: language.value, emotion: emotion.value || null, fx: fx.value || null }),
     );
     if (r) report.value = r;
   } finally {
@@ -70,7 +71,7 @@ const reportText = computed(() => {
       <div class="card-head"><Play />{{ t("voices.tryTitle") }}</div>
       <p class="muted mb-3 text-sm">{{ t("voices.tryText") }}</p>
       <textarea v-model="text" rows="2" class="input h-auto py-2" :placeholder="t('voices.textPlaceholder')" />
-      <div class="mt-3 grid gap-3 sm:grid-cols-[2fr_1fr_1fr]">
+      <div class="mt-3 grid gap-3 sm:grid-cols-[2fr_1fr_1fr_1fr]">
         <div>
           <label class="label">{{ t("voices.voice") }}</label>
           <select v-model="voice" class="input" :disabled="!voices.length">
@@ -88,6 +89,13 @@ const reportText = computed(() => {
           <select v-model="emotion" class="input">
             <option value="">{{ t("voices.emotionNone") }}</option>
             <option v-for="e in EMOTIONS" :key="e" :value="e">{{ e }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">{{ t("voices.effect") }}<UiTip :text="t('tips.voiceEffects')" /></label>
+          <select v-model="fx" class="input" data-fx>
+            <option value="">{{ t("fx.none") }}</option>
+            <option v-for="e in EFFECTS" :key="e" :value="e">{{ t(`fx.names.${e}`) }}</option>
           </select>
         </div>
       </div>

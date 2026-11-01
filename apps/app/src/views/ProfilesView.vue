@@ -356,6 +356,7 @@ const defaultVoice = computed({
                   <option v-for="v in voices" :key="v.id" :value="v.id">{{ v.name }}</option>
                 </select>
               </UiField>
+              <UiToggle v-model="p.voices.effects" :label="t('profiles.effects')" :tip="t('tips.voiceEffects')" />
             </div>
             <div class="space-y-4">
               <UiField :label="t('profiles.userVoices')" :tip="t('tips.userVoices')">

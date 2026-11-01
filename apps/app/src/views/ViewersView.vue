@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { ago } from "@ttv-tts/ui/format";
 import { Eye, EyeSlash, Refresh, Trash, Users } from "@ttv-tts/ui/icons";
-import { presets, reader, viewers, type ViewerView } from "../api";
+import { EFFECTS, presets, reader, viewers, type ViewerView } from "../api";
 import { run, store, toast } from "../store";
 
 // Who chatted, which voice they got – reassign, mute or forget them.
@@ -64,6 +64,15 @@ async function reassign(v: ViewerView, role: string) {
   await load();
 }
 
+const fxName = (f: string | null) => (f ? t(`fx.names.${f}`) : "");
+
+async function setFx(v: ViewerView, value: string) {
+  const fx = value || null;
+  await run("viewer", () => viewers.setFx(profileId.value, v.user_id, fx));
+  toast("ok", fx && fx !== "none" ? t("fx.set", { name: v.display, fx: fxName(fx) }) : fx ? t("fx.offFor", { name: v.display }) : t("fx.cleared", { name: v.display }));
+  await load();
+}
+
 async function mute(v: ViewerView) {
   const view = await run("viewer", () => reader.mute(profileId.value, v.login, !v.muted));
   if (view) store.reader = view;
@@ -90,6 +99,7 @@ async function forget(v: ViewerView) {
         </select>
         <input v-model="query" class="input max-w-72" :placeholder="t('viewers.search')" />
         <p v-if="profile && !preset" class="hint self-center">{{ t("viewers.notPreset") }}</p>
+        <p v-if="profile && !profile.voices.effects" class="hint self-center">{{ t("fx.disabled") }}</p>
       </div>
 
       <p v-if="!rows.length" class="text-sm text-muted">{{ query ? t("viewers.noMatch") : t("viewers.empty") }}</p>
@@ -99,6 +109,7 @@ async function forget(v: ViewerView) {
             <tr>
               <th class="pb-2 font-medium">{{ t("viewers.viewer") }}</th>
               <th class="pb-2 font-medium">{{ t("viewers.voice") }}</th>
+              <th class="pb-2 font-medium">{{ t("fx.title") }}<UiTip :text="t('tips.fxColumn')" /></th>
               <th class="pb-2 font-medium">{{ t("viewers.lastSeen") }}</th>
               <th class="pb-2 text-right font-medium">{{ t("viewers.messages") }}</th>
               <th class="pb-2" />
@@ -117,6 +128,13 @@ async function forget(v: ViewerView) {
                   <option v-for="(n, i) in voiceNames" :key="i" :value="String(i)">{{ i + 1 }} · {{ n }}</option>
                 </select>
                 <span v-else class="text-muted">{{ v.role == null ? t("viewers.notYet") : `#${v.role + 1}` }}</span>
+              </td>
+              <td class="py-2 pr-3">
+                <select class="input h-8 max-w-44 py-0 text-sm" data-viewer-fx :disabled="!profile?.voices.effects" :value="v.fx ?? ''" @change="setFx(v, ($event.target as HTMLSelectElement).value)">
+                  <option value="">{{ v.voice_fx ? t("fx.own", { fx: fxName(v.voice_fx) }) : t("fx.ownNone") }}</option>
+                  <option value="none">{{ t("fx.off") }}</option>
+                  <option v-for="e in EFFECTS" :key="e" :value="e">{{ fxName(e) }}</option>
+                </select>
               </td>
               <td class="py-2 pr-3 text-muted">{{ ago(v.last_seen, locale) }}</td>
               <td class="py-2 pr-3 text-right tabular-nums">{{ v.messages }}</td>

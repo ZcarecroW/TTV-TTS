@@ -359,6 +359,12 @@ pub fn set_viewer_role(state: St, profile: String, user_id: String, role: Option
     crate::reader::set_role(&state, &profile, &user_id, role);
 }
 
+/// A voice effect for a viewer: a name, "none" or None (the voice's own).
+#[tauri::command]
+pub fn set_viewer_fx(state: St, profile: String, user_id: String, fx: Option<String>) {
+    crate::reader::set_fx(&state, &profile, &user_id, fx);
+}
+
 #[tauri::command]
 pub fn forget_viewer(state: St, profile: String, user_id: String) {
     crate::reader::forget_viewer(&state, &profile, &user_id);

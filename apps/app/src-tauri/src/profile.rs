@@ -318,6 +318,9 @@ pub struct VoiceRules {
     pub users: BTreeMap<String, String>,
     /// Speak with emotions picked from emotes, emojis and punctuation.
     pub emotions: bool,
+    /// Play voice effects (radio, robot, …) from the voice definitions and
+    /// the viewer list.
+    pub effects: bool,
 }
 
 impl Default for VoiceRules {
@@ -333,6 +336,7 @@ impl Default for VoiceRules {
             per_language: BTreeMap::new(),
             users: BTreeMap::new(),
             emotions: false,
+            effects: true,
         }
     }
 }
