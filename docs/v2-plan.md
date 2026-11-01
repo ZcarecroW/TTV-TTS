@@ -23,22 +23,23 @@ Decisions come from the interview of 2026-11-01 (see the project notes); this fi
 - ✅ Twitch IRC (anonymous, several channels on one connection, reconnect), profiles per streamer (auto-saved editor)
 - ✅ Text pipeline from 1.0: emotes (Twitch/BTTV/FFZ/7TV), emojis, links, mentions, repeats, caps, replacements, blocked words, name announcements (7TV live updates still ⏳)
 - ✅ Language detection (1.0 detector + per-viewer memory)
-- ⏳ Synthesis engine: sentence-split **sync generation with pipelining** (measured 7–8× faster than VCP streaming on the target PC), streaming as option, "Auto" benchmark, warm-up
-- ⏳ Audio output to a chosen device (cpal), resampling, per-voice loudness matching
+- ✅ Synthesis: sentence-split **sync generation with pipelining** (measured 7–8× faster than VCP streaming on the target PC); streaming option + "Auto" benchmark + warm-up ⏳
+- ✅ Audio output to a chosen device (cpal), resampling, per-voice loudness matching (gain measured when a voice is computed)
 - ✅ Queue, skip, pause, clear, history with reasons for filtered messages, mod commands, timeouts/bans/deletions (replay + approval mode ⏳)
 
-## M4 – Presets & voices ⏳
-- ⏳ 20 built-in presets × 240 language-neutral definitions, nested balanced tiers 30/60/120/240
-- ⏳ "Classic 30" from the existing `TTS-xx NN Name (Role)` voices
-- ⏳ Preset library UI, computed-voice status per language, listen with own text
-- ⏳ Own presets: manual editor, AI prompt builder (chunks of 60), paste + validation (line format)
+## M4 – Presets & voices 🔨
+- ✅ 20 built-in presets × 240 language-neutral definitions (4,800 unique), nested balanced tiers 30/60/120/240 – checked by a test; parse 3.6 ms, preset list over 48,000 computed voices 3.4 ms
+- ✅ "Classic" adoption of the existing `TTS-xx NN Name (Role)` voices (definitions rebuilt from VCP's design text, nothing regenerated)
+- ✅ Preset library UI, computed-voice status per language, listen with own text; profile voice mode "preset" (stable roles, fallback language)
+- ✅ Own presets: manual editor, AI prompt builder (parts of 60), paste + validation (line format), export as text
 - ⏳ Viewer list: assigned voice, reassign, pin, mute; assignments stable when a preset grows
 
-## M5 – Computing voices ⏳
-- ⏳ Job engine (runs on the proxy, or in the app for single-PC setups): design → speech check → save → prime, in phases (fewer checkpoint swaps), resumable
-- ⏳ ETA from the first voices, live progress; chat first, jobs in the gaps; free the design checkpoint afterwards
-- ⏳ Best of 2–3 takes; long-job warnings
-- ⏳ Lossless sample backup on the proxy, export/import of computed packs
+## M5 – Computing voices 🔨 (needs a test run on the real VCP PC)
+- ✅ Job engine (`crates/engine`, runs on the proxy, or in the app for single-PC setups): design → speech check → save → prime, in phases, resumable; library as append-only log with incremental change events
+- ✅ ETA (benchmark, then measured), live progress, pause/resume/cancel; chat first, jobs in the gaps; free the design checkpoint afterwards ⏳
+- ✅ Best of 1–3 takes; long-job warnings
+- ✅ Lossless sample backup (FLAC) on the computing PC; export/import of computed packs ⏳
+- ✅ Update the proxy from the app (check + install now)
 
 ## M6 – Extras ⏳
 - ⏳ Emotions from chat cues (VCP emotional clone), translate-for-me (VCP /translate)
