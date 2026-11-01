@@ -12,6 +12,8 @@ mod logbuf;
 mod monitor;
 mod friends_cmds;
 pub mod fx;
+#[cfg(desktop)]
+mod hotkeys;
 mod translate;
 mod pack_cmds;
 mod preset_cmds;
@@ -46,6 +48,7 @@ pub fn run() {
             }
         }));
         builder = builder.plugin(tauri_plugin_updater::Builder::new().build());
+        builder = builder.plugin(tauri_plugin_global_shortcut::Builder::new().build());
     }
     builder
         .plugin(tauri_plugin_process::init())
@@ -75,6 +78,10 @@ pub fn run() {
             let st = state.clone();
             tauri::async_runtime::spawn(async move { reader::start(st) });
             tauri::async_runtime::spawn(updater::run(app.handle().clone(), state.clone()));
+            #[cfg(desktop)]
+            for a in hotkeys::apply(app.handle(), &state) {
+                log::warn!("hotkey for {a} not available (taken by another program?)");
+            }
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -104,6 +111,10 @@ pub fn run() {
             commands::reader_skip,
             commands::reader_clear,
             commands::reader_pause,
+            commands::reader_approve,
+            commands::reader_reject,
+            commands::reader_replay,
+            commands::set_hotkey,
             commands::test_message,
             commands::mute_viewer,
             commands::list_viewers,

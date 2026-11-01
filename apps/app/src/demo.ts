@@ -61,6 +61,7 @@ const state: AppView = {
     update_channel: "stable",
     setup_done: !params.has("setup"),
     translate_email: "",
+    hotkeys: { skip: "Ctrl+Alt+KeyS" },
   },
   host: params.has("nohost")
     ? { kind: "none", connected: false, error: null, proxy: null, vcp: null }
@@ -223,6 +224,13 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
       const text = String(args.text);
       const hit = Object.entries(known).find(([k]) => text.toLowerCase().includes(k));
       return r({ text: hit ? hit[1] + "!" : "(Übersetzung) " + text, ms: 480 });
+    }
+    case "set_hotkey": {
+      const hk = state.config.hotkeys;
+      if (args.accel && Object.entries(hk).some(([k, v]) => k !== args.action && v === args.accel)) throw `This combination is already used for "${args.action}".`;
+      if (args.accel) hk[String(args.action)] = String(args.accel);
+      else delete hk[String(args.action)];
+      return r(structuredClone(state));
     }
     case "set_deepl_key":
       state.deepl_key = !!args.key;

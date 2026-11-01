@@ -4,9 +4,9 @@ import { useI18n } from "vue-i18n";
 import UiField from "@ttv-tts/ui/components/UiField.vue";
 import UiSegmented from "@ttv-tts/ui/components/UiSegmented.vue";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
-import { CircleInfo, Download, ExternalLink, Globe, Sparkle, Waveform } from "@ttv-tts/ui/icons";
-import { api, isTauri, updates } from "../api";
-import { apply, config, run, store } from "../store";
+import { CircleInfo, Download, ExternalLink, Globe, Keyboard, Sparkle, Waveform } from "@ttv-tts/ui/icons";
+import { api, HOTKEY_ACTIONS, isTauri, updates } from "../api";
+import { apply, config, run, store, toast } from "../store";
 
 const { t, locale } = useI18n();
 const c = computed(() => config.value!);
@@ -43,6 +43,23 @@ async function saveDeepl() {
   }
 }
 const removeDeepl = () => void run("settings", () => api.setDeeplKey(null)).then(apply);
+
+// Hotkeys: press the combination while the field listens.
+const recording = ref<string | null>(null);
+const shown = (accel: string | undefined) => (accel ? accel.replace(/Key([A-Z])/g, "$1").replace(/Digit(\d)/g, "$1").replace(/\+/g, " + ") : "");
+async function record(action: string, e: KeyboardEvent) {
+  if (recording.value !== action) return;
+  e.preventDefault();
+  if (["Control", "Shift", "Alt", "Meta"].includes(e.key)) return;
+  if (e.key === "Escape") return void (recording.value = null);
+  const mods = [e.ctrlKey && "Ctrl", e.altKey && "Alt", e.shiftKey && "Shift", e.metaKey && "Super"].filter(Boolean);
+  const fkey = /^F\d{1,2}$/.test(e.code);
+  if (!mods.length && !fkey) return void toast("info", t("settings.hotkeyNeedsModifier"));
+  recording.value = null;
+  const v = await run("hotkey", () => api.setHotkey(action, [...mods, e.code].join("+")));
+  if (v) apply(v);
+}
+const clearHotkey = (action: string) => void run("hotkey", () => api.setHotkey(action, null)).then(apply);
 
 async function open(url: string) {
   if (!isTauri) return void window.open(url, "_blank");
@@ -128,6 +145,26 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
         <span v-else-if="store.update?.phase === 'idle'" class="text-muted">· {{ t("settings.upToDate") }}</span>
         <button class="btn btn-sm ml-auto" :disabled="store.update?.phase === 'checking'" @click="updates.check()">{{ t("settings.checkNow") }}</button>
         <button v-if="store.update?.available" class="btn btn-primary btn-sm" @click="updates.install()">{{ t("settings.install") }}</button>
+      </div>
+    </section>
+
+    <section class="card p-5" data-hotkeys>
+      <div class="card-head"><Keyboard />{{ t("settings.hotkeysTitle") }}<UiTip :text="t('tips.hotkeys')" /></div>
+      <div class="space-y-2">
+        <div v-for="a in HOTKEY_ACTIONS" :key="a" class="flex items-center gap-2 text-sm">
+          <span class="w-36 shrink-0">{{ t(`settings.hotkey.${a}`) }}</span>
+          <button
+            class="input h-8 flex-1 py-0 text-left font-mono text-xs"
+            :class="recording === a && 'ring-2 ring-[var(--accent)]'"
+            :data-hotkey="a"
+            @click="recording = recording === a ? null : a"
+            @keydown="record(a, $event)"
+            @blur="recording === a && (recording = null)"
+          >
+            {{ recording === a ? t("settings.hotkeyPress") : shown(c.hotkeys?.[a]) || t("settings.hotkeyNone") }}
+          </button>
+          <button v-if="c.hotkeys?.[a]" class="btn btn-ghost btn-sm" @click="clearHotkey(a)">{{ t("settings.hotkeyClear") }}</button>
+        </div>
       </div>
     </section>
 

@@ -81,6 +81,8 @@ pub struct Config {
     pub setup_done: bool,
     /// Contact email for MyMemory (optional, 10× more translations a day).
     pub translate_email: String,
+    /// Global hotkeys: action (skip, pause, …) -> accelerator ("Ctrl+Alt+KeyS").
+    pub hotkeys: std::collections::BTreeMap<String, String>,
 }
 
 impl Default for Config {
@@ -96,6 +98,7 @@ impl Default for Config {
             update_channel: "preview".into(),
             setup_done: false,
             translate_email: String::new(),
+            hotkeys: Default::default(),
         }
     }
 }

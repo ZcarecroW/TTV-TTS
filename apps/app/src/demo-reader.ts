@@ -21,6 +21,8 @@ export const baseProfile: Profile = {
     max_seconds: 60,
     user_cooldown_secs: 0,
     max_queue: 15,
+    approval: false,
+    approval_minutes: 10,
   },
   names: { announce: "on_change", reset_secs: 90, cleanup: true, aliases: { xx_gamer_xx: "Gamer" } },
   language: { default: "de", unsupported: "auto", remember_minutes: 15 },
@@ -75,6 +77,8 @@ export const readerState: ReaderView = {
     paused: false,
     queue: [item("Lena_Plays", "wie heißt das spiel? 🤔", "Lena Plays sagt: wie heißt das spiel?, hmm", "de", "TTS-de 07 Elena (Abenteurerin)", "queued", null, "#8A5CF6")],
     current: { ...item("Mikey_TV", "that boss fight was insane KEKW KEKW", "Mikey TV says: that boss fight was insane, kek", "en", "TTS-en 11 Gabriel (Hero)", "speaking", null, "#1E90FF"), first_audio_ms: 1240, emotion: "joy", intensity: "normal" },
+    pending: params.has("approval") ? [item("Grumpy_Gus", "this streamer is the worst lol", "Grumpy Gus says: this streamer is the worst lol", "en", null, "pending", null, "#B22222")] : [],
+    replayable: [],
   },
   history: [
     { ...item("Pablo_Juega", "hola a todos, ¿qué juego es este?", "Pablo Juega dice: hola a todos, ¿qué juego es este?", "es", "TTS-es 04 Diego (Abenteurer)", "spoken", null, "#FF7F50"), translation: "Hallo zusammen, welches Spiel ist das?" },
@@ -86,6 +90,9 @@ export const readerState: ReaderView = {
     item("Mikey_TV", "!points", "", "", null, "filtered", "command / prefix"),
   ],
 };
+
+// spoken messages can be played again
+readerState.status.replayable = readerState.history.filter((h) => h.state === "spoken").map((h) => h.id);
 
 /** Handles reader commands; returns undefined for unknown ones. */
 export function readerCommand(cmd: string, args: Record<string, unknown>, emit: (event: string, payload: unknown) => void): { value: unknown } | undefined {
@@ -129,7 +136,17 @@ export function readerCommand(cmd: string, args: Record<string, unknown>, emit: 
       return v(undefined);
     case "reader_skip":
     case "reader_clear":
+    case "reader_replay":
       return v(undefined);
+    case "reader_approve":
+    case "reader_reject": {
+      const i = readerState.status.pending.findIndex((p) => args.id == null || p.id === args.id);
+      if (i < 0) return v(false);
+      const [it] = readerState.status.pending.splice(i, 1);
+      if (cmd === "reader_approve") readerState.status.queue.push({ ...it!, state: "queued" });
+      emit("app://reader", structuredClone(readerState.status));
+      return v(true);
+    }
     case "test_message": {
       const user = String(args.user || "TestUser");
       const text = String(args.text);

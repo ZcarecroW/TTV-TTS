@@ -130,6 +130,7 @@ export interface Config {
   update_channel: string;
   setup_done: boolean;
   translate_email: string;
+  hotkeys: Record<string, string>;
 }
 
 export interface OutputDevice {
@@ -236,6 +237,7 @@ export const api = {
   speakTest: (utterance: Utterance) => invoke<SayReport>("speak_test", { utterance }),
   tryTranslate: (text: string, target: string, provider: string) => invoke<{ text: string; ms: number }>("try_translate", { text, from: null, target, provider }),
   setDeeplKey: (key: string | null) => invoke<AppView>("set_deepl_key", { key }),
+  setHotkey: (action: string, accel: string | null) => invoke<AppView>("set_hotkey", { action, accel }),
   skip: () => invoke<void>("skip"),
 };
 
@@ -278,6 +280,8 @@ export interface Profile {
     max_seconds: number;
     user_cooldown_secs: number;
     max_queue: number;
+    approval: boolean;
+    approval_minutes: number;
   };
   names: { announce: "on_change" | "always" | "never"; reset_secs: number; cleanup: boolean; aliases: Record<string, string> };
   language: { default: string; unsupported: string; remember_minutes: number };
@@ -311,7 +315,7 @@ export interface Profile {
   muted: string[];
 }
 
-export type ItemState = "queued" | "speaking" | "spoken" | "skipped" | "removed" | "failed" | "filtered";
+export type ItemState = "queued" | "speaking" | "spoken" | "skipped" | "removed" | "failed" | "filtered" | "pending";
 
 export interface ItemView {
   id: number;
@@ -339,6 +343,10 @@ export interface ReaderStatus {
   paused: boolean;
   queue: ItemView[];
   current: ItemView | null;
+  /** Approval mode: waiting for the streamer. */
+  pending: ItemView[];
+  /** Spoken messages that can be played again. */
+  replayable: number[];
 }
 
 export interface ReaderView {
@@ -355,6 +363,9 @@ export const reader = {
   skip: () => invoke<void>("reader_skip"),
   clear: () => invoke<void>("reader_clear"),
   pause: (on: boolean) => invoke<void>("reader_pause", { on }),
+  approve: (id: number | null) => invoke<boolean>("reader_approve", { id }),
+  reject: (id: number | null) => invoke<boolean>("reader_reject", { id }),
+  replay: (id: number | null) => invoke<void>("reader_replay", { id }),
   test: (profile: string, user: string, text: string) => invoke<void>("test_message", { profile, user, text }),
   mute: (profile: string, login: string, on: boolean) => invoke<ReaderView>("mute_viewer", { profile, login, on }),
 };
@@ -637,6 +648,9 @@ export const presets = {
 export const DESIGN_LANGS = ["en", "de", "ru", "fr", "es", "it", "pt", "ja", "zh", "ko"] as const;
 /** Tiers of the built-in presets: their first 30, 60, 120 or all 240 voices. */
 export const TIERS = [30, 60, 120, 240] as const;
+
+/** What a global hotkey can do (same order as the backend). */
+export const HOTKEY_ACTIONS = ["skip", "pause", "clear", "replay", "approve", "reject"] as const;
 
 // ── let me pick ─────────────────────────────────────────────────────────
 

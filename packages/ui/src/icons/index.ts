@@ -63,6 +63,7 @@ export const Ghost = icon("Ghost");
 export const Globe = icon("Globe");
 export const House = icon("House");
 export const Key = icon("Key");
+export const Keyboard = icon("Keyboard");
 export const Layers = icon("Layers");
 export const Link = icon("Link");
 export const Lock = icon("Lock");

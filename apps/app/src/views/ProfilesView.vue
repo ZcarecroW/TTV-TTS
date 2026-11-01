@@ -182,6 +182,13 @@ const defaultVoice = computed({
             <UiField :label="t('profiles.cooldown')" :tip="t('tips.cooldown')"><input v-model.number="p.reading.user_cooldown_secs" type="number" min="0" class="input" /></UiField>
             <UiField :label="t('profiles.maxQueue')" :tip="t('tips.maxQueue')"><input v-model.number="p.reading.max_queue" type="number" min="1" max="200" class="input" /></UiField>
           </div>
+          <div class="mt-4 flex flex-wrap items-center gap-3" data-approval>
+            <UiToggle v-model="p.reading.approval" :label="t('profiles.approval')" :tip="t('tips.approval')" />
+            <label v-if="p.reading.approval" class="flex items-center gap-2 text-sm text-muted">
+              {{ t("profiles.approvalMinutes") }}
+              <input v-model.number="p.reading.approval_minutes" type="number" min="1" max="120" class="input w-20" />
+            </label>
+          </div>
           <div class="card-head mt-6"><Devices />{{ t("profiles.names") }}</div>
           <div class="space-y-4">
             <UiSegmented

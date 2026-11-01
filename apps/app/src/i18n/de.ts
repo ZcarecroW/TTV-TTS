@@ -136,6 +136,10 @@ const de: typeof en = {
     noHost: "Verbinde zuerst einen Stimmen-Host.",
   },
   live: {
+    pending: "Wartet auf dein OK",
+    approve: "Vorlesen",
+    reject: "Verwerfen",
+    replay: "Nochmal abspielen",
     reading: "Liest gerade",
     readingHint: "Schalte die Profile ein, deren Kanäle TTV-TTS vorlesen soll. Mehrere gleichzeitig gehen auch.",
     connected: "Chat verbunden",
@@ -155,6 +159,7 @@ const de: typeof en = {
     historyEmpty: "Noch nichts.",
     states: {
       queued: "wartet",
+      pending: "wartet auf OK",
       speaking: "spricht",
       spoken: "gesprochen",
       skipped: "übersprungen",
@@ -174,6 +179,8 @@ const de: typeof en = {
     noHost: "Noch kein Stimmen-Host – TTV-TTS kann den Chat lesen, aber nicht sprechen.",
   },
   profiles: {
+    approval: "Nachrichten vor dem Vorlesen freigeben",
+    approvalMinutes: "verwerfen nach (Minuten)",
     translateTitle: "Für mich übersetzen",
     translate: "Andere Sprachen in meiner vorlesen",
     translateInto: "In",
@@ -300,6 +307,12 @@ const de: typeof en = {
     add: "Hinzufügen",
   },
   settings: {
+    hotkeysTitle: "Tastenkürzel",
+    hotkeyPress: "Tasten drücken …",
+    hotkeyNone: "nicht gesetzt",
+    hotkeyClear: "Entfernen",
+    hotkeyNeedsModifier: "Nimm Strg, Alt oder Umschalt dazu (oder eine F-Taste), damit es beim Tippen nicht auslöst.",
+    hotkey: { skip: "Nachricht überspringen", pause: "Pause / weiter", clear: "Warteschlange leeren", replay: "Letzte nochmal", approve: "Nächste freigeben", reject: "Nächste verwerfen" },
     translateTitle: "Übersetzungsdienst",
     translateEmail: "E-Mail für MyMemory (optional)",
     translateEmailPlaceholder: "du{'@'}beispiel.de",
@@ -663,6 +676,9 @@ const de: typeof en = {
     saved: "„{name}“ mit {n} Stimmen gespeichert.",
   },
   tips: {
+    hotkeys: "Die funktionieren überall, auch wenn ein Spiel oder OBS im Vordergrund ist. Feld anklicken und die Kombination drücken; Esc bricht ab. Eine Kombination, die ein anderes Programm schon nutzt, geht nicht.",
+    pending: "Freigabe ist für dieses Profil an: Nichts wird vorgelesen, bevor du es hier (oder per Tastenkürzel) freigibst. Was niemand freigibt, wird nach der eingestellten Zeit verworfen.",
+    approval: "Für heikle Streams: Jede Nachricht wartet auf der Live-Seite, bis du sie per Klick oder Tastenkürzel freigibst.",
     pickTakes: "Drei neue Entwürfe dieser Stimme, jeder mit Spracherkennung geprüft. Deine aktuelle Stimme spricht weiter, bis du einen wählst – oder sie behältst.",
     takeRecommended: "Der Versuch, den die App behalten hätte: Er passt am besten zur Beschreibung (Tonlage für Geschlecht und Alter, Lautstärke, Pausen, Tempo).",
     translate: "Chat in einer Sprache, die du nicht sprichst, wird in deiner vorgelesen – oder auf der Live-Seite unter der Nachricht angezeigt. Der Zuschauer behält seine Stimme, die dann deine Sprache spricht. Nachrichten in deinen Sprachen werden nie übersetzt.",

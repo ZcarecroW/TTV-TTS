@@ -3,7 +3,7 @@ import { computed, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
-import { ArrowRight, Clock, Play, Stop, Trash, Waveform, Warning } from "@ttv-tts/ui/icons";
+import { ArrowRight, Check, Clock, Play, Refresh, Stop, Trash, Waveform, Warning, X } from "@ttv-tts/ui/icons";
 import { reader, type ItemView } from "../api";
 import { host, run, store, toast } from "../store";
 
@@ -35,7 +35,12 @@ const stateCls: Record<ItemView["state"], string> = {
   removed: "badge-warn",
   failed: "badge-err",
   filtered: "",
+  pending: "badge-accent",
 };
+
+const approve = (it: ItemView) => run("approve", () => reader.approve(it.id));
+const reject = (it: ItemView) => run("approve", () => reader.reject(it.id));
+const replay = (it: ItemView) => run("replay", () => reader.replay(it.id));
 
 async function mute(it: ItemView) {
   const pid = profiles.value.find((p) => p.channels.includes(it.channel))?.id;
@@ -114,6 +119,17 @@ async function sendTest() {
         </div>
         <p v-else class="rounded-xl bg-panel-2 p-4 text-sm text-muted">{{ status.paused ? t("live.paused") : t("live.silence") }}</p>
 
+        <div v-if="status.pending?.length" class="mt-4" data-pending>
+          <div class="label">{{ t("live.pending") }} <span class="badge badge-accent ml-1">{{ status.pending.length }}</span><UiTip :text="t('tips.pending')" /></div>
+          <ul class="space-y-1">
+            <li v-for="q in status.pending" :key="q.id" class="flex items-center gap-2 rounded-lg bg-panel-2 px-3 py-1.5 text-sm">
+              <span class="min-w-0 flex-1 truncate"><b :style="q.color ? { color: q.color } : undefined">{{ q.display }}</b> <span class="text-muted">{{ q.speech }}</span></span>
+              <button class="btn btn-sm btn-icon" :aria-label="t('live.approve')" :data-tip="t('live.approve')" @click="approve(q)"><Check :size="15" /></button>
+              <button class="btn btn-ghost btn-sm btn-icon" :aria-label="t('live.reject')" :data-tip="t('live.reject')" @click="reject(q)"><X :size="15" /></button>
+            </li>
+          </ul>
+        </div>
+
         <div class="mt-4">
           <div class="label">{{ t("live.queue") }} <span class="badge ml-1">{{ status.queue.length }}</span></div>
           <p v-if="!status.queue.length" class="text-sm text-muted">{{ t("live.queueEmpty") }}</p>
@@ -158,6 +174,7 @@ async function sendTest() {
             <div class="truncate text-muted" :title="h.original">{{ h.speech || h.original }}</div>
             <div v-if="h.translation" class="truncate text-xs" data-translation>→ {{ h.translation }}</div>
           </div>
+          <button v-if="status.replayable?.includes(h.id)" class="btn btn-ghost btn-sm btn-icon opacity-60 group-hover:opacity-100" :aria-label="t('live.replay')" :data-tip="t('live.replay')" data-replay @click="replay(h)"><Refresh :size="14" /></button>
           <button class="btn btn-ghost btn-sm opacity-0 group-hover:opacity-100" @click="mute(h)"><Stop :size="14" />{{ t("live.mute") }}</button>
         </li>
       </ul>

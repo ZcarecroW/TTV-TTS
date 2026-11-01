@@ -91,6 +91,8 @@ pub enum ItemState {
     Removed,
     Failed,
     Filtered,
+    /// Approval mode: waits for the streamer.
+    Pending,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -132,6 +134,10 @@ pub struct ReaderStatus {
     pub paused: bool,
     pub queue: Vec<ItemView>,
     pub current: Option<ItemView>,
+    /// Approval mode: messages waiting for the streamer.
+    pub pending: Vec<ItemView>,
+    /// Spoken messages that can be played again (ids, newest last).
+    pub replayable: Vec<u64>,
 }
 
 // ── runtime data ────────────────────────────────────────────────────────
@@ -146,6 +152,9 @@ struct Item {
     action: bool,
     cancel: Arc<AtomicBool>,
 }
+
+/// A spoken message kept for "play again": (id, rate, clips as played).
+type Replay = (u64, u32, Vec<Vec<f32>>);
 
 /// (id, user_id, msg_id, login, cancel) of a message being generated or played.
 type Inflight = (u64, String, String, String, Arc<AtomicBool>);
@@ -180,6 +189,10 @@ pub struct ReaderData {
     chat: Mutex<Option<Chat>>,
     emotes: Emotes,
     queue: Mutex<VecDeque<Item>>,
+    /// Approval mode: waiting for the streamer.
+    pending: Mutex<VecDeque<Item>>,
+    /// The audio of the last spoken messages: (id, rate, clips).
+    replays: Mutex<VecDeque<Replay>>,
     wake: Notify,
     paused: AtomicBool,
     status: RwLock<ReaderStatus>,
@@ -212,6 +225,8 @@ impl ReaderData {
             chat: Mutex::new(None),
             emotes: Emotes::new(),
             queue: Mutex::new(VecDeque::new()),
+            pending: Mutex::new(VecDeque::new()),
+            replays: Mutex::new(VecDeque::new()),
             wake: Notify::new(),
             paused: AtomicBool::new(false),
             status: RwLock::new(ReaderStatus::default()),
@@ -247,6 +262,10 @@ impl ReaderData {
 
     pub fn status(&self) -> ReaderStatus {
         self.status.read().clone()
+    }
+
+    pub fn is_paused(&self) -> bool {
+        self.paused.load(Ordering::Relaxed)
     }
 }
 
@@ -292,6 +311,8 @@ fn publish(state: &Arc<AppState>) {
         let mut st = r.status.write();
         st.paused = r.paused.load(Ordering::Relaxed);
         st.queue = r.queue.lock().iter().map(|i| i.view.clone()).collect();
+        st.pending = r.pending.lock().iter().map(|i| i.view.clone()).collect();
+        st.replayable = r.replays.lock().iter().map(|(id, ..)| *id).collect();
     }
     if let Some(app) = state.app() {
         let _ = app.emit("app://reader", r.status());
@@ -534,6 +555,25 @@ fn on_message(state: &Arc<AppState>, m: ChatMessage) {
         cancel: Arc::new(AtomicBool::new(false)),
         view,
     };
+    if r.approval {
+        // waits on the Live page until the streamer approves it
+        let mut item = item;
+        item.view.state = ItemState::Pending;
+        record(state, item.view.clone());
+        {
+            let mut q = state.reader.pending.lock();
+            q.push_back(item);
+            while q.len() > r.max_queue.max(1) * 2 {
+                if let Some(mut dropped) = q.pop_front() {
+                    dropped.view.state = ItemState::Removed;
+                    dropped.view.reason = Some("too many waiting for approval".into());
+                    record(state, dropped.view);
+                }
+            }
+        }
+        publish(state);
+        return;
+    }
     record(state, item.view.clone());
     {
         let mut q = state.reader.queue.lock();
@@ -598,7 +638,8 @@ pub fn skip(state: &Arc<AppState>) {
 }
 
 pub fn clear(state: &Arc<AppState>, by: &str) {
-    let items: Vec<Item> = state.reader.queue.lock().drain(..).collect();
+    let mut items: Vec<Item> = state.reader.queue.lock().drain(..).collect();
+    items.extend(state.reader.pending.lock().drain(..));
     for mut i in items {
         i.view.state = ItemState::Removed;
         i.view.reason = Some(format!("queue cleared ({by})"));
@@ -609,6 +650,59 @@ pub fn clear(state: &Arc<AppState>, by: &str) {
     }
     state.audio.skip_all();
     publish(state);
+}
+
+/// Approval mode: reads a waiting message (`id`, or the oldest).
+pub fn approve(state: &Arc<AppState>, id: Option<u64>) -> bool {
+    let item = {
+        let mut p = state.reader.pending.lock();
+        let at = match id {
+            Some(id) => p.iter().position(|i| i.view.id == id),
+            None => (!p.is_empty()).then_some(0),
+        };
+        at.and_then(|i| p.remove(i))
+    };
+    let Some(mut item) = item else { return false };
+    item.view.state = ItemState::Queued;
+    record(state, item.view.clone());
+    state.reader.queue.lock().push_back(item);
+    state.reader.wake.notify_waiters();
+    publish(state);
+    true
+}
+
+/// Approval mode: drops a waiting message (`id`, or the oldest).
+pub fn reject(state: &Arc<AppState>, id: Option<u64>) -> bool {
+    let item = {
+        let mut p = state.reader.pending.lock();
+        let at = match id {
+            Some(id) => p.iter().position(|i| i.view.id == id),
+            None => (!p.is_empty()).then_some(0),
+        };
+        at.and_then(|i| p.remove(i))
+    };
+    let Some(mut item) = item else { return false };
+    item.view.state = ItemState::Removed;
+    item.view.reason = Some("not approved".into());
+    record(state, item.view);
+    publish(state);
+    true
+}
+
+/// Plays a spoken message again from memory (`id`, or the last one).
+pub fn replay(state: &Arc<AppState>, id: Option<u64>) -> Result<(), String> {
+    let found = {
+        let r = state.reader.replays.lock();
+        match id {
+            Some(id) => r.iter().find(|(i, ..)| *i == id).cloned(),
+            None => r.back().cloned(),
+        }
+    };
+    let (_, rate, clips) = found.ok_or("Nothing to play again (only the last 20 messages are kept).")?;
+    for c in clips {
+        state.audio.play(c, rate, 1.0);
+    }
+    Ok(())
 }
 
 pub fn set_paused(state: &Arc<AppState>, on: bool) {
@@ -1098,6 +1192,9 @@ async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
         let mut secs = 0f32;
         let mut error = None;
         let mut chain: Option<crate::fx::Chain> = None;
+        // what was played, for "play again"
+        let mut played: Vec<Vec<f32>> = Vec::new();
+        let mut played_rate = 0;
         while let Some(r) = clips.recv().await {
             if item.cancel.load(Ordering::Relaxed) {
                 break;
@@ -1109,16 +1206,26 @@ async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
                         break;
                     }
                     secs += dur;
-                    last_clip = match fx {
+                    let out = match fx {
                         Some(f) => {
                             if chain.as_ref().is_some_and(|c| c.rate != rate) {
                                 chain = None;
                             }
-                            let c = chain.get_or_insert_with(|| crate::fx::Chain::new(f, rate));
-                            state.audio.play(c.process(samples, gain), rate, 1.0)
+                            chain.get_or_insert_with(|| crate::fx::Chain::new(f, rate)).process(samples, gain)
                         }
-                        None => state.audio.play(samples, rate, gain),
+                        None => {
+                            let mut s = samples;
+                            if gain != 1.0 {
+                                s.iter_mut().for_each(|x| *x *= gain);
+                            }
+                            s
+                        }
                     };
+                    if played_rate == 0 || played_rate == rate {
+                        played_rate = rate;
+                        played.push(out.clone());
+                    }
+                    last_clip = state.audio.play(out, rate, 1.0);
                     if item.view.first_audio_ms.is_none() {
                         item.view.first_audio_ms = Some(t0.elapsed().as_millis() as u64);
                         state.reader.status.write().current = Some(item.view.clone());
@@ -1137,6 +1244,9 @@ async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
             let rate = c.rate;
             let tail = c.finish();
             if !tail.is_empty() {
+                if played_rate == rate {
+                    played.push(tail.clone());
+                }
                 last_clip = state.audio.play(tail, rate, 1.0);
             }
         }
@@ -1154,6 +1264,14 @@ async fn play_loop(state: Arc<AppState>, mut rx: mpsc::Receiver<Prepared>) {
             ItemState::Spoken
         };
         state.reader.inflight.lock().retain(|(id, ..)| *id != item.view.id);
+        if item.view.state == ItemState::Spoken && !played.is_empty() {
+            let mut r = state.reader.replays.lock();
+            r.push_back((item.view.id, played_rate, played));
+            // the last 20 messages, at most 3 minutes of audio
+            while r.len() > 20 || r.iter().map(|(_, rate, c)| c.iter().map(Vec::len).sum::<usize>() as f32 / *rate.max(&1) as f32).sum::<f32>() > 180.0 {
+                r.pop_front();
+            }
+        }
         state.reader.status.write().current = None;
         record(&state, item.view);
         publish(&state);
@@ -1180,6 +1298,22 @@ async fn housekeeping(state: Arc<AppState>) {
         }
         let cutoff = Duration::from_secs(3600);
         state.reader.cooldown.lock().retain(|_, t| t.elapsed() < cutoff);
+        let minutes: HashMap<String, u32> = state.reader.store.read().profiles.iter().map(|p| (p.id.clone(), p.reading.approval_minutes.max(1))).collect();
+        let now = chrono::Utc::now().timestamp_millis();
+        let expired: Vec<Item> = {
+            let mut p = state.reader.pending.lock();
+            let (old, keep): (Vec<Item>, Vec<Item>) = p.drain(..).partition(|i| now - i.view.at > *minutes.get(&i.profile).unwrap_or(&10) as i64 * 60_000);
+            p.extend(keep);
+            old
+        };
+        if !expired.is_empty() {
+            for mut i in expired {
+                i.view.state = ItemState::Removed;
+                i.view.reason = Some("not approved in time".into());
+                record(&state, i.view);
+            }
+            publish(&state);
+        }
     }
 }
 

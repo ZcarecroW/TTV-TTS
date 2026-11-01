@@ -49,6 +49,19 @@ check(await page.locator("#ttv-tip").isVisible(), "tooltip appears on hover");
   await page.waitForTimeout(300);
   check(/(key stored|Schlüssel gespeichert)/.test(await ts.locator("input[type=password]").getAttribute("placeholder")) && (await ts.getByRole("button", { name: /^(Remove|Entfernen)$/ }).count()) === 1, "a DeepL key is stored and can be removed");
 }
+{
+  const hk = page.locator("main [data-hotkeys]");
+  check(/Ctrl \+ Alt \+ S/.test(await hk.locator("[data-hotkey=skip]").innerText()), "hotkeys are shown readably", await hk.locator("[data-hotkey=skip]").innerText());
+  await hk.locator("[data-hotkey=pause]").click();
+  check(/Press the keys|Tasten drücken/.test(await hk.locator("[data-hotkey=pause]").innerText()), "a hotkey field listens after a click");
+  await page.keyboard.press("Control+Shift+KeyP");
+  await page.waitForTimeout(300);
+  check(/Ctrl \+ Shift \+ P/.test(await hk.locator("[data-hotkey=pause]").innerText()), "pressing a combination sets the hotkey", await hk.locator("[data-hotkey=pause]").innerText());
+  await hk.locator("[data-hotkey=clear]").click();
+  await page.keyboard.press("Control+Alt+KeyS");
+  await page.waitForTimeout(300);
+  check(/already used|bereits/.test(await page.locator("body").innerText()) && /(not set|nicht gesetzt)/.test(await hk.locator("[data-hotkey=clear]").innerText()), "a combination can't be used twice");
+}
 
 // Voices: the library lists the demo voices and the test speaks.
 await nav("voices");
@@ -70,6 +83,7 @@ await nav("live");
 await page.waitForTimeout(300);
 const live = await page.locator("main").innerText();
 check(live.includes("Mikey_TV") && /ignored user/.test(live), "live page shows the current message and filtered ones with a reason");
+check((await page.locator("main [data-replay]").count()) >= 1, "spoken messages can be played again", String(await page.locator("main [data-replay]").count()));
 check(/(joy|Freude) \(normal\)/.test(await page.locator("main [data-emotion]").first().innerText()), "the current message shows its emotion", await page.locator("main [data-emotion]").first().innerText());
 check(/Hallo zusammen, welches Spiel ist das\?/.test(await page.locator("main [data-translation]").first().innerText()), "translated messages show the translation", await page.locator("main [data-translation]").first().innerText());
 await page.locator("main textarea").fill("Hallo aus dem Test");
@@ -326,6 +340,22 @@ await nav("host");
 await page.waitForTimeout(400);
 const gh = await page.locator("main").innerText();
 check(/Used today|Heute genutzt/.test(gh) && /4,200|4\.200/.test(gh) && !/Friends over the internet|Freunde über das Internet/.test(gh), "guests see their quota, not the friends settings");
+
+// approval mode: a message waits until it is approved
+await page.goto(base + query + "&approval");
+await page.waitForSelector("nav button");
+await nav("live");
+await page.waitForTimeout(400);
+{
+  const pend = page.locator("main [data-pending]");
+  check(/Grumpy_Gus/.test(await pend.innerText().catch(() => "")), "approval mode lists waiting messages");
+  await pend.getByRole("button", { name: /^(Read it|Vorlesen)$/ }).click();
+  await page.waitForTimeout(300);
+  check(!(await page.locator("main [data-pending]").count()) && /Grumpy_Gus/.test(await page.locator("main").innerText()), "an approved message moves to the queue");
+}
+await nav("profiles");
+await page.waitForTimeout(300);
+check(/Approve messages before they are read|Nachrichten vor dem Vorlesen freigeben/.test(await page.locator("main [data-approval]").innerText()), "profiles can require approval");
 
 check(errors.length === 0, "no console errors", errors.slice(0, 3).join(" / "));
 await browser.close();

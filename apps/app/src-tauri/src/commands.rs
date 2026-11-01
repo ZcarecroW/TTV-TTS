@@ -381,6 +381,64 @@ pub fn reader_pause(state: St, on: bool) {
     crate::reader::set_paused(&state, on);
 }
 
+/// Approval mode: a waiting message is read (None = the oldest).
+#[tauri::command]
+pub fn reader_approve(state: St, id: Option<u64>) -> bool {
+    crate::reader::approve(&state, id)
+}
+
+/// Approval mode: a waiting message is dropped (None = the oldest).
+#[tauri::command]
+pub fn reader_reject(state: St, id: Option<u64>) -> bool {
+    crate::reader::reject(&state, id)
+}
+
+/// Plays a spoken message again (None = the last one), without VCP.
+#[tauri::command]
+pub fn reader_replay(state: St, id: Option<u64>) -> Result<(), String> {
+    crate::reader::replay(&state, id)
+}
+
+/// Sets (or with None/"" removes) the global hotkey for an action.
+#[tauri::command]
+pub fn set_hotkey(app: tauri::AppHandle, state: St, action: String, accel: Option<String>) -> Result<AppView, String> {
+    #[cfg(desktop)]
+    {
+        if !crate::hotkeys::ACTIONS.contains(&action.as_str()) {
+            return Err(format!("unknown action {action}"));
+        }
+        let accel = accel.map(|a| a.trim().to_string()).filter(|a| !a.is_empty());
+        let before = state.cfg.read().hotkeys.clone();
+        if let Some(a) = &accel {
+            let wanted = crate::hotkeys::parse(a)?;
+            if let Some((other, _)) = before.iter().find(|(k, v)| **k != action && crate::hotkeys::parse(v).is_ok_and(|s| s == wanted)) {
+                return Err(format!("This combination is already used for \"{other}\"."));
+            }
+        }
+        {
+            let mut c = state.cfg.write();
+            match &accel {
+                Some(a) => {
+                    c.hotkeys.insert(action.clone(), a.clone());
+                }
+                None => {
+                    c.hotkeys.remove(&action);
+                }
+            }
+        }
+        let refused = crate::hotkeys::apply(&app, &state);
+        if refused.contains(&action) {
+            state.cfg.write().hotkeys = before;
+            crate::hotkeys::apply(&app, &state);
+            return Err("Another program already uses this combination.".into());
+        }
+        state.save_config().map_err(|e| e.to_string())?;
+    }
+    #[cfg(not(desktop))]
+    let _ = (app, action, accel);
+    Ok(view(&state))
+}
+
 /// Sends a test message through the pipeline of a profile's first channel.
 #[tauri::command]
 pub fn test_message(state: St, profile: String, user: String, text: String) -> Result<(), String> {

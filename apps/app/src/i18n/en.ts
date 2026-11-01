@@ -134,6 +134,10 @@ export default {
     noHost: "Connect a voice host first.",
   },
   live: {
+    pending: "Waiting for your OK",
+    approve: "Read it",
+    reject: "Drop it",
+    replay: "Play again",
     reading: "Reading now",
     readingHint: "Switch on the profiles whose channels TTV-TTS should read. Several at once are fine.",
     connected: "Chat connected",
@@ -153,6 +157,7 @@ export default {
     historyEmpty: "Nothing yet.",
     states: {
       queued: "waiting",
+      pending: "waiting for OK",
       speaking: "speaking",
       spoken: "spoken",
       skipped: "skipped",
@@ -172,6 +177,8 @@ export default {
     noHost: "No voice host yet – TTV-TTS can read the chat, but not speak.",
   },
   profiles: {
+    approval: "Approve messages before they are read",
+    approvalMinutes: "drop after (minutes)",
     translateTitle: "Translate for me",
     translate: "Read other languages in mine",
     translateInto: "Into",
@@ -298,6 +305,12 @@ export default {
     add: "Add",
   },
   settings: {
+    hotkeysTitle: "Hotkeys",
+    hotkeyPress: "Press the keys …",
+    hotkeyNone: "not set",
+    hotkeyClear: "Clear",
+    hotkeyNeedsModifier: "Use Ctrl, Alt or Shift with the key (or an F key), so it doesn't fire while you type.",
+    hotkey: { skip: "Skip message", pause: "Pause / resume", clear: "Clear the queue", replay: "Play the last again", approve: "Approve the next", reject: "Drop the next" },
     translateTitle: "Translation service",
     translateEmail: "Email for MyMemory (optional)",
     translateEmailPlaceholder: "you{'@'}example.com",
@@ -661,6 +674,9 @@ export default {
     saved: "“{name}” saved with {n} voices.",
   },
   tips: {
+    hotkeys: "These work everywhere, also while a game or OBS has the focus. Click a field and press the combination; Esc cancels. A combination another program already uses can't be taken.",
+    pending: "Approval is on for this profile: nothing is read until you OK it here (or with the hotkey). Messages nobody approves are dropped after the set minutes.",
+    approval: "For sensitive streams: every message waits on the Live page until you approve it with a click or a hotkey.",
     pickTakes: "Three new designs of this voice, each checked with speech recognition. Your current voice keeps speaking until you pick one – or keep it.",
     takeRecommended: "The take the app would have kept: it fits the description best (pitch for gender and age, loudness, pauses, pace).",
     translate: "Chat in a language you don't speak is read in yours – or shown under the message on the Live page. The viewer keeps their voice, speaking your language. Messages in your languages are never translated.",

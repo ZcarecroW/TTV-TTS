@@ -45,6 +45,10 @@ pub struct Reading {
     pub max_seconds: u32,
     pub user_cooldown_secs: u32,
     pub max_queue: usize,
+    /// Messages wait on the Live page until the streamer approves them.
+    pub approval: bool,
+    /// Not approved within this many minutes: dropped.
+    pub approval_minutes: u32,
 }
 
 impl Default for Reading {
@@ -68,6 +72,8 @@ impl Default for Reading {
             max_seconds: 60,
             user_cooldown_secs: 0,
             max_queue: 15,
+            approval: false,
+            approval_minutes: 10,
         }
     }
 }
