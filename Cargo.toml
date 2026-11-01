@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/vcp", "crates/link", "apps/proxy/src-tauri"]
+members = ["crates/vcp", "crates/link", "apps/proxy/src-tauri", "apps/app/src-tauri"]
 
 [workspace.package]
 version = "2.0.0-alpha.3"
@@ -54,6 +54,14 @@ time = "0.3.55"
 url = "2.5.8"
 socket2 = { version = "0.6.5", features = ["all"] }
 windows-sys = "0.61.2"
+tauri-plugin-global-shortcut = "2.4.1"
+tokio-tungstenite = { version = "0.30.0", default-features = false, features = ["connect", "handshake", "__rustls-tls", "rustls-tls-webpki-roots"] }
+cpal = "0.18.2"
+rubato = { version = "5.0.1", default-features = false, features = ["fft_resampler"] }
+audioadapter-buffers = "5.2.0"
+if-addrs = "0.15.0"
+regex = "1.13.1"
+unicode-segmentation = "1.13.3"
 
 [profile.release]
 codegen-units = 1

@@ -13,10 +13,11 @@ Decisions come from the interview of 2026-11-01 (see the project notes); this fi
 - ✅ Firewall check + one-click fix + guides; log; signed self-update (stable/preview), remote update trigger
 - ✅ UI EN/DE, dark/light, first-start assistant, tooltips; tested end-to-end on the real VCP PC
 
-## M2 – Main app skeleton 🔨
-- ⏳ Tauri app `apps/app`, shell with sidebar, settings, i18n EN/DE, theme
-- ⏳ Voice host: discover proxies, pair (fingerprint shown), pinned TLS client; or VCP directly on the same PC
-- ⏳ Proxy monitor in the app (VCP state, GPU, processes), Wake-on-LAN
+## M2 – Main app skeleton 🔨 (slice A done: host + audio + speech test)
+- ✅ Tauri app `apps/app`, shell with sidebar, settings, i18n EN/DE, theme
+- ✅ Voice host: discover proxies, pair (fingerprint shown), pinned TLS client; or VCP directly on the same PC
+- ✅ Proxy monitor in the app (VCP state, GPU, processes), Wake-on-LAN
+- ✅ Audio output (cpal 0.18, rubato FFT resampling, gapless queue, fade on skip), sentence-pipelined sync generation: first audio 1.4 s, RTF 0.65 through the real proxy
 
 ## M3 – Chat to speech ⏳
 - ⏳ Twitch IRC (anonymous, several channels), profiles per streamer
