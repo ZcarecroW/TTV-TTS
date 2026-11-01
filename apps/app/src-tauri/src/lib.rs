@@ -16,6 +16,7 @@ mod state;
 mod storage;
 mod text;
 mod twitch;
+mod updater;
 
 use tauri::Manager;
 
@@ -59,6 +60,7 @@ pub fn run() {
             tauri::async_runtime::spawn(monitor::run(state.clone()));
             let st = state.clone();
             tauri::async_runtime::spawn(async move { reader::start(st) });
+            tauri::async_runtime::spawn(updater::run(app.handle().clone(), state.clone()));
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -85,6 +87,9 @@ pub fn run() {
             commands::reader_pause,
             commands::test_message,
             commands::mute_viewer,
+            commands::update_info,
+            commands::check_update,
+            commands::install_update,
         ])
         .build(tauri::generate_context!())
         .expect("error while building TTV-TTS")

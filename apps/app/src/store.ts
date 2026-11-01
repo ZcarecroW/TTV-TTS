@@ -1,5 +1,5 @@
 import { computed, reactive } from "vue";
-import { api, errText, listen, reader, type AppView, type HostStatus, type ItemView, type ReaderStatus, type ReaderView, type SystemStats } from "./api";
+import { api, errText, listen, reader, updates, type AppView, type HostStatus, type ItemView, type ReaderStatus, type ReaderView, type SystemStats, type UpdateInfo } from "./api";
 import { i18n, setLocale } from "./i18n";
 import { setTheme } from "@ttv-tts/ui/theme";
 
@@ -9,6 +9,7 @@ export const store = reactive({
   app: null as AppView | null,
   hostSystem: null as SystemStats | null,
   reader: null as ReaderView | null,
+  update: null as UpdateInfo | null,
   view: "live" as View,
   toast: null as { kind: "ok" | "err" | "info"; text: string } | null,
   busy: "" as string,
@@ -52,6 +53,8 @@ export async function init() {
     if (store.app) store.app.host = h;
   });
   await listen<SystemStats>("app://host-system", (s) => (store.hostSystem = s));
+  store.update = await updates.info();
+  await listen<UpdateInfo>("app://update", (u) => (store.update = u));
   store.reader = await reader.get();
   await listen<ReaderStatus>("app://reader", (s) => {
     if (store.reader) store.reader.status = s;

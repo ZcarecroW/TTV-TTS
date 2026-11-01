@@ -119,3 +119,9 @@ export function readerCommand(cmd: string, args: Record<string, unknown>, emit: 
   }
   return undefined;
 }
+
+export function updateCommand(cmd: string): { value: unknown } | undefined {
+  if (cmd === "update_info" || cmd === "check_update") return { value: { available: params.has("update") ? "2.0.1" : null, phase: "idle", error: null } };
+  if (cmd === "install_update") return { value: undefined };
+  return undefined;
+}

@@ -321,3 +321,20 @@ pub fn mute_viewer(state: St, profile: String, login: String, on: bool) -> Reade
     crate::reader::set_muted(&state, &profile, &login.to_ascii_lowercase(), on);
     reader_view(&state)
 }
+
+// ── updates ─────────────────────────────────────────────────────────────
+
+#[tauri::command]
+pub fn update_info() -> crate::updater::UpdateInfo {
+    crate::updater::info()
+}
+
+#[tauri::command]
+pub async fn check_update(app: tauri::AppHandle, state: St<'_>) -> Result<crate::updater::UpdateInfo, String> {
+    Ok(crate::updater::check(&app, &state).await)
+}
+
+#[tauri::command]
+pub async fn install_update(app: tauri::AppHandle, state: St<'_>) -> Result<(), String> {
+    crate::updater::install(&app, &state).await
+}

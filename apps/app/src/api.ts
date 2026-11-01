@@ -280,3 +280,15 @@ export const reader = {
   test: (profile: string, user: string, text: string) => invoke<void>("test_message", { profile, user, text }),
   mute: (profile: string, login: string, on: boolean) => invoke<ReaderView>("mute_viewer", { profile, login, on }),
 };
+
+export interface UpdateInfo {
+  available: string | null;
+  phase: "idle" | "checking" | "downloading" | "error";
+  error: string | null;
+}
+
+export const updates = {
+  info: () => invoke<UpdateInfo>("update_info"),
+  check: () => invoke<UpdateInfo>("check_update"),
+  install: () => invoke<void>("install_update"),
+};

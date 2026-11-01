@@ -5,7 +5,7 @@ import UiField from "@ttv-tts/ui/components/UiField.vue";
 import UiSegmented from "@ttv-tts/ui/components/UiSegmented.vue";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { CircleInfo, Download, ExternalLink, Globe, Sparkle, Waveform } from "@ttv-tts/ui/icons";
-import { api, isTauri } from "../api";
+import { api, isTauri, updates } from "../api";
 import { apply, config, run, store } from "../store";
 
 const { t, locale } = useI18n();
@@ -106,6 +106,14 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
           { value: 'preview', label: t('settings.channelPreview') },
         ]"
       />
+      <div class="mt-4 flex flex-wrap items-center gap-2 text-sm">
+        <span class="text-muted">v{{ store.app!.version }}</span>
+        <span v-if="store.update?.phase === 'error'" class="text-err">{{ t("settings.checkFailed", { error: store.update.error }) }}</span>
+        <span v-else-if="store.update?.available" class="text-ok">{{ t("settings.updateAvailable", { version: store.update.available }) }}</span>
+        <span v-else-if="store.update?.phase === 'idle'" class="text-muted">· {{ t("settings.upToDate") }}</span>
+        <button class="btn btn-sm ml-auto" :disabled="store.update?.phase === 'checking'" @click="updates.check()">{{ t("settings.checkNow") }}</button>
+        <button v-if="store.update?.available" class="btn btn-primary btn-sm" @click="updates.install()">{{ t("settings.install") }}</button>
+      </div>
     </section>
 
     <section class="card p-5 md:col-span-2">

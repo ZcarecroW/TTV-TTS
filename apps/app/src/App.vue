@@ -2,7 +2,8 @@
 import { computed, type Component } from "vue";
 import { useI18n } from "vue-i18n";
 import TipLayer from "@ttv-tts/ui/components/TipLayer.vue";
-import { CircleCheck, CircleInfo, CircleX, Devices, Gear, Play, Server, Waveform } from "@ttv-tts/ui/icons";
+import { CircleCheck, CircleInfo, CircleX, Devices, Download, Gear, Play, Server, Waveform } from "@ttv-tts/ui/icons";
+import { updates } from "./api";
 import logo from "./assets/logo.svg";
 import { host, store, type View } from "./store";
 import LiveView from "./views/LiveView.vue";
@@ -67,6 +68,11 @@ const nav = computed(() => [
 
     <main class="min-w-0 flex-1 overflow-y-auto">
       <div class="mx-auto max-w-5xl px-7 py-6">
+        <div v-if="store.update?.available" class="notice notice-ok mb-4 text-sm">
+          <Download :size="18" />
+          <span class="flex-1">{{ t("settings.updateAvailable", { version: store.update.available }) }}</span>
+          <button class="btn btn-primary btn-sm" :disabled="store.update.phase === 'downloading'" @click="updates.install()">{{ store.update.phase === "downloading" ? t("settings.installing") : t("settings.install") }}</button>
+        </div>
         <h1 class="mb-5 text-xl font-semibold tracking-tight">{{ t(`nav.${store.view}`) }}</h1>
         <component :is="views[store.view]" />
       </div>

@@ -1,7 +1,7 @@
 // Demo backend for the browser (UI development, tests, docs screenshots).
 // `?setup` shows the first-start assistant, `?nohost` an app without voice host.
 import type { AppView, Found, Probe, SystemStats, Voice } from "./api";
-import { readerCommand } from "./demo-reader";
+import { readerCommand, updateCommand } from "./demo-reader";
 
 const params = new URLSearchParams(location.search);
 const listeners = new Map<string, Set<(p: unknown) => void>>();
@@ -160,7 +160,7 @@ export async function demoInvoke<T>(cmd: string, args: Record<string, unknown> =
     case "skip":
       return r(undefined);
   }
-  const fromReader = readerCommand(cmd, args, emit);
+  const fromReader = readerCommand(cmd, args, emit) ?? updateCommand(cmd);
   if (fromReader) return r(fromReader.value);
   throw new Error(`demo: unknown command ${cmd}`);
 }
