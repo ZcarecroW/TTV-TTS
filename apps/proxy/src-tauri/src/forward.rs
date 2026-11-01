@@ -9,6 +9,7 @@ use axum::body::Body;
 use axum::extract::{Request, State};
 use axum::http::{HeaderName, StatusCode, header};
 use axum::response::Response;
+use futures_util::StreamExt;
 
 use crate::server::api_error;
 use crate::state::AppState;
@@ -61,6 +62,18 @@ pub async fn handler(State(state): State<Arc<AppState>>, req: Request) -> Respon
     let vcp = state.vcp();
     let (parts, body) = req.into_parts();
     let url = format!("{}{}", vcp.base(), target_path(&parts.uri));
+    // One job at a time at VCP, shared with the computing jobs; held until
+    // the answer has been passed on.
+    let turn = if ttv_vcp::is_work(&parts.method, parts.uri.path()) {
+        let t0 = std::time::Instant::now();
+        let t = ttv_vcp::turn().await;
+        if t0.elapsed() > std::time::Duration::from_secs(5) {
+            log::info!("{} waited {:.1} s for VCP", parts.uri.path(), t0.elapsed().as_secs_f32());
+        }
+        Some(t)
+    } else {
+        None
+    };
 
     let mut rb = vcp.http().request(parts.method.clone(), url);
     for (name, value) in &parts.headers {
@@ -87,7 +100,11 @@ pub async fn handler(State(state): State<Arc<AppState>>, req: Request) -> Respon
                     }
                 }
             }
-            builder.body(Body::from_stream(res.bytes_stream())).unwrap_or_else(|e| {
+            let stream = res.bytes_stream().map(move |chunk| {
+                let _held = &turn;
+                chunk
+            });
+            builder.body(Body::from_stream(stream)).unwrap_or_else(|e| {
                 api_error(StatusCode::BAD_GATEWAY, "internal", format!("bad answer from VCP: {e}"))
             })
         }

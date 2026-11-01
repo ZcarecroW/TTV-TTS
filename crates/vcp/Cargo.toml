@@ -16,6 +16,8 @@ thiserror = { workspace = true }
 bytes = { workspace = true }
 futures-util = { workspace = true }
 url = { workspace = true }
+# one request at a time at VCP (`turn`)
+tokio = { workspace = true, default-features = false, features = ["sync"] }
 
 [dev-dependencies]
 tokio = { workspace = true }

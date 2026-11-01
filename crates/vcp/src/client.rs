@@ -1,3 +1,4 @@
+use std::sync::{Arc, LazyLock};
 use std::time::Duration;
 
 use reqwest::{Method, StatusCode};
@@ -5,6 +6,23 @@ use serde::Serialize;
 use serde::de::DeserializeOwned;
 
 use crate::types::*;
+
+/// VCP works on one request at a time, and two arriving together can wedge
+/// it until it is restarted (seen with a voice design in flight while a
+/// clone came in over a second connection). Every work request of this
+/// process takes turns here; the turn is held until the answer is read.
+static TURN: LazyLock<Arc<tokio::sync::Mutex<()>>> = LazyLock::new(|| Arc::new(tokio::sync::Mutex::new(())));
+
+/// Waits for this process's turn at VCP (first come, first served).
+pub async fn turn() -> tokio::sync::OwnedMutexGuard<()> {
+    TURN.clone().lock_owned().await
+}
+
+/// Requests that make VCP work: generating, designing, transcribing,
+/// saving voices. Stopping and shutting down never wait for a turn.
+pub fn is_work(method: &Method, path: &str) -> bool {
+    *method == Method::POST && path.starts_with("/api/v1/") && !path.starts_with("/api/v1/generation/stop") && !path.starts_with("/api/v1/app/")
+}
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -132,6 +150,8 @@ impl Client {
         body: &B,
         timeout: Duration,
     ) -> Result<T, Error> {
+        // the timeout starts once it is this request's turn
+        let _turn = if is_work(&Method::POST, path) { Some(turn().await) } else { None };
         self.send(self.request(Method::POST, path).json(body).timeout(timeout)).await
     }
 

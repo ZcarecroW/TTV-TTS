@@ -8,6 +8,6 @@ mod client;
 mod types;
 pub mod wav;
 
-pub use client::{Client, Error};
+pub use client::{Client, Error, is_work, turn};
 pub use reqwest::Method;
 pub use types::*;
