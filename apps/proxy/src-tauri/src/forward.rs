@@ -47,6 +47,25 @@ fn target_path(uri: &axum::http::Uri) -> String {
 /// over the internet wait for a pause in it.
 static LAST_LAN: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(0);
 
+/// Last time anyone made VCP work through this proxy (chat, previews,
+/// guests), unix milliseconds. Computing jobs wait for a pause in it; plain
+/// lookups (voice lists) don't count.
+static LAST_WORK: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(0);
+
+pub fn touch_work() {
+    LAST_WORK.store(chrono::Utc::now().timestamp_millis(), std::sync::atomic::Ordering::Relaxed);
+}
+
+/// When VCP last worked for someone other than the computing jobs.
+pub fn last_work() -> Option<std::time::Instant> {
+    let last = LAST_WORK.load(std::sync::atomic::Ordering::Relaxed);
+    if last <= 0 {
+        return None;
+    }
+    let ago = (chrono::Utc::now().timestamp_millis() - last).max(0) as u64;
+    std::time::Instant::now().checked_sub(std::time::Duration::from_millis(ago))
+}
+
 /// The host's apps used VCP within `quiet`.
 pub fn lan_busy(quiet: std::time::Duration) -> bool {
     let last = LAST_LAN.load(std::sync::atomic::Ordering::Relaxed);
@@ -65,6 +84,7 @@ pub async fn handler(State(state): State<Arc<AppState>>, req: Request) -> Respon
     // One job at a time at VCP, shared with the computing jobs; held until
     // the answer has been passed on.
     let turn = if ttv_vcp::is_work(&parts.method, parts.uri.path()) {
+        touch_work();
         let t0 = std::time::Instant::now();
         let t = ttv_vcp::turn().await;
         if t0.elapsed() > std::time::Duration::from_secs(5) {
@@ -90,7 +110,12 @@ pub async fn handler(State(state): State<Arc<AppState>>, req: Request) -> Respon
         rb = rb.body(reqwest::Body::wrap_stream(body.into_data_stream()));
     }
 
-    match rb.send().await {
+    let sent = rb.send().await;
+    if turn.is_some() {
+        // the quiet gap counts from the end of a long generation
+        touch_work();
+    }
+    match sent {
         Ok(res) => {
             let mut builder = Response::builder().status(res.status());
             if let Some(h) = builder.headers_mut() {

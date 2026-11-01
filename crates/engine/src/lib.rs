@@ -33,6 +33,12 @@ pub use store::Library;
 pub(crate) const BATCH: usize = 16;
 /// The engine only calls VCP after this much quiet (chat goes first).
 const GAP: Duration = Duration::from_secs(6);
+/// Designing needs VCP's design checkpoint, and switching between it and the
+/// speaking checkpoint takes ~17 s each way (measured on an RTX 3070, 1.7B
+/// models). After chat, designs wait for this much quiet, so a chatty stream
+/// doesn't pay the switch with every message; the other steps use the
+/// speaking checkpoint, like chat, and keep the short gap.
+pub(crate) const DESIGN_GAP: Duration = Duration::from_secs(90);
 /// Attempts per voice before it counts as failed.
 pub(crate) const ATTEMPTS: u32 = 3;
 /// Accepted speech-check error rate.
@@ -540,13 +546,18 @@ impl Inner {
     /// Waits for a quiet moment. Returns false if the job was paused or
     /// cancelled meanwhile.
     async fn gap(&self, id: &str) -> bool {
+        self.gap_for(id, GAP).await
+    }
+
+    /// Like `gap`, with `quiet` of no chat.
+    async fn gap_for(&self, id: &str, quiet: Duration) -> bool {
         let mut waiting = false;
         loop {
             match self.state_of(id) {
                 Some(JobState::Running | JobState::Waiting | JobState::Queued) => {}
                 _ => return false,
             }
-            let busy = (self.activity)().is_some_and(|t| t.elapsed() < GAP);
+            let busy = (self.activity)().is_some_and(|t| t.elapsed() < quiet);
             if !busy {
                 if waiting {
                     self.update(id, |j| j.view.state = JobState::Running);

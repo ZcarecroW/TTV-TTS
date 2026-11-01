@@ -540,6 +540,7 @@ export default {
     progress: "{done} of {total} voices",
     failed: "{n} failed",
     waitingText: "waits for a quiet moment in chat",
+    waitingTip: "Chat always goes first. Checking and saving continue 6 seconds after the last message. Designing waits for 1½ minutes without chat, because it needs a different model in Voice Creator Pro, and switching models costs about 17 seconds each way.",
     eta: "about {time} left",
     speed: "{s} s per voice",
     pause: "Pause",

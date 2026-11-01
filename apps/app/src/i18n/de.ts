@@ -542,6 +542,7 @@ const de: typeof en = {
     progress: "{done} von {total} Stimmen",
     failed: "{n} fehlgeschlagen",
     waitingText: "wartet auf eine ruhige Minute im Chat",
+    waitingTip: "Der Chat geht immer vor. Prüfen und Speichern geht 6 Sekunden nach der letzten Nachricht weiter. Entwerfen wartet auf 1½ Minuten ohne Chat, weil es in Voice Creator Pro ein anderes Modell braucht, und der Modellwechsel kostet jeweils etwa 17 Sekunden.",
     eta: "noch etwa {time}",
     speed: "{s} s pro Stimme",
     pause: "Pausieren",

@@ -455,3 +455,27 @@ async fn the_same_voices_are_not_checked_twice_at_once() {
     assert_eq!(e.submit(req.clone()).unwrap().total, 1);
     assert!(e.submit(req).unwrap_err().contains("already"));
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn after_chat_designs_wait_longer_than_checks() {
+    // chat 20 s ago: past the 6 s gap, within the 90 s design gap
+    let (fake, base) = serve().await;
+    let dir = std::env::temp_dir().join(format!("ttv-engine-test-{}", rand::random::<u64>()));
+    let chat = std::time::Instant::now() - Duration::from_secs(20);
+    let e = Engine::new(dir, Arc::new(move || Some(chat)));
+    e.set_vcp(Some(ttv_vcp::Client::new(&base, None)));
+    tokio::spawn(e.worker());
+    fake.voices.lock().insert("voice_old".into(), FakeVoice { name: "TTS-en 01 Jack (Detektiv)".into(), hz: 115.0 });
+    let d = def(0, "m", "Hard-boiled detective.");
+    let key = d.def.key("en");
+    e.adopt(vec![ttv_link::LibraryEntry { key: key.clone(), def_hash: d.def.hash(), lang: "en".into(), voice_id: "voice_old".into(), gain: 1.0, ..Default::default() }]);
+    // a check uses the speaking checkpoint: it runs
+    e.submit(JobRequest { kind: JobKind::Review, defs: vec![d], ..request(0) }).unwrap();
+    until("the check", || e.status().jobs.iter().any(|j| j.kind == JobKind::Review && j.state == JobState::Done)).await;
+    // designing waits for a quieter chat
+    e.submit(request(1)).unwrap();
+    tokio::time::sleep(Duration::from_millis(1500)).await;
+    let job = e.status().jobs.into_iter().find(|j| j.kind == JobKind::Compute).unwrap();
+    assert_eq!(job.state, JobState::Waiting, "{job:?}");
+    assert_eq!(fake.designs.load(Ordering::SeqCst), 0);
+}

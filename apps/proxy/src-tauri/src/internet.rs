@@ -568,10 +568,12 @@ async fn clone(State(state): S, axum::Extension(Guest(g)): axum::Extension<Guest
     // Busy while VCP works on it: computing jobs pause (they wait for 6 s of
     // quiet before every VCP call), so a guest never queues behind them.
     crate::updater::touch();
+    crate::forward::touch_work();
     let busy = tokio::spawn(async {
         loop {
             tokio::time::sleep(Duration::from_secs(2)).await;
             crate::updater::touch();
+            crate::forward::touch_work();
         }
     });
     let body = serde_json::json!({ "voice_id": b.voice_id, "target_text": text, "language": b.language, "emotion": b.emotion, "intensity": b.intensity });

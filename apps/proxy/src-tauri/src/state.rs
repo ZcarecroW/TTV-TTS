@@ -58,11 +58,9 @@ impl AppState {
         let vcp = ttv_vcp::Client::new(&cfg.vcp_url, dev_vcp_key().or_else(|| secrets.get(secrets::VCP_KEY)));
         let update = UpdateState { phase: "idle".into(), channel: cfg.update_channel.clone(), ..Default::default() };
         // Chat goes first: the engine waits while apps use VCP through us.
-        let activity: ttv_engine::Activity = Arc::new(|| {
-            let last = crate::updater::LAST_ACTIVITY.load(std::sync::atomic::Ordering::Relaxed);
-            let ago = chrono::Utc::now().timestamp() - last;
-            (last > 0).then(|| Instant::now().checked_sub(std::time::Duration::from_secs(ago.max(0) as u64))).flatten()
-        });
+        // Chat goes first: the engine waits while apps make VCP work through
+        // us (generating speech, previews, guests).
+        let activity: ttv_engine::Activity = Arc::new(crate::forward::last_work);
         let engine = ttv_engine::Engine::new(data_dir.join("engine"), activity);
         engine.set_vcp(Some(vcp.clone()));
         Arc::new(Self {

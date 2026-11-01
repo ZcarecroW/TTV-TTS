@@ -160,7 +160,7 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
     let mut last_error = None;
     for it in items.iter_mut() {
         for _ in 0..takes {
-            if !inner.gap(id).await {
+            if !inner.gap_for(id, crate::DESIGN_GAP).await {
                 return Ok(0);
             }
             let l = label(it);

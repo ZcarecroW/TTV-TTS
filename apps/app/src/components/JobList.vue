@@ -56,7 +56,7 @@ async function act(j: JobView, action: "pause" | "resume" | "cancel" | "remove")
       <div class="mt-1.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted">
         <span>{{ t("jobs.progress", { done: j.done, total: j.total }) }}<template v-if="j.failed"> · {{ t("jobs.failed", { n: j.failed }) }}</template><template v-if="j.flagged"> · <span class="text-warn">{{ t("jobs.flagged", { n: j.flagged }) }}</span></template><template v-if="j.improved"> · {{ t("jobs.improved", { n: j.improved }) }}</template></span>
         <span v-if="j.state === 'running' && j.current" :data-tip="t('jobs.batchTip', { n: j.batch })">{{ t(`jobs.phase.${j.phase || "design"}`) }}<template v-if="j.steps"> {{ Math.min(j.step + 1, j.steps) }}/{{ j.steps }}</template>: {{ j.current }}</span>
-        <span v-if="j.state === 'waiting'">{{ t("jobs.waitingText") }}</span>
+        <span v-if="j.state === 'waiting'" :data-tip="t('jobs.waitingTip')">{{ t("jobs.waitingText") }}</span>
         <span v-if="j.eta_secs != null && !['done', 'cancelled', 'failed'].includes(j.state)" class="ml-auto">{{ t("jobs.eta", { time: duration(j.eta_secs) }) }}</span>
         <span v-else-if="j.secs_per_voice" class="ml-auto">{{ t("jobs.speed", { s: j.secs_per_voice.toFixed(1) }) }}</span>
       </div>
