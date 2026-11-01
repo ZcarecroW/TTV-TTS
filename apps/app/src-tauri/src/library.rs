@@ -91,6 +91,7 @@ pub struct LibraryNotice {
 pub struct VoiceLibrary {
     /// Used when VCP runs on this PC (direct mode).
     pub local: ttv_engine::Engine,
+    local_dir: std::path::PathBuf,
     cache: RwLock<Cache>,
     loading: AtomicBool,
 }
@@ -103,7 +104,7 @@ enum Backend {
 impl VoiceLibrary {
     pub fn new(data_dir: &std::path::Path) -> Self {
         let activity: ttv_engine::Activity = Arc::new(crate::speech::last_vcp_use);
-        Self { local: ttv_engine::Engine::new(data_dir.join("engine"), activity), cache: RwLock::new(Cache::default()), loading: AtomicBool::new(false) }
+        Self { local: ttv_engine::Engine::new(data_dir.join("engine"), activity), local_dir: data_dir.join("engine"), cache: RwLock::new(Cache::default()), loading: AtomicBool::new(false) }
     }
 
     fn source(state: &AppState) -> String {
@@ -281,6 +282,88 @@ impl VoiceLibrary {
             Backend::Remote(c) => {
                 let v: serde_json::Value = c.post("/ttv/v1/library/adopt", &serde_json::json!({ "entries": entries, "remove": remove }), T_LONG).await.map_err(|e| e.to_string())?;
                 Ok(v["adopted"].as_u64().unwrap_or(0) as u32)
+            }
+        }
+    }
+
+    /// Builds a voice pack on the engine's PC and saves it at `to`. Returns its size.
+    pub async fn export_pack(&self, state: &AppState, req: ttv_link::ExportRequest, to: &std::path::Path) -> Result<u64, String> {
+        use tokio::io::AsyncWriteExt;
+        match Self::backend(state)? {
+            Backend::Local => {
+                let made = self.local.export(req, env!("CARGO_PKG_VERSION")).await?;
+                let n = std::fs::copy(&made, to).map_err(|e| e.to_string())?;
+                let _ = std::fs::remove_file(made);
+                Ok(n)
+            }
+            Backend::Remote(c) => {
+                let mut r = c.request(Method::POST, "/ttv/v1/packs/export").json(&req).timeout(Duration::from_secs(3600)).send().await.map_err(|e| e.to_string())?;
+                if !r.status().is_success() {
+                    let body = r.text().await.unwrap_or_default();
+                    let msg = serde_json::from_str::<serde_json::Value>(&body).ok().and_then(|v| v["message"].as_str().map(str::to_string));
+                    return Err(msg.unwrap_or_else(|| format!("The proxy couldn't build the pack ({body}).")));
+                }
+                let part = to.with_extension("part");
+                let mut f = tokio::fs::File::create(&part).await.map_err(|e| e.to_string())?;
+                let mut n = 0u64;
+                while let Some(chunk) = r.chunk().await.map_err(|e| e.to_string())? {
+                    n += chunk.len() as u64;
+                    f.write_all(&chunk).await.map_err(|e| e.to_string())?;
+                }
+                f.sync_all().await.map_err(|e| e.to_string())?;
+                drop(f);
+                tokio::fs::rename(&part, to).await.map_err(|e| e.to_string())?;
+                Ok(n)
+            }
+        }
+    }
+
+    /// Sends a pack to the engine and queues its import.
+    pub async fn import_pack(&self, state: &AppState, path: &std::path::Path) -> Result<JobView, String> {
+        match Self::backend(state)? {
+            Backend::Local => {
+                // a copy: the user may move or delete the file meanwhile
+                let dir = self.local_dir.join("packs");
+                std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+                let copy = dir.join(format!("incoming-{:08x}.{}", rand::random::<u32>(), ttv_engine::pack::EXTENSION));
+                std::fs::copy(path, &copy).map_err(|e| e.to_string())?;
+                let job = self.local.submit(JobRequest { kind: ttv_link::JobKind::Import, pack: copy.to_string_lossy().into(), ..Default::default() });
+                if job.as_ref().map_or(true, |j| j.total == 0) {
+                    let _ = std::fs::remove_file(&copy);
+                }
+                job
+            }
+            Backend::Remote(c) => {
+                let file = tokio::fs::File::open(path).await.map_err(|e| e.to_string())?;
+                let len = file.metadata().await.map(|m| m.len()).unwrap_or(0);
+                let stream = futures_util::stream::unfold(file, |mut f| async move {
+                    use tokio::io::AsyncReadExt;
+                    let mut buf = vec![0u8; 256 * 1024];
+                    match f.read(&mut buf).await {
+                        Ok(0) => None,
+                        Ok(n) => {
+                            buf.truncate(n);
+                            Some((Ok::<_, std::io::Error>(buf), f))
+                        }
+                        Err(e) => Some((Err(e), f)),
+                    }
+                });
+                let r = c
+                    .request(Method::POST, "/ttv/v1/packs/import")
+                    .header(reqwest::header::CONTENT_LENGTH, len)
+                    .header(reqwest::header::CONTENT_TYPE, "application/zip")
+                    .body(reqwest::Body::wrap_stream(stream))
+                    .timeout(Duration::from_secs(3600))
+                    .send()
+                    .await
+                    .map_err(|e| e.to_string())?;
+                let status = r.status();
+                let body = r.text().await.map_err(|e| e.to_string())?;
+                if !status.is_success() {
+                    let msg = serde_json::from_str::<serde_json::Value>(&body).ok().and_then(|v| v["message"].as_str().map(str::to_string));
+                    return Err(msg.unwrap_or_else(|| if status == reqwest::StatusCode::NOT_FOUND { "The proxy is too old for voice packs – update it on the Voice host page.".into() } else { format!("The proxy refused the pack ({status}).") }));
+                }
+                serde_json::from_str(&body).map_err(|e| e.to_string())
             }
         }
     }

@@ -20,6 +20,8 @@ base64 = { workspace = true }
 chrono = { workspace = true }
 rand = { workspace = true }
 flacenc = { version = "0.5.1", default-features = false }
+zip = { workspace = true }
+claxon = { workspace = true }
 
 [dev-dependencies]
 axum = { workspace = true }

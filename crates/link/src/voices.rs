@@ -79,6 +79,8 @@ pub enum JobKind {
     Improve,
     /// Check the quality of computed voices (no new designs).
     Review,
+    /// Save the voices of a pack in VCP (no new designs).
+    Import,
 }
 
 /// `POST /ttv/v1/jobs`
@@ -96,6 +98,8 @@ pub struct JobRequest {
     pub only: Vec<String>,
     /// Improve: designs per voice before keeping the old one (default 2).
     pub rounds: u8,
+    /// Import: the pack file on the engine's PC.
+    pub pack: String,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
@@ -269,4 +273,75 @@ pub struct QualityIssue {
     pub weight: f32,
     /// e.g. the other language for "languages_differ".
     pub extra: Option<String>,
+}
+
+/// `manifest.json` of a voice pack (`.ttvpack`, a zip file): presets and
+/// computed voices with their reference samples (FLAC) – to share voices
+/// with friends or move them to another VCP without computing them again.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PackManifest {
+    /// "ttv-tts-pack"
+    pub format: String,
+    pub version: u32,
+    /// Unix seconds.
+    pub created: i64,
+    /// TTV-TTS version that made it.
+    pub app: String,
+    pub title: String,
+    pub presets: Vec<PackPreset>,
+    pub voices: Vec<PackVoice>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PackPreset {
+    pub id: String,
+    pub name: String,
+    pub builtin: bool,
+    /// The preset in the line format (own presets; built-ins too, so the pack
+    /// works with an app that doesn't know them).
+    pub text: String,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PackVoice {
+    pub key: String,
+    pub def_hash: String,
+    pub lang: String,
+    pub preset_id: String,
+    pub index: u32,
+    pub name: String,
+    /// The definition's description (VCP keeps it as the voice's transcript).
+    pub description: String,
+    /// The sample inside the zip ("voices/<key>.flac").
+    pub file: String,
+    /// What the sample says.
+    pub ref_text: String,
+    pub duration: f32,
+    pub wer: Option<f32>,
+    pub gain: f32,
+    pub level: Option<f32>,
+    pub quality: Option<Quality>,
+}
+
+/// `POST /ttv/v1/packs/export`: what goes into a pack. The engine knows the
+/// voices, the app knows the definitions.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ExportRequest {
+    pub title: String,
+    pub presets: Vec<PackPreset>,
+    pub voices: Vec<ExportVoice>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct ExportVoice {
+    pub key: String,
+    pub preset_id: String,
+    pub index: u32,
+    pub name: String,
+    pub description: String,
 }

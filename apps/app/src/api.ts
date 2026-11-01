@@ -381,7 +381,7 @@ export interface JobOptions {
   improve?: boolean;
 }
 
-export type JobKind = "compute" | "improve" | "review";
+export type JobKind = "compute" | "improve" | "review" | "import";
 
 /** One thing that may sound odd about a voice. */
 export interface QualityIssue {
@@ -419,6 +419,45 @@ export interface ReviewList {
   checked: number;
   unchecked: number;
   kept: number;
+}
+
+export interface PackPresetInfo {
+  id: string;
+  name: string;
+  builtin: boolean;
+  voices: number;
+  /** "known" (the app has it), "new" (will be added), "copy" (added as a copy) */
+  status: "known" | "new" | "copy";
+}
+
+/** What a voice pack holds. */
+export interface PackInfo {
+  path: string;
+  title: string;
+  created: number;
+  app: string;
+  bytes: number;
+  voices: number;
+  /** voices this library doesn't have yet */
+  new_voices: number;
+  languages: string[];
+  presets: PackPresetInfo[];
+}
+
+export const packs = {
+  /** null when the user cancels */
+  pick: () => invoke<string | null>("pick_pack"),
+  info: (path: string) => invoke<PackInfo>("pack_info", { path }),
+  import: (path: string) => invoke<{ job: JobView; presets: string[] }>("import_pack", { path }),
+  /** null when the user cancels the save dialog */
+  export: (presetId: string, languages: string[], count: number, keys: string[]) => invoke<{ path: string; voices: number; bytes: number } | null>("export_pack", { presetId, languages, count, keys }),
+};
+
+/** Shows a file in Explorer / Finder. */
+export async function openerReveal(path: string) {
+  if (!("__TAURI_INTERNALS__" in window)) return;
+  const { revealItemInDir } = await import("@tauri-apps/plugin-opener");
+  await revealItemInDir(path);
 }
 
 /** Below this score the quality check lists a voice. */

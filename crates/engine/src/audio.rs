@@ -41,6 +41,28 @@ pub fn gain_from_db(db: f32) -> f32 {
     10f32.powf((TARGET - db) / 20.0).clamp(0.4, 2.5)
 }
 
+/// A mono 16-bit PCM WAV file.
+pub fn wav_pcm16(samples: &[f32], rate: u32) -> Vec<u8> {
+    let n = samples.len() as u32;
+    let mut b = Vec::with_capacity(44 + samples.len() * 2);
+    b.extend_from_slice(b"RIFF");
+    b.extend_from_slice(&(36 + n * 2).to_le_bytes());
+    b.extend_from_slice(b"WAVEfmt ");
+    b.extend_from_slice(&16u32.to_le_bytes());
+    b.extend_from_slice(&1u16.to_le_bytes());
+    b.extend_from_slice(&1u16.to_le_bytes());
+    b.extend_from_slice(&rate.to_le_bytes());
+    b.extend_from_slice(&(rate * 2).to_le_bytes());
+    b.extend_from_slice(&2u16.to_le_bytes());
+    b.extend_from_slice(&16u16.to_le_bytes());
+    b.extend_from_slice(b"data");
+    b.extend_from_slice(&(n * 2).to_le_bytes());
+    for s in samples {
+        b.extend_from_slice(&((s.clamp(-1.0, 1.0) * 32767.0).round() as i16).to_le_bytes());
+    }
+    b
+}
+
 /// Lossless FLAC of mono 16-bit samples.
 pub fn flac(samples: &[f32], rate: u32) -> Option<Vec<u8>> {
     use flacenc::component::BitRepr;

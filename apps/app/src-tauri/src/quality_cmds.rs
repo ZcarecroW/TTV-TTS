@@ -123,13 +123,16 @@ pub async fn keep_voices(state: St<'_>, keys: Vec<String>, kept: bool) -> Result
     state.library.keep(&state, keys, kept).await
 }
 
+/// Per preset: name, definitions by index, languages, keys.
+type Group = (String, BTreeMap<u32, VoiceDef>, BTreeSet<String>, Vec<String>);
+
 /// Jobs for voices of several presets: one per preset (the voice names in
 /// VCP carry the preset).
 fn jobs_for(state: &AppState, keys: &[String], kind: JobKind, options: JobOptions) -> Vec<JobRequest> {
     let entries: Vec<LibraryEntry> = keys.iter().filter_map(|k| state.library.get(k)).collect();
     let refs: Vec<&LibraryEntry> = entries.iter().collect();
     let places = locate(state, &refs);
-    let mut by_preset: BTreeMap<String, (String, BTreeMap<u32, VoiceDef>, BTreeSet<String>, Vec<String>)> = BTreeMap::new();
+    let mut by_preset: BTreeMap<String, Group> = BTreeMap::new();
     for e in &entries {
         let Some((pid, pname, index, def)) = places.get(&e.def_hash) else { continue };
         let slot = by_preset.entry(pid.clone()).or_insert_with(|| (pname.clone(), BTreeMap::new(), BTreeSet::new(), Vec::new()));
@@ -148,6 +151,7 @@ fn jobs_for(state: &AppState, keys: &[String], kind: JobKind, options: JobOption
             kind,
             only,
             rounds: 2,
+            pack: String::new(),
         })
         .collect()
 }

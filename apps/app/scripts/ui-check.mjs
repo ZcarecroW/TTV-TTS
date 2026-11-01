@@ -81,6 +81,36 @@ check(/Mikey_TV/.test(vw) && /LenaPlays/.test(vw), "viewer list shows who chatte
 check((await page.locator("main table select").count()) >= 2, "voices can be reassigned by name (preset mode)", String(await page.locator("main table select").count()));
 check((await page.locator("main table select").first().locator("option").count()) === 31, "reassign offers the profile's 30 preset voices", String(await page.locator("main table select").first().locator("option").count()));
 
+// Voice packs: import one (preview first), share voices.
+await nav("presets");
+await page.waitForTimeout(300);
+await page.locator("main").getByRole("button", { name: /^(import pack|paket importieren)$/i }).click();
+await page.waitForTimeout(500);
+let pk = page.locator("[role=dialog]");
+const pkText = await pk.innerText();
+check(/Saturday Cartoons/.test(pkText) && /60 voices|60 Stimmen/.test(pkText) && /you have it|hast du/.test(pkText), "the import dialog shows what a pack holds", pkText.split("\n").slice(0, 3).join(" / "));
+await pk.getByRole("button", { name: /^(add 60 voices|60 stimmen hinzufügen)$/i }).click();
+await page.waitForTimeout(5000);
+check(/Saturday Cartoons/.test(await page.locator("article", { hasText: "Saturday Cartoons" }).innerText()) && /de 30/.test(await page.locator("article", { hasText: "Saturday Cartoons" }).innerText()), "imported voices count as computed", (await page.locator("article", { hasText: "Saturday Cartoons" }).innerText()).replace(/\n/g, " ").slice(0, 120));
+await page.locator("article", { hasText: "Saturday Cartoons" }).getByRole("button", { name: /^(voices|stimmen)$/i }).click();
+await page.waitForTimeout(500);
+pk = page.locator("[role=dialog]");
+await pk.getByRole("button", { name: /^(select|auswählen)$/i }).click();
+await page.waitForTimeout(200);
+await pk.locator("ul li input[type=checkbox]").nth(0).check();
+await pk.locator("ul li input[type=checkbox]").nth(1).check();
+await pk.getByRole("button", { name: /share 2 selected|2 ausgewählte teilen/i }).click();
+await page.waitForTimeout(500);
+const ex = page.locator("[role=dialog]").last();
+check(/2 selected voices|2 ausgewählte Stimmen/.test(await ex.innerText()), "selected voices go into a pack of their own");
+await ex.getByRole("button", { name: /save pack|paket speichern/i }).click();
+await page.waitForTimeout(1200);
+check(/Pack saved: 2 voices|Paket gespeichert: 2 Stimmen/.test(await page.locator("body").innerText()) && (await page.getByRole("button", { name: /show in folder|im ordner zeigen/i }).count()) === 1, "saving a pack says what's in it and offers the folder");
+await page.keyboard.press("Escape");
+await page.waitForTimeout(200);
+await page.keyboard.press("Escape");
+await page.waitForTimeout(200);
+
 // Presets: cards, 1.x adoption, details with listening, computing, own preset.
 await nav("presets");
 await page.waitForTimeout(500);
@@ -119,7 +149,7 @@ check(/Improving|Verbessere/.test(await page.locator("body").innerText()), "impr
 await page.waitForTimeout(2500);
 check((await rv.locator("[data-review]").count()) === 0 && /No voice sounds odd|Keine Stimme klingt seltsam/.test(await rv.innerText()), "improved voices leave the list", String(await rv.locator("[data-review]").count()));
 await rv.getByRole("button", { name: /^(check them|jetzt prüfen)$/i }).click();
-await page.waitForTimeout(5500);
+await page.waitForTimeout(9000);
 check(!/no quality report yet|noch keinen Qualitätsbericht/.test(await rv.innerText()), "checking gives every voice a report");
 await rv.getByRole("button", { name: /^(close|schließen)$/i }).last().click();
 await page.waitForTimeout(300);

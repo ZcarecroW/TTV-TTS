@@ -3,13 +3,15 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { duration } from "@ttv-tts/ui/format";
-import { Bolt, CircleCheck, ClockRotate, Gauge, iconByName, Plus, Sparkle, Spinner, Warning } from "@ttv-tts/ui/icons";
-import { api, presets, type ClassicFound, type PresetView } from "../api";
+import { Bolt, CircleCheck, ClockRotate, Download, Gauge, iconByName, Plus, Sparkle, Spinner, Warning } from "@ttv-tts/ui/icons";
+import { api, packs, presets, type ClassicFound, type PresetView } from "../api";
 import ComputeDialog from "../components/ComputeDialog.vue";
 import JobList from "../components/JobList.vue";
 import PresetDetailDialog from "../components/PresetDetailDialog.vue";
 import PresetEditorDialog from "../components/PresetEditorDialog.vue";
 import ReviewDialog from "../components/ReviewDialog.vue";
+import ImportDialog from "../components/ImportDialog.vue";
+import ExportDialog from "../components/ExportDialog.vue";
 import { activeJobs, host, loadEngine, loadPresets, run, store, toast } from "../store";
 
 const { t } = useI18n();
@@ -19,6 +21,13 @@ const editor = ref<{ id?: string } | null>(null);
 const classic = ref<ClassicFound | null>(null);
 /** The quality check's list: all presets ("") or one. */
 const review = ref<string | null>(null);
+/** A pack file to import (picked). */
+const importing = ref<string | null>(null);
+const exporting = ref<{ id: string; keys: string[] } | null>(null);
+async function pickPack() {
+  const p = await run("pick", () => packs.pick());
+  if (p) importing.value = p;
+}
 const odd = computed(() => store.presets.reduce((n, p) => n + (p.odd ?? 0), 0));
 
 const connected = computed(() => !!host.value?.connected);
@@ -125,7 +134,8 @@ function openEditor(id?: string) {
         <Spinner v-if="store.busy === 'verify'" :size="14" class="spin" /><CircleCheck v-else :size="14" />{{ store.busy === "verify" ? t("presets.verifying") : t("presets.verify") }}
       </button>
       <UiTip v-if="connected && librarySize" :text="t('tips.verify')" />
-      <button class="btn btn-primary ml-auto" @click="openEditor()"><Plus :size="16" />{{ t("presets.new") }}</button>
+      <button class="btn ml-auto" :disabled="!connected" :data-tip="t('packs.importTip')" @click="pickPack"><Download :size="16" />{{ t("packs.import") }}</button>
+      <button class="btn btn-primary" @click="openEditor()"><Plus :size="16" />{{ t("presets.new") }}</button>
     </div>
 
     <template v-for="group in [{ key: 'own', list: own }, { key: 'builtin', list: builtin }]" :key="group.key">
@@ -158,8 +168,10 @@ function openEditor(id?: string) {
       </section>
     </template>
 
-    <PresetDetailDialog v-if="detail" :preset-id="detail" @close="detail = null" @compute="openCompute" @edit="openEditor" />
+    <PresetDetailDialog v-if="detail" :preset-id="detail" @close="detail = null" @compute="openCompute" @edit="openEditor" @export="(id, keys) => (exporting = { id, keys })" />
+    <ExportDialog v-if="exporting" :preset-id="exporting.id" :keys="exporting.keys.length ? exporting.keys : undefined" @close="exporting = null" />
     <ComputeDialog v-if="computeFor" :preset-id="computeFor" @close="computeFor = null" />
+    <ImportDialog v-if="importing" :path="importing" @close="importing = null" />
     <ReviewDialog v-if="review !== null" :preset-id="review || null" @close="review = null" />
     <PresetEditorDialog v-if="editor" :preset-id="editor.id" @close="editor = null" @saved="(id) => ((editor = null), (detail = id))" />
   </div>

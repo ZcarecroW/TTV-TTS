@@ -10,6 +10,7 @@
 
 mod audio;
 pub mod langs;
+pub mod pack;
 pub mod quality;
 mod run;
 mod store;
@@ -23,7 +24,7 @@ use base64::Engine as _;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
 use tokio::sync::{Notify, broadcast};
-use ttv_link::{EngineStatus, JobKind, JobRequest, JobState, JobView, LibraryChange, LibraryEntry, LibrarySnapshot, Verified};
+use ttv_link::{EngineStatus, ExportRequest, JobKind, JobRequest, JobState, JobView, LibraryChange, LibraryEntry, LibrarySnapshot, PackVoice, Verified};
 use ttv_vcp::GenerationResult;
 
 pub use store::Library;
@@ -298,6 +299,65 @@ impl Engine {
         Ok(d)
     }
 
+    /// Writes a voice pack of computed voices to the engine's folder and
+    /// returns its path. Samples come from the lossless backups, else from
+    /// VCP. Old exports (> 1 h) are cleaned up.
+    pub async fn export(&self, req: ExportRequest, app: &str) -> Result<PathBuf, String> {
+        let vcp = self.inner.vcp.read().clone().ok_or("Voice Creator Pro is not connected")?;
+        let dir = self.inner.dir.join("packs");
+        std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+        if let Ok(rd) = std::fs::read_dir(&dir) {
+            for f in rd.flatten() {
+                let old = f.metadata().and_then(|m| m.modified()).is_ok_and(|t| t.elapsed().is_ok_and(|e| e > Duration::from_secs(3600)));
+                if old && f.file_name().to_string_lossy().starts_with("export-") {
+                    let _ = std::fs::remove_file(f.path());
+                }
+            }
+        }
+        let path = dir.join(format!("export-{:08x}.{}", rand::random::<u32>(), pack::EXTENSION));
+        let mut w = pack::PackWriter::create(&path, &req.title, app, req.presets.clone())?;
+        for v in &req.voices {
+            let Some(e) = self.inner.library.get(&v.key) else { continue };
+            let Some(lang) = langs::get(&e.lang) else { continue };
+            // VCP knows what the sample says (1.x voices say other sentences)
+            let sample = vcp.voice_sample(&e.voice_id).await.map_err(|err| format!("{}: {err}", e.voice_name))?;
+            let ref_text = sample.spoken_text().unwrap_or(lang.text).to_string();
+            let flac = match self.sample(&e.key) {
+                Some(f) => f,
+                None => {
+                    let wav = base64::engine::general_purpose::STANDARD.decode(sample.audio_base64.as_bytes()).map_err(|e| e.to_string())?;
+                    let (s, r) = audio::decode(&wav).ok_or_else(|| format!("{}: unreadable sample", e.voice_name))?;
+                    audio::flac(&s, r).ok_or("FLAC encoding failed")?
+                }
+            };
+            let voice = PackVoice {
+                key: e.key.clone(),
+                def_hash: e.def_hash.clone(),
+                lang: e.lang.clone(),
+                preset_id: v.preset_id.clone(),
+                index: v.index,
+                name: v.name.clone(),
+                description: v.description.clone(),
+                file: String::new(),
+                ref_text,
+                duration: e.duration,
+                wer: e.wer,
+                gain: e.gain,
+                level: e.level,
+                quality: e.quality.clone(),
+            };
+            w.add(voice, &flac)?;
+        }
+        if w.voices() == 0 {
+            let _ = std::fs::remove_file(&path);
+            return Err("none of these voices is computed".into());
+        }
+        let n = w.voices();
+        let path = w.finish()?;
+        log::info!("pack exported: {n} voices, {}", path.display());
+        Ok(path)
+    }
+
     /// Lossless backup of a voice's sample, if one was kept.
     pub fn sample(&self, key: &str) -> Option<Vec<u8>> {
         std::fs::read(self.inner.sample_path(key)).ok()
@@ -306,6 +366,33 @@ impl Engine {
 
 impl Inner {
     fn submit(&self, req: JobRequest) -> Result<JobView, String> {
+        if req.kind == JobKind::Import {
+            let m = pack::read_manifest(std::path::Path::new(&req.pack))?;
+            let total = m.voices.iter().filter(|v| !self.library.contains(&v.key)).count() as u32;
+            let mut langs: Vec<String> = m.voices.iter().map(|v| v.lang.clone()).collect();
+            langs.sort();
+            langs.dedup();
+            let view = JobView {
+                id: format!("job{}", rand::random::<u32>()),
+                preset_id: m.presets.first().map(|p| p.id.clone()).unwrap_or_default(),
+                preset_name: if m.title.is_empty() { m.presets.first().map(|p| p.name.clone()).unwrap_or_default() } else { m.title.clone() },
+                languages: langs,
+                options: req.options.clone(),
+                kind: JobKind::Import,
+                total,
+                state: if total == 0 { JobState::Done } else { JobState::Queued },
+                created: chrono::Utc::now().timestamp(),
+                // saving + priming: ~3 s per voice
+                eta_secs: Some(total as u64 * 3),
+                ..Default::default()
+            };
+            self.jobs.lock().push(StoredJob { view: view.clone(), request: req, ..Default::default() });
+            self.save_jobs();
+            self.emit_job(&view);
+            self.wake_up();
+            log::info!("job {} queued: importing {} voices of {}", view.id, total, view.preset_name);
+            return Ok(view);
+        }
         if req.defs.is_empty() || req.languages.is_empty() {
             return Err("nothing to compute".into());
         }
@@ -326,6 +413,7 @@ impl Inner {
             // 2–3 takes plus the review, on average 1.5 rounds
             JobKind::Improve => self.estimate(total, o.takes.max(2), true).map(|s| s * 2),
             JobKind::Review => Some((total as f32 * self.stats.lock().review_secs.unwrap_or(8.0)).round() as u64),
+            JobKind::Import => Some(total as u64 * 3),
         };
         let view = JobView {
             id: format!("job{}", rand::random::<u32>()),

@@ -90,6 +90,7 @@ const nav = computed(() => [
       <CircleX v-else-if="store.toast.kind === 'err'" class="text-err" />
       <CircleInfo v-else class="text-accent-text" />
       <span>{{ store.toast.text }}</span>
+      <button v-if="store.toast.action" class="btn btn-ghost btn-sm -my-1 ml-1 shrink-0" @click="store.toast.action.run()">{{ store.toast.action.label }}</button>
     </div>
   </Transition>
   <TipLayer />

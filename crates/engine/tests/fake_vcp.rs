@@ -381,3 +381,40 @@ async fn checks_the_quality_of_existing_voices() {
     assert!(x.level.is_some() && x.voice_id == "voice_old");
     assert_eq!(fake.designs.load(Ordering::SeqCst), 0, "checking designs nothing");
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_pack_moves_voices_to_another_vcp() {
+    // A computes two voices (with lossless backups) and exports them
+    let (_fake_a, base_a) = serve().await;
+    let a = engine(&base_a);
+    let mut req = request(2);
+    req.options.backup = true;
+    a.submit(req.clone()).unwrap();
+    until("the job", || done(&a)).await;
+    let voices: Vec<ttv_link::ExportVoice> = req
+        .defs
+        .iter()
+        .map(|d| ttv_link::ExportVoice { key: d.def.key("en"), preset_id: "test".into(), index: d.index, name: d.def.name.clone(), description: d.def.description.clone() })
+        .collect();
+    let preset = ttv_link::PackPreset { id: "test".into(), name: "Test".into(), builtin: false, text: "#ttv-tts preset v1\nname: Test\n---\n".into() };
+    let path = a.export(ttv_link::ExportRequest { title: "Two test voices".into(), presets: vec![preset], voices }, "test").await.unwrap();
+    let m = ttv_engine::pack::read_manifest(&path).unwrap();
+    assert_eq!((m.voices.len(), m.title.as_str()), (2, "Two test voices"));
+    assert!(m.voices.iter().all(|v| v.ref_text == ttv_engine::langs::get("en").unwrap().text && v.description.starts_with("A clear")));
+
+    // B imports the pack: saved in its VCP, primed, in its library
+    let (fake_b, base_b) = serve().await;
+    let b = engine(&base_b);
+    let job = b.submit(JobRequest { kind: JobKind::Import, pack: path.to_string_lossy().into(), ..Default::default() }).unwrap();
+    assert_eq!(job.total, 2);
+    until("the import", || done(&b)).await;
+    let lib = b.library().entries;
+    assert_eq!(lib.len(), 2);
+    let vb = fake_b.voices.lock();
+    assert!(lib.iter().all(|x| vb.contains_key(&x.voice_id) && x.backup && (x.gain - 1.0).abs() < 0.1), "{lib:?}");
+    assert_eq!(fake_b.clones.load(Ordering::SeqCst), 2, "each imported voice was primed");
+    assert_eq!(fake_b.designs.load(Ordering::SeqCst), 0, "nothing designed");
+    drop(vb);
+    // the same pack again: nothing to do
+    assert_eq!(b.submit(JobRequest { kind: JobKind::Import, pack: path.to_string_lossy().into(), ..Default::default() }).unwrap().total, 0);
+}

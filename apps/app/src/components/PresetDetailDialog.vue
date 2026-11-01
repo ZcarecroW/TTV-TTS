@@ -3,12 +3,12 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue"
 import { useI18n } from "vue-i18n";
 import UiModal from "@ttv-tts/ui/components/UiModal.vue";
 import { copyText } from "@ttv-tts/ui/clipboard";
-import { CircleCheck, Copy, Layers, Pen, Play, Refresh, Spinner, Sparkle, Stop, Trash, Warning } from "@ttv-tts/ui/icons";
+import { Check, CircleCheck, Copy, Layers, Pen, Play, Refresh, Spinner, Sparkle, Stop, Trash, Upload, Warning } from "@ttv-tts/ui/icons";
 import { api, DESIGN_LANGS, presets, type PresetDetail, type VoiceView } from "../api";
 import { host, loadEngine, loadPresets, run, store, toast } from "../store";
 
 const props = defineProps<{ presetId: string }>();
-const emit = defineEmits<{ close: []; compute: [id: string]; edit: [id: string] }>();
+const emit = defineEmits<{ close: []; compute: [id: string]; edit: [id: string]; export: [id: string, keys: string[]] }>();
 const { t } = useI18n();
 
 const d = ref<PresetDetail | null>(null);
@@ -16,6 +16,14 @@ const filter = ref("");
 const gender = ref<"" | "m" | "f" | "n">("");
 const onlyReady = ref(false);
 const onlyOdd = ref(false);
+/** Selecting voices (for a pack of just those); keys "hash:lang". */
+const selecting = ref(false);
+const picked = reactive(new Set<string>());
+function pick(v: VoiceView) {
+  const k = `${v.hash}:${lang.value}`;
+  if (picked.has(k)) picked.delete(k);
+  else picked.add(k);
+}
 const lang = ref("en");
 const text = ref("");
 const playing = ref<number | null>(null);
@@ -151,12 +159,22 @@ const genderLabel = (g: string) => t(`presets.gender.${g}`);
           {{ g ? genderLabel(g) : t("presets.everyone") }}
         </button>
         <button type="button" class="chip" :class="onlyReady && 'chip-on'" @click="onlyReady = !onlyReady">{{ t("presets.onlyReady") }}</button>
+        <button v-if="d.ready" type="button" class="chip" :class="selecting && 'chip-on'" :data-tip="t('packs.selectTip')" @click="(selecting = !selecting), picked.clear()"><Check :size="12" />{{ t("packs.select") }}</button>
         <button v-if="d.odd" type="button" class="chip" :class="onlyOdd && 'chip-on'" @click="onlyOdd = !onlyOdd"><Warning :size="12" />{{ t("quality.filterOdd") }} · {{ d.odd }}</button>
         <span class="ml-auto text-xs text-muted">{{ t("presets.shown", { n: shown.length, total: d.count }) }}</span>
       </div>
 
       <ul class="divide-y divide-line rounded-xl border border-line">
         <li v-for="v in shown" :key="v.index" class="flex items-start gap-3 px-3.5 py-2.5">
+          <input
+            v-if="selecting"
+            type="checkbox"
+            class="mt-1 size-4 shrink-0 accent-[var(--accent)]"
+            :disabled="!v.langs.includes(lang)"
+            :checked="picked.has(`${v.hash}:${lang}`)"
+            :aria-label="t('packs.pick', { name: v.name })"
+            @change="pick(v)"
+          />
           <span class="w-8 shrink-0 pt-0.5 text-right font-mono text-xs text-muted">{{ v.index + 1 }}</span>
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -197,7 +215,10 @@ const genderLabel = (g: string) => t(`presets.gender.${g}`);
     </div>
 
     <template #footer>
-      <button class="btn" :disabled="!d" @click="exportText"><Copy :size="15" />{{ t("presets.export") }}</button>
+      <button class="btn" :disabled="!d" :data-tip="t('presets.exportTip')" @click="exportText"><Copy :size="15" />{{ t("presets.export") }}</button>
+      <button class="btn" :disabled="!d || !d.ready || !canListen" :data-tip="t('packs.exportTip')" @click="emit('export', presetId, selecting ? [...picked] : [])">
+        <Upload :size="15" />{{ selecting && picked.size ? t("packs.exportSelected", { n: picked.size }) : t("packs.export") }}
+      </button>
       <button class="btn mr-auto" :disabled="!d || !d.ready || !canListen || store.busy === 'checkQuality'" :data-tip="t('quality.checkTip')" @click="checkQuality">
         <Spinner v-if="store.busy === 'checkQuality'" :size="15" class="spin" /><CircleCheck v-else :size="15" />{{ t("quality.checkPreset") }}
       </button>

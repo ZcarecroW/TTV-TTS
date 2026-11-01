@@ -10,6 +10,7 @@ mod host;
 mod library;
 mod logbuf;
 mod monitor;
+mod pack_cmds;
 mod preset_cmds;
 mod quality_cmds;
 mod presets;
@@ -46,6 +47,7 @@ pub fn run() {
     builder
         .plugin(tauri_plugin_process::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
         .setup(|app| {
             let paths = app.path();
@@ -120,6 +122,10 @@ pub fn run() {
             preset_cmds::verify_library,
             preset_cmds::listen,
             preset_cmds::redo_voice,
+            pack_cmds::pick_pack,
+            pack_cmds::pack_info,
+            pack_cmds::import_pack,
+            pack_cmds::export_pack,
             quality_cmds::quality_list,
             quality_cmds::keep_voices,
             quality_cmds::improve_voices,

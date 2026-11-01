@@ -193,8 +193,85 @@ pub fn engine_routes() -> Router<Arc<AppState>> {
         .route("/library/keep", post(library_keep))
         .route("/library/verify", post(library_verify))
         .route("/library/sample/{key}", get(library_sample))
+        .route("/packs/export", post(pack_export))
+        .route("/packs/import", post(pack_import))
         .route("/jobs", post(job_submit))
         .route("/jobs/{id}/{action}", post(job_control))
+}
+
+/// Largest pack accepted (all 20 presets × 240 voices × 10 languages ≈ 10 GB
+/// would be absurd to upload in one go; a full preset in 10 languages ≈ 1 GB).
+const MAX_PACK: u64 = 4 << 30;
+
+/// Streams a file in 256 KB chunks.
+fn file_stream(file: tokio::fs::File) -> impl futures_util::Stream<Item = std::io::Result<Vec<u8>>> {
+    futures_util::stream::unfold(file, |mut f| async move {
+        use tokio::io::AsyncReadExt;
+        let mut buf = vec![0u8; 256 * 1024];
+        match f.read(&mut buf).await {
+            Ok(0) => None,
+            Ok(n) => {
+                buf.truncate(n);
+                Some((Ok(buf), f))
+            }
+            Err(e) => Some((Err(e), f)),
+        }
+    })
+}
+
+/// Builds a voice pack and sends it (application/zip).
+async fn pack_export(State(state): S, Json(req): Json<ttv_link::ExportRequest>) -> Response {
+    let path = match state.engine.export(req, env!("CARGO_PKG_VERSION")).await {
+        Ok(p) => p,
+        Err(e) => return api_error(StatusCode::BAD_REQUEST, "export_failed", e),
+    };
+    let file = match tokio::fs::File::open(&path).await {
+        Ok(f) => f,
+        Err(e) => return api_error(StatusCode::INTERNAL_SERVER_ERROR, "export_failed", e.to_string()),
+    };
+    let len = file.metadata().await.map(|m| m.len()).unwrap_or(0);
+    let headers = [(axum::http::header::CONTENT_TYPE, "application/zip".to_string()), (axum::http::header::CONTENT_LENGTH, len.to_string())];
+    (headers, axum::body::Body::from_stream(file_stream(file))).into_response()
+}
+
+/// Receives a voice pack (the raw file as body), checks it and queues the import.
+async fn pack_import(State(state): S, body: axum::body::Body) -> Response {
+    use futures_util::StreamExt;
+    use tokio::io::AsyncWriteExt;
+    let dir = state.data_dir.join("engine").join("packs");
+    if let Err(e) = tokio::fs::create_dir_all(&dir).await {
+        return api_error(StatusCode::INTERNAL_SERVER_ERROR, "import_failed", e.to_string());
+    }
+    let path = dir.join(format!("incoming-{:08x}.{}", rand::random::<u32>(), ttv_engine::pack::EXTENSION));
+    let result: Result<(), String> = async {
+        let mut file = tokio::fs::File::create(&path).await.map_err(|e| e.to_string())?;
+        let mut stream = body.into_data_stream();
+        let mut size = 0u64;
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk.map_err(|e| e.to_string())?;
+            size += chunk.len() as u64;
+            if size > MAX_PACK {
+                return Err("the pack is too large".into());
+            }
+            file.write_all(&chunk).await.map_err(|e| e.to_string())?;
+        }
+        file.sync_all().await.map_err(|e| e.to_string())?;
+        Ok(())
+    }
+    .await;
+    let queued = result.and_then(|()| state.engine.submit(ttv_link::JobRequest { kind: ttv_link::JobKind::Import, pack: path.to_string_lossy().into(), ..Default::default() }));
+    match queued {
+        Ok(view) => {
+            if view.total == 0 {
+                let _ = tokio::fs::remove_file(&path).await;
+            }
+            Json(view).into_response()
+        }
+        Err(e) => {
+            let _ = tokio::fs::remove_file(&path).await;
+            api_error(StatusCode::BAD_REQUEST, "import_failed", e)
+        }
+    }
 }
 
 async fn engine_status(State(state): S) -> Json<ttv_link::EngineStatus> {

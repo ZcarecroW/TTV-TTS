@@ -78,6 +78,9 @@ fn select(inner: &Inner, job: &crate::StoredJob) -> Vec<Item> {
 /// Runs one batch of a job. Ok(()) also when the job was paused/cancelled.
 pub(crate) async fn batch(inner: &Inner, vcp: &ttv_vcp::Client, id: &str) -> Result<(), String> {
     let Some(job) = inner.jobs.lock().iter().find(|j| j.view.id == id).cloned() else { return Ok(()) };
+    if job.request.kind == JobKind::Import {
+        return import(inner, vcp, id, &job).await;
+    }
     let items = select(inner, &job);
     if items.is_empty() {
         finish(inner, id, &job);
@@ -355,16 +358,13 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
                     inner.round_done(id, req, &it.key, false, None);
                 }
             } else {
-                let odd = q.score < FLAG;
                 let entry = LibraryEntry { quality: Some(q), ..f.entry.clone() };
                 inner.change(vec![entry], &[]);
-                if odd {
-                    inner.update(id, |j| j.view.flagged += 1);
-                }
             }
             inner.update(id, |j| j.view.step += 1);
         }
         inner.relate(items.iter().map(|it| &it.def));
+        inner.recount(id);
     }
     Ok(saved)
 }
@@ -491,7 +491,6 @@ async fn review(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, items: Vec<Item>
             q.score = (q.score * 0.1 * 1000.0).round() / 1000.0;
         }
         q.kept = old.quality.as_ref().is_some_and(|o| o.kept) && q.score >= old.quality.as_ref().map_or(0.0, |o| o.score) - 0.05;
-        let odd = q.score < FLAG && !q.kept;
         let level = analysis.level.or(old.level);
         let gain = mix_levels(level, spoken.as_ref().and_then(|s| s.analysis.level)).map_or(old.gain, audio::gain_from_db);
         inner.change(vec![LibraryEntry { quality: Some(q), level, gain, wer: reference_wer.or(old.wer), ..old }], &[]);
@@ -500,16 +499,131 @@ async fn review(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, items: Vec<Item>
             j.processed.push(it.key.clone());
             j.view.done += 1;
             j.view.step += 1;
-            if odd {
-                j.view.flagged += 1;
-            }
         });
     }
     inner.relate(items.iter().map(|it| &it.def));
+    inner.recount(id);
     Ok(checked)
 }
 
+/// Saves the next voices of a pack in VCP (no designing): sample → VCP →
+/// prime → library. Voices the library has already are skipped.
+async fn import(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, job: &crate::StoredJob) -> Result<(), String> {
+    let path = std::path::PathBuf::from(&job.request.pack);
+    let manifest = match crate::pack::read_manifest(&path) {
+        Ok(m) => m,
+        Err(e) => {
+            inner.update(id, |j| {
+                j.view.state = JobState::Failed;
+                j.view.error = Some(format!("The pack can't be read: {e}"));
+                j.view.finished = Some(chrono::Utc::now().timestamp());
+            });
+            inner.save_jobs();
+            return Ok(());
+        }
+    };
+    let todo: Vec<&ttv_link::PackVoice> = manifest.voices.iter().filter(|v| !inner.library.contains(&v.key) && !job.failed.contains(&v.key) && !job.processed.contains(&v.key)).take(BATCH).collect();
+    if todo.is_empty() {
+        finish(inner, id, job);
+        // an uploaded pack isn't needed any more
+        if path.file_name().is_some_and(|n| n.to_string_lossy().starts_with("incoming-")) {
+            let _ = std::fs::remove_file(&path);
+        }
+        return Ok(());
+    }
+    let t0 = Instant::now();
+    inner.update(id, |j| {
+        j.view.state = JobState::Running;
+        j.view.error = None;
+        j.view.batch = todo.len() as u32;
+    });
+    inner.phase(id, "import", todo.len());
+    let mut reader = crate::pack::PackReader::open(&path)?;
+    let mut done = 0u32;
+    for v in todo {
+        if !inner.gap(id).await {
+            return Ok(());
+        }
+        let l = format!("{} · {}", v.name, v.lang);
+        inner.update(id, |j| j.view.current = Some(l));
+        let lang = langs::get(&v.lang).expect("checked by read_manifest");
+        let (flac, samples, rate) = match reader.sample(&v.file) {
+            Ok(s) => s,
+            Err(e) => {
+                inner.import_failed(id, &v.key, format!("{}: {e}", v.name));
+                continue;
+            }
+        };
+        let duration = samples.len() as f32 / rate.max(1) as f32;
+        let voice_name = format!("TTV {} {} {:03} {}", v.preset_id, v.lang, v.index + 1, v.name);
+        let save = serde_json::json!({
+            "name": voice_name,
+            "audio_base64": base64::engine::general_purpose::STANDARD.encode(audio::wav_pcm16(&samples, rate)),
+            "transcript": v.description,
+            "ref_text": v.ref_text,
+            "voice_type": "design",
+            "transcript_manual": true,
+        });
+        let (voice, spoken) = match save_voice(vcp, &save, lang).await {
+            Ok(x) => x,
+            Err(Trouble::Down(e)) => return Err(e),
+            Err(Trouble::Failed(e)) => {
+                inner.import_failed(id, &v.key, format!("{}: {e}", v.name));
+                continue;
+            }
+        };
+        let level = v.level.or_else(|| crate::audio::loudness_db(&samples));
+        let backup = std::fs::write(inner.sample_path(&v.key), &flac).is_ok();
+        inner.change(
+            vec![LibraryEntry {
+                key: v.key.clone(),
+                def_hash: v.def_hash.clone(),
+                lang: v.lang.clone(),
+                preset_id: v.preset_id.clone(),
+                index: v.index,
+                name: v.name.clone(),
+                voice_id: voice.id.clone(),
+                voice_name,
+                created: chrono::Utc::now().timestamp(),
+                duration,
+                wer: v.wer,
+                gain: audio::gain_from_db(mix_levels(level, spoken.analysis.level).unwrap_or(-20.0)),
+                backup,
+                level,
+                quality: v.quality.clone(),
+            }],
+            &[],
+        );
+        done += 1;
+        inner.update(id, |j| {
+            j.processed.push(v.key.clone());
+            j.view.done += 1;
+            j.view.step += 1;
+        });
+    }
+    if done > 0 {
+        let per = t0.elapsed().as_secs_f32() / done as f32;
+        inner.update(id, |j| {
+            let left = j.view.total.saturating_sub(j.view.done + j.view.failed);
+            j.view.eta_secs = Some((left as f32 * per).round() as u64);
+        });
+    }
+    inner.save_jobs();
+    Ok(())
+}
+
 impl Inner {
+    /// A pack voice that can't be imported (broken sample, VCP refuses it).
+    fn import_failed(&self, id: &str, key: &str, why: String) {
+        log::warn!("import: {why}");
+        self.update(id, |j| {
+            j.failed.push(key.to_string());
+            j.view.failed += 1;
+            j.view.step += 1;
+            j.view.error = Some(why);
+        });
+    }
+
     pub(crate) fn phase(&self, id: &str, name: &str, steps: usize) {
         let name = name.to_string();
         self.update(id, |j| {
@@ -544,6 +658,14 @@ impl Inner {
                 j.view.error = why;
             }
         });
+    }
+
+    /// How many of the job's voices the quality check lists – after relating
+    /// languages, which can tip voices of earlier batches too.
+    fn recount(&self, id: &str) {
+        let keys: Vec<String> = self.jobs.lock().iter().find(|j| j.view.id == id).map(|j| j.processed.iter().chain(&j.created).cloned().collect()).unwrap_or_default();
+        let n = keys.iter().filter(|k| self.library.get(k).and_then(|e| e.quality).is_some_and(|q| q.score < FLAG && !q.kept)).count() as u32;
+        self.update(id, |j| j.view.flagged = n);
     }
 
     /// Re-compares all languages of these definitions ("languages differ").

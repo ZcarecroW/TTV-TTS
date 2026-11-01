@@ -151,6 +151,7 @@ function tick(emit: Emit) {
     const k = batch[batch.length - 1];
     for (const x of batch.slice(0, -1)) {
       if (job.kind === "improve") (quality.set(x, report(0.91, [], 120)), job.improved++);
+      else if (job.kind === "import") library.add(x);
       else if (!quality.has(x)) quality.set(x, report(0.93));
       job.done++;
     }
@@ -160,11 +161,12 @@ function tick(emit: Emit) {
     } else {
       const at = place(k);
       job.current = at ? `${at[0].defs[at[1]]!.name} · ${k.split(":").pop()}` : k;
-      job.phase = job.kind === "review" ? "review" : "design";
+      job.phase = job.kind === "review" ? "review" : job.kind === "import" ? "import" : "design";
       if (job.kind === "improve") {
         quality.set(k, report(0.91, [], 120));
         job.improved++;
-      } else if (!quality.has(k)) quality.set(k, report(0.93));
+      } else if (job.kind === "import") library.add(k);
+      else if (!quality.has(k)) quality.set(k, report(0.93));
       job.done++;
       emit("app://library", { rev: ++engine.library_rev, size: library.size });
     }
@@ -299,6 +301,30 @@ export function presetCommand(cmd: string, args: Record<string, unknown>, emit: 
       engine.jobs.push(j);
       if (!timer) timer = window.setInterval(() => tick(emit), 700);
       return { value: [structuredClone(j)] };
+    }
+    case "pick_pack":
+      return { value: "C:\\Users\\demo\\Downloads\\Saturday Cartoons de en.ttvpack" };
+    case "pack_info": {
+      const p = find("saturday-cartoons");
+      const keys = p.defs.slice(0, 30).flatMap((d) => ["de", "en"].map((l) => `${hash(d)}:${l}`));
+      return { value: { path: String(args.path), title: `${p.name} – 60 voices (de, en)`, created: Math.floor(Date.now() / 1000) - 86400, app: "2.0.0-alpha.10", bytes: 11_800_000, voices: keys.length, new_voices: keys.filter((k) => !library.has(k)).length, languages: ["de", "en"], presets: [{ id: p.id, name: p.name, builtin: true, voices: keys.length, status: "known" }] } };
+    }
+    case "import_pack": {
+      const p = find("saturday-cartoons");
+      const keys = p.defs.slice(0, 30).flatMap((d) => ["de", "en"].map((l) => `${hash(d)}:${l}`)).filter((k) => !library.has(k));
+      const j = job("import", p, ["de", "en"], keys.length, { speech_check: false, takes: 1, backup: true });
+      j.preset_name = `${p.name} – 60 voices (de, en)`;
+      pending.set(j.id, [...keys]);
+      engine.jobs.push(j);
+      if (!timer) timer = window.setInterval(() => tick(emit), 700);
+      return { value: { job: structuredClone(j), presets: [] } };
+    }
+    case "export_pack": {
+      const p = find(args.presetId);
+      const langs = args.languages as string[];
+      const n = (args.keys as string[]).length || p.defs.slice(0, Number(args.count) || p.defs.length).reduce((s, d) => s + langs.filter((l) => library.has(`${hash(d)}:${l}`)).length, 0);
+      if (!n) throw "None of these voices is computed yet.";
+      return { value: new Promise((res) => setTimeout(() => res({ path: `C:\\Users\\demo\\Documents\\${p.name} ${langs.join(" ")}.ttvpack`, voices: n, bytes: n * 196_000 }), 800)) };
     }
     case "play_reference":
       return { value: new Promise((res) => setTimeout(() => res(7.2), 1200)) };

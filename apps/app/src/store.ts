@@ -34,7 +34,7 @@ export const store = reactive({
   /** Why jobs can't be loaded (e.g. a proxy too old for presets). */
   engineError: "" as string,
   view: "live" as View,
-  toast: null as { kind: "ok" | "err" | "info"; text: string } | null,
+  toast: null as { kind: "ok" | "err" | "info"; text: string; action?: { label: string; run: () => void } } | null,
   busy: "" as string,
 });
 
@@ -44,10 +44,10 @@ export const host = computed(() => store.app?.host);
 export const activeJobs = computed(() => store.engine?.jobs.filter((j) => !["done", "cancelled", "failed"].includes(j.state)) ?? []);
 
 let toastTimer = 0;
-export function toast(kind: "ok" | "err" | "info", text: string) {
-  store.toast = { kind, text };
+export function toast(kind: "ok" | "err" | "info", text: string, action?: { label: string; run: () => void }) {
+  store.toast = { kind, text, action };
   clearTimeout(toastTimer);
-  toastTimer = window.setTimeout(() => (store.toast = null), kind === "err" ? 7000 : 3500);
+  toastTimer = window.setTimeout(() => (store.toast = null), kind === "err" || action ? 7000 : 3500);
 }
 
 /** Runs a command, shows its error as a toast, marks it busy meanwhile. */
