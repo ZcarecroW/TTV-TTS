@@ -5754,7 +5754,7 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 
 [[package]]
 name = "ttv-engine"
-version = "2.0.0-alpha.9"
+version = "2.0.0-alpha.10"
 dependencies = [
  "axum",
  "base64 0.23.1",
@@ -5774,7 +5774,7 @@ dependencies = [
 
 [[package]]
 name = "ttv-link"
-version = "2.0.0-alpha.9"
+version = "2.0.0-alpha.10"
 dependencies = [
  "base64 0.23.1",
  "hex",
@@ -5786,7 +5786,7 @@ dependencies = [
 
 [[package]]
 name = "ttv-tts"
-version = "2.0.0-alpha.9"
+version = "2.0.0-alpha.10"
 dependencies = [
  "audioadapter-buffers",
  "base64 0.23.1",
@@ -5829,7 +5829,7 @@ dependencies = [
 
 [[package]]
 name = "ttv-tts-proxy"
-version = "2.0.0-alpha.9"
+version = "2.0.0-alpha.10"
 dependencies = [
  "axum",
  "base64 0.23.1",
@@ -5875,7 +5875,7 @@ dependencies = [
 
 [[package]]
 name = "ttv-vcp"
-version = "2.0.0-alpha.9"
+version = "2.0.0-alpha.10"
 dependencies = [
  "bytes",
  "futures-util",
