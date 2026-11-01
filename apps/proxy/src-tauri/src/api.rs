@@ -193,6 +193,10 @@ pub fn engine_routes() -> Router<Arc<AppState>> {
         .route("/library/keep", post(library_keep))
         .route("/library/verify", post(library_verify))
         .route("/library/sample/{key}", get(library_sample))
+        .route("/takes", get(takes_list))
+        .route("/takes/{key}/{n}", get(take_audio))
+        .route("/takes/{key}/choose", post(take_choose))
+        .route("/takes/{key}/discard", post(take_discard))
         .route("/internet", get(internet_get).post(internet_set))
         .route("/internet/invites", post(invite_create))
         .route("/internet/invites/{id}/withdraw", post(invite_withdraw))
@@ -427,6 +431,33 @@ async fn library_sample(State(state): S, axum::extract::Path(key): axum::extract
         Some(bytes) => ([(axum::http::header::CONTENT_TYPE, "audio/flac")], bytes).into_response(),
         None => api_error(StatusCode::NOT_FOUND, "not_found", "No backup for this voice."),
     }
+}
+
+async fn takes_list(State(state): S) -> Json<Vec<ttv_link::TakeChoice>> {
+    Json(state.engine.takes())
+}
+
+async fn take_audio(State(state): S, axum::extract::Path((key, n)): axum::extract::Path<(String, u32)>) -> Response {
+    match state.engine.take_wav(&key, n) {
+        Some(bytes) => ([(axum::http::header::CONTENT_TYPE, "audio/wav")], bytes).into_response(),
+        None => api_error(StatusCode::NOT_FOUND, "not_found", "This take doesn't exist."),
+    }
+}
+
+#[derive(serde::Deserialize)]
+struct Choose {
+    n: u32,
+}
+
+async fn take_choose(State(state): S, axum::extract::Path(key): axum::extract::Path<String>, Json(c): Json<Choose>) -> Response {
+    match state.engine.choose_take(&key, c.n).await {
+        Ok(e) => Json(e).into_response(),
+        Err(e) => api_error(StatusCode::BAD_REQUEST, "bad_request", e),
+    }
+}
+
+async fn take_discard(State(state): S, axum::extract::Path(key): axum::extract::Path<String>) -> Json<Ack> {
+    Json(Ack { ok: state.engine.discard_takes(&key), message: None })
 }
 
 async fn job_submit(State(state): S, Json(req): Json<ttv_link::JobRequest>) -> Response {

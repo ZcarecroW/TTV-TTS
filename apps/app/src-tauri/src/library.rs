@@ -410,16 +410,41 @@ impl VoiceLibrary {
 
     /// The lossless backup of a voice's reference sample (FLAC); used by pack export.
     #[allow(dead_code)]
-    pub async fn sample(&self, state: &AppState, key: &str) -> Result<Vec<u8>, String> {
+    pub async fn takes(&self, state: &AppState) -> Result<Vec<ttv_link::TakeChoice>, String> {
         match Self::backend(state)? {
-            Backend::Local => self.local.sample(key).ok_or_else(|| "No backup kept for this voice.".into()),
+            Backend::Local => Ok(self.local.takes()),
+            // an older proxy has no takes
+            Backend::Remote(c) => Ok(c.get("/ttv/v1/takes", T_SHORT).await.unwrap_or_default()),
+        }
+    }
+
+    pub async fn take_wav(&self, state: &AppState, key: &str, n: u32) -> Result<Vec<u8>, String> {
+        match Self::backend(state)? {
+            Backend::Local => self.local.take_wav(key, n).ok_or_else(|| "This take doesn't exist.".into()),
             Backend::Remote(c) => {
-                let r = c.request(Method::GET, &format!("/ttv/v1/library/sample/{key}")).timeout(T_LONG).send().await.map_err(|e| e.to_string())?;
+                let r = c.request(Method::GET, &format!("/ttv/v1/takes/{key}/{n}")).timeout(T_LONG).send().await.map_err(|e| e.to_string())?;
                 if !r.status().is_success() {
-                    return Err("No backup kept for this voice.".into());
+                    return Err("This take doesn't exist.".into());
                 }
                 Ok(r.bytes().await.map_err(|e| e.to_string())?.to_vec())
             }
+        }
+    }
+
+    pub async fn choose_take(&self, state: &AppState, key: &str, n: u32) -> Result<ttv_link::LibraryEntry, String> {
+        match Self::backend(state)? {
+            Backend::Local => self.local.choose_take(key, n).await,
+            Backend::Remote(c) => c.post(&format!("/ttv/v1/takes/{key}/choose"), &serde_json::json!({ "n": n }), Duration::from_secs(300)).await.map_err(|e| e.to_string()),
+        }
+    }
+
+    pub async fn discard_takes(&self, state: &AppState, key: &str) -> Result<(), String> {
+        match Self::backend(state)? {
+            Backend::Local => {
+                self.local.discard_takes(key);
+                Ok(())
+            }
+            Backend::Remote(c) => c.post::<_, ttv_link::Ack>(&format!("/ttv/v1/takes/{key}/discard"), &serde_json::json!({}), T_SHORT).await.map(|_| ()).map_err(|e| e.to_string()),
         }
     }
 }

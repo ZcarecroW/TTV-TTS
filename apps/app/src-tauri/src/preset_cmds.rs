@@ -124,7 +124,7 @@ pub async fn job_control(state: St<'_>, id: String, action: String) -> Result<()
 /// job for just this voice and language. For voices that came out different
 /// from their description.
 #[tauri::command]
-pub async fn redo_voice(state: St<'_>, preset_id: String, index: u32, lang: String) -> Result<JobView, String> {
+pub async fn redo_voice(state: St<'_>, preset_id: String, index: u32, lang: String, pick: Option<bool>) -> Result<JobView, String> {
     if ttv_engine::langs::get(&lang).is_none() {
         return Err(format!("Voices can't be designed for the language \"{lang}\" yet."));
     }
@@ -133,6 +133,13 @@ pub async fn redo_voice(state: St<'_>, preset_id: String, index: u32, lang: Stri
         .with(&preset_id, |p| p.defs.get(index as usize).map(|d| (p.id.clone(), p.name.clone(), d.clone())))
         .flatten()
         .ok_or("This voice doesn't exist (any more).")?;
+    if pick == Some(true) {
+        // three takes to choose from; the voice stays as it is until then
+        let options = JobOptions { takes: 3, pick: true, quality: false, improve: false, ..JobOptions::default() };
+        let kind = if state.library.get(&def.key(&lang)).is_some() { ttv_link::JobKind::Improve } else { ttv_link::JobKind::Compute };
+        let job = JobRequest { preset_id: id, preset_name: name, defs: vec![JobDef { index, def }], languages: vec![lang], options, kind, rounds: 1, ..Default::default() };
+        return state.library.submit(&state, job).await;
+    }
     state.library.delete(&state, vec![def.key(&lang)]).await?;
     // with the quality check: the new design gets a report right away
     let options = JobOptions { quality: true, ..JobOptions::default() };
@@ -160,6 +167,39 @@ pub async fn listen(state: St<'_>, preset_id: String, index: u32, lang: String, 
     let language = ttv_engine::langs::get(&lang).map(|l| l.vcp).unwrap_or("Auto").to_string();
     let text = if text.trim().is_empty() { ttv_engine::langs::get(&lang).map(|l| l.verify.to_string()).unwrap_or_default() } else { text };
     speech::say(vcp, state.audio.clone(), Utterance { text, voice: e.voice_id, language, emotion: None, intensity: None, gain: e.gain, fx }).await
+}
+
+// ── let me pick ─────────────────────────────────────────────────────────
+
+/// Voices designed again whose takes wait for a choice.
+#[tauri::command]
+pub async fn list_takes(state: St<'_>) -> Result<Vec<ttv_link::TakeChoice>, String> {
+    state.library.takes(&state).await
+}
+
+/// Plays one take (as loud as the voice it may replace). Returns its length (ms).
+#[tauri::command]
+pub async fn play_take(state: St<'_>, key: String, n: u32) -> Result<u64, String> {
+    let wav = state.library.take_wav(&state, &key, n).await?;
+    let (samples, rate) = ttv_engine::decode_wav(&wav).ok_or("unreadable audio")?;
+    let gain = state.library.get(&key).map_or(1.0, |e| e.gain);
+    let ms = (samples.len() as f64 / rate.max(1) as f64 * 1000.0) as u64;
+    state.audio.skip_all();
+    state.audio.play(samples, rate, gain);
+    Ok(ms)
+}
+
+/// Makes a take the voice (the old one is replaced).
+#[tauri::command]
+pub async fn choose_take(state: St<'_>, key: String, n: u32) -> Result<(), String> {
+    state.library.choose_take(&state, &key, n).await?;
+    state.library.refresh(&state).await
+}
+
+/// Keeps the old voice and throws the takes away.
+#[tauri::command]
+pub async fn discard_takes(state: St<'_>, key: String) -> Result<(), String> {
+    state.library.discard_takes(&state, &key).await
 }
 
 // ── voices from TTV-TTS 1.x ─────────────────────────────────────────────

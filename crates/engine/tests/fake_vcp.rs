@@ -188,7 +188,7 @@ fn request(voices: u32) -> JobRequest {
 fn odd_request(quality: bool, improve: bool) -> JobRequest {
     JobRequest {
         defs: vec![def(0, "m", "Calm, warm baritone of a radio host."), def(1, "m", "Punchy action-hero baritone. WEIRD")],
-        options: JobOptions { speech_check: true, takes: 1, backup: false, quality, improve },
+        options: JobOptions { speech_check: true, takes: 1, backup: false, quality, improve, pick: false },
         ..request(0)
     }
 }
@@ -479,4 +479,39 @@ async fn after_chat_only_speaking_goes_on() {
     tokio::time::sleep(Duration::from_millis(1500)).await;
     assert_eq!(fake.designs.load(Ordering::SeqCst), 0);
     assert!(e.status().jobs.iter().all(|j| j.state != JobState::Done), "{:?}", e.status().jobs);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn let_me_pick_keeps_the_takes_until_one_is_chosen() {
+    let (fake, base) = serve().await;
+    let e = engine(&base);
+    fake.voices.lock().insert("voice_old".into(), FakeVoice { name: "TTV old".into(), hz: 115.0 });
+    let d = def(0, "m", "Hard-boiled detective.");
+    let key = d.def.key("en");
+    e.adopt(vec![ttv_link::LibraryEntry { key: key.clone(), def_hash: d.def.hash(), lang: "en".into(), voice_id: "voice_old".into(), gain: 1.0, ..Default::default() }]);
+    let options = JobOptions { speech_check: true, takes: 3, backup: false, quality: false, improve: false, pick: true };
+    let req = JobRequest { kind: JobKind::Improve, defs: vec![d.clone()], only: vec![key.clone()], rounds: 1, options, ..request(0) };
+    e.submit(req.clone()).unwrap();
+    until("the takes", || done(&e)).await;
+    // three takes wait, one recommended; nothing new in VCP, the old voice stays
+    let choices = e.takes();
+    assert_eq!(choices.len(), 1);
+    let c = &choices[0];
+    assert_eq!((c.key.as_str(), c.takes.len()), (key.as_str(), 3));
+    assert_eq!(c.takes.iter().filter(|t| t.recommended).count(), 1);
+    assert!(e.take_wav(&key, 2).is_some_and(|w| w.starts_with(b"RIFF")));
+    assert_eq!(e.library().entries[0].voice_id, "voice_old");
+    assert_eq!(fake.voices.lock().len(), 1);
+    // choosing makes it the voice; the old one is deleted in VCP
+    let chosen = e.choose_take(&key, 1).await.unwrap();
+    assert_ne!(chosen.voice_id, "voice_old");
+    assert_eq!(e.library().entries.iter().filter(|x| x.key == key).map(|x| x.voice_id.clone()).collect::<Vec<_>>(), [chosen.voice_id.clone()]);
+    assert!(!fake.voices.lock().contains_key("voice_old"));
+    assert!(e.takes().is_empty() && e.take_wav(&key, 1).is_none());
+    // again, but keep the voice: nothing changes
+    e.submit(req).unwrap();
+    until("the second takes", || e.takes().len() == 1).await;
+    assert!(e.discard_takes(&key));
+    assert!(e.takes().is_empty());
+    assert_eq!(e.library().entries[0].voice_id, chosen.voice_id);
 }

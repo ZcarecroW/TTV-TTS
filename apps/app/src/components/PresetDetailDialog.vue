@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import UiModal from "@ttv-tts/ui/components/UiModal.vue";
 import { copyText } from "@ttv-tts/ui/clipboard";
 import { Check, CircleCheck, Copy, Layers, Pen, Play, Refresh, Spinner, Sparkle, Stop, Trash, Upload, Warning } from "@ttv-tts/ui/icons";
-import { api, DESIGN_LANGS, presets, type PresetDetail, type VoiceView } from "../api";
+import { api, DESIGN_LANGS, presets, takes as takesApi, type PresetDetail, type TakeChoice, type VoiceView } from "../api";
 import { host, loadEngine, loadPresets, run, store, toast } from "../store";
 
 const props = defineProps<{ presetId: string }>();
@@ -30,6 +30,41 @@ const playing = ref<number | null>(null);
 
 /** "index:lang" of voices being designed again. */
 const redoing = reactive(new Set<string>());
+/** "hash:lang" of voices whose takes are being designed ("let me pick"). */
+const picking = reactive(new Set<string>());
+/** Index of the voice whose "design again" choice is open. */
+const redoMenu = ref<number | null>(null);
+/** Takes waiting for a choice, by key "hash:lang". */
+const waiting = ref<Record<string, TakeChoice>>({});
+const opened = ref<string | null>(null);
+async function loadTakes() {
+  const list = await takesApi.list().catch(() => [] as TakeChoice[]);
+  waiting.value = Object.fromEntries(list.filter((c) => c.preset_id === props.presetId).map((c) => [c.key, c]));
+  for (const k of [...picking]) if (waiting.value[k]) picking.delete(k);
+}
+const busyRedo = (v: VoiceView) => redoing.has(`${v.index}:${lang.value}`) || picking.has(`${v.hash}:${lang.value}`);
+const choiceOf = (v: VoiceView) => waiting.value[`${v.hash}:${lang.value}`];
+const takePlaying = ref<string | null>(null);
+async function playTake(c: TakeChoice, n: number) {
+  const id = `${c.key}#${n}`;
+  const ms = await run("take", () => takesApi.play(c.key, n));
+  if (ms == null) return;
+  takePlaying.value = id;
+  window.setTimeout(() => takePlaying.value === id && (takePlaying.value = null), ms);
+}
+async function chooseTake(v: VoiceView, c: TakeChoice, n: number) {
+  const ok = await run(`choose-${c.key}`, () => takesApi.choose(c.key, n).then(() => true));
+  if (!ok) return;
+  toast("ok", t("presets.takeChosen", { name: v.name, n: n + 1 }));
+  opened.value = null;
+  await Promise.all([loadTakes(), load(true)]);
+}
+async function keepVoice(v: VoiceView, c: TakeChoice) {
+  await run(`choose-${c.key}`, () => takesApi.discard(c.key));
+  toast("info", t("presets.takesKept", { name: v.name }));
+  opened.value = null;
+  await loadTakes();
+}
 
 async function load(quiet = false) {
   const r = quiet ? await presets.get(props.presetId).catch(() => null) : await run("preset", () => presets.get(props.presetId));
@@ -44,7 +79,10 @@ async function load(quiet = false) {
     if (r.voices[Number(i)]?.langs.includes(l!)) redoing.delete(k);
   }
 }
-onMounted(() => load());
+onMounted(() => {
+  void load();
+  void loadTakes();
+});
 // Every library change (a job saved a voice, a voice was designed again or
 // deleted) refreshes the list – debounced, a batch saves 16 voices in a row.
 let reloadTimer = 0;
@@ -52,7 +90,10 @@ watch(
   () => store.library?.rev,
   () => {
     clearTimeout(reloadTimer);
-    reloadTimer = window.setTimeout(() => load(true), 250);
+    reloadTimer = window.setTimeout(() => {
+      void load(true);
+      void loadTakes();
+    }, 250);
   },
 );
 onBeforeUnmount(() => clearTimeout(reloadTimer));
@@ -60,7 +101,11 @@ onBeforeUnmount(() => clearTimeout(reloadTimer));
 watch(
   () => store.engine?.jobs.some((j) => j.preset_id === props.presetId && ["queued", "running", "waiting", "paused"].includes(j.state)),
   (open) => {
-    if (!open) redoing.clear();
+    if (!open) {
+      redoing.clear();
+      picking.clear();
+      void loadTakes();
+    }
   },
 );
 
@@ -89,13 +134,15 @@ async function listen(v: VoiceView) {
 }
 
 // A voice that came out different from its description: design it anew.
-async function redo(v: VoiceView) {
-  if (!d.value || !confirm(t("presets.redoConfirm", { name: v.name, lang: t(`lang.${lang.value}`) }))) return;
+async function redo(v: VoiceView, pick: boolean) {
+  if (!d.value) return;
+  redoMenu.value = null;
   const l = lang.value;
-  const job = await run(`redo-${v.index}`, () => presets.redo(d.value!.id, v.index, l));
+  const job = await run(`redo-${v.index}`, () => presets.redo(d.value!.id, v.index, l, pick));
   if (job) {
-    redoing.add(`${v.index}:${l}`);
-    toast("ok", t("presets.redoQueued", { name: v.name }));
+    if (pick) picking.add(`${v.hash}:${l}`);
+    else redoing.add(`${v.index}:${l}`);
+    toast("ok", pick ? t("presets.pickQueued", { name: v.name }) : t("presets.redoQueued", { name: v.name }));
     await Promise.all([loadEngine(), load(true)]);
   }
 }
@@ -182,12 +229,31 @@ const genderLabel = (g: string) => t(`presets.gender.${g}`);
               <span class="text-xs text-muted">{{ genderLabel(v.gender) }} · {{ v.age }}</span>
               <span v-if="v.fx" class="badge" :data-tip="t('fx.badgeTip')">{{ t(`fx.names.${v.fx}`) }}</span>
               <span class="ml-auto flex flex-wrap gap-1">
-                <span v-if="redoing.has(`${v.index}:${lang}`)" class="badge badge-accent"><Spinner :size="12" class="spin" />{{ t("presets.redoing") }}</span>
+                <span v-if="busyRedo(v)" class="badge badge-accent"><Spinner :size="12" class="spin" />{{ t("presets.redoing") }}</span>
+                <button v-else-if="choiceOf(v)" type="button" class="badge badge-accent" data-takes @click="opened = opened === choiceOf(v)!.key ? null : choiceOf(v)!.key">{{ t("presets.takesWaiting", { n: choiceOf(v)!.takes.length }) }}</button>
                 <span v-else-if="v.odd.includes(lang)" class="badge badge-warn" :data-tip="t('quality.oddRow')"><Warning :size="12" />{{ t("quality.maybe") }}</span>
                 <span v-for="l in v.langs" :key="l" class="badge" :class="l === lang && 'badge-ok'">{{ l }}</span>
               </span>
             </div>
             <p class="mt-0.5 text-sm text-muted">{{ v.description }}</p>
+            <div v-if="redoMenu === v.index" class="mt-2 flex flex-wrap items-center gap-2 rounded-lg bg-panel-2 p-2 text-sm" data-redo-menu>
+              <span class="text-muted">{{ t("presets.redoHow", { name: v.name, lang: t(`lang.${lang}`) }) }}</span>
+              <button class="btn btn-sm" @click="redo(v, false)">{{ t("presets.redoAuto") }}</button>
+              <button class="btn btn-sm btn-primary" :data-tip="t('tips.pickTakes')" @click="redo(v, true)">{{ t("presets.redoPick") }}</button>
+              <button class="btn btn-ghost btn-sm" @click="redoMenu = null">{{ t("common.cancel") }}</button>
+            </div>
+            <div v-if="choiceOf(v) && opened === choiceOf(v)!.key" class="mt-2 space-y-1.5 rounded-lg bg-panel-2 p-2" data-take-list>
+              <div v-for="tk in choiceOf(v)!.takes" :key="tk.n" class="flex flex-wrap items-center gap-2 text-sm">
+                <button class="btn btn-sm btn-icon" :aria-label="t('presets.take', { n: tk.n + 1 })" @click="playTake(choiceOf(v)!, tk.n)">
+                  <Stop v-if="takePlaying === `${choiceOf(v)!.key}#${tk.n}`" :size="14" /><Play v-else :size="14" />
+                </button>
+                <span class="font-medium">{{ t("presets.take", { n: tk.n + 1 }) }}</span>
+                <span class="text-xs text-muted">{{ tk.duration.toFixed(1) }} s</span>
+                <span v-if="tk.recommended" class="badge badge-ok" :data-tip="t('tips.takeRecommended')">{{ t("presets.takeRecommended") }}</span>
+                <button class="btn btn-sm ml-auto" :disabled="store.busy === `choose-${choiceOf(v)!.key}`" @click="chooseTake(v, choiceOf(v)!, tk.n)">{{ t("presets.useTake") }}</button>
+              </div>
+              <button class="btn btn-ghost btn-sm" :disabled="store.busy === `choose-${choiceOf(v)!.key}`" @click="keepVoice(v, choiceOf(v)!)">{{ t("presets.keepVoice") }}</button>
+            </div>
           </div>
           <button
             class="btn btn-sm btn-icon shrink-0"
@@ -201,12 +267,12 @@ const genderLabel = (g: string) => t(`presets.gender.${g}`);
             <Play v-else :size="15" />
           </button>
           <button
-            v-if="v.langs.includes(lang) && !redoing.has(`${v.index}:${lang}`)"
+            v-if="v.langs.includes(lang) && !busyRedo(v)"
             class="btn btn-ghost btn-sm btn-icon shrink-0"
             :disabled="!canListen || store.busy === `redo-${v.index}`"
             :aria-label="t('presets.redo')"
             :data-tip="t('presets.redoTip')"
-            @click="redo(v)"
+            @click="redoMenu = redoMenu === v.index ? null : v.index"
           >
             <Refresh :size="15" />
           </button>

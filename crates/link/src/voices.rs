@@ -59,11 +59,43 @@ pub struct JobOptions {
     pub quality: bool,
     /// Design odd voices again automatically and keep the better one.
     pub improve: bool,
+    /// Keep every usable take for the streamer to choose from ("let me
+    /// pick") instead of saving the best one.
+    pub pick: bool,
+}
+
+/// Takes of a voice designed again, waiting for the streamer's choice.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct TakeChoice {
+    pub key: String,
+    /// The voice definition's name.
+    pub name: String,
+    pub lang: String,
+    pub preset_id: String,
+    pub index: u32,
+    /// Unix seconds.
+    pub created: i64,
+    pub takes: Vec<TakeInfo>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct TakeInfo {
+    pub n: u32,
+    /// Seconds.
+    pub duration: f32,
+    /// Speech check: share of misheard words (None = not checked).
+    pub wer: Option<f32>,
+    /// How well it fits the description (pitch, loudness, pauses, pace).
+    pub score: f32,
+    /// The take the engine would have kept.
+    pub recommended: bool,
 }
 
 impl Default for JobOptions {
     fn default() -> Self {
-        Self { speech_check: true, takes: 2, backup: true, quality: false, improve: false }
+        Self { speech_check: true, takes: 2, backup: true, quality: false, improve: false, pick: false }
     }
 }
 

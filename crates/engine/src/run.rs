@@ -227,6 +227,55 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
         }
     }
 
+    // "let me pick": every usable take waits for the streamer's choice
+    if req.options.pick {
+        let mut stored = 0;
+        for it in &items {
+            let max_wer = if matches!(it.lang.code, "ja" | "zh" | "ko") { MAX_WER_CJK } else { MAX_WER };
+            let checked = req.options.speech_check && it.lang.asr;
+            let usable: Vec<(usize, f32)> = it
+                .takes
+                .iter()
+                .enumerate()
+                .filter(|(_, t)| plausible(t) && if checked { t.wer.is_some_and(|w| w <= max_wer) } else { true })
+                .map(|(i, t)| (i, quality::take_score(&it.def, it.lang, &t.analysis, t.wer)))
+                .collect();
+            let best = usable.iter().max_by(|a, b| a.1.total_cmp(&b.1)).map(|x| x.0);
+            if usable.is_empty() {
+                inner.attempt_failed(id, &it.key, Some(format!("{}: no take was usable", label(it))));
+                continue;
+            }
+            let infos = usable
+                .iter()
+                .enumerate()
+                .map(|(n, (i, s))| ttv_link::TakeInfo { n: n as u32, duration: it.takes[*i].duration, wer: it.takes[*i].wer, score: *s, recommended: Some(*i) == best })
+                .collect();
+            let wavs: Vec<&[u8]> = usable.iter().map(|(i, _)| it.takes[*i].wav.as_slice()).collect();
+            let choice = ttv_link::TakeChoice {
+                key: it.key.clone(),
+                name: it.def.name.clone(),
+                lang: it.lang.code.to_string(),
+                preset_id: req.preset_id.clone(),
+                index: it.index,
+                created: chrono::Utc::now().timestamp(),
+                takes: infos,
+            };
+            match inner.store_takes(choice, &it.def, &wavs, req.options.backup) {
+                Ok(()) => {
+                    stored += 1;
+                    let key = it.key.clone();
+                    inner.update(id, |j| {
+                        j.view.done += 1;
+                        j.view.step += 1;
+                        j.processed.push(key);
+                    });
+                }
+                Err(e) => inner.attempt_failed(id, &it.key, Some(format!("{}: {e}", label(it)))),
+            }
+        }
+        return Ok(stored);
+    }
+
     // 3. pick the best take, save it, prime it (speaking checkpoint)
     inner.phase(id, "save", items.len());
     let mut fresh: Vec<Fresh> = Vec::new();

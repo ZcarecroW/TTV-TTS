@@ -621,7 +621,7 @@ export const presets = {
   compute: (request: { preset_id: string; count: number; languages: string[]; options: JobOptions }) => invoke<JobView>("compute", { request }),
   job: (id: string, action: "pause" | "resume" | "cancel" | "remove") => invoke<void>("job_control", { id, action }),
   deleteVoices: (keys: string[]) => invoke<number>("delete_voices", { keys }),
-  redo: (presetId: string, index: number, lang: string) => invoke<JobView>("redo_voice", { presetId, index, lang }),
+  redo: (presetId: string, index: number, lang: string, pick = false) => invoke<JobView>("redo_voice", { presetId, index, lang, pick }),
   review: () => invoke<ReviewList>("quality_list"),
   keep: (keys: string[], kept = true) => invoke<number>("keep_voices", { keys, kept }),
   improve: (keys: string[]) => invoke<JobView[]>("improve_voices", { keys }),
@@ -637,6 +637,34 @@ export const presets = {
 export const DESIGN_LANGS = ["en", "de", "ru", "fr", "es", "it", "pt", "ja", "zh", "ko"] as const;
 /** Tiers of the built-in presets: their first 30, 60, 120 or all 240 voices. */
 export const TIERS = [30, 60, 120, 240] as const;
+
+// ── let me pick ─────────────────────────────────────────────────────────
+
+export interface TakeInfo {
+  n: number;
+  duration: number;
+  wer: number | null;
+  score: number;
+  recommended: boolean;
+}
+
+/** Takes of a voice designed again, waiting for a choice. */
+export interface TakeChoice {
+  key: string;
+  name: string;
+  lang: string;
+  preset_id: string;
+  index: number;
+  created: number;
+  takes: TakeInfo[];
+}
+
+export const takes = {
+  list: () => invoke<TakeChoice[]>("list_takes"),
+  play: (key: string, n: number) => invoke<number>("play_take", { key, n }),
+  choose: (key: string, n: number) => invoke<void>("choose_take", { key, n }),
+  discard: (key: string) => invoke<void>("discard_takes", { key }),
+};
 
 // ── viewers ─────────────────────────────────────────────────────────────
 

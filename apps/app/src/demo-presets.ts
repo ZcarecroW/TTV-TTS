@@ -42,6 +42,8 @@ const all: Preset[] = Object.entries(files)
 
 // The demo library: "def|lang" of computed voices. Cinematic has some already.
 const hash = (d: VoiceDef) => `${d.gender}|${d.age}|${d.description}`;
+/** "let me pick": takes waiting for a choice. */
+const waitingTakes = new Map<string, import("./api").TakeChoice>();
 const library = new Set<string>();
 const cinematic = all.find((p) => p.id === "cinematic");
 cinematic?.defs.slice(0, 30).forEach((d) => ["de", "en"].forEach((l) => library.add(`${hash(d)}:${l}`)));
@@ -264,10 +266,31 @@ export function presetCommand(cmd: string, args: Record<string, unknown>, emit: 
       const p = find(args.presetId);
       const def = p.defs[Number(args.index)];
       if (!def) throw "This voice doesn't exist (any more).";
+      if (args.pick) {
+        const key = `${hash(def)}:${args.lang}`;
+        // three takes after a moment, the old voice stays
+        window.setTimeout(() => {
+          waitingTakes.set(key, {
+            key, name: def.name, lang: String(args.lang), preset_id: p.id, index: Number(args.index), created: Math.floor(Date.now() / 1000),
+            takes: [0, 1, 2].map((n) => ({ n, duration: 5.2 + n * 0.7, wer: 0, score: [0.82, 0.93, 0.71][n]!, recommended: n === 1 })),
+          });
+          emit("app://library", { rev: ++engine.library_rev, size: library.size });
+        }, 900);
+        return { value: { ...structuredClone(engine.jobs[0] ?? {}), id: "pick" + Date.now(), preset_id: p.id, preset_name: p.name, kind: "improve", total: 1, done: 0, state: "running" } };
+      }
       library.delete(`${hash(def)}:${args.lang}`);
       quality.delete(`${hash(def)}:${args.lang}`);
       return presetCommand("compute", { request: { preset_id: p.id, count: Number(args.index) + 1, languages: [args.lang], options: { speech_check: true, takes: 2, backup: true, quality: true } } }, emit);
     }
+    case "list_takes":
+      return { value: [...waitingTakes.values()] };
+    case "play_take":
+      return { value: 1500 };
+    case "choose_take":
+    case "discard_takes":
+      waitingTakes.delete(String(args.key));
+      emit("app://library", { rev: ++engine.library_rev, size: library.size });
+      return { value: undefined };
     case "quality_list": {
       const items: ReviewItem[] = [];
       for (const k of library) {

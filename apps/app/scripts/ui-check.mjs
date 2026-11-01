@@ -244,13 +244,32 @@ await page.waitForTimeout(300);
 check((await dlg.locator("ul li").first().locator(".spin").count()) === 1, "listening to a computed voice shows progress");
 await page.waitForTimeout(1500);
 check((await dlg.locator("ul li").first().getByRole("button", { name: /^(design again|neu entwerfen)$/i }).count()) === 1, "a computed voice can be designed again");
-page.once("dialog", (d) => d.accept());
 await dlg.locator("ul li").first().getByRole("button", { name: /^(design again|neu entwerfen)$/i }).click();
+await page.waitForTimeout(200);
+check((await dlg.locator("ul li").first().locator("[data-redo-menu] button").count()) === 3, "designing again asks: automatically or let me pick");
+await dlg.locator("ul li").first().getByRole("button", { name: /^(automatically|automatisch)/i }).click();
 await page.waitForTimeout(400);
 check(/being designed|wird entworfen/.test(await dlg.locator("ul li").first().innerText()), "a voice being designed again says so");
 await page.waitForTimeout(2500);
 const back = dlg.locator("ul li").first().getByRole("button", { name: /^(listen|anhören)$/i });
 check(!(await back.isDisabled()) && !/being designed|wird entworfen/.test(await dlg.locator("ul li").first().innerText()), "the redone voice can be played without reopening the dialog");
+// let me pick: three takes, one recommended, pick one
+{
+  const row = dlg.locator("ul li").nth(1);
+  await row.getByRole("button", { name: /^(design again|neu entwerfen)$/i }).click();
+  await page.waitForTimeout(200);
+  await row.getByRole("button", { name: /^(let me pick|ich wähle)/i }).click();
+  await page.waitForTimeout(1600);
+  check(/3 takes to pick|3 Versuche zur Auswahl/.test(await row.innerText()), "takes to pick from are announced on the voice", (await row.innerText()).split("\n")[0]);
+  await row.locator("[data-takes]").click();
+  await page.waitForTimeout(200);
+  const list = row.locator("[data-take-list]");
+  const lt = await list.innerText();
+  check((await list.getByRole("button", { name: /^(use this take|diesen versuch nehmen)$/i }).count()) === 3 && /(recommended|empfohlen)/.test(lt), "the takes can be heard and one is recommended", lt.replace(/\n/g, " ").slice(0, 120));
+  await list.getByRole("button", { name: /^(use this take|diesen versuch nehmen)$/i }).nth(1).click();
+  await page.waitForTimeout(500);
+  check(/speaks with take 2 now|spricht jetzt mit Versuch 2/.test(await page.locator("body").innerText()) && !(await row.locator("[data-takes]").count()), "picking a take makes it the voice");
+}
 await dlg.getByRole("button", { name: /^(compute|berechnen)$/i }).click();
 await page.waitForTimeout(500);
 const cd = page.locator("[role=dialog]");
