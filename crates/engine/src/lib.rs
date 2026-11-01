@@ -395,6 +395,24 @@ fn write_json<T: Serialize>(path: &std::path::Path, value: &T) {
     }
 }
 
+/// What VCP's voice designer gets: gender and age first, then the
+/// description. Without them some "baritone" men came out at 280–370 Hz and
+/// "low alto" women at ~120 Hz; naming them moved 3 of 4 such voices into
+/// their range (measured on the VCP PC, 2026-11-01).
+fn instruct(def: &ttv_link::VoiceDef) -> String {
+    let who = match (def.gender.as_str(), def.age) {
+        ("m", 0..13) => "boy",
+        ("m", 13..18) => "teenage boy",
+        ("m", _) => "man",
+        ("f", 0..13) => "girl",
+        ("f", 13..18) => "teenage girl",
+        ("f", _) => "woman",
+        // Neutral voices (creatures, machines) are fully described.
+        _ => return def.description.trim().to_string(),
+    };
+    format!("A {}-year-old {who}. {}", def.age, def.description.trim())
+}
+
 async fn design(vcp: &ttv_vcp::Client, description: &str, l: &langs::DesignLang) -> Result<Vec<u8>, String> {
     let body = serde_json::json!({ "instruct_text": format!("{} {}", description.trim(), l.accent), "target_text": l.text, "language": l.vcp });
     let r: GenerationResult = vcp.post("/api/v1/generation/design?sync=true", &body, Duration::from_secs(600)).await.map_err(|e| e.to_string())?;
@@ -636,7 +654,7 @@ async fn batch(inner: &Arc<Inner>, vcp: &ttv_vcp::Client, id: &str) -> Result<()
             }
             let l = label(it);
             inner.update(id, |j| j.view.current = Some(l));
-            match design(vcp, &it.def.description, it.lang).await {
+            match design(vcp, &instruct(&it.def), it.lang).await {
                 Ok(wav) => {
                     let duration = ttv_vcp::wav::duration_secs(&wav).unwrap_or(0.0);
                     let level = audio::decode(&wav).and_then(|(s, _)| audio::loudness_db(&s));
@@ -808,4 +826,18 @@ async fn batch(inner: &Arc<Inner>, vcp: &ttv_vcp::Client, id: &str) -> Result<()
 /// Reference samples must be 3–10.5 s long (VCP clones best from that).
 fn plausible(t: &Take) -> bool {
     (3.0..=10.5).contains(&t.duration)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn instructions_name_gender_and_age() {
+        let def = |gender: &str, age| ttv_link::VoiceDef { name: "X".into(), gender: gender.into(), age, description: " Low, warm voice. ".into(), fx: None };
+        assert_eq!(instruct(&def("m", 35)), "A 35-year-old man. Low, warm voice.");
+        assert_eq!(instruct(&def("f", 16)), "A 16-year-old teenage girl. Low, warm voice.");
+        assert_eq!(instruct(&def("m", 9)), "A 9-year-old boy. Low, warm voice.");
+        assert_eq!(instruct(&def("n", 40)), "Low, warm voice.");
+    }
 }
