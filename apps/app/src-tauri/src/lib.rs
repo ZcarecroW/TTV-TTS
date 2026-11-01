@@ -16,6 +16,7 @@ pub mod fx;
 #[cfg(desktop)]
 mod hotkeys;
 mod os_voice;
+mod remote;
 mod translate;
 mod pack_cmds;
 mod preset_cmds;
@@ -80,6 +81,8 @@ pub fn run() {
             let st = state.clone();
             tauri::async_runtime::spawn(async move { reader::start(st) });
             tauri::async_runtime::spawn(updater::run(app.handle().clone(), state.clone()));
+            let st = state.clone();
+            tauri::async_runtime::spawn(async move { remote::apply(&st).await });
             #[cfg(desktop)]
             for a in hotkeys::apply(app.handle(), &state) {
                 log::warn!("hotkey for {a} not available (taken by another program?)");
@@ -118,6 +121,8 @@ pub fn run() {
             commands::reader_reject,
             commands::reader_replay,
             commands::set_hotkey,
+            commands::set_remote,
+            commands::remote_status,
             commands::test_message,
             commands::test_event,
             commands::mute_viewer,

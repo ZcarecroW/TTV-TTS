@@ -409,6 +409,28 @@ pub fn reader_replay(state: St, id: Option<u64>) -> Result<(), String> {
     crate::reader::replay(&state, id)
 }
 
+/// Remote control (Stream Deck, Streamer.bot): switch, port, LAN, new token.
+#[tauri::command]
+pub async fn set_remote(state: St<'_>, enabled: bool, port: u16, lan: bool, new_token: bool) -> Result<AppView, String> {
+    {
+        let mut c = state.cfg.write();
+        c.remote.enabled = enabled;
+        c.remote.port = port.max(1024);
+        c.remote.lan = lan;
+        if new_token {
+            c.remote.token = crate::secrets::random_key()[..24].to_string();
+        }
+    }
+    state.save_config().map_err(|e| e.to_string())?;
+    crate::remote::apply(&state).await;
+    Ok(view(&state))
+}
+
+#[tauri::command]
+pub fn remote_status() -> crate::remote::RemoteStatus {
+    crate::remote::status()
+}
+
 /// Sets (or with None/"" removes) the global hotkey for an action.
 #[tauri::command]
 pub fn set_hotkey(app: tauri::AppHandle, state: St, action: String, accel: Option<String>) -> Result<AppView, String> {

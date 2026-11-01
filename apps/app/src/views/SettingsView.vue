@@ -4,9 +4,11 @@ import { useI18n } from "vue-i18n";
 import UiField from "@ttv-tts/ui/components/UiField.vue";
 import UiSegmented from "@ttv-tts/ui/components/UiSegmented.vue";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
-import { CircleInfo, Download, ExternalLink, Globe, Keyboard, Sparkle, Waveform } from "@ttv-tts/ui/icons";
+import { CircleInfo, Copy, Download, ExternalLink, Globe, Keyboard, Link, Sparkle, Waveform } from "@ttv-tts/ui/icons";
 import { api, HOTKEY_ACTIONS, isTauri, updates } from "../api";
 import { apply, config, run, store, toast } from "../store";
+import { copyText } from "@ttv-tts/ui/clipboard";
+import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
 
 const { t, locale } = useI18n();
 const c = computed(() => config.value!);
@@ -43,6 +45,27 @@ async function saveDeepl() {
   }
 }
 const removeDeepl = () => void run("settings", () => api.setDeeplKey(null)).then(apply);
+
+// Remote control: Stream Deck / Streamer.bot call these URLs.
+const remote = computed(() => c.value.remote);
+const remoteState = ref<{ listening: string | null; error: string | null }>({ listening: null, error: null });
+const refreshRemote = async () => (remoteState.value = (await api.remoteStatus().catch(() => null)) ?? remoteState.value);
+void refreshRemote();
+const port = ref(c.value.remote?.port ?? 8130);
+async function saveRemote(patch: Partial<{ enabled: boolean; port: number; lan: boolean }>, newToken = false) {
+  const r = { ...remote.value, ...patch };
+  const v = await run("remote", () => api.setRemote(r.enabled, r.port, r.lan, newToken));
+  if (v) apply(v);
+  await refreshRemote();
+}
+const remoteBase = computed(() => `http://127.0.0.1:${remote.value?.port ?? 8130}`);
+const remoteUrls = computed(() =>
+  ["skip", "toggle-pause", "clear", "replay", "approve", "reject"].map((a) => [a, `${remoteBase.value}/api/${a}?token=${remote.value?.token ?? ""}`] as const),
+);
+const sayUrl = computed(() => `${remoteBase.value}/api/say?token=${remote.value?.token ?? ""}&user=StreamDeck&text=Hello`);
+async function copy(text: string) {
+  if (await copyText(text)) toast("ok", t("settings.copied"));
+}
 
 // Hotkeys: press the combination while the field listens.
 const recording = ref<string | null>(null);
@@ -145,6 +168,33 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
         <span v-else-if="store.update?.phase === 'idle'" class="text-muted">· {{ t("settings.upToDate") }}</span>
         <button class="btn btn-sm ml-auto" :disabled="store.update?.phase === 'checking'" @click="updates.check()">{{ t("settings.checkNow") }}</button>
         <button v-if="store.update?.available" class="btn btn-primary btn-sm" @click="updates.install()">{{ t("settings.install") }}</button>
+      </div>
+    </section>
+
+    <section class="card p-5" data-remote>
+      <div class="card-head"><Link />{{ t("settings.remoteTitle") }}<UiTip :text="t('tips.remote')" /></div>
+      <div class="space-y-3">
+        <UiToggle :model-value="remote.enabled" :label="t('settings.remoteOn')" @update:model-value="saveRemote({ enabled: $event })" />
+        <template v-if="remote.enabled">
+          <div class="flex flex-wrap items-center gap-3 text-sm">
+            <label class="flex items-center gap-2 text-muted">{{ t("settings.remotePort") }}<input v-model.number="port" type="number" min="1024" max="65535" class="input h-8 w-24" @change="saveRemote({ port })" /></label>
+            <UiToggle :model-value="remote.lan" :label="t('settings.remoteLan')" :tip="t('tips.remoteLan')" @update:model-value="saveRemote({ lan: $event })" />
+          </div>
+          <p class="text-xs" :class="remoteState.error ? 'text-err' : 'text-ok'" data-remote-state>{{ remoteState.error ?? (remoteState.listening ? t("settings.remoteListening", { addr: remoteState.listening }) : "") }}</p>
+          <div class="space-y-1">
+            <div v-for="[a, url] in remoteUrls" :key="a" class="flex items-center gap-2 text-xs">
+              <span class="w-28 shrink-0 text-muted">{{ t(`settings.remoteAction.${a}`) }}</span>
+              <code class="min-w-0 flex-1 truncate rounded bg-panel-2 px-2 py-1">{{ url }}</code>
+              <button class="btn btn-ghost btn-sm btn-icon" :aria-label="t('settings.copy')" :data-tip="t('settings.copy')" @click="copy(url)"><Copy :size="14" /></button>
+            </div>
+            <div class="flex items-center gap-2 text-xs">
+              <span class="w-28 shrink-0 text-muted">{{ t("settings.remoteAction.say") }}</span>
+              <code class="min-w-0 flex-1 truncate rounded bg-panel-2 px-2 py-1">{{ sayUrl }}</code>
+              <button class="btn btn-ghost btn-sm btn-icon" :aria-label="t('settings.copy')" :data-tip="t('settings.copy')" @click="copy(sayUrl)"><Copy :size="14" /></button>
+            </div>
+          </div>
+          <button class="btn btn-sm" @click="saveRemote({}, true)">{{ t("settings.remoteNewToken") }}</button>
+        </template>
       </div>
     </section>
 

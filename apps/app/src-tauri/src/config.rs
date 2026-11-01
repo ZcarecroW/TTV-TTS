@@ -83,6 +83,25 @@ pub struct Config {
     pub translate_email: String,
     /// Global hotkeys: action (skip, pause, …) -> accelerator ("Ctrl+Alt+KeyS").
     pub hotkeys: std::collections::BTreeMap<String, String>,
+    /// Remote control API (Stream Deck, Streamer.bot).
+    pub remote: RemoteConfig,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
+pub struct RemoteConfig {
+    pub enabled: bool,
+    pub port: u16,
+    /// Also from other PCs in the LAN (else only this PC).
+    pub lan: bool,
+    /// Needed by every call; made when empty.
+    pub token: String,
+}
+
+impl Default for RemoteConfig {
+    fn default() -> Self {
+        Self { enabled: false, port: 8130, lan: false, token: String::new() }
+    }
 }
 
 impl Default for Config {
@@ -99,12 +118,19 @@ impl Default for Config {
             setup_done: false,
             translate_email: String::new(),
             hotkeys: Default::default(),
+            remote: RemoteConfig::default(),
         }
     }
 }
 
 impl Config {
     pub fn normalize(&mut self) {
+        if self.remote.token.is_empty() {
+            self.remote.token = crate::secrets::random_key()[..24].to_string();
+        }
+        if self.remote.port < 1024 {
+            self.remote.port = 8130;
+        }
         if self.device_id.is_empty() {
             self.device_id = crate::secrets::random_key()[..16].to_ascii_lowercase();
         }

@@ -131,6 +131,7 @@ export interface Config {
   setup_done: boolean;
   translate_email: string;
   hotkeys: Record<string, string>;
+  remote: { enabled: boolean; port: number; lan: boolean; token: string };
 }
 
 export interface OutputDevice {
@@ -238,6 +239,8 @@ export const api = {
   tryTranslate: (text: string, target: string, provider: string) => invoke<{ text: string; ms: number }>("try_translate", { text, from: null, target, provider }),
   setDeeplKey: (key: string | null) => invoke<AppView>("set_deepl_key", { key }),
   setHotkey: (action: string, accel: string | null) => invoke<AppView>("set_hotkey", { action, accel }),
+  setRemote: (enabled: boolean, port: number, lan: boolean, newToken = false) => invoke<AppView>("set_remote", { enabled, port, lan, newToken }),
+  remoteStatus: () => invoke<{ listening: string | null; error: string | null }>("remote_status"),
   skip: () => invoke<void>("skip"),
 };
 

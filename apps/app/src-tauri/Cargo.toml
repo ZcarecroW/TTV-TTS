@@ -50,6 +50,8 @@ rubato = { workspace = true }
 realfft = { workspace = true }
 audioadapter-buffers = { workspace = true }
 regex = { workspace = true }
+# remote control API (Stream Deck, Streamer.bot)
+axum = { workspace = true }
 unicode-segmentation = { workspace = true }
 sysinfo = { workspace = true }
 

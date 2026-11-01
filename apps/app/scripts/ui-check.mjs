@@ -50,6 +50,15 @@ check(await page.locator("#ttv-tip").isVisible(), "tooltip appears on hover");
   check(/(key stored|Schlüssel gespeichert)/.test(await ts.locator("input[type=password]").getAttribute("placeholder")) && (await ts.getByRole("button", { name: /^(Remove|Entfernen)$/ }).count()) === 1, "a DeepL key is stored and can be removed");
 }
 {
+  const rc = page.locator("main [data-remote]");
+  await rc.getByRole("switch").first().click();
+  await page.waitForTimeout(300);
+  check(/127.0.0.1:8130/.test(await rc.locator("[data-remote-state]").innerText()) && (await rc.locator("code").count()) === 7 && /token=demoToken123/.test(await rc.locator("code").first().innerText()), "remote control shows the URLs for Stream Deck", await rc.locator("code").first().innerText().catch(() => ""));
+  await rc.getByRole("button", { name: /^(New token|Neuer Token)/ }).click();
+  await page.waitForTimeout(300);
+  check(!/demoToken123/.test(await rc.locator("code").first().innerText()), "a new token replaces the old one");
+}
+{
   const hk = page.locator("main [data-hotkeys]");
   check(/Ctrl \+ Alt \+ S/.test(await hk.locator("[data-hotkey=skip]").innerText()), "hotkeys are shown readably", await hk.locator("[data-hotkey=skip]").innerText());
   await hk.locator("[data-hotkey=pause]").click();
