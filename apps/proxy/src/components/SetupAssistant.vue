@@ -22,6 +22,9 @@ async function saveKey() {
     await refresh();
   }
 }
+async function detectKey() {
+  if (await run("key", () => api.detectVcpKey())) await refresh();
+}
 async function createKey() {
   if (await run("key", () => api.createVcpKey())) await refresh();
 }
@@ -84,6 +87,7 @@ function next() {
               <div class="flex gap-2">
                 <input v-model="keyInput" type="password" autocomplete="off" class="input mono" :placeholder="t('vcp.keyPlaceholder')" @keydown.enter="saveKey" />
                 <button class="btn btn-primary" :disabled="!keyInput.trim() || store.busy === 'key'" @click="saveKey">{{ t("vcp.keySave") }}</button>
+                <button class="btn" :disabled="store.busy === 'key'" :data-tip="t('tips.keyDetect')" @click="detectKey">{{ t("vcp.keyDetect") }}</button>
               </div>
             </div>
             <p v-else-if="store.ov!.has_vcp_key" class="notice notice-ok"><Key :size="18" />{{ t("setup.vcpKeyOk") }}</p>

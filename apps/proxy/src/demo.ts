@@ -127,6 +127,10 @@ function system(): SystemStats {
         vram_total: 8 * 2 ** 30,
         temperature_c: Math.round(wave(9, 46, 61)),
         power_w: wave(5, 38, 168),
+        processes: [
+          { pid: 14212, name: "VoiceCreatorPro.exe", vram: 3.9 * 2 ** 30 },
+          { pid: 8120, name: "dwm.exe", vram: null },
+        ],
       },
     ],
   };
@@ -148,6 +152,9 @@ export async function demoInvoke<T>(cmd: string, args: Record<string, unknown> =
       overview.has_vcp_key = false;
       config.key_mode = "own";
       return r(structuredClone(overview));
+    case "detect_vcp_key":
+      overview.has_vcp_key = true;
+      return r({ saved: true, verified: true, message: "Found VCP's key in its settings and stored it." });
     case "create_vcp_key":
       overview.has_vcp_key = true;
       return r(FAKE_VCP_KEY);

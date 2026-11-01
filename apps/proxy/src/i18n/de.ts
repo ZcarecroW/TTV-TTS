@@ -89,6 +89,7 @@ const de: typeof en = {
     temp: "Temperatur",
     power: "Leistung",
     uptime: "Proxy läuft seit {time}",
+    gpuProcesses: "Nutzen die Grafikkarte",
   },
   connect: {
     pairTitle: "Gerät koppeln",
@@ -157,6 +158,7 @@ const de: typeof en = {
     keyCreateText: "Voice Creator Pro hat keinen API-Schlüssel – jedes Programm auf diesem PC darf es also nutzen. Der Proxy kann einen starken Zufallsschlüssel für dich setzen.",
     keyCreated: "VCP hat jetzt einen neuen API-Schlüssel, und der Proxy hat ihn gespeichert.",
     keyClear: "Gespeicherten Schlüssel entfernen",
+    keyDetect: "Automatisch finden",
     urlTitle: "Adresse der HTTP-API von VCP",
     urlText: "Normalerweise http://127.0.0.1:8100. Nur ändern, wenn du den API-Port in VCP geändert hast.",
     autoTitle: "Start & Wächter",
@@ -315,6 +317,8 @@ const de: typeof en = {
     vram: "Speicher der Grafikkarte. Die Modelle von VCP brauchen je nach Modell und Qualität 2–6 GB.",
     revoke: "Entfernt dieses Gerät. Es kann den Proxy erst wieder nutzen, wenn es neu gekoppelt wird.",
     exe: "Die Programmdatei, die der Proxy startet. Sie wird automatisch eingetragen, sobald VCP läuft; du kannst den Pfad auch selbst einfügen.",
+    gpuProcesses: "Programme, die gerade die GPU nutzen. Braucht ein anderes viel davon, wird Voice Creator Pro langsamer.",
+    keyDetect: "Der Proxy sucht den Schlüssel in den Einstellungen von Voice Creator Pro auf diesem PC und behält ihn nur, wenn VCP ihn akzeptiert.",
   },
 };
 

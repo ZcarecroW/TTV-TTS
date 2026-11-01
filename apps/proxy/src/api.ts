@@ -111,6 +111,7 @@ export interface GpuStats {
   vram_total: number | null;
   temperature_c: number | null;
   power_w: number | null;
+  processes: { pid: number; name: string; vram: number | null }[];
 }
 
 export interface SystemStats {
@@ -172,6 +173,7 @@ export const api = {
   setVcpKey: (key: string) => invoke<KeyCheck>("set_vcp_key", { key }),
   clearVcpKey: () => invoke<Overview>("clear_vcp_key"),
   createVcpKey: () => invoke<string>("create_vcp_key"),
+  detectVcpKey: () => invoke<KeyCheck>("detect_vcp_key"),
   accessKey: () => invoke<string | null>("get_access_key"),
   newAccessKey: () => invoke<string>("new_access_key"),
   setAccessKey: (key: string) => invoke<void>("set_access_key", { key }),

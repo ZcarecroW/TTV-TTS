@@ -94,6 +94,11 @@ async fn tick(state: &Arc<AppState>, sys: &mut Option<System>, last_detail: &mut
                     } else {
                         "VCP has an API key set - enter it in the proxy.".into()
                     });
+                    // Take the key over from VCP's own settings, if possible.
+                    if crate::vcp_key::auto(state).await {
+                        s.key_ok = None;
+                        s.error = None;
+                    }
                 }
                 Err(e) => s.error = Some(e.to_string()),
             }
@@ -364,6 +369,13 @@ impl Diagnostics {
     }
 }
 
+/// Folders that never hold settings (VCP's projects, caches, Python packages).
+const SKIP_DIRS: &[&str] = &[
+    "models", "cache", "node_modules", "site-packages", "lib", "venv", ".venv", "python", "torch", "huggingface", "packages",
+    "audiobooks", "history", "dubbing_projects", "voices", "mplcache", "clips", "aicut", "talking_head", "uploads", "youtube",
+    "temp", "tmp", "logs",
+];
+
 fn scan_dir(dir: &Path, depth: u32, out: &mut Vec<ConfigCandidate>) {
     if out.len() >= 200 || depth > 4 {
         return;
@@ -375,7 +387,7 @@ fn scan_dir(dir: &Path, depth: u32, out: &mut Vec<ConfigCandidate>) {
         if meta.is_dir() {
             let n = p.file_name().map(|n| n.to_string_lossy().to_ascii_lowercase()).unwrap_or_default();
             // Skip bulky folders that never hold settings.
-            if ["models", "cache", "node_modules", "site-packages", "lib", "venv", ".venv", "python", "torch", "huggingface"].iter().any(|s| n == *s) {
+            if SKIP_DIRS.iter().any(|s| n == *s) {
                 continue;
             }
             scan_dir(&p, depth + 1, out);

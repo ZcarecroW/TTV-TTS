@@ -20,6 +20,7 @@ mod storage;
 mod sysmon;
 mod tls;
 mod updater;
+mod vcp_key;
 mod vcp_watch;
 
 use std::sync::Arc;
@@ -115,6 +116,7 @@ pub fn run() {
             commands::set_vcp_key,
             commands::clear_vcp_key,
             commands::create_vcp_key,
+            commands::detect_vcp_key,
             commands::get_access_key,
             commands::new_access_key,
             commands::set_access_key,

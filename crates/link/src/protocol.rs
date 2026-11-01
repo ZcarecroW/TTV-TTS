@@ -123,6 +123,17 @@ pub struct GpuStats {
     pub temperature_c: Option<u32>,
     /// NVIDIA only (NVML).
     pub power_w: Option<f32>,
+    /// Programs using this GPU, largest video memory first (NVIDIA only).
+    pub processes: Vec<GpuProcess>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct GpuProcess {
+    pub pid: u32,
+    pub name: String,
+    /// Video memory used by the process, if the driver reports it.
+    pub vram: Option<u64>,
 }
 
 /// Network addresses of the proxy PC (for manual setup and Wake-on-LAN).

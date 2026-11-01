@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import UiCopy from "@ttv-tts/ui/components/UiCopy.vue";
 import UiStat from "@ttv-tts/ui/components/UiStat.vue";
+import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { Bolt, CircleCheck, CircleInfo, CircleX, Devices, Link, Microchip, Network, Play, Ram, Refresh, Temperature, Warning, Waveform } from "@ttv-tts/ui/icons";
 import { ago, bytes, duration } from "@ttv-tts/ui/format";
 import { api } from "../api";
@@ -145,6 +146,14 @@ function vcpAction(action: "start" | "restart") {
         </template>
       </div>
       <p v-else class="muted text-sm">{{ t("common.loading") }}</p>
+      <div v-if="gpu?.processes.length" class="mt-4">
+        <div class="label">{{ t("overview.gpuProcesses") }}<UiTip :text="t('tips.gpuProcesses')" /></div>
+        <ul class="flex flex-wrap gap-1.5">
+          <li v-for="p in gpu.processes" :key="p.pid" class="badge" :class="/voice ?creator/i.test(p.name) ? 'badge-accent' : ''">
+            {{ p.name }}<span v-if="p.vram" class="font-normal opacity-80">· {{ bytes(p.vram, locale) }}</span>
+          </li>
+        </ul>
+      </div>
       <p class="hint">{{ t("overview.systemHint") }}</p>
     </section>
   </div>

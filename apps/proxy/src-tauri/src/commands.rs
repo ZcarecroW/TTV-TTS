@@ -230,6 +230,17 @@ pub async fn create_vcp_key(state: St<'_>) -> AppResult<String> {
     Ok(key)
 }
 
+/// Takes VCP's key over from VCP's own settings file.
+#[tauri::command]
+pub async fn detect_vcp_key(state: St<'_>) -> Result<KeyCheck, String> {
+    let st = state.inner().clone();
+    let key = crate::vcp_key::detect(&st).await?;
+    st.secrets.set(VCP_KEY, Some(&key)).map_err(|e| e.to_string())?;
+    st.refresh_vcp_client();
+    st.publish();
+    Ok(KeyCheck { saved: true, verified: true, message: "Found VCP's key in its settings and stored it.".into() })
+}
+
 /// The key apps use with the current key mode.
 #[tauri::command]
 pub fn get_access_key(state: St) -> Option<String> {

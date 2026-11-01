@@ -49,18 +49,25 @@ ok(st.status === 200 && st.body.vcp.reachable, "status with access key", `VCP re
 ok((await j(`/ttv/v1/status?api_key=${encodeURIComponent(key)}`)).status === 200, "key as ?api_key= works");
 ok((await j("/ttv/v1/status", { headers: { Authorization: `Bearer ${key}` } })).status === 200, "key as Bearer works");
 
-// 4. pairing
-const code = (await j("/ttv/v1/dev/pairing", { method: "POST", ...auth(key) })).body?.code;
+// 4. pairing (debug builds only: release builds have no /dev/pairing)
+const dev = await j("/ttv/v1/dev/pairing", { method: "POST", ...auth(key) });
+const code = dev.body?.code;
+let token = key;
+if (dev.status === 404) console.log("SKIP  pairing tests (release build)");
+else {
 const wrong = code === "000000" ? "111111" : "000000";
 const bad = await j("/ttv/v1/pair", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: wrong, device_name: "e2e", device_id: "e2e-test" }) });
 ok(bad.status === 403 && bad.body.code === "bad_code", "wrong pairing code rejected");
 const pair = await j("/ttv/v1/pair", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, device_name: "E2E test", device_id: "e2e-test" }) });
 ok(pair.status === 200 && pair.body.token?.length === 32, "pairing with the right code returns a token");
-const token = pair.body?.token;
+token = pair.body?.token;
 const again = await j("/ttv/v1/pair", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, device_name: "x", device_id: "x" }) });
 ok(again.status === 403 && again.body.code === "pairing_closed", "a used code can't pair twice");
 const viaToken = await j("/api/v1/voices", auth(token));
 ok(viaToken.status === 200 && Array.isArray(viaToken.body.voices), "device token reaches VCP through the proxy", `${viaToken.body?.voices?.length} voices`);
+}
+const voices = await j("/api/v1/voices", auth(token));
+ok(voices.status === 200 && Array.isArray(voices.body.voices), "VCP's API works through the proxy", `${voices.body?.voices?.length} voices`);
 
 // 5. events WebSocket
 const ws = new WebSocket(`wss://${hostPort}/ttv/v1/events?system=1&api_key=${encodeURIComponent(token)}`);
@@ -116,7 +123,7 @@ ok(!!reply && reply.startsWith("TTVTTS-PROXY/1 ") && JSON.parse(reply.slice(15))
 
 // 8. clean up the test device
 const status2 = await j("/ttv/v1/status", auth(key));
-ok(status2.body.devices.some((d) => d.id === "e2e-test" && d.last_address), "paired device is listed with its address");
+if (token !== key) if (token !== key) ok(status2.body.devices.some((d) => d.id === "e2e-test" && d.last_address), "paired device is listed with its address");
 
 console.log(failed ? `\n${failed} check(s) failed` : "\nall checks passed");
 process.exit(failed ? 1 : 0);
