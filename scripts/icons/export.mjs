@@ -44,7 +44,12 @@ export const nucleo: Record<string, [string, string]> = {
 ${lines.join("\n")}
 };
 `;
-  writeFileSync(join(here, "..", "..", "packages", "ui", "src", "icons", "nucleo.ts"), file);
+  const dir = join(here, "..", "..", "packages", "ui", "src", "icons");
+  writeFileSync(join(dir, "nucleo.ts"), file);
+  // index.ts: everything up to the first export stays, the exports follow the manifest.
+  const index = readFileSync(join(dir, "index.ts"), "utf8");
+  const head = index.slice(0, index.indexOf("export const "));
+  writeFileSync(join(dir, "index.ts"), head + entries.map(([alias]) => `export const ${alias} = icon("${alias}");`).join("\n") + "\n");
   console.log(`exported ${lines.length} icons (${(file.length / 1024).toFixed(1)} KB)`);
 } finally {
   rmSync(out, { recursive: true, force: true });

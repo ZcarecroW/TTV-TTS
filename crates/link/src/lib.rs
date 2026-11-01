@@ -8,5 +8,7 @@
 pub mod discovery;
 pub mod pin;
 pub mod protocol;
+pub mod voices;
 
 pub use protocol::*;
+pub use voices::*;

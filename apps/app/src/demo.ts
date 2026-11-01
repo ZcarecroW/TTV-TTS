@@ -1,6 +1,7 @@
 // Demo backend for the browser (UI development, tests, docs screenshots).
 // `?setup` shows the first-start assistant, `?nohost` an app without voice host.
 import type { AppView, Found, Probe, SystemStats, Voice } from "./api";
+import { presetCommand } from "./demo-presets";
 import { readerCommand, updateCommand } from "./demo-reader";
 
 const params = new URLSearchParams(location.search);
@@ -119,7 +120,9 @@ function system(): SystemStats {
   };
 }
 
-export async function demoInvoke<T>(cmd: string, args: Record<string, unknown> = {}): Promise<T> {
+export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> = {}): Promise<T> {
+  // Like Tauri: arguments arrive as JSON (no Vue proxies).
+  const args = JSON.parse(JSON.stringify(input)) as Record<string, unknown>;
   await new Promise((r) => setTimeout(r, 80));
   const r = (v: unknown) => v as T;
   switch (cmd) {
@@ -160,7 +163,7 @@ export async function demoInvoke<T>(cmd: string, args: Record<string, unknown> =
     case "skip":
       return r(undefined);
   }
-  const fromReader = readerCommand(cmd, args, emit) ?? updateCommand(cmd);
+  const fromReader = readerCommand(cmd, args, emit) ?? updateCommand(cmd) ?? presetCommand(cmd, args, emit);
   if (fromReader) return r(fromReader.value);
   throw new Error(`demo: unknown command ${cmd}`);
 }

@@ -404,6 +404,49 @@
     color: var(--accent-text);
   }
 
+  /* Progress: <div class="bar"><i style="width: 40%"></i></div> */
+  .bar {
+    height: 0.45rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--panel-3);
+  }
+  .bar > i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    transition: width 0.4s ease;
+  }
+  .bar-thin {
+    height: 0.25rem;
+  }
+
+  /* Small toggle chips (languages, filters) */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    height: 1.7rem;
+    padding: 0 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--muted);
+    background: var(--panel);
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .chip:hover {
+    color: var(--text);
+    border-color: var(--line-strong);
+  }
+  .chip-on {
+    color: var(--accent-text);
+    background: var(--accent-soft);
+    border-color: transparent;
+  }
+
   .nc-icon {
     flex: none;
   }

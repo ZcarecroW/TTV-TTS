@@ -57,11 +57,21 @@ async fn proxy_session(state: &Arc<AppState>, address: &str, fingerprint: &str, 
         Ok(Err(e)) => return Some(describe(&e)),
         Err(_) => return Some(format!("No answer from the proxy at {address}.")),
     };
+    // Changes may have been missed while disconnected.
+    let mut fresh = true;
     loop {
         tokio::select! {
             msg = ws.next() => match msg {
                 Some(Ok(Message::Text(t))) => match serde_json::from_str::<Event>(&t) {
                     Ok(Event::Status(s)) => {
+                        if std::mem::take(&mut fresh) {
+                            let st = state.clone();
+                            tokio::spawn(async move {
+                                if let Err(e) = st.library.refresh(&st).await {
+                                    log::warn!("library: {e}");
+                                }
+                            });
+                        }
                         let vcp = s.vcp.clone();
                         state.set_host_status(HostStatus { kind: "proxy".into(), connected: true, error: None, vcp: Some(vcp), proxy: Some(*s) });
                     }
@@ -70,6 +80,8 @@ async fn proxy_session(state: &Arc<AppState>, address: &str, fingerprint: &str, 
                             let _ = app.emit("app://host-system", &sys);
                         }
                     }
+                    Ok(Event::Job(j)) => crate::library::VoiceLibrary::on_job(state, &j),
+                    Ok(Event::Library(c)) => state.library.on_change(state, c),
                     _ => {}
                 },
                 Some(Ok(Message::Ping(_) | Message::Pong(_) | Message::Binary(_) | Message::Frame(_))) => {}
@@ -134,4 +146,7 @@ async fn direct_poll(state: &Arc<AppState>) {
     };
     let error = v.error.clone();
     state.set_host_status(HostStatus { kind: "direct".into(), connected, error, proxy: None, vcp: Some(v) });
+    if !state.library.loaded() {
+        let _ = state.library.refresh(state).await;
+    }
 }

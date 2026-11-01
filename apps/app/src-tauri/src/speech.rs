@@ -125,17 +125,40 @@ pub struct SayReport {
     pub rtf: f32,
 }
 
+/// When this app last asked VCP for speech (unix ms; 0 = never). The local
+/// engine (VCP on this PC) waits until chat has been quiet for a moment.
+static LAST_VCP_USE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+fn touch() {
+    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(0);
+    LAST_VCP_USE.store(now, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// For the engine: when speech was last generated.
+pub fn last_vcp_use() -> Option<Instant> {
+    let ms = LAST_VCP_USE.load(std::sync::atomic::Ordering::Relaxed);
+    if ms == 0 {
+        return None;
+    }
+    let now = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or(ms);
+    Instant::now().checked_sub(Duration::from_millis(now.saturating_sub(ms)))
+}
+
 /// Generates one piece with VCP (sync clone of a saved voice).
 pub async fn generate(vcp: &ttv_vcp::Client, u: &Utterance, text: &str) -> Result<(Vec<f32>, u32), String> {
+    touch();
     let mut body = serde_json::json!({ "voice_id": u.voice, "target_text": text, "language": u.language });
     if let Some(e) = u.emotion.as_deref().filter(|e| *e != "neutral") {
         body["emotion"] = e.into();
         body["intensity"] = u.intensity.clone().unwrap_or_else(|| "normal".into()).into();
     }
-    let r: GenerationResult = vcp
+    let r: Result<GenerationResult, String> = vcp
         .post("/api/v1/generation/clone?sync=true", &body, Duration::from_secs(300))
         .await
-        .map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string());
+    // Long generations: the quiet gap counts from the end.
+    touch();
+    let r = r?;
     if !r.success {
         return Err(format!("VCP: {}", r.error_detail.or(r.error_code).unwrap_or(r.status)));
     }

@@ -36,7 +36,7 @@ export const baseProfile: Profile = {
     blocked_mode: "skip",
   },
   mod_commands: { enabled: true, roles: ["broadcaster", "moderator"], skip: "!skip", clear: "!ttsclear", pause: "!ttspause", resume: "!ttsresume", volume: "!ttsvol", mute: "!ttsmute", unmute: "!ttsunmute", skip_on_timeout: true },
-  voices: { mode: "per_user_language", prefix: "TTS-{lang} ", fallback_language: "en", exclude: [], default_voice: null, per_language: {}, users: {}, emotions: false },
+  voices: { mode: "preset", preset: "cinematic", preset_voices: 30, prefix: "TTS-{lang} ", fallback_language: "en", exclude: [], default_voice: null, per_language: {}, users: {}, emotions: false },
   muted: [],
 };
 

@@ -35,6 +35,7 @@ pub fn routes() -> Router<Arc<AppState>> {
         .route("/update/install", post(update_install))
         .route("/diagnostics", get(diagnostics))
         .route("/dev/pairing", post(dev_pairing))
+        .merge(engine_routes())
         .fallback(|| async { api_error(StatusCode::NOT_FOUND, "not_found", "Unknown TTV-TTS Proxy endpoint.") })
 }
 
@@ -177,4 +178,92 @@ async fn dev_pairing(State(state): S) -> Response {
 
 async fn diagnostics(State(state): S) -> Response {
     Json(crate::vcp_watch::diagnostics(&state).await).into_response()
+}
+
+// ── voice computation (engine) ──────────────────────────────────────────
+
+pub fn engine_routes() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/engine", get(engine_status))
+        .route("/engine/benchmark", post(engine_benchmark))
+        .route("/engine/estimate", get(engine_estimate))
+        .route("/library", get(library))
+        .route("/library/delete", post(library_delete))
+        .route("/library/adopt", post(library_adopt))
+        .route("/library/verify", post(library_verify))
+        .route("/library/sample/{key}", get(library_sample))
+        .route("/jobs", post(job_submit))
+        .route("/jobs/{id}/{action}", post(job_control))
+}
+
+async fn engine_status(State(state): S) -> Json<ttv_link::EngineStatus> {
+    Json(state.engine.status())
+}
+
+async fn engine_benchmark(State(state): S) -> Response {
+    match state.engine.benchmark().await {
+        Ok(d) => Json(serde_json::json!({ "design_secs": d })).into_response(),
+        Err(e) => api_error(StatusCode::BAD_GATEWAY, "vcp_unreachable", e),
+    }
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default)]
+struct EstimateQuery {
+    voices: u32,
+    takes: u8,
+    check: bool,
+}
+
+async fn engine_estimate(State(state): S, Query(q): Query<EstimateQuery>) -> Json<serde_json::Value> {
+    Json(serde_json::json!({ "secs": state.engine.estimate(q.voices, q.takes.max(1), q.check) }))
+}
+
+async fn library(State(state): S) -> Json<ttv_link::LibrarySnapshot> {
+    Json(state.engine.library())
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default)]
+struct Keys {
+    keys: Vec<String>,
+}
+
+async fn library_delete(State(state): S, Json(k): Json<Keys>) -> Response {
+    match state.engine.delete(&k.keys).await {
+        Ok(n) => Json(serde_json::json!({ "deleted": n })).into_response(),
+        Err(e) => api_error(StatusCode::BAD_GATEWAY, "vcp_unreachable", e),
+    }
+}
+
+async fn library_adopt(State(state): S, Json(entries): Json<Vec<ttv_link::LibraryEntry>>) -> Json<serde_json::Value> {
+    Json(serde_json::json!({ "adopted": state.engine.adopt(entries) }))
+}
+
+async fn library_verify(State(state): S) -> Response {
+    match state.engine.verify().await {
+        Ok(n) => Json(serde_json::json!({ "removed": n })).into_response(),
+        Err(e) => api_error(StatusCode::BAD_GATEWAY, "vcp_unreachable", e),
+    }
+}
+
+async fn library_sample(State(state): S, axum::extract::Path(key): axum::extract::Path<String>) -> Response {
+    match state.engine.sample(&key) {
+        Some(bytes) => ([(axum::http::header::CONTENT_TYPE, "audio/flac")], bytes).into_response(),
+        None => api_error(StatusCode::NOT_FOUND, "not_found", "No backup for this voice."),
+    }
+}
+
+async fn job_submit(State(state): S, Json(req): Json<ttv_link::JobRequest>) -> Response {
+    match state.engine.submit(req) {
+        Ok(v) => Json(v).into_response(),
+        Err(e) => api_error(StatusCode::BAD_REQUEST, "bad_request", e),
+    }
+}
+
+async fn job_control(State(state): S, axum::extract::Path((id, action)): axum::extract::Path<(String, String)>) -> Response {
+    match state.engine.control(&id, &action) {
+        Ok(()) => Json(Ack { ok: true, message: None }).into_response(),
+        Err(e) => api_error(StatusCode::BAD_REQUEST, "bad_request", e),
+    }
 }

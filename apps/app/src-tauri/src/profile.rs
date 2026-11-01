@@ -281,9 +281,12 @@ impl Default for ModCommands {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
 pub enum VoiceMode {
+    /// Every viewer keeps a voice of a preset, spoken in the detected
+    /// language by that voice's computed version for the language.
+    #[default]
+    Preset,
     /// Every viewer keeps a role; it's spoken by that role's voice of the
     /// detected language (voices named "TTS-de 3 …", "TTS-en 3 …").
-    #[default]
     PerUserLanguage,
     /// Every viewer keeps one voice from the whole pool.
     PerUser,
@@ -297,6 +300,10 @@ pub enum VoiceMode {
 #[serde(default)]
 pub struct VoiceRules {
     pub mode: VoiceMode,
+    /// Preset whose voices viewers get (mode Preset).
+    pub preset: String,
+    /// How many of the preset's voices are handed out (its first N; 0 = all).
+    pub preset_voices: u32,
     /// Voices whose name starts like this form a language pool ({lang} = code).
     pub prefix: String,
     /// Languages without an own pool use this pool.
@@ -316,7 +323,9 @@ pub struct VoiceRules {
 impl Default for VoiceRules {
     fn default() -> Self {
         Self {
-            mode: VoiceMode::PerUserLanguage,
+            mode: VoiceMode::Preset,
+            preset: "cinematic".into(),
+            preset_voices: 30,
             prefix: "TTS-{lang} ".into(),
             fallback_language: "en".into(),
             exclude: Vec::new(),

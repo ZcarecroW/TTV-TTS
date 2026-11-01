@@ -1,0 +1,245 @@
+#ttv-tts preset v1
+name: Cinematic
+desc: Trailer narrators, heroes, villains, mentors and sidekicks of the big screen
+icon: Clapperboard
+---
+Grant Halloway|m|52|Deep, booming trailer-narrator baritone, slow and weighty, every word landing like a drumbeat.
+Selene Ward|f|34|Smooth, low alto with quiet confidence, measured pace and a hint of danger beneath the calm.
+Jace Rook|m|24|Bright, eager tenor of a young hero, quick and breathless, full of nervous courage.
+Imogen Vale|f|68|Warm, wise older voice with gentle gravel, slow and deliberate, like a mentor sharing a secret.
+Viktor Crane|m|47|Silky, cold villain baritone, precise consonants, unhurried and quietly menacing.
+Nova Sterling|f|27|Clear, determined mezzo of a starship pilot, crisp and fast under pressure.
+Ezra Blackwood|m|71|Rich, resonant elder baritone with a slight tremble, grand and theatrical storyteller.
+Kira Ashford|f|19|Light, spirited voice of a teenage rebel, rapid speech, defiant and sharp-tongued.
+Marcus Thorne|m|38|Gruff, battle-worn mid-range voice, short clipped sentences, steady and commanding.
+Dahlia Monroe|f|45|Husky, velvety contralto of a femme fatale, slow, teasing and knowingly amused.
+Sam Okafor|m|31|Easygoing, warm baritone of a loyal sidekick, relaxed pace, friendly and wry.
+Elena Varga|f|56|Firm, authoritative alto of a general, clipped delivery, no wasted words.
+Theo Pike|m|17|Cracking, enthusiastic young voice, fast and slightly squeaky, endlessly curious.
+Morgana Lisle|f|62|Dark, smoky older alto, slow and hypnotic, every pause full of intrigue.
+Raven Quill|n|29|Cool, androgynous mid-range voice, calm and enigmatic, softly spoken with precise diction.
+Garrick Stone|m|60|Low, gravel-heavy bass of a grizzled veteran, slow drawl, tired but unbreakable.
+Lyra Benn|f|23|Bright, hopeful soprano, quick and animated, the voice of an idealistic newcomer.
+Damien Kral|m|41|Velvet-smooth tenor with sinister charm, playful rhythm, smiles you can hear.
+Hazel Whitcombe|f|79|Frail but sharp elderly voice, slightly breathy, slow and full of dry humor.
+Rex Calloway|m|35|Punchy, confident action-hero baritone, energetic and slightly cocky.
+Ines Moreau|f|39|Elegant, polished alto of a spy, low volume, smooth and controlled.
+Oliver Grey|m|26|Soft-spoken, thoughtful tenor of a young scientist, careful pace, gentle and earnest.
+Beatrix Hale|f|51|Brisk, no-nonsense alto of a detective chief, dry tone, quick and decisive.
+Silas Wren|m|83|Ancient, papery bass with a slow, rasping cadence, wise and a little eerie.
+Mira Solano|f|31|Warm, expressive mezzo, natural and lively, the heart of the ensemble.
+Conrad Vos|m|57|Cold, clipped baritone of a corporate tyrant, flat affect, chillingly calm.
+Juniper Fox|f|21|Playful, sing-song voice with quick wit, mischievous and bubbly.
+Atticus Lane|m|44|Measured, warm baritone of an honest lawyer, steady pace, reassuring and clear.
+Freya Halvorsen|f|36|Strong, resonant alto of a warrior queen, proud and unhurried.
+Cass Merrow|n|42|Low, smoky androgynous voice, dry and sardonic, slow deliberate phrasing.
+Byron Ashe|m|29|Brooding, low tenor of a tormented antihero, quiet and intense, long pauses.
+Octavia Reyes|f|58|Rich, commanding older alto of a starship captain, calm authority, perfect diction.
+Felix Brandt|m|33|Fast-talking, nasal comic-relief voice, jittery rhythm, endlessly chatty.
+Rosalind Grey|f|73|Gentle, lilting elderly voice, soft and kind, a grandmother telling legends.
+Kade Vasquez|m|22|Raw, raspy young voice of a street fighter, quick and edgy, restless energy.
+Delphine Roux|f|28|Breathy, dreamy soprano, slow and wistful, as if half lost in a memory.
+Horace Bellamy|m|66|Plummy, pompous bass of an aristocrat, slow, rolling and self-satisfied.
+Tamsin Locke|f|43|Crisp, analytical alto of a forensic expert, quick precise speech, slightly detached.
+Lucius Mordane|m|54|Deep, cavernous villain bass, slow and resonant, words dripping with menace.
+Wren Abernathy|f|18|Shy, soft young voice that grows bolder mid-sentence, gentle and earnest.
+Gideon Frost|m|48|Icy, measured baritone of an assassin, almost whispering, utterly composed.
+Valeria Cruz|f|33|Fiery, passionate mezzo of a revolutionary, fast and emphatic, rising intensity.
+Pip Hollis|m|19|Cheerful, rapid-fire tenor of a young messenger, breathless and upbeat.
+Agatha Pryce|f|65|Prim, precise older voice, crisp consonants, polite with a hidden edge.
+Rhys Calder|m|40|Warm, husky mid-baritone of a rugged frontier hero, slow easy drawl.
+Sable Kincaid|n|35|Hushed, velvety androgynous voice, cool and mysterious, unhurried.
+Bram Holt|m|74|Booming, jovial old bass of a tavern-keeper turned hero, hearty laugh in the voice.
+Celeste Arden|f|25|Sweet, crystal-clear soprano, gentle and sincere, with quiet resolve.
+Dorian Locke|m|36|Charming, silver-tongued baritone of a con artist, smooth and playful.
+Margot Steele|f|49|Steely, low alto of a war correspondent, terse and matter-of-fact.
+Quentin Hale|m|27|Earnest, slightly stammering tenor of an unlikely hero, soft but determined.
+Isadora Vance|f|61|Grand, theatrical older soprano, sweeping cadence, larger than life.
+Tobias Reed|m|52|Calm, gentle baritone of a family doctor, slow and soothing.
+Anya Petrov|f|30|Cool, controlled alto of an intelligence officer, clipped and efficient.
+Leo Marchetti|m|20|Bright, laughing tenor of a charming rogue, quick and flirtatious.
+Ottilie Brandt|f|86|Thin, wavering elderly voice, slow and gentle, full of half-remembered stories.
+Caius Draven|m|63|Velvet-dark older baritone, slow and deliberate, an aging mastermind.
+Zara Okoye|f|24|Confident, crisp young mezzo, upbeat and quick, natural leader energy.
+Ignatius Pell|m|58|Wheezy, conspiratorial tenor, quick whispers and nervous chuckles.
+Saoirse Byrne|f|37|Musical, warm mezzo with lilting rhythm, kind and steady.
+Hugo Lambert|m|45|Rich, cultured baritone of a museum curator, unhurried and precise.
+Ember Vale|f|20|Raspy, energetic young voice, fast and fearless, a reckless adventurer.
+Malcolm Ridge|m|69|Gravelly, slow-spoken rancher bass, warm and weathered.
+Phaedra Cole|f|42|Low, silken alto of a cult leader, soft and persuasive, almost musical.
+Nico Albescu|m|32|Nervous, high-strung tenor of a hacker, rapid bursts with sudden stops.
+Liesel Mohr|f|54|Brisk, warm alto of a field medic, efficient and caring.
+Ronan Kade|m|25|Low, quiet young baritone, guarded and terse, a lone wolf.
+Clementine Ivers|f|70|Warm, chuckling older voice, slow and affectionate, a beloved aunt.
+Severin Hask|m|50|Dry, sardonic baritone of a jaded detective, slow and weary.
+Talia Moss|f|29|Breezy, friendly mezzo of a radio operator, clear and upbeat.
+Benedict Cray|m|77|Formal, measured old baritone of a butler, impeccable diction, softly spoken.
+Ophelia Thorn|f|47|Cutting, cold soprano of a villainous queen, slow and imperious.
+Jonah Fields|m|16|Gentle, earnest young voice of a farm boy, slow and wide-eyed.
+Genevieve Lark|f|35|Silvery, articulate mezzo of a news anchor in a disaster film, calm urgency.
+Fenwick Moor|n|60|Reedy, ageless androgynous voice, whimsical and slow, like an old forest spirit.
+Aldous Crane|m|43|Precise, nasal tenor of a cold scientist, clipped and impatient.
+Rosa Delgado|f|62|Rich, earthy older alto, warm and commanding, the matriarch of the story.
+Kit Dawson|m|23|Cocky, quick young baritone of a hotshot pilot, laughs at danger.
+Mae Holloway|f|39|Soft, motherly mezzo, slow and comforting, steady in a crisis.
+Thaddeus Grimm|m|81|Cracked, ominous old bass, slow and prophetic, full of doom.
+Nadia Farouk|f|26|Clear, intelligent young alto, measured and focused, a codebreaker.
+Wyatt Burke|m|37|Laconic, low baritone of a gunslinger, slow sparse words, dry humor.
+Henrietta Lowe|f|83|Sharp-witted elderly voice, quick for her age, crisp and amused.
+Basil Fenn|m|55|Booming, overconfident baritone of a blustering mayor, loud and rambling.
+Indigo Shaw|n|24|Soft, airy androgynous voice, dreamy and slow, gentle sincerity.
+Roderick Vane|m|46|Silky baritone with an aristocratic sneer, slow and condescending.
+Amara Eze|f|32|Warm, resonant alto with quiet strength, measured and graceful.
+Percy Doyle|m|28|Bumbling, cheerful tenor, quick and apologetic, accidental hero.
+Ursula Graff|f|59|Harsh, gravelly older alto of a ruthless warden, slow and stern.
+Elias Moreau|m|64|Soft, melancholic older baritone, slow with long sighs, a retired hero.
+Cora Bell|f|22|Bubbly, rapid soprano, giggly and expressive, the comic best friend.
+Magnus Thorvald|m|51|Huge, rumbling bass of a northern chieftain, slow and proud.
+Iris Calloway|f|44|Measured, warm alto of a ship's doctor, gentle but firm.
+Dex Monroe|m|30|Smooth, laid-back baritone of a smuggler, drawling and amused.
+Winifred Ashby|f|76|Proper, crisp elderly soprano, slow and dignified, faintly disapproving.
+Lucan Orlov|m|39|Cold, controlled baritone of a mercenary leader, flat and efficient.
+Poppy Starling|f|17|Excitable, high young voice, rapid and dramatic, everything is huge.
+Ambrose Kent|m|72|Warm, rumbling old baritone, slow and kindly, a lighthouse keeper.
+Seraphina Gold|f|38|Radiant, soaring mezzo with dramatic flair, expressive and bold.
+Callum Price|m|34|Honest, steady mid-baritone of an everyman, natural and sincere.
+Greta Lindqvist|f|53|Cool, precise alto of a mission controller, calm under pressure.
+Orion Black|n|31|Deep, resonant androgynous voice, slow and cosmic, almost otherworldly.
+Bartholomew Sneed|m|61|Oily, wheedling tenor of a schemer, quick and ingratiating.
+Lila Navarro|f|27|Warm, husky young alto, laid-back and witty, a mechanic with attitude.
+Everett Shaw|m|85|Soft, frail old tenor, slow and tender, a grandfather's last tale.
+Victoria Blaine|f|48|Polished, commanding alto of a senator, smooth and persuasive.
+Arlo Finch|m|21|Dreamy, soft young tenor, slow and wondering, a stargazer.
+Morwenna Hale|f|67|Low, crackling older voice of a sea witch, slow and amused.
+Jericho Wilde|m|42|Rough, intense baritone of a desert ranger, gritty and quick.
+Esme Laurent|f|33|Light, lilting mezzo, graceful and warm, a ballet dancer turned spy.
+Cyrus Vale|m|56|Deep, honeyed baritone of a cult prophet, slow and enrapturing.
+Daphne Rowe|f|19|Quiet, careful young voice, polite and observant, a hidden genius.
+Hector Ruiz|m|47|Warm, booming baritone of a charismatic coach, energetic and rousing.
+Imelda Frost|f|74|Brittle, icy older soprano, slow and cutting, an old rival.
+Asher Kim|m|26|Calm, gentle tenor with dry humor, measured and observant.
+Tessa Rourke|f|41|Gritty, low alto of a bounty hunter, terse and unimpressed.
+Gwyn Arlow|n|50|Mellow, warm androgynous voice, slow and philosophical, a wandering monk.
+Septimus Crowe|m|79|Whispery, sinister old tenor, slow with sudden sharp words.
+Marisol Vega|f|30|Vibrant, quick mezzo, passionate and warm, a street-smart guide.
+Nathaniel Grey|m|38|Crisp, articulate baritone of a historian, curious and precise.
+Elspeth Ward|f|57|Kind, measured older alto of a headmistress, warm authority.
+Zane Holloway|m|18|Moody, mumbling young voice, slow and sullen, warming up later.
+Cordelia Night|f|36|Velvet-dark mezzo, slow and alluring, a vampire countess.
+Reuben Ash|m|65|Folksy, warm older baritone, slow storytelling rhythm, a small-town sheriff.
+Junia Park|f|24|Clear, precise young soprano, quick and logical, a navigator.
+Florian Weiss|m|33|Airy, elegant tenor with theatrical flourish, playful and vain.
+Agnes Muir|f|88|Very old, slow, soft voice with a faint crackle, wise and serene.
+Kellan Briggs|m|44|Hoarse, booming drill-sergeant baritone, loud and rapid.
+Noor Haddad|f|28|Soft, warm alto with steady resolve, a calm translator under fire.
+Lysander Pell|m|52|Refined, melodic baritone of a stage actor, sweeping and grand.
+Briar Locke|n|19|Bright, quick androgynous young voice, curious and cheeky.
+Ingrid Sol|f|63|Deep, steady older alto, unhurried and grave, a ship's admiral.
+Toby Marsh|m|29|Warm, chatty baritone of a diner cook, relaxed and funny.
+Vivienne Chase|f|46|Smooth, rich mezzo with sly humor, a master thief.
+Grimsby Hollow|m|70|Creaky, nasal old voice, quick muttering, eccentric inventor.
+Adaeze Nwosu|f|35|Powerful, resonant alto, deliberate and inspiring, a leader in exile.
+Rowan Ellis|m|24|Kind, slightly hoarse tenor, earnest and warm, a medic in training.
+Philippa Crane|f|52|Clipped, crisp alto of an aristocratic spymistress, cool and amused.
+Bastian Cole|m|36|Rough-edged, warm baritone of a dockworker, slow and honest.
+Clara Voss|f|21|Gentle, breathy young soprano, nervous but brave.
+Augustin Pryor|m|59|Grave, measured bass of a judge, slow and weighty.
+Fiona Calder|f|44|Upbeat, brisk mezzo of a field reporter, fast and lively.
+Ishaan Rao|m|31|Warm, articulate tenor, thoughtful pace, an engineer with a big heart.
+Edith Brook|f|69|Steady, warm older voice, slow and plainspoken, a farm matriarch.
+Corvin Saltz|m|48|Slick, fast-talking baritone of a gambler, charming and restless.
+Hana Mori|f|26|Soft, precise mezzo, calm and focused, a quiet swordswoman.
+Lazarus Reign|m|66|Thunderous, theatrical villain bass, slow and grandiose.
+Ottoline Fry|f|34|Bright, sardonic alto, quick and witty, a sharp journalist.
+Mateo Silva|m|19|Lively, warm young tenor, quick and joyful, a dreamer.
+Rosemund Pike|f|80|Firm, deep elderly alto, slow and sure, the keeper of old laws.
+Desmond Hart|m|41|Mellow, smooth baritone of a jazz club owner, slow and cool.
+Quinn Avery|n|27|Neutral, crisp androgynous voice, quick and practical, a systems engineer.
+Lorelei Dunn|f|31|Lush, melodic mezzo, slow and enchanting, a siren of the stage.
+Abner Coyle|m|75|Grumpy, gravelly old bass, short and grumbling, softhearted underneath.
+Petra Novak|f|39|Tough, low alto with dry humor, fast and blunt, a demolition expert.
+Julian Ravel|m|28|Sensitive, soft tenor, slow and poetic, a young composer.
+Maude Sinclair|f|60|Cheery, brisk older voice, quick and practical, an unflappable landlady.
+Gareth Penn|m|53|Deep, kind baritone of a gentle giant, slow and quiet.
+Sienna Holt|f|23|Confident, smoky young alto, cool and teasing, a getaway driver.
+Rupert Vance|m|62|Plummy, quick-witted baritone, dry and amused, an old spy.
+Leilani Kahale|f|29|Warm, sunny mezzo, relaxed and soothing, an island guide.
+Draven Cole|m|35|Low, menacing whisper-baritone, slow and controlled, a shadow operative.
+Beatrice Finch|f|72|Precise, chirpy older soprano, quick and bird-like, a retired codebreaker.
+Ansel Hart|m|17|Clear, earnest young tenor, polite and eager, an apprentice knight.
+Carmilla Voss|f|55|Low, silky older contralto, slow and predatory, an ancient aristocrat.
+Wolfgang Reiter|m|58|Stern, resonant baritone, slow and exact, an old conductor.
+Ada Sterling|f|37|Cool, quick alto, analytical and clipped, a starship engineer.
+Fergus Doyle|m|46|Hearty, rumbling baritone, quick laugh, a brawling innkeeper.
+Ivy Hollander|f|25|Sweet, warm mezzo with quiet humor, a friendly librarian.
+Solomon Grey|m|84|Deep, slow, gentle old bass, profound and patient, a desert sage.
+Juno Raines|n|38|Smoky, low androgynous voice, wry and unhurried, a lounge singer.
+Caspian Lowe|m|30|Bright, charming baritone, quick and adventurous, a treasure hunter.
+Henrike Stahl|f|50|Hard, controlled alto, precise and cold, an interrogator.
+Milo Barnes|m|22|Friendly, scratchy young voice, fast and enthusiastic, a skater kid.
+Odette Marsh|f|65|Soft, refined older soprano, slow and wistful, a retired star.
+Thorne Ashby|m|40|Brooding, resonant baritone, slow and deliberate, a reluctant king.
+Paloma Reyes|f|27|Warm, rhythmic mezzo, lively and expressive, a festival dancer.
+Ezekiel Moss|m|73|Soft-spoken, tremulous old baritone, slow and devout, a village priest.
+Greer Malone|f|43|Gravelly, rapid alto of a hard-boiled detective, sharp and cynical.
+Felix Marlow|m|26|Light, nervous tenor, quick with half laughs, a clumsy assistant.
+Lavinia Crowe|f|58|Brittle, theatrical older soprano, slow and dramatic, a fading diva.
+Bastien Morel|m|33|Smooth, warm baritone with a smile, easy rhythm, a charming chef.
+Signe Dahl|f|20|Cool, clear young soprano, calm and distant, a mysterious stranger.
+Archibald Lyle|m|68|Booming, jolly old baritone, quick and loud, an explorer full of tales.
+Nia Okonkwo|f|33|Strong, bright alto, quick and decisive, a field commander.
+Lucian Farrow|m|47|Sly, purring baritone, slow and knowing, a smuggler king.
+Clover Banks|f|18|Peppy, squeaky young voice, rapid and excited, a superfan.
+Ignaz Weber|m|81|Raspy, slow old tenor, trembling but proud, a retired watchmaker.
+Raquel Montes|f|40|Smoky, warm alto, unhurried and confident, a cartel negotiator.
+Silvan Rhee|n|45|Calm, low androgynous voice, precise and soothing, an AI-like advisor.
+Darius Kane|m|36|Hard, punchy baritone, short commands, a special forces leader.
+Elowen Brook|f|30|Gentle, lilting soprano, slow and kind, a healer.
+Mortimer Gaunt|m|77|Hollow, slow old bass, dry and gloomy, an undertaker.
+Kat Delacroix|f|29|Fast, sharp mezzo with sarcasm, a quick-witted thief.
+Rafael Ortega|m|55|Warm, rich baritone, slow and generous, a vineyard patriarch.
+Tilly Oakes|f|69|Bright, chatty older voice, quick and nosy, a village gossip.
+Ronan Steele|m|31|Calm, low baritone, steady and reassuring, a rescue diver.
+Seren Ivory|f|46|Ethereal, soft mezzo, slow and floating, a seer.
+Gus Pemberton|m|62|Thick, raspy baritone, slow and stubborn, a retired boxer.
+Yara Haddad|f|22|Quick, clear young alto, determined and fierce, a messenger rider.
+Leopold Fane|m|50|Velvety, precise baritone, slow and cultured, a gentleman villain.
+Marguerite Aube|f|77|Warm, soft elderly alto, slow and loving, a baker of legends.
+Finn Callahan|m|20|Cheerful, husky young voice, relaxed and playful, a surfer.
+Rhiannon Vale|f|51|Rich, dramatic mezzo, slow and resonant, a bard queen.
+Barnaby Finch|m|35|Bright, fussy tenor, quick and precise, a bureaucrat in over his head.
+Sunniva Berg|f|38|Clear, steady alto, calm and kind, a mountain rescue leader.
+Cormac Reilly|m|67|Craggy, warm old baritone, slow with a twinkle, a fisherman.
+Elodie Sauvage|f|26|Breathy, quick mezzo, restless and adventurous, a runaway heiress.
+Tiberius Rex|m|44|Imperious, booming baritone, slow and arrogant, a self-made emperor.
+Wilhelmina Cross|f|63|Firm, crisp older alto, quick and exacting, a ship's quartermaster.
+Ezra Quinn|n|22|Light, gentle androgynous voice, soft and hesitant, a young oracle.
+Duncan Frey|m|39|Rough, low baritone with a slow burn, a disgraced soldier.
+Rosalie Hart|f|34|Warm, bright mezzo, natural and lively, the hero's sister.
+Vincent Ashgrove|m|71|Smooth, aged baritone, slow and courtly, an old casino owner.
+Pia Lindgren|f|19|Bright, quick young soprano, cheeky and fearless, a stowaway.
+Harlan Briggs|m|53|Dusty, slow drawl, deep and patient, a trail boss.
+Lucinda Vale|f|42|Cool, silky alto, controlled and cunning, a corporate fixer.
+Oskar Brandt|m|27|Dry, quiet tenor, deadpan humor, a reluctant hacker.
+Marigold Tate|f|81|Wobbly, warm elderly soprano, slow and giggly, a mischievous great-grandmother.
+Jasper Knox|m|45|Raspy, intense baritone, quick and edgy, an underground boxer.
+Aurelia Stone|f|31|Crystal-clear, regal mezzo, slow and poised, a young empress.
+Reginald Moor|m|59|Crisp, pompous tenor, quick and fussy, a colonial governor.
+Saskia Veldt|f|36|Low, focused alto, calm and analytical, a sniper.
+Alistair Crowe|m|57|Clipped, cultured baritone of a spymaster, quiet and amused, never raises his voice.
+Mabel Fenwick|f|74|Chirpy, quick elderly voice, cheerful and nosy, a retired switchboard operator.
+Dante Vargas|m|28|Hot-headed, rapid tenor of a rookie cop, loud and passionate.
+Rosalind Achterberg|f|45|Resonant, cool alto of an architect, deliberate and visionary.
+Bertram Oakes|m|80|Slow, wheezing old bass with warm chuckles, a retired sea captain.
+Kiera Doyle|f|22|Lively, slightly hoarse young mezzo, cheeky and brave, a pickpocket.
+Lennox Vale|n|33|Calm, low androgynous voice, smooth and diplomatic, an interstellar envoy.
+Gunnar Holt|m|49|Heavy, rolling baritone, slow and steady, a mountain guide.
+Priya Raman|f|38|Bright, articulate mezzo, quick and warm, a crisis negotiator.
+Cyril Dunmore|m|66|Reedy, fussy older tenor, precise and anxious, a nervous accountant.
+Esther Blum|f|58|Warm, husky older alto, wry and patient, a jazz club singer.
+Jules Ferrant|m|24|Smooth, quiet young baritone, dreamy and charming, a street painter.
+Ottavia Brun|f|29|Sharp, quick alto with icy wit, a duelist.
+Ewan MacRae|m|35|Warm, rumbling baritone, cheerful and steady, a ship's cook.
+Halima Diallo|f|51|Deep, measured alto, calm and wise, a desert caravan leader.
+Barrett Stokes|m|42|Booming, rapid-fire baritone of a sports announcer in a disaster film.
+Lottie Pembrook|f|16|Bright, breathless young voice, curious and fearless, a stowaway inventor.

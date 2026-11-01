@@ -1,0 +1,310 @@
+//! Computed preset voices. The engine that computes them runs on TTV-TTS
+//! Proxy (remote) or inside this app when VCP runs on this PC (local). The
+//! app keeps a copy of the library in memory – the reader looks voices up
+//! per message – and patches it from change events instead of refetching.
+
+use std::collections::HashMap;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
+
+use parking_lot::RwLock;
+use serde::Serialize;
+use tauri::Emitter;
+use ttv_link::{EngineStatus, JobRequest, JobView, LibraryChange, LibraryEntry, LibrarySnapshot};
+use ttv_vcp::Method;
+
+use crate::config::HostConfig;
+use crate::state::AppState;
+
+const T_SHORT: Duration = Duration::from_secs(10);
+const T_LONG: Duration = Duration::from_secs(180);
+
+#[derive(Default)]
+struct Cache {
+    /// Which engine the copy came from ("proxy:<id>" or "local").
+    source: String,
+    rev: Option<u64>,
+    map: HashMap<String, LibraryEntry>,
+    /// def hash -> languages computed (for counts per preset).
+    by_def: HashMap<String, Vec<String>>,
+}
+
+impl Cache {
+    fn index(&mut self) {
+        self.by_def.clear();
+        for e in self.map.values() {
+            self.by_def.entry(e.def_hash.clone()).or_default().push(e.lang.clone());
+        }
+    }
+
+    fn add(&mut self, e: LibraryEntry) {
+        let langs = self.by_def.entry(e.def_hash.clone()).or_default();
+        if !langs.contains(&e.lang) {
+            langs.push(e.lang.clone());
+        }
+        self.map.insert(e.key.clone(), e);
+    }
+
+    fn remove(&mut self, key: &str) {
+        if let Some(e) = self.map.remove(key)
+            && let Some(l) = self.by_def.get_mut(&e.def_hash)
+        {
+            l.retain(|x| *x != e.lang);
+        }
+    }
+}
+
+/// What the window gets on `app://library`.
+#[derive(Debug, Clone, Serialize)]
+pub struct LibraryNotice {
+    pub rev: u64,
+    pub size: u32,
+}
+
+pub struct VoiceLibrary {
+    /// Used when VCP runs on this PC (direct mode).
+    pub local: ttv_engine::Engine,
+    cache: RwLock<Cache>,
+    loading: AtomicBool,
+}
+
+enum Backend {
+    Remote(ttv_vcp::Client),
+    Local,
+}
+
+impl VoiceLibrary {
+    pub fn new(data_dir: &std::path::Path) -> Self {
+        let activity: ttv_engine::Activity = Arc::new(crate::speech::last_vcp_use);
+        Self { local: ttv_engine::Engine::new(data_dir.join("engine"), activity), cache: RwLock::new(Cache::default()), loading: AtomicBool::new(false) }
+    }
+
+    fn source(state: &AppState) -> String {
+        match &state.cfg.read().host {
+            HostConfig::Proxy { id, .. } => format!("proxy:{id}"),
+            HostConfig::Direct { .. } => "local".into(),
+            HostConfig::None => String::new(),
+        }
+    }
+
+    fn backend(state: &AppState) -> Result<Backend, String> {
+        let direct = matches!(state.cfg.read().host, HostConfig::Direct { .. });
+        if direct {
+            return Ok(Backend::Local);
+        }
+        match state.vcp() {
+            Some(c) => Ok(Backend::Remote(c)),
+            None => Err("No voice host set up yet.".into()),
+        }
+    }
+
+    /// Called after the host setting changed.
+    pub fn host_changed(&self, state: &AppState) {
+        let direct = matches!(state.cfg.read().host, HostConfig::Direct { .. });
+        self.local.set_vcp(if direct { state.vcp() } else { None });
+        let src = Self::source(state);
+        let mut c = self.cache.write();
+        if c.source != src {
+            *c = Cache { source: src, ..Default::default() };
+        }
+    }
+
+    // ── the in-memory copy ───────────────────────────────────────────────
+
+    /// Looks a computed voice up (per message, cheap).
+    pub fn get(&self, key: &str) -> Option<LibraryEntry> {
+        self.cache.read().map.get(key).cloned()
+    }
+
+    /// Runs `f` with the copy (no cloning of the whole library).
+    pub fn with<R>(&self, f: impl FnOnce(&HashMap<String, LibraryEntry>, &HashMap<String, Vec<String>>) -> R) -> R {
+        let c = self.cache.read();
+        f(&c.map, &c.by_def)
+    }
+
+    pub fn size(&self) -> u32 {
+        self.cache.read().map.len() as u32
+    }
+
+    pub fn loaded(&self) -> bool {
+        self.cache.read().rev.is_some()
+    }
+
+    /// Fetches the whole library (on connect, or after missing a change).
+    pub async fn refresh(&self, state: &Arc<AppState>) -> Result<(), String> {
+        if self.loading.swap(true, Ordering::SeqCst) {
+            return Ok(());
+        }
+        let r = async {
+            let src = Self::source(state);
+            let snap: LibrarySnapshot = match Self::backend(state)? {
+                Backend::Local => self.local.library(),
+                Backend::Remote(c) => c.get("/ttv/v1/library", T_LONG).await.map_err(|e| e.to_string())?,
+            };
+            let mut c = self.cache.write();
+            c.source = src;
+            c.rev = Some(snap.rev);
+            c.map = snap.entries.into_iter().map(|e| (e.key.clone(), e)).collect();
+            c.index();
+            Ok::<_, String>(())
+        }
+        .await;
+        self.loading.store(false, Ordering::SeqCst);
+        if r.is_ok() {
+            log::info!("library: {} computed voices", self.size());
+            self.notify(state);
+        }
+        r
+    }
+
+    /// Applies a change event; refetches if it doesn't fit the copy.
+    pub fn on_change(&self, state: &Arc<AppState>, ch: LibraryChange) {
+        let fits = {
+            let mut c = self.cache.write();
+            if c.rev == Some(ch.base) {
+                for k in &ch.removed {
+                    c.remove(k);
+                }
+                for e in ch.added {
+                    c.add(e);
+                }
+                c.rev = Some(ch.rev);
+                true
+            } else {
+                false
+            }
+        };
+        if fits {
+            self.notify(state);
+        } else {
+            let st = state.clone();
+            tauri::async_runtime::spawn(async move {
+                let _ = st.library.refresh(&st).await;
+            });
+        }
+    }
+
+    fn notify(&self, state: &AppState) {
+        let c = self.cache.read();
+        if let Some(app) = state.app() {
+            let _ = app.emit("app://library", LibraryNotice { rev: c.rev.unwrap_or(0), size: c.map.len() as u32 });
+        }
+    }
+
+    pub fn on_job(state: &AppState, job: &JobView) {
+        if let Some(app) = state.app() {
+            let _ = app.emit("app://job", job);
+        }
+    }
+
+    // ── engine calls ─────────────────────────────────────────────────────
+
+    pub async fn status(&self, state: &AppState) -> Result<EngineStatus, String> {
+        match Self::backend(state)? {
+            Backend::Local => Ok(self.local.status()),
+            Backend::Remote(c) => c.get("/ttv/v1/engine", T_SHORT).await.map_err(|e| e.to_string()),
+        }
+    }
+
+    pub async fn submit(&self, state: &AppState, req: JobRequest) -> Result<JobView, String> {
+        match Self::backend(state)? {
+            Backend::Local => self.local.submit(req),
+            Backend::Remote(c) => c.post("/ttv/v1/jobs", &req, T_SHORT).await.map_err(|e| e.to_string()),
+        }
+    }
+
+    pub async fn control(&self, state: &AppState, id: &str, action: &str) -> Result<(), String> {
+        match Self::backend(state)? {
+            Backend::Local => self.local.control(id, action),
+            Backend::Remote(c) => c.post::<_, serde_json::Value>(&format!("/ttv/v1/jobs/{id}/{action}"), &(), T_SHORT).await.map(|_| ()).map_err(|e| e.to_string()),
+        }
+    }
+
+    pub async fn delete(&self, state: &AppState, keys: Vec<String>) -> Result<u32, String> {
+        match Self::backend(state)? {
+            Backend::Local => self.local.delete(&keys).await,
+            Backend::Remote(c) => {
+                let v: serde_json::Value = c.post("/ttv/v1/library/delete", &serde_json::json!({ "keys": keys }), T_LONG).await.map_err(|e| e.to_string())?;
+                Ok(v["deleted"].as_u64().unwrap_or(0) as u32)
+            }
+        }
+    }
+
+    pub async fn adopt(&self, state: &AppState, entries: Vec<LibraryEntry>) -> Result<u32, String> {
+        match Self::backend(state)? {
+            Backend::Local => Ok(self.local.adopt(entries)),
+            Backend::Remote(c) => {
+                let v: serde_json::Value = c.post("/ttv/v1/library/adopt", &entries, T_LONG).await.map_err(|e| e.to_string())?;
+                Ok(v["adopted"].as_u64().unwrap_or(0) as u32)
+            }
+        }
+    }
+
+    pub async fn verify(&self, state: &AppState) -> Result<u32, String> {
+        match Self::backend(state)? {
+            Backend::Local => self.local.verify().await,
+            Backend::Remote(c) => {
+                let v: serde_json::Value = c.post("/ttv/v1/library/verify", &(), T_LONG).await.map_err(|e| e.to_string())?;
+                Ok(v["removed"].as_u64().unwrap_or(0) as u32)
+            }
+        }
+    }
+
+    pub async fn estimate(&self, state: &AppState, voices: u32, takes: u8, check: bool) -> Result<Option<u64>, String> {
+        match Self::backend(state)? {
+            Backend::Local => Ok(self.local.estimate(voices, takes, check)),
+            Backend::Remote(c) => {
+                let v: serde_json::Value = c.get(&format!("/ttv/v1/engine/estimate?voices={voices}&takes={takes}&check={check}"), T_SHORT).await.map_err(|e| e.to_string())?;
+                Ok(v["secs"].as_u64())
+            }
+        }
+    }
+
+    pub async fn benchmark(&self, state: &AppState) -> Result<f32, String> {
+        match Self::backend(state)? {
+            Backend::Local => self.local.benchmark().await,
+            Backend::Remote(c) => {
+                let v: serde_json::Value = c.post("/ttv/v1/engine/benchmark", &(), Duration::from_secs(600)).await.map_err(|e| e.to_string())?;
+                v["design_secs"].as_f64().map(|d| d as f32).ok_or_else(|| "The proxy sent no measurement.".into())
+            }
+        }
+    }
+
+    /// The lossless backup of a voice's reference sample (FLAC); used by pack export.
+    #[allow(dead_code)]
+    pub async fn sample(&self, state: &AppState, key: &str) -> Result<Vec<u8>, String> {
+        match Self::backend(state)? {
+            Backend::Local => self.local.sample(key).ok_or_else(|| "No backup kept for this voice.".into()),
+            Backend::Remote(c) => {
+                let r = c.request(Method::GET, &format!("/ttv/v1/library/sample/{key}")).timeout(T_LONG).send().await.map_err(|e| e.to_string())?;
+                if !r.status().is_success() {
+                    return Err("No backup kept for this voice.".into());
+                }
+                Ok(r.bytes().await.map_err(|e| e.to_string())?.to_vec())
+            }
+        }
+    }
+}
+
+/// Forwards the local engine's events (direct mode) like the proxy's.
+pub async fn local_events(state: Arc<AppState>) {
+    let mut rx = state.library.local.subscribe();
+    loop {
+        let ev = match rx.recv().await {
+            Ok(ev) => ev,
+            Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => {
+                let _ = state.library.refresh(&state).await;
+                continue;
+            }
+            Err(_) => return,
+        };
+        if !matches!(state.cfg.read().host, HostConfig::Direct { .. }) {
+            continue;
+        }
+        match ev {
+            ttv_engine::EngineEvent::Job(j) => VoiceLibrary::on_job(&state, &j),
+            ttv_engine::EngineEvent::Library(c) => state.library.on_change(&state, c),
+        }
+    }
+}

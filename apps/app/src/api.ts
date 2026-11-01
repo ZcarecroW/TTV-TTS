@@ -224,7 +224,9 @@ export interface Profile {
   };
   mod_commands: { enabled: boolean; roles: Role[]; skip: string; clear: string; pause: string; resume: string; volume: string; mute: string; unmute: string; skip_on_timeout: boolean };
   voices: {
-    mode: "per_user_language" | "per_user" | "per_language" | "single";
+    mode: "preset" | "per_user_language" | "per_user" | "per_language" | "single";
+    preset: string;
+    preset_voices: number;
     prefix: string;
     fallback_language: string;
     exclude: string[];
@@ -292,3 +294,144 @@ export const updates = {
   check: () => invoke<UpdateInfo>("check_update"),
   install: () => invoke<void>("install_update"),
 };
+
+// ── presets, computing, library ─────────────────────────────────────────
+
+export type Gender = "m" | "f" | "n";
+
+export interface VoiceDef {
+  name: string;
+  gender: Gender;
+  age: number;
+  description: string;
+  fx: string | null;
+}
+
+export interface Preset {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  builtin: boolean;
+  target: number;
+  defs: VoiceDef[];
+}
+
+export interface PresetView {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  builtin: boolean;
+  count: number;
+  target: number;
+  /** men, women, neutral among the first 30 */
+  mix: [number, number, number];
+  /** language -> computed voices */
+  computed: Record<string, number>;
+  /** definitions computed in at least one language */
+  ready: number;
+}
+
+export interface VoiceView extends VoiceDef {
+  index: number;
+  hash: string;
+  langs: string[];
+}
+
+export interface PresetDetail extends PresetView {
+  voices: VoiceView[];
+}
+
+export interface Issue {
+  line: number;
+  level: "error" | "warning";
+  message: string;
+}
+
+export interface Parsed {
+  name: string;
+  description: string;
+  icon: string;
+  defs: VoiceDef[];
+  issues: Issue[];
+}
+
+export interface JobOptions {
+  speech_check: boolean;
+  takes: number;
+  backup: boolean;
+}
+
+export type JobState = "queued" | "running" | "paused" | "waiting" | "done" | "cancelled" | "failed";
+
+export interface JobView {
+  id: string;
+  preset_id: string;
+  preset_name: string;
+  languages: string[];
+  options: JobOptions;
+  total: number;
+  done: number;
+  failed: number;
+  state: JobState;
+  phase: string;
+  current: string | null;
+  created: number;
+  finished: number | null;
+  secs_per_voice: number | null;
+  eta_secs: number | null;
+  error: string | null;
+}
+
+export interface EngineStatus {
+  jobs: JobView[];
+  secs_per_voice: number | null;
+  library_size: number;
+  library_rev: number;
+}
+
+export interface LibraryNotice {
+  rev: number;
+  size: number;
+}
+
+export interface ClassicFound {
+  roles: number;
+  voices: number;
+  languages: string[];
+}
+
+export interface PromptRequest {
+  theme: string;
+  name: string;
+  total: number;
+  have: VoiceDef[];
+  effects: boolean;
+}
+
+export const presets = {
+  list: () => invoke<PresetView[]>("list_presets"),
+  get: (id: string) => invoke<PresetDetail>("get_preset", { id }),
+  save: (preset: Preset) => invoke<PresetView>("save_preset", { preset }),
+  duplicate: (id: string) => invoke<PresetView>("duplicate_preset", { id }),
+  remove: (id: string) => invoke<void>("delete_preset", { id }),
+  parse: (text: string) => invoke<Parsed>("parse_preset", { text }),
+  exportText: (id: string) => invoke<string>("export_preset", { id }),
+  prompt: (request: PromptRequest) => invoke<string>("preset_prompt", { request }),
+  engine: () => invoke<EngineStatus>("engine_status"),
+  estimate: (voices: number, takes: number, check: boolean) => invoke<number | null>("estimate", { voices, takes, check }),
+  benchmark: () => invoke<number>("benchmark"),
+  compute: (request: { preset_id: string; count: number; languages: string[]; options: JobOptions }) => invoke<JobView>("compute", { request }),
+  job: (id: string, action: "pause" | "resume" | "cancel" | "remove") => invoke<void>("job_control", { id, action }),
+  deleteVoices: (keys: string[]) => invoke<number>("delete_voices", { keys }),
+  verify: () => invoke<number>("verify_library"),
+  listen: (presetId: string, index: number, lang: string, text: string) => invoke<SayReport>("listen", { presetId, index, lang, text }),
+  detectClassic: () => invoke<ClassicFound>("detect_classic"),
+  adoptClassic: () => invoke<{ roles: number; adopted: number }>("adopt_classic"),
+};
+
+/** Language codes voices can be designed for (with an accent and a check sentence). */
+export const DESIGN_LANGS = ["en", "de", "ru", "fr", "es", "it", "pt", "ja", "zh", "ko"] as const;
+/** Tiers of the built-in presets: their first 30, 60, 120 or all 240 voices. */
+export const TIERS = [30, 60, 120, 240] as const;

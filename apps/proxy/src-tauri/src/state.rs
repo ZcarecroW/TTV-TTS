@@ -41,6 +41,8 @@ pub struct AppState {
     pub rebind: Notify,
     /// Last error of the HTTPS listener (e.g. port in use).
     pub listen_error: RwLock<Option<String>>,
+    /// Computes preset voices; keeps going while the apps are closed.
+    pub engine: ttv_engine::Engine,
     app: OnceLock<AppHandle>,
 }
 
@@ -50,7 +52,16 @@ impl AppState {
         let access = Access::load(&data_dir);
         let vcp = ttv_vcp::Client::new(&cfg.vcp_url, dev_vcp_key().or_else(|| secrets.get(secrets::VCP_KEY)));
         let update = UpdateState { phase: "idle".into(), channel: cfg.update_channel.clone(), ..Default::default() };
+        // Chat goes first: the engine waits while apps use VCP through us.
+        let activity: ttv_engine::Activity = Arc::new(|| {
+            let last = crate::updater::LAST_ACTIVITY.load(std::sync::atomic::Ordering::Relaxed);
+            let ago = chrono::Utc::now().timestamp() - last;
+            (last > 0).then(|| Instant::now().checked_sub(std::time::Duration::from_secs(ago.max(0) as u64))).flatten()
+        });
+        let engine = ttv_engine::Engine::new(data_dir.join("engine"), activity);
+        engine.set_vcp(Some(vcp.clone()));
         Arc::new(Self {
+            engine,
             vcp_state: RwLock::new(VcpState { url: cfg.vcp_url.clone(), exe: cfg.vcp_exe.clone(), ..Default::default() }),
             cfg: RwLock::new(cfg),
             cfg_path,
@@ -91,6 +102,7 @@ impl AppState {
         let key = self.vcp_key();
         let http = self.vcp.read().http().clone();
         *self.vcp.write() = ttv_vcp::Client::with_http(http, &url, key);
+        self.engine.set_vcp(Some(self.vcp()));
         self.vcp_state.write().url = url;
         self.poke.notify_one();
     }

@@ -2,12 +2,16 @@
 //! or through TTV-TTS Proxy on a second PC.
 
 mod audio;
+mod classic;
 mod commands;
 mod config;
 mod error;
 mod host;
+mod library;
 mod logbuf;
 mod monitor;
+mod preset_cmds;
+mod presets;
 mod profile;
 mod reader;
 mod secrets;
@@ -57,6 +61,10 @@ pub fn run() {
             let state = AppState::new(cfg, cfg_path, data_dir);
             state.set_app(app.handle().clone());
             app.manage(state.clone());
+            // Local engine (VCP on this PC): idle unless direct mode has jobs.
+            state.library.host_changed(&state);
+            tauri::async_runtime::spawn(state.library.local.worker());
+            tauri::async_runtime::spawn(library::local_events(state.clone()));
             tauri::async_runtime::spawn(monitor::run(state.clone()));
             let st = state.clone();
             tauri::async_runtime::spawn(async move { reader::start(st) });
@@ -90,6 +98,24 @@ pub fn run() {
             commands::update_info,
             commands::check_update,
             commands::install_update,
+            preset_cmds::list_presets,
+            preset_cmds::get_preset,
+            preset_cmds::save_preset,
+            preset_cmds::duplicate_preset,
+            preset_cmds::delete_preset,
+            preset_cmds::parse_preset,
+            preset_cmds::export_preset,
+            preset_cmds::preset_prompt,
+            preset_cmds::engine_status,
+            preset_cmds::estimate,
+            preset_cmds::benchmark,
+            preset_cmds::compute,
+            preset_cmds::job_control,
+            preset_cmds::delete_voices,
+            preset_cmds::verify_library,
+            preset_cmds::listen,
+            preset_cmds::detect_classic,
+            preset_cmds::adopt_classic,
         ])
         .build(tauri::generate_context!())
         .expect("error while building TTV-TTS")

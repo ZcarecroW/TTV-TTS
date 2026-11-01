@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/vcp", "crates/link", "apps/proxy/src-tauri", "apps/app/src-tauri"]
+members = ["crates/vcp", "crates/link", "crates/engine", "apps/proxy/src-tauri", "apps/app/src-tauri"]
 
 [workspace.package]
 version = "2.0.0-alpha.4"
@@ -13,6 +13,7 @@ repository = "https://github.com/ZcarecroW/TTV-TTS"
 [workspace.dependencies]
 ttv-vcp = { path = "crates/vcp" }
 ttv-link = { path = "crates/link" }
+ttv-engine = { path = "crates/engine" }
 
 tauri = { version = "2.12.5", features = ["tray-icon"] }
 tauri-build = { version = "2.7.4", features = [] }

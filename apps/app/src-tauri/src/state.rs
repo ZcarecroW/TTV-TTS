@@ -13,6 +13,8 @@ use ttv_link::{ProxyStatus, VcpState};
 use crate::audio::Audio;
 use crate::config::Config;
 use crate::error::AppResult;
+use crate::library::VoiceLibrary;
+use crate::presets::PresetStore;
 use crate::reader::ReaderData;
 use crate::secrets::Secrets;
 
@@ -37,6 +39,9 @@ pub struct AppState {
     pub secrets: Secrets,
     pub audio: Arc<Audio>,
     pub reader: ReaderData,
+    pub presets: PresetStore,
+    /// Computed preset voices (engine on the proxy or in this app).
+    pub library: VoiceLibrary,
     pub host: RwLock<HostStatus>,
     vcp: RwLock<Option<ttv_vcp::Client>>,
     /// The host setting changed: reconnect.
@@ -53,6 +58,8 @@ impl AppState {
         let vcp = crate::host::client(&cfg.host, |k| secrets.get(k));
         Arc::new(Self {
             reader: ReaderData::load(&data_dir),
+            presets: PresetStore::load(&data_dir),
+            library: VoiceLibrary::new(&data_dir),
             cfg: RwLock::new(cfg),
             cfg_path,
             data_dir,
@@ -89,6 +96,7 @@ impl AppState {
     pub fn host_updated(&self) {
         let host = self.cfg.read().host.clone();
         *self.vcp.write() = crate::host::client(&host, |k| self.secrets.get(k));
+        self.library.host_changed(self);
         self.host_changed.notify_waiters();
     }
 

@@ -179,6 +179,14 @@ pub struct Emotion {
     pub default_intensity: String,
 }
 
+#[derive(Debug, Clone, Default, Deserialize, Serialize)]
+#[serde(default)]
+pub struct VoiceSaveResponse {
+    pub success: bool,
+    pub voice: Option<Voice>,
+    pub message: Option<String>,
+}
+
 /// Result of a `?sync=true` generation (`audio_base64` = WAV).
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]
 #[serde(default)]

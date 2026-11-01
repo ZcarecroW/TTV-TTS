@@ -231,6 +231,16 @@ impl Client {
         Ok(())
     }
 
+    /// `DELETE /api/v1/voices/{id}`. A voice that is already gone counts as deleted.
+    pub async fn delete_voice(&self, id: &str) -> Result<(), Error> {
+        let res = self.request(Method::DELETE, &format!("/api/v1/voices/{id}")).timeout(Duration::from_secs(20)).send().await.map_err(Error::from_reqwest)?;
+        match res.status() {
+            s if s.is_success() || s == StatusCode::NOT_FOUND => Ok(()),
+            StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN => Err(Error::Unauthorized),
+            s => Err(Error::Http { status: s.as_u16(), message: error_message(&res.bytes().await.unwrap_or_default()) }),
+        }
+    }
+
     /// `POST /api/v1/app/shutdown`: closes VCP.
     pub async fn shutdown(&self) -> Result<(), Error> {
         let _: serde_json::Value = self.post("/api/v1/app/shutdown", &serde_json::json!({}), Duration::from_secs(10)).await?;

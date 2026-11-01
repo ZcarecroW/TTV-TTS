@@ -8,7 +8,7 @@ import UiTags from "@ttv-tts/ui/components/UiTags.vue";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
 import { Devices, Gear, Globe, Lock, Plus, Sparkle, Trash, Waveform } from "@ttv-tts/ui/icons";
-import { api, reader, type Profile, type Role, type Voice } from "../api";
+import { api, reader, TIERS, type Profile, type Role, type Voice } from "../api";
 import { run, store } from "../store";
 
 const { t } = useI18n();
@@ -19,6 +19,19 @@ const voices = ref<Voice[]>([]);
 const replLang = ref("all");
 
 const LANGS = ["de", "en", "ru", "uk", "fr", "es", "it", "pt", "nl", "pl", "tr", "ja", "zh", "ko"];
+
+// Preset mode: which preset, how many of its voices.
+const chosenPreset = computed(() => store.presets.find((x) => x.id === p.value?.voices.preset));
+const tierOptions = computed(() => {
+  const n = chosenPreset.value?.count ?? 0;
+  return [...TIERS.filter((x) => x < n), 0];
+});
+const presetHint = computed(() => {
+  const c = chosenPreset.value;
+  if (!c || !p.value) return "";
+  const langs = Object.entries(c.computed).map(([l, n]) => `${l} ${n}`).join(" · ");
+  return langs ? t("profiles.presetComputed", { langs }) : t("profiles.presetNothing");
+});
 const ROLES: Role[] = ["broadcaster", "moderator", "vip", "subscriber"];
 
 // Store profiles are reactive proxies: unwrap before copying.
@@ -306,12 +319,31 @@ const defaultVoice = computed({
                 :label="t('profiles.voiceMode')"
                 :tip="t('tips.voiceMode')"
                 :options="[
+                  { value: 'preset', label: t('profiles.vmPreset') },
                   { value: 'per_user_language', label: t('profiles.vmPerUserLanguage') },
                   { value: 'per_user', label: t('profiles.vmPerUser') },
                   { value: 'per_language', label: t('profiles.vmPerLanguage') },
                   { value: 'single', label: t('profiles.vmSingle') },
                 ]"
               />
+              <template v-if="p.voices.mode === 'preset'">
+                <div class="grid grid-cols-[2fr_1fr] gap-3">
+                  <UiField :label="t('profiles.preset')" :tip="t('tips.profilePreset')">
+                    <select v-model="p.voices.preset" class="input">
+                      <option v-for="x in store.presets" :key="x.id" :value="x.id">{{ x.name }}</option>
+                    </select>
+                  </UiField>
+                  <UiField :label="t('profiles.presetVoices')" :tip="t('tips.presetVoices')">
+                    <select v-model.number="p.voices.preset_voices" class="input">
+                      <option v-for="n in tierOptions" :key="n" :value="n">{{ n === 0 ? t("profiles.allVoices", { n: chosenPreset?.count ?? 0 }) : n }}</option>
+                    </select>
+                  </UiField>
+                </div>
+                <p v-if="chosenPreset" class="hint -mt-2">{{ presetHint }}</p>
+                <UiField :label="t('profiles.fallbackLang')" :tip="t('tips.presetFallback')">
+                  <select v-model="p.voices.fallback_language" class="input"><option v-for="l in LANGS" :key="l" :value="l">{{ l }}</option></select>
+                </UiField>
+              </template>
               <div v-if="p.voices.mode === 'per_user_language'" class="grid grid-cols-2 gap-3">
                 <UiField :label="t('profiles.prefix')" :tip="t('tips.prefix')"><input v-model="p.voices.prefix" class="input mono" /></UiField>
                 <UiField :label="t('profiles.fallbackLang')">

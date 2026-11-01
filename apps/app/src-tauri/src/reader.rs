@@ -642,12 +642,26 @@ fn fnv1a(s: &str) -> u32 {
     h
 }
 
-/// The voice for a viewer (id, display name), following the profile's mode.
-fn pick_voice(state: &AppState, p: &crate::profile::Profile, user_id: &str, login: &str, lang: &str) -> Option<(String, String)> {
+/// A voice for one message.
+struct Picked {
+    id: String,
+    name: String,
+    /// Loudness correction measured when the voice was computed.
+    gain: f32,
+}
+
+impl From<(String, String)> for Picked {
+    fn from((id, name): (String, String)) -> Self {
+        Self { id, name, gain: 1.0 }
+    }
+}
+
+/// The voice for a viewer, following the profile's mode.
+fn pick_voice(state: &AppState, p: &crate::profile::Profile, user_id: &str, login: &str, lang: &str) -> Option<Picked> {
     let vc = state.reader.voices.read();
     let find = |key: &str| {
         let k = key.to_lowercase();
-        vc.all.iter().find(|v| v.id.to_lowercase() == k || v.name.to_lowercase() == k).map(|v| (v.id.clone(), v.name.clone()))
+        vc.all.iter().find(|v| v.id.to_lowercase() == k || v.name.to_lowercase() == k).map(|v| Picked::from((v.id.clone(), v.name.clone())))
     };
     if let Some(v) = p.voices.users.get(login).and_then(|k| find(k)) {
         return Some(v);
@@ -663,18 +677,52 @@ fn pick_voice(state: &AppState, p: &crate::profile::Profile, user_id: &str, logi
         idx as usize % len.max(1)
     };
     match p.voices.mode {
+        VoiceMode::Preset => {
+            let lib = &state.library;
+            let fallback = p.voices.fallback_language.as_str();
+            let entry = state
+                .presets
+                .with(&p.voices.preset, |preset| {
+                    let n = match p.voices.preset_voices {
+                        0 => preset.defs.len(),
+                        k => (k as usize).min(preset.defs.len()),
+                    };
+                    if n == 0 {
+                        return None;
+                    }
+                    let r = role(n);
+                    let hash = preset.defs[r].hash();
+                    let get = |l: &str| lib.get(&format!("{hash}:{l}"));
+                    if let Some(e) = get(lang).or_else(|| get(fallback)) {
+                        return Some(e);
+                    }
+                    // This viewer's voice isn't computed yet: a computed one
+                    // of the same preset stands in until it is.
+                    for l in [lang, fallback] {
+                        let ready: Vec<String> = preset.defs[..n].iter().map(|d| d.key(l)).filter(|k| lib.get(k).is_some()).collect();
+                        if !ready.is_empty() {
+                            return lib.get(&ready[r % ready.len()]);
+                        }
+                    }
+                    None
+                })
+                .flatten();
+            if let Some(e) = entry {
+                return Some(Picked { id: e.voice_id, name: e.name, gain: e.gain });
+            }
+        }
         VoiceMode::PerUserLanguage => {
             let pool: Vec<&ttv_vcp::Voice> = vc.pools.get(lang).or_else(|| vc.pools.get(&p.voices.fallback_language)).map(|v| v.iter().filter(excluded).collect()).unwrap_or_default();
             if !pool.is_empty() {
                 let v = pool[role(pool.len())];
-                return Some((v.id.clone(), v.name.clone()));
+                return Some((v.id.clone(), v.name.clone()).into());
             }
         }
         VoiceMode::PerUser => {
             let pool: Vec<&ttv_vcp::Voice> = vc.all.iter().filter(excluded).collect();
             if !pool.is_empty() {
                 let v = pool[role(pool.len())];
-                return Some((v.id.clone(), v.name.clone()));
+                return Some((v.id.clone(), v.name.clone()).into());
             }
         }
         VoiceMode::PerLanguage => {
@@ -684,7 +732,7 @@ fn pick_voice(state: &AppState, p: &crate::profile::Profile, user_id: &str, logi
         }
         VoiceMode::Single => {}
     }
-    p.voices.default_voice.as_deref().and_then(find).or_else(|| vc.default_voice.as_deref().and_then(|d| find(d).or_else(|| Some((d.to_string(), d.to_string())))))
+    p.voices.default_voice.as_deref().and_then(find).or_else(|| vc.default_voice.as_deref().and_then(|d| find(d).or_else(|| Some((d.to_string(), d.to_string()).into()))))
 }
 
 // ── generator & player ──────────────────────────────────────────────────
@@ -732,7 +780,7 @@ async fn generator(state: Arc<AppState>) {
         };
         *state.reader.last.lock() = Some((item.view.login.clone(), Instant::now()));
         let voice = pick_voice(&state, &p, &item.user_id, &item.view.login, &item.view.lang);
-        item.view.voice = voice.as_ref().map(|v| v.1.clone());
+        item.view.voice = voice.as_ref().map(|v| v.name.clone());
         let vcp_lang = {
             let vc = state.reader.voices.read();
             langs::vcp_name(&item.view.lang, vc.languages.as_deref(), &p.language.unsupported)
@@ -743,7 +791,7 @@ async fn generator(state: Arc<AppState>) {
             record(&state, item.view);
             continue;
         };
-        let Some((voice_id, _)) = voice else {
+        let Some(Picked { id: voice_id, gain, .. }) = voice else {
             item.view.state = ItemState::Failed;
             item.view.reason = Some("no voice found - set a default voice in VCP or create voices".into());
             record(&state, item.view);
@@ -755,7 +803,7 @@ async fn generator(state: Arc<AppState>) {
         if tx.send(Prepared { item, clips: crx }).await.is_err() {
             return;
         }
-        let u = speech::Utterance { text, voice: voice_id, language: vcp_lang, emotion: None, intensity: None, gain: 1.0 };
+        let u = speech::Utterance { text, voice: voice_id, language: vcp_lang, emotion: None, intensity: None, gain };
         for piece in speech::split(&u.text) {
             if cancel.load(Ordering::Relaxed) {
                 break;

@@ -9,4 +9,5 @@ mod types;
 pub mod wav;
 
 pub use client::{Client, Error};
+pub use reqwest::Method;
 pub use types::*;

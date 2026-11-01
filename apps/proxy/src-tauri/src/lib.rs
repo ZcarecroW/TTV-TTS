@@ -32,6 +32,27 @@ use tauri::{Manager, RunEvent, WindowEvent};
 use crate::config::Config;
 use crate::state::AppState;
 
+/// Forwards the engine's job and library events to apps and the window.
+async fn engine_events(state: Arc<AppState>) {
+    use tauri::Emitter;
+    let mut rx = state.engine.subscribe();
+    loop {
+        let ev = match rx.recv().await {
+            Ok(ev) => ev,
+            Err(tokio::sync::broadcast::error::RecvError::Lagged(_)) => continue,
+            Err(_) => return,
+        };
+        let out = match ev {
+            ttv_engine::EngineEvent::Job(j) => ttv_link::Event::Job(j),
+            ttv_engine::EngineEvent::Library(c) => ttv_link::Event::Library(c),
+        };
+        if let Some(app) = state.app() {
+            let _ = app.emit("proxy://engine", &out);
+        }
+        let _ = state.events.send(out);
+    }
+}
+
 /// Enables or disables starting with the OS (no-op where unsupported).
 pub fn set_autostart(app: &tauri::AppHandle, on: bool) {
     use tauri_plugin_autostart::ManagerExt;
@@ -95,6 +116,8 @@ pub fn run() {
             tauri::async_runtime::spawn(vcp_watch::run(state.clone()));
             tauri::async_runtime::spawn(updater::run(app.handle().clone(), state.clone()));
             sysmon::spawn(state.clone());
+            tauri::async_runtime::spawn(state.engine.worker());
+            tauri::async_runtime::spawn(engine_events(state.clone()));
 
             shell::setup_tray(app.handle(), &state)?;
             let minimized = std::env::args().any(|a| a == "--minimized");

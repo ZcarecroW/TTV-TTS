@@ -195,6 +195,10 @@ pub enum Event {
     /// Sent every 2 s while the client subscribed with `?system=1`.
     System(SystemStats),
     Log(LogLine),
+    /// A computation job changed (progress, state).
+    Job(crate::voices::JobView),
+    /// The library of computed voices changed.
+    Library(crate::voices::LibraryChange),
 }
 
 /// `POST /ttv/v1/vcp/{start|stop|restart}` answer and other simple results.
