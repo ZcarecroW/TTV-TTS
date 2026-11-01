@@ -367,3 +367,123 @@ pub fn reset_certificate(state: St) -> AppResult<Overview> {
 pub async fn diagnostics(state: St<'_>) -> AppResult<crate::vcp_watch::Diagnostics> {
     Ok(crate::vcp_watch::diagnostics(&state).await)
 }
+
+// ── internet access for friends ─────────────────────────────────────────
+
+#[tauri::command]
+pub fn internet_status(state: St) -> crate::internet::InternetStatus {
+    crate::internet::status(&state)
+}
+
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
+pub struct InternetPatch {
+    pub enabled: Option<bool>,
+    pub port: Option<u16>,
+    pub domain: Option<String>,
+    /// Some("") removes the stored token.
+    pub token: Option<String>,
+}
+
+/// Switches internet access, sets its port and the DuckDNS name and token.
+pub async fn apply_internet(state: &AppState, patch: InternetPatch) -> Result<crate::internet::InternetStatus, String> {
+    if let Some(t) = &patch.token {
+        let t = t.trim();
+        if !t.is_empty() && (t.len() < 30 || !t.chars().all(|c| c.is_ascii_hexdigit() || c == '-')) {
+            return Err("That doesn't look like a DuckDNS token (it looks like 1a2b3c4d-…).".into());
+        }
+        state.secrets.set(crate::internet::DUCKDNS_TOKEN, (!t.is_empty()).then_some(t)).map_err(|e| e.to_string())?;
+    }
+    {
+        let mut c = state.cfg.write();
+        if let Some(on) = patch.enabled {
+            c.internet = on;
+        }
+        if let Some(p) = patch.port {
+            if p < 1024 || p == c.port {
+                return Err(format!("Use a port from 1024 to 65535 other than {} (the LAN port).", c.port));
+            }
+            c.internet_port = p;
+        }
+        if let Some(d) = &patch.domain {
+            c.duckdns_domain = crate::internet::clean_domain(d);
+        }
+        c.normalize();
+    }
+    state.save_config().map_err(|e| e.to_string())?;
+    // check DuckDNS right away when name or token changed
+    if patch.domain.is_some() || patch.token.is_some() {
+        let (domain, token) = (state.cfg.read().duckdns_domain.clone(), state.secrets.get(crate::internet::DUCKDNS_TOKEN));
+        if let (false, Some(token)) = (domain.is_empty(), token) {
+            let r = crate::internet::update_duckdns(&domain, &token).await;
+            let mut l = state.internet.write();
+            l.duckdns_at = Some(chrono::Utc::now().timestamp());
+            match r {
+                Ok(ip) => {
+                    l.duckdns_result = Some("OK".into());
+                    if ip.is_some() {
+                        l.public_ip = ip;
+                    }
+                }
+                Err(e) => l.duckdns_result = Some(e),
+            }
+        }
+    }
+    state.internet_rebind.notify_waiters();
+    state.publish_internet();
+    Ok(crate::internet::status(state))
+}
+
+#[tauri::command]
+pub async fn set_internet(state: St<'_>, patch: InternetPatch) -> Result<crate::internet::InternetStatus, String> {
+    apply_internet(&state, patch).await
+}
+
+#[derive(Debug, Serialize)]
+pub struct NewInvite {
+    pub invite: crate::internet::InviteView,
+    /// The code to send to the friend (shown once).
+    pub code: String,
+}
+
+#[tauri::command]
+pub fn create_invite(state: St, name: String, days: u32, chars_per_day: u64, address: Option<String>) -> Result<NewInvite, String> {
+    new_invite(&state, &name, days, chars_per_day, address.as_deref())
+}
+
+pub fn new_invite(state: &AppState, name: &str, days: u32, chars_per_day: u64, address: Option<&str>) -> Result<NewInvite, String> {
+    if name.trim().is_empty() {
+        return Err("Give the invite a name (who it's for).".into());
+    }
+    let (invite, secret) = state.guests.invite(name, days, chars_per_day);
+    let code = crate::internet::invite_code(state, &secret, address);
+    if code.is_err() {
+        state.guests.withdraw(&invite.id);
+    }
+    state.publish_internet();
+    Ok(NewInvite { invite, code: code? })
+}
+
+#[tauri::command]
+pub fn withdraw_invite(state: St, id: String) {
+    state.guests.withdraw(&id);
+    state.publish_internet();
+}
+
+#[tauri::command]
+pub fn revoke_guest(state: St, id: String) {
+    state.guests.revoke(&id);
+    state.publish_internet();
+}
+
+#[tauri::command]
+pub fn set_guest_limit(state: St, id: String, chars_per_day: u64) {
+    state.guests.set_limit(&id, chars_per_day);
+    state.publish_internet();
+}
+
+/// Can the internet reach the internet port? (asks ifconfig.co to connect)
+#[tauri::command]
+pub async fn test_internet(state: St<'_>) -> Result<bool, String> {
+    crate::internet::test(state.inner()).await
+}

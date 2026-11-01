@@ -40,6 +40,11 @@ export const store = reactive({
 
 export const config = computed(() => store.app?.config);
 export const host = computed(() => store.app?.host);
+/** This app uses a friend's voice host over the internet (guest). */
+export const guest = computed(() => {
+  const h = store.app?.config.host;
+  return !!(h && h.kind === "proxy" && h.guest);
+});
 /** Jobs that still work or wait. */
 export const activeJobs = computed(() => store.engine?.jobs.filter((j) => !["done", "cancelled", "failed"].includes(j.state)) ?? []);
 

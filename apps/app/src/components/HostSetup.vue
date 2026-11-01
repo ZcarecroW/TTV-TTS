@@ -2,14 +2,28 @@
 import { onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import UiModal from "@ttv-tts/ui/components/UiModal.vue";
-import { CircleCheck, Lock, Monitor, Network, Refresh, Server, Spinner } from "@ttv-tts/ui/icons";
-import { api, type Found, type Probe } from "../api";
+import UiTip from "@ttv-tts/ui/components/UiTip.vue";
+import { CircleCheck, Lock, Monitor, Network, Refresh, Server, Spinner, Users } from "@ttv-tts/ui/icons";
+import { api, friends, type Found, type Probe } from "../api";
 import { apply, run, store, toast } from "../store";
 
 const emit = defineEmits<{ done: [] }>();
 const { t } = useI18n();
 
-const mode = ref<"proxy" | "direct">("proxy");
+const mode = ref<"proxy" | "direct" | "friend">("proxy");
+const invite = ref("");
+const invitePreview = ref<{ host: string; address: string } | null>(null);
+async function readInvite() {
+  invitePreview.value = invite.value.trim() ? await friends.read(invite.value).catch(() => null) : null;
+}
+async function join() {
+  const v = await run("join", () => friends.join(invite.value));
+  if (v) {
+    await apply(v);
+    toast("ok", t("host.joined", { name: invitePreview.value?.host ?? "" }));
+    emit("done");
+  }
+}
 const found = ref<Found[] | null>(null);
 const searching = ref(false);
 const manual = ref("");
@@ -59,9 +73,9 @@ async function useDirect() {
 
 <template>
   <div class="space-y-5">
-    <div class="grid gap-3 md:grid-cols-2">
+    <div class="grid gap-3 md:grid-cols-3">
       <button
-        v-for="m in (['proxy', 'direct'] as const)"
+        v-for="m in (['proxy', 'direct', 'friend'] as const)"
         :key="m"
         type="button"
         class="card flex items-start gap-3 p-4 text-left transition-colors"
@@ -69,11 +83,11 @@ async function useDirect() {
         @click="mode = m"
       >
         <div class="grid size-10 shrink-0 place-items-center rounded-xl bg-accent-soft text-accent-text">
-          <Server v-if="m === 'proxy'" :size="20" /><Monitor v-else :size="20" />
+          <Server v-if="m === 'proxy'" :size="20" /><Monitor v-else-if="m === 'direct'" :size="20" /><Users v-else :size="20" />
         </div>
         <div>
-          <div class="font-semibold">{{ m === "proxy" ? t("host.proxyCard") : t("host.directCard") }}</div>
-          <div class="mt-0.5 text-sm text-muted">{{ m === "proxy" ? t("host.proxyCardText") : t("host.directCardText") }}</div>
+          <div class="font-semibold">{{ t(`host.${m}Card`) }}</div>
+          <div class="mt-0.5 text-sm text-muted">{{ t(`host.${m}CardText`) }}</div>
         </div>
       </button>
     </div>
@@ -106,6 +120,14 @@ async function useDirect() {
           <button class="btn" :disabled="!manual.trim() || store.busy === 'probe'" @click="choose(manual)">{{ t("common.connect") }}</button>
         </div>
       </div>
+    </section>
+
+    <section v-else-if="mode === 'friend'" class="card p-5">
+      <label class="label" for="invite">{{ t("host.inviteLabel") }}<UiTip :text="t('tips.joinFriend')" /></label>
+      <textarea id="invite" v-model="invite" rows="3" class="input mono text-xs" :placeholder="t('host.invitePlaceholder')" @input="readInvite" />
+      <p v-if="invitePreview" class="mt-2 flex items-center gap-2 text-sm"><Lock :size="15" class="text-accent-text" />{{ t("host.invitePreview", invitePreview) }}</p>
+      <p v-else-if="invite.trim()" class="mt-2 text-sm text-warn">{{ t("host.inviteInvalid") }}</p>
+      <button class="btn btn-primary mt-3" :disabled="!invitePreview || store.busy === 'join'" @click="join"><Spinner v-if="store.busy === 'join'" :size="15" class="spin" />{{ t("host.join") }}</button>
     </section>
 
     <section v-else class="card p-5">

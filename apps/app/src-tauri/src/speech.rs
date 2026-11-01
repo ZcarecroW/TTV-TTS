@@ -273,13 +273,13 @@ mod live {
         let probe = crate::host::probe(&address).await.expect("probe");
         println!("probe: {} v{} fingerprint {}", probe.info.name, probe.info.version, probe.fingerprint_short);
 
-        let host = crate::config::HostConfig::Proxy { id: probe.info.id.clone(), name: probe.info.name.clone(), address: probe.address.clone(), fingerprint: probe.fingerprint.clone(), mac: None };
+        let host = crate::config::HostConfig::Proxy { id: probe.info.id.clone(), name: probe.info.name.clone(), address: probe.address.clone(), fingerprint: probe.fingerprint.clone(), mac: None, guest: false };
         let vcp = crate::host::client(&host, |_| Some(token.clone())).expect("client");
         let voices = vcp.voices().await.expect("voices through the pinned connection");
         println!("voices via proxy: {}", voices.len());
 
         // A wrong pin must be refused.
-        let wrong_pin = crate::config::HostConfig::Proxy { id: probe.info.id.clone(), name: String::new(), address: probe.address.clone(), fingerprint: "00".repeat(32), mac: None };
+        let wrong_pin = crate::config::HostConfig::Proxy { id: probe.info.id.clone(), name: String::new(), address: probe.address.clone(), fingerprint: "00".repeat(32), mac: None, guest: false };
         let bad = crate::host::client(&wrong_pin, |_| Some(token.clone())).unwrap();
         assert!(bad.voices().await.is_err(), "a wrong certificate pin must fail");
 

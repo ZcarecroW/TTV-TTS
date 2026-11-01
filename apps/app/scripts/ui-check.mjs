@@ -66,6 +66,31 @@ await page.locator("main").getByRole("button", { name: /^(send|senden)$/i }).cli
 await page.waitForTimeout(300);
 check((await page.locator("main").innerText()).includes("Hallo aus dem Test"), "test message shows up in the history");
 
+// Friends over the internet: switch on, a name, check, invite, remove.
+await nav("host");
+await page.waitForTimeout(500);
+const fr = page.locator("section", { hasText: /Friends over the internet|Freunde über das Internet/ });
+check(/Mia/.test(await fr.innerText()), "the host sees friends with access", (await fr.innerText()).match(/Mia[^\n]*/)?.[0]);
+await fr.getByRole("switch").first().click();
+await page.waitForTimeout(500);
+check(/port 8111 open|Port 8111 offen/.test(await fr.innerText()), "internet access can be switched on");
+await fr.getByPlaceholder(/my-stream|mein-stream/).fill("my-stream");
+await fr.getByPlaceholder(/DuckDNS/).fill("1a2b3c4d-1a2b-1a2b-1a2b-1a2b3c4d5e6f");
+await fr.getByRole("button", { name: /^(save|speichern)$/i }).click();
+await page.waitForTimeout(500);
+check(/my-stream\.duckdns\.org points at|my-stream\.duckdns\.org zeigt jetzt/.test(await page.locator("body").innerText()), "DuckDNS is set up from the app");
+await fr.getByRole("button", { name: /check from the internet|aus dem internet prüfen/i }).click();
+await page.waitForTimeout(900);
+check(/Reachable at my-stream\.duckdns\.org:8111|Erreichbar unter my-stream\.duckdns\.org:8111/.test(await fr.innerText()), "the reachability check reports the address");
+await fr.getByPlaceholder(/who is it for|für wen/i).fill("Alex");
+await fr.getByRole("button", { name: /create code|code erstellen/i }).click();
+await page.waitForTimeout(500);
+check(/ttv1:/.test(await fr.innerText()) && /Code for Alex|Code für Alex/.test(await fr.innerText()), "an invite code is shown once with its expiry");
+page.once("dialog", (d) => d.accept());
+await fr.getByRole("button", { name: /remove access|zugang entfernen/i }).first().click();
+await page.waitForTimeout(500);
+check(!/Mia/.test(await fr.innerText()), "a friend's access can be removed");
+
 // Profiles: editor shows the channel and saves changes.
 await nav("profiles");
 await page.waitForTimeout(300);
@@ -228,6 +253,28 @@ if (shot) {
   await page.screenshot({ path: shot });
   console.log(`screenshot: ${shot}`);
 }
+
+// A friend: joining with an invite code, then guest mode.
+const lang = (query.match(/lang=(\w+)/) || [])[1];
+const q2 = (extra) => `?theme=dark${lang ? `&lang=${lang}` : ""}&${extra}`;
+await page.goto(base + q2("nohost"));
+await page.waitForSelector("nav button");
+await nav("host");
+await page.waitForTimeout(400);
+await page.locator("main").getByRole("button", { name: /a friend.s voice host|stimmen-host eines freundes/i }).click();
+await page.locator("main textarea").fill("ttv1:eyJhZGRyZXNzIjoibXktc3RyZWFtLmR1Y2tkbnMub3JnOjgxMTEifQ");
+await page.waitForTimeout(400);
+check(/ALEX-PC/.test(await page.locator("main").innerText()) && !(await page.locator("main").getByRole("button", { name: /^(join|beitreten)$/i }).isDisabled()), "an invite code shows whose voice host it is before joining");
+await page.goto(base + q2("guest"));
+await page.waitForSelector("nav button");
+await nav("presets");
+await page.waitForTimeout(500);
+const gp = await page.locator("main").innerText();
+check(/You use .*voices|Du nutzt die Stimmen/.test(gp) && !(await page.locator("main").getByRole("button", { name: /^(compute|berechnen)$/i }).count()), "guests can't compute on a friend's voice host");
+await nav("host");
+await page.waitForTimeout(400);
+const gh = await page.locator("main").innerText();
+check(/Used today|Heute genutzt/.test(gh) && /4,200|4\.200/.test(gh) && !/Friends over the internet|Freunde über das Internet/.test(gh), "guests see their quota, not the friends settings");
 
 check(errors.length === 0, "no console errors", errors.slice(0, 3).join(" / "));
 await browser.close();

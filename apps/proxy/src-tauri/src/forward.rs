@@ -42,8 +42,19 @@ fn target_path(uri: &axum::http::Uri) -> String {
     }
 }
 
+/// Last request of the host's own apps (LAN), unix milliseconds: guests
+/// over the internet wait for a pause in it.
+static LAST_LAN: std::sync::atomic::AtomicI64 = std::sync::atomic::AtomicI64::new(0);
+
+/// The host's apps used VCP within `quiet`.
+pub fn lan_busy(quiet: std::time::Duration) -> bool {
+    let last = LAST_LAN.load(std::sync::atomic::Ordering::Relaxed);
+    last > 0 && chrono::Utc::now().timestamp_millis() - last < quiet.as_millis() as i64
+}
+
 pub async fn handler(State(state): State<Arc<AppState>>, req: Request) -> Response {
     crate::updater::touch();
+    LAST_LAN.store(chrono::Utc::now().timestamp_millis(), std::sync::atomic::Ordering::Relaxed);
     if req.headers().contains_key(header::UPGRADE) {
         return api_error(StatusCode::NOT_IMPLEMENTED, "bad_request", "WebSocket connections to VCP are not forwarded.");
     }

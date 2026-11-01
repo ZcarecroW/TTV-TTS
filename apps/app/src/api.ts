@@ -41,7 +41,59 @@ export interface ProxyStatus {
   connections: number;
   uptime_secs: number;
   update: ProxyUpdateState | null;
+  /** set when this app is a friend's guest */
+  guest: GuestInfo | null;
 }
+
+/** A friend who uses a proxy over the internet. */
+export interface GuestInfo {
+  id: string;
+  name: string;
+  chars_today: number;
+  chars_per_day: number;
+  joined: number;
+  last_seen: number | null;
+  last_address: string | null;
+  total_chars: number;
+}
+
+export interface InviteView {
+  id: string;
+  name: string;
+  created: number;
+  expires: number;
+  chars_per_day: number;
+}
+
+/** Internet access of the paired proxy. */
+export interface InternetStatus {
+  enabled: boolean;
+  port: number;
+  listening: boolean;
+  error: string | null;
+  domain: string;
+  duckdns_token: boolean;
+  duckdns_at: number | null;
+  duckdns_result: string | null;
+  public_ip: string | null;
+  test_at: number | null;
+  reachable: boolean | null;
+  address: string;
+  invites: InviteView[];
+  guests: GuestInfo[];
+  connections: number;
+}
+
+export const friends = {
+  status: () => invoke<InternetStatus>("internet_status"),
+  set: (patch: { enabled?: boolean; port?: number; domain?: string; token?: string }) => invoke<InternetStatus>("internet_set", { patch }),
+  invite: (name: string, days: number, charsPerDay: number, address: string | null) => invoke<{ invite: InviteView; code: string }>("internet_invite", { name, days, charsPerDay, address }),
+  withdraw: (id: string) => invoke<unknown>("internet_withdraw", { id }),
+  revoke: (id: string) => invoke<unknown>("internet_revoke", { id }),
+  test: () => invoke<{ reachable: boolean }>("internet_test"),
+  read: (code: string) => invoke<{ host: string; address: string }>("read_invite", { code }),
+  join: (code: string) => invoke<AppView>("join_invite", { code }),
+};
 
 export interface ProxyUpdateState {
   available: string | null;
@@ -61,7 +113,7 @@ export interface HostStatus {
 
 export type HostConfig =
   | { kind: "none" }
-  | { kind: "proxy"; id: string; name: string; address: string; fingerprint: string; mac: string | null }
+  | { kind: "proxy"; id: string; name: string; address: string; fingerprint: string; mac: string | null; guest?: boolean }
   | { kind: "direct"; url: string };
 
 export type GenerationMode = "auto" | "sentences" | "streaming";

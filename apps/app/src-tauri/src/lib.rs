@@ -10,6 +10,7 @@ mod host;
 mod library;
 mod logbuf;
 mod monitor;
+mod friends_cmds;
 mod pack_cmds;
 mod preset_cmds;
 mod quality_cmds;
@@ -122,6 +123,14 @@ pub fn run() {
             preset_cmds::verify_library,
             preset_cmds::listen,
             preset_cmds::redo_voice,
+            friends_cmds::internet_status,
+            friends_cmds::internet_set,
+            friends_cmds::internet_invite,
+            friends_cmds::internet_withdraw,
+            friends_cmds::internet_revoke,
+            friends_cmds::internet_test,
+            friends_cmds::read_invite,
+            friends_cmds::join_invite,
             pack_cmds::pick_pack,
             pack_cmds::pack_info,
             pack_cmds::import_pack,

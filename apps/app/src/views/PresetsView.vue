@@ -13,7 +13,7 @@ import ReviewDialog from "../components/ReviewDialog.vue";
 import ImportDialog from "../components/ImportDialog.vue";
 import ExportDialog from "../components/ExportDialog.vue";
 import DownloadDialog from "../components/DownloadDialog.vue";
-import { activeJobs, host, loadEngine, loadPresets, run, store, toast } from "../store";
+import { activeJobs, guest, host, loadEngine, loadPresets, run, store, toast } from "../store";
 
 const { t } = useI18n();
 const detail = ref<string | null>(null);
@@ -100,13 +100,14 @@ function openEditor(id?: string) {
 <template>
   <div class="space-y-5">
     <p v-if="!connected" class="notice notice-warn text-sm">{{ t("presets.noHost") }}</p>
-    <div v-else-if="tooOld" class="notice notice-warn text-sm">
+    <p v-else-if="guest" class="notice notice-info text-sm">{{ t("presets.guest", { name: host?.proxy?.info.name ?? "" }) }}</p>
+    <div v-else-if="tooOld && !guest" class="notice notice-warn text-sm">
       <Warning :size="18" />
       <span class="flex-1">{{ t("presets.proxyTooOld", { version: host?.proxy?.info.version ?? "?" }) }}</span>
       <button class="btn btn-primary btn-sm" :disabled="store.busy === 'proxyUpdate'" @click="updateProxy">{{ t("host.proxyInstall") }}</button>
     </div>
 
-    <div v-if="classic && classic.voices" class="notice notice-info text-sm">
+    <div v-if="classic && classic.voices && !guest" class="notice notice-info text-sm">
       <ClockRotate :size="18" />
       <span class="flex-1">{{ t("presets.classicFound", { n: classic.voices, roles: classic.roles, langs: classic.languages.length }) }}<UiTip :text="t('tips.classic')" /></span>
       <button class="btn btn-primary btn-sm" :disabled="store.busy === 'classic'" @click="adoptClassic">
@@ -114,19 +115,19 @@ function openEditor(id?: string) {
       </button>
     </div>
 
-    <div v-if="odd" class="notice notice-warn text-sm">
+    <div v-if="odd && !guest" class="notice notice-warn text-sm">
       <Warning :size="18" />
       <span class="flex-1">{{ t("quality.notice", odd) }}</span>
       <button class="btn btn-primary btn-sm" @click="review = ''">{{ t("quality.open") }}</button>
     </div>
 
-    <section v-if="store.engine?.jobs.length" class="card p-5">
+    <section v-if="store.engine?.jobs.length && !guest" class="card p-5">
       <div class="card-head"><Sparkle />{{ t("jobs.title") }}<span v-if="activeJobs.length" class="badge badge-accent ml-1">{{ activeJobs.length }}</span></div>
       <p class="muted mb-3 text-sm">{{ host?.kind === "direct" ? t("jobs.hintDirect") : t("jobs.hintProxy") }}</p>
       <JobList />
     </section>
 
-    <div class="flex flex-wrap items-center gap-3">
+    <div v-if="!guest" class="flex flex-wrap items-center gap-3">
       <span class="flex items-center gap-1.5 text-sm text-muted">
         <Gauge :size="16" />
         <template v-if="store.engine?.secs_per_voice">{{ t("presets.speed", { s: store.engine.secs_per_voice.toFixed(1), h: duration(store.engine.secs_per_voice * 240) }) }}</template>
@@ -168,8 +169,8 @@ function openEditor(id?: string) {
             </div>
             <div class="mt-3.5 flex gap-2">
               <button class="btn btn-sm flex-1" @click="detail = p.id">{{ t("presets.details") }}</button>
-              <button v-if="downloadable(p)" class="btn btn-sm flex-1" :disabled="!connected" :data-tip="t('downloads.tip')" @click="downloading = p.id"><Download :size="14" />{{ t("downloads.button") }}</button>
-              <button class="btn btn-sm btn-primary flex-1" :disabled="!connected" @click="openCompute(p.id)"><Sparkle :size="14" />{{ t("presets.compute") }}</button>
+              <button v-if="downloadable(p) && !guest" class="btn btn-sm flex-1" :disabled="!connected" :data-tip="t('downloads.tip')" @click="downloading = p.id"><Download :size="14" />{{ t("downloads.button") }}</button>
+              <button v-if="!guest" class="btn btn-sm btn-primary flex-1" :disabled="!connected" @click="openCompute(p.id)"><Sparkle :size="14" />{{ t("presets.compute") }}</button>
             </div>
           </article>
         </div>

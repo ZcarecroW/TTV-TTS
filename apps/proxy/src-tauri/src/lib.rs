@@ -13,6 +13,7 @@ mod firewall;
 mod forward;
 #[cfg(windows)]
 mod gpu_procs;
+mod internet;
 mod logbuf;
 mod secrets;
 mod server;
@@ -112,6 +113,8 @@ pub fn run() {
             }
 
             tauri::async_runtime::spawn(server::run(state.clone()));
+            tauri::async_runtime::spawn(internet::run(state.clone()));
+            tauri::async_runtime::spawn(internet::duckdns(state.clone()));
             tauri::async_runtime::spawn(discovery::run(state.clone()));
             tauri::async_runtime::spawn(vcp_watch::run(state.clone()));
             tauri::async_runtime::spawn(updater::run(app.handle().clone(), state.clone()));
@@ -158,6 +161,13 @@ pub fn run() {
             commands::install_update,
             commands::reset_certificate,
             commands::diagnostics,
+            commands::internet_status,
+            commands::set_internet,
+            commands::create_invite,
+            commands::withdraw_invite,
+            commands::revoke_guest,
+            commands::set_guest_limit,
+            commands::test_internet,
         ])
         .build(tauri::generate_context!())
         .expect("error while building TTV-TTS Proxy")

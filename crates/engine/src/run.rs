@@ -117,11 +117,27 @@ fn finish(inner: &Inner, id: &str, job: &crate::StoredJob) {
         j.view.finished = Some(chrono::Utc::now().timestamp());
     });
     log::info!("job {id} finished");
-    // Odd new voices: design them again automatically.
     let req = &job.request;
-    if req.kind == JobKind::Compute && req.options.quality && req.options.improve && !job.followed {
-        let odd: Vec<String> = job.created.iter().filter(|k| inner.library.get(k).and_then(|e| e.quality).is_some_and(|q| q.score < FLAG && !q.kept)).cloned().collect();
-        inner.update(id, |j| j.followed = true);
+    if !req.options.quality || job.followed || !matches!(req.kind, JobKind::Compute | JobKind::Review) {
+        inner.save_jobs();
+        return;
+    }
+    inner.update(id, |j| j.followed = true);
+    let mine: &[String] = if req.kind == JobKind::Compute { &job.created } else { &job.processed };
+    // Voices saved but never checked (the proxy was restarted or updated in
+    // the middle of a batch): check them now; that check improves the odd
+    // ones afterwards if asked to.
+    let unchecked: Vec<String> = mine.iter().filter(|k| inner.library.get(k).is_some_and(|e| e.quality.is_none())).cloned().collect();
+    if !unchecked.is_empty() {
+        let follow = JobRequest { kind: JobKind::Review, only: unchecked, ..req.clone() };
+        match inner.submit(follow) {
+            Ok(v) => log::info!("job {id}: {} voices weren't checked, checking them in {}", v.total, v.id),
+            Err(e) => log::warn!("job {id}: can't check the unchecked voices: {e}"),
+        }
+    }
+    // Odd voices: design them again automatically.
+    if req.options.improve {
+        let odd: Vec<String> = mine.iter().filter(|k| inner.library.get(k).and_then(|e| e.quality).is_some_and(|q| q.score < FLAG && !q.kept)).cloned().collect();
         if !odd.is_empty() {
             let follow = JobRequest { kind: JobKind::Improve, only: odd, rounds: 2, ..req.clone() };
             match inner.submit(follow) {

@@ -25,7 +25,7 @@ pub struct AppView {
     pub data_dir: String,
 }
 
-fn view(state: &AppState) -> AppView {
+pub fn view(state: &AppState) -> AppView {
     AppView {
         config: state.cfg.read().clone(),
         host: state.host.read().clone(),
@@ -105,7 +105,7 @@ pub async fn pair_proxy(state: St<'_>, address: String, fingerprint: String, cod
     state.secrets.set(&crate::secrets::proxy_token(&probe.info.id), Some(&res.token)).map_err(|e| e.to_string())?;
     {
         let mut c = state.cfg.write();
-        c.host = HostConfig::Proxy { id: probe.info.id.clone(), name: probe.info.name.clone(), address: probe.address.clone(), fingerprint: probe.fingerprint.clone(), mac: None };
+        c.host = HostConfig::Proxy { id: probe.info.id.clone(), name: probe.info.name.clone(), address: probe.address.clone(), fingerprint: probe.fingerprint.clone(), mac: None, guest: false };
     }
     state.save_config().map_err(|e| e.to_string())?;
     state.host_updated();

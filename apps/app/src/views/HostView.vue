@@ -7,7 +7,8 @@ import { Bolt, Download, Link, Microchip, Play, Power, Ram, Refresh, Server, Tem
 import { bytes } from "@ttv-tts/ui/format";
 import { api } from "../api";
 import HostSetup from "../components/HostSetup.vue";
-import { apply, config, host, run, store, toast } from "../store";
+import FriendsCard from "../components/FriendsCard.vue";
+import { apply, config, guest, host, run, store, toast } from "../store";
 
 const { t, locale } = useI18n();
 const changing = ref(false);
@@ -77,6 +78,10 @@ async function forget() {
             <div class="flex justify-between gap-3"><dt class="muted">{{ h.kind === "proxy" ? t("host.proxy") : t("host.direct") }}</dt><dd class="font-medium">{{ cfg.kind === "proxy" ? cfg.name : "" }}</dd></div>
             <div class="flex justify-between gap-3"><dt class="muted">{{ t("host.address") }}</dt><dd class="font-mono text-xs">{{ cfg.kind === "proxy" ? cfg.address : cfg.kind === "direct" ? cfg.url : "" }}</dd></div>
             <div v-if="certShort" class="flex justify-between gap-3"><dt class="muted">{{ t("host.certificate") }}<UiTip :text="t('tips.certificate')" /></dt><dd class="font-mono text-xs">{{ certShort }}</dd></div>
+            <div v-if="h.proxy?.guest" class="flex justify-between gap-3">
+              <dt class="muted">{{ t("host.guestUsed") }}<UiTip :text="t('tips.guestQuota')" /></dt>
+              <dd class="font-medium tabular-nums">{{ h.proxy.guest.chars_today.toLocaleString(locale) }} / {{ h.proxy.guest.chars_per_day.toLocaleString(locale) }}</dd>
+            </div>
             <div v-if="h.proxy" class="flex items-center justify-between gap-3">
               <dt class="muted">{{ t("host.proxyVersion") }}</dt>
               <dd class="flex items-center gap-2 font-medium">
@@ -89,7 +94,7 @@ async function forget() {
           <p v-if="h.error && !h.connected" class="notice notice-err mt-3 text-sm">{{ h.error }}</p>
           <div class="mt-4 flex flex-wrap gap-2">
             <button v-if="h.kind === 'proxy' && !h.connected" class="btn btn-primary btn-sm" :data-tip="t('tips.wake')" @click="wake"><Power :size="15" />{{ t("host.wake") }}</button>
-            <template v-if="h.kind === 'proxy' && h.connected">
+            <template v-if="h.kind === 'proxy' && h.connected && !guest">
               <button v-if="proxyUpdate?.available" class="btn btn-primary btn-sm" :disabled="store.busy === 'proxyUpdate' || proxyUpdate.phase === 'downloading' || proxyUpdate.phase === 'installing'" :data-tip="t('tips.proxyUpdate')" @click="installProxy">
                 <Download :size="15" />{{ proxyUpdate.phase === "downloading" || proxyUpdate.phase === "installing" ? t("host.proxyInstalling") : t("host.proxyInstall") }}
               </button>
@@ -108,14 +113,16 @@ async function forget() {
             <div class="flex justify-between gap-3"><dt class="muted">{{ t("host.queue") }}</dt><dd class="font-medium">{{ vcp.generating ? t("host.queueBusy", { n: vcp.queue_size }) : t("host.queueIdle") }}</dd></div>
             <div v-if="vcp.hardware" class="flex justify-between gap-3"><dt class="muted">{{ t("host.hardware") }}</dt><dd class="text-right text-xs">{{ vcp.hardware.split("\n")[0] }}</dd></div>
           </dl>
-          <div v-if="h.kind === 'proxy' && h.connected" class="mt-4 flex gap-2">
+          <div v-if="h.kind === 'proxy' && h.connected && !guest" class="mt-4 flex gap-2">
             <button v-if="!vcp?.reachable" class="btn btn-primary btn-sm" :disabled="store.busy === 'vcp' || vcp?.starting" @click="vcpAction('start')"><Play :size="15" />{{ t("host.startVcp") }}</button>
             <button v-else class="btn btn-sm" :disabled="store.busy === 'vcp'" @click="vcpAction('restart')"><Refresh :size="15" />{{ t("host.restartVcp") }}</button>
           </div>
         </section>
       </div>
 
-      <section v-if="h.kind === 'proxy' && h.connected" class="card p-5">
+      <p v-if="guest" class="notice notice-info text-sm">{{ t("host.guestNote", { name: cfg.kind === "proxy" ? cfg.name : "" }) }}</p>
+      <FriendsCard v-if="h.kind === 'proxy' && h.connected && !guest" />
+      <section v-if="h.kind === 'proxy' && h.connected && !guest" class="card p-5">
         <div class="card-head"><Microchip />{{ t("host.systemTitle") }}</div>
         <div v-if="store.hostSystem" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           <UiStat :label="t('host.cpu')" :value="`${Math.round(store.hostSystem.cpu_percent)} %`" :ratio="store.hostSystem.cpu_percent / 100"><template #icon><Microchip :size="14" /></template></UiStat>

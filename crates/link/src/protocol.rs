@@ -161,6 +161,9 @@ pub struct ProxyStatus {
     pub connections: u32,
     pub uptime_secs: u64,
     pub update: Option<UpdateState>,
+    /// Set when a guest (a friend over the internet) asks: who they are and
+    /// what they used today. Guests get no addresses, devices or paths.
+    pub guest: Option<GuestInfo>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -237,5 +240,92 @@ mod tests {
         let i: ProxyInfo = serde_json::from_str(r#"{"id":"x","future_field":1}"#).unwrap();
         assert_eq!(i.id, "x");
         assert_eq!(i.port, 0);
+    }
+}
+
+/// A friend who uses this proxy over the internet (a guest).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct GuestInfo {
+    pub id: String,
+    /// The name the host gave the invite ("Alex").
+    pub name: String,
+    /// Characters spoken today (UTC) and the daily limit.
+    pub chars_today: u64,
+    pub chars_per_day: u64,
+    /// Unix seconds.
+    pub joined: i64,
+    pub last_seen: Option<i64>,
+    pub last_address: Option<String>,
+    pub total_chars: u64,
+}
+
+/// `POST /ttv/v1/join` on the internet port: redeems an invite.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct JoinRequest {
+    pub secret: String,
+    /// The friend's app ("TTV-TTS on DESKTOP-123").
+    pub device: String,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct JoinResponse {
+    /// The guest's token (send as Bearer); the invite is used up.
+    pub token: String,
+    pub guest: GuestInfo,
+    /// The host's display name.
+    pub host: String,
+}
+
+/// What an invite code carries: where the proxy is, its certificate (so the
+/// friend's app can't be fooled by another server), and a one-time secret.
+/// Written as `ttv1:` + base64url(JSON).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct InviteCode {
+    /// "name.duckdns.org:8111" or "203.0.113.5:8111"
+    pub address: String,
+    /// SHA-256 of the proxy's certificate (hex).
+    pub fingerprint: String,
+    pub secret: String,
+    /// The host's display name.
+    pub host: String,
+}
+
+impl InviteCode {
+    pub const PREFIX: &'static str = "ttv1:";
+
+    pub fn encode(&self) -> String {
+        use base64::Engine as _;
+        format!("{}{}", Self::PREFIX, base64::engine::general_purpose::URL_SAFE_NO_PAD.encode(serde_json::to_vec(self).unwrap_or_default()))
+    }
+
+    /// Reads a code (whitespace and line breaks from chat apps are ignored).
+    pub fn decode(code: &str) -> Option<Self> {
+        use base64::Engine as _;
+        let s: String = code.chars().filter(|c| !c.is_whitespace()).collect();
+        let b64 = s.strip_prefix(Self::PREFIX)?;
+        let bytes = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(b64.trim_end_matches('=')).ok()?;
+        let c: Self = serde_json::from_slice(&bytes).ok()?;
+        (!c.address.is_empty() && c.fingerprint.len() == 64 && c.secret.len() >= 20).then_some(c)
+    }
+}
+
+#[cfg(test)]
+mod invite_tests {
+    use super::*;
+
+    #[test]
+    fn invite_codes_roundtrip_and_reject_junk() {
+        let c = InviteCode { address: "me.duckdns.org:8111".into(), fingerprint: "a".repeat(64), secret: "s".repeat(32), host: "VCP-PC".into() };
+        let code = c.encode();
+        assert!(code.starts_with("ttv1:"));
+        // chat apps wrap long lines
+        let wrapped = format!("{}\n {}", &code[..20], &code[20..]);
+        assert_eq!(InviteCode::decode(&wrapped), Some(c));
+        assert_eq!(InviteCode::decode("ttv1:bm9wZQ"), None);
+        assert_eq!(InviteCode::decode("hello"), None);
     }
 }

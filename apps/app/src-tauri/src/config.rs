@@ -24,6 +24,9 @@ pub enum HostConfig {
         /// MAC address for Wake-on-LAN, learned from the proxy.
         #[serde(default)]
         mac: Option<String>,
+        /// A friend's proxy over the internet: this app is their guest.
+        #[serde(default)]
+        guest: bool,
     },
     /// Voice Creator Pro on this PC, without a proxy.
     Direct { url: String },

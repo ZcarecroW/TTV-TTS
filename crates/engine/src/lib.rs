@@ -141,6 +141,11 @@ impl Engine {
         }
     }
 
+    /// Whether a VCP voice is one of the computed (library) voices.
+    pub fn has_voice(&self, voice_id: &str) -> bool {
+        self.inner.library.has_voice(voice_id)
+    }
+
     pub fn library(&self) -> LibrarySnapshot {
         self.inner.library.snapshot()
     }

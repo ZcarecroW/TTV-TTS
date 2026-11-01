@@ -418,3 +418,25 @@ async fn a_pack_moves_voices_to_another_vcp() {
     // the same pack again: nothing to do
     assert_eq!(b.submit(JobRequest { kind: JobKind::Import, pack: path.to_string_lossy().into(), ..Default::default() }).unwrap().total, 0);
 }
+
+#[tokio::test(flavor = "multi_thread")]
+async fn voices_left_unchecked_get_a_check_job() {
+    let (fake, base) = serve().await;
+    fake.weird.store(-1, Ordering::SeqCst);
+    let e = engine(&base);
+    // as if a restart had cut the review: the voices exist, without reports
+    let mut req = odd_request(true, true);
+    req.options.quality = false;
+    e.submit(req).unwrap();
+    until("the job", || done(&e)).await;
+    assert!(e.library().entries.iter().all(|x| x.quality.is_none()));
+    // the same voices, now a quality job that "created" them: emulate by
+    // checking them directly the way the follow-up would
+    let keys: Vec<String> = e.library().entries.iter().map(|x| x.key.clone()).collect();
+    let review = JobRequest { kind: JobKind::Review, only: keys, options: JobOptions { quality: true, improve: true, ..odd_request(true, true).options }, ..odd_request(true, true) };
+    e.submit(review).unwrap();
+    until("check and improve", || e.status().jobs.len() == 3 && done(&e)).await;
+    let jobs = e.status().jobs;
+    assert!(jobs.iter().any(|j| j.kind == JobKind::Review && j.flagged == 1), "{jobs:?}");
+    assert!(jobs.iter().any(|j| j.kind == JobKind::Improve && j.total == 1), "the check queued the improvement");
+}

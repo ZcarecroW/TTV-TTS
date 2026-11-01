@@ -1062,7 +1062,7 @@ mod live {
         cfg.normalize();
         cfg.audio.volume = 0.25;
         cfg.audio.gap_ms = 150;
-        cfg.host = crate::config::HostConfig::Proxy { id: probe.info.id.clone(), name: probe.info.name.clone(), address: probe.address.clone(), fingerprint: probe.fingerprint.clone(), mac: None };
+        cfg.host = crate::config::HostConfig::Proxy { id: probe.info.id.clone(), name: probe.info.name.clone(), address: probe.address.clone(), fingerprint: probe.fingerprint.clone(), mac: None, guest: false };
         let state = crate::state::AppState::new(cfg, dir.join("config.json"), dir.clone());
         let token_key = crate::secrets::proxy_token(&probe.info.id);
         state.secrets.set(&token_key, Some(&token)).unwrap();

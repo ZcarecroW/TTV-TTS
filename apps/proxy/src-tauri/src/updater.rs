@@ -129,10 +129,11 @@ pub async fn run(app: AppHandle, state: Arc<AppState>) {
         check(&app, &state).await;
         let auto = state.cfg.read().auto_update;
         if auto && state.update.read().available.is_some() {
-            // Wait for a quiet moment: no traffic for 10 minutes, VCP idle.
+            // Wait for a quiet moment: no traffic for 10 minutes, VCP idle,
+            // no job computing (a restart would cost the batch in progress).
             loop {
                 let idle = chrono::Utc::now().timestamp() - LAST_ACTIVITY.load(Ordering::Relaxed);
-                let busy = state.vcp_state.read().generating;
+                let busy = state.vcp_state.read().generating || state.engine.status().jobs.iter().any(|j| matches!(j.state, ttv_link::JobState::Running | ttv_link::JobState::Waiting));
                 if idle >= IDLE_BEFORE_INSTALL && !busy {
                     install(&app, &state).await;
                     break;

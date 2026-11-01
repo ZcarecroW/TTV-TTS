@@ -114,6 +114,11 @@ impl Library {
         Some(LibraryChange { base, rev: st.rev, added, removed: gone })
     }
 
+    /// Whether a VCP voice belongs to the library (guests may only use these).
+    pub fn has_voice(&self, voice_id: &str) -> bool {
+        self.state.lock().map.values().any(|e| e.voice_id == voice_id)
+    }
+
     pub fn contains(&self, key: &str) -> bool {
         self.state.lock().map.contains_key(key)
     }

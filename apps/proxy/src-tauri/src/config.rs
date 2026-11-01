@@ -55,6 +55,11 @@ pub struct Config {
     pub theme: String,
     /// The first-start assistant has been completed.
     pub setup_done: bool,
+    /// Internet access for friends (guest API on its own port).
+    pub internet: bool,
+    pub internet_port: u16,
+    /// DuckDNS name ("mystream" for mystream.duckdns.org); its token is a secret.
+    pub duckdns_domain: String,
 }
 
 impl Default for Config {
@@ -79,6 +84,9 @@ impl Default for Config {
             language: "system".into(),
             theme: "system".into(),
             setup_done: false,
+            internet: false,
+            internet_port: 8111,
+            duckdns_domain: String::new(),
         }
     }
 }
@@ -97,6 +105,10 @@ impl Config {
         }
         self.vcp_url = self.vcp_url.trim().trim_end_matches('/').to_string();
         self.hang_restart_secs = self.hang_restart_secs.clamp(60, 1800);
+        if self.internet_port == 0 || self.internet_port == self.port {
+            self.internet_port = if self.port == 8111 { 8112 } else { 8111 };
+        }
+        self.duckdns_domain = crate::internet::clean_domain(&self.duckdns_domain);
         if !matches!(self.update_channel.as_str(), "stable" | "preview") {
             self.update_channel = "stable".into();
         }

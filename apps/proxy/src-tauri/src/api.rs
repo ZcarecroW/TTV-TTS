@@ -193,10 +193,74 @@ pub fn engine_routes() -> Router<Arc<AppState>> {
         .route("/library/keep", post(library_keep))
         .route("/library/verify", post(library_verify))
         .route("/library/sample/{key}", get(library_sample))
+        .route("/internet", get(internet_get).post(internet_set))
+        .route("/internet/invites", post(invite_create))
+        .route("/internet/invites/{id}/withdraw", post(invite_withdraw))
+        .route("/internet/guests/{id}/revoke", post(guest_revoke))
+        .route("/internet/test", post(internet_test))
         .route("/packs/export", post(pack_export))
         .route("/packs/import", post(pack_import))
         .route("/jobs", post(job_submit))
         .route("/jobs/{id}/{action}", post(job_control))
+}
+
+// ── internet access (LAN only: these routes don't exist on the internet port)
+
+async fn internet_get(State(state): S) -> Json<crate::internet::InternetStatus> {
+    Json(crate::internet::status(&state))
+}
+
+async fn internet_set(State(state): S, Json(p): Json<crate::commands::InternetPatch>) -> Response {
+    match crate::commands::apply_internet(&state, p).await {
+        Ok(s) => Json(s).into_response(),
+        Err(e) => api_error(StatusCode::BAD_REQUEST, "bad_request", e),
+    }
+}
+
+#[derive(Deserialize)]
+struct InviteReq {
+    name: String,
+    #[serde(default = "seven")]
+    days: u32,
+    #[serde(default = "quota")]
+    chars_per_day: u64,
+    /// Instead of the DuckDNS name / public address (e.g. Tailscale).
+    #[serde(default)]
+    address: Option<String>,
+}
+
+fn seven() -> u32 {
+    7
+}
+
+fn quota() -> u64 {
+    30_000
+}
+
+async fn invite_create(State(state): S, Json(r): Json<InviteReq>) -> Response {
+    match crate::commands::new_invite(&state, &r.name, r.days, r.chars_per_day, r.address.as_deref()) {
+        Ok(i) => Json(i).into_response(),
+        Err(e) => api_error(StatusCode::BAD_REQUEST, "bad_request", e),
+    }
+}
+
+async fn invite_withdraw(State(state): S, axum::extract::Path(id): axum::extract::Path<String>) -> Json<Ack> {
+    state.guests.withdraw(&id);
+    state.publish_internet();
+    Json(Ack { ok: true, message: None })
+}
+
+async fn guest_revoke(State(state): S, axum::extract::Path(id): axum::extract::Path<String>) -> Json<Ack> {
+    state.guests.revoke(&id);
+    state.publish_internet();
+    Json(Ack { ok: true, message: None })
+}
+
+async fn internet_test(State(state): S) -> Response {
+    match crate::internet::test(&state).await {
+        Ok(reachable) => Json(serde_json::json!({ "reachable": reachable })).into_response(),
+        Err(e) => api_error(StatusCode::BAD_GATEWAY, "test_failed", e),
+    }
 }
 
 /// Largest pack accepted (all 20 presets × 240 voices × 10 languages ≈ 10 GB

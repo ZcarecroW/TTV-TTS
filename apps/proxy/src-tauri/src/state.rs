@@ -43,6 +43,11 @@ pub struct AppState {
     pub listen_error: RwLock<Option<String>>,
     /// Computes preset voices; keeps going while the apps are closed.
     pub engine: ttv_engine::Engine,
+    /// Friends who use this proxy over the internet.
+    pub guests: crate::internet::Guests,
+    pub internet: RwLock<crate::internet::Live>,
+    /// Restarts the internet port (switched on/off, port changed).
+    pub internet_rebind: Notify,
     app: OnceLock<AppHandle>,
 }
 
@@ -62,6 +67,9 @@ impl AppState {
         engine.set_vcp(Some(vcp.clone()));
         Arc::new(Self {
             engine,
+            guests: crate::internet::Guests::load(&data_dir),
+            internet: RwLock::new(Default::default()),
+            internet_rebind: Notify::new(),
             vcp_state: RwLock::new(VcpState { url: cfg.vcp_url.clone(), exe: cfg.vcp_exe.clone(), ..Default::default() }),
             cfg: RwLock::new(cfg),
             cfg_path,
@@ -152,6 +160,14 @@ impl AppState {
             connections: self.connections.load(Ordering::Relaxed),
             uptime_secs: self.started.elapsed().as_secs(),
             update: Some(self.update.read().clone()),
+            guest: None,
+        }
+    }
+
+    /// Tells the window that internet access changed (guests, invites, tests).
+    pub fn publish_internet(&self) {
+        if let Some(app) = self.app() {
+            let _ = app.emit("proxy://internet", crate::internet::status(self));
         }
     }
 
