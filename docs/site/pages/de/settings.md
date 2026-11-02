@@ -54,7 +54,7 @@ Dein Passwort geht nie durch TTV-TTS. Es darf nur sehen, wer dir folgt und welch
 
 ### Deine eigene Twitch-Anwendung {#twitch-app}
 
-Fertige Versionen bringen die Twitch-Anwendung von TTV-TTS mit. Hat deine keine (selbst gebaut) oder willst du lieber deine eigene:
+Sagt TTV-TTS, dass keine Twitch-Anwendung eingebaut ist, oder willst du lieber deine eigene:
 
 1. Öffne [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps) und wähl **Register Your Application**.
 2. Name: zum Beispiel „TTV-TTS (dein Name)“; OAuth-Redirect-URL: `http://localhost`; Kategorie: *Application Integration*; Client-Typ: **Public**.

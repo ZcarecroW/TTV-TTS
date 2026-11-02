@@ -54,7 +54,7 @@ Your password never goes through TTV-TTS. It may only see who follows you and wh
 
 ### Your own Twitch application {#twitch-app}
 
-Release builds come with TTV-TTS's Twitch application. If yours doesn't (a build from source), or you prefer your own:
+If TTV-TTS says it has no Twitch application built in, or you prefer your own:
 
 1. Open [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps) and choose **Register Your Application**.
 2. Name: for example “TTV-TTS (your name)”; OAuth redirect URL: `http://localhost`; category: *Application Integration*; client type: **Public**.
