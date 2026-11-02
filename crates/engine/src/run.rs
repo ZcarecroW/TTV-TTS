@@ -10,7 +10,7 @@ use base64::Engine as _;
 use ttv_link::{JobKind, JobRequest, JobState, LibraryEntry, Quality, VoiceDef};
 
 use crate::quality::{self, Analysis, FLAG};
-use crate::{BATCH, Inner, MAX_WER, MAX_WER_CJK, Spoken, Trouble, audio, design, instruct, langs, mix_levels, save_voice, transcribe};
+use crate::{ATTEMPTS, BATCH, BATCH_ARCHIVE, Inner, MAX_WER, MAX_WER_CJK, Spoken, Trouble, audio, design, instruct, langs, mix_levels, save_voice, transcribe};
 
 pub(crate) struct Take {
     pub wav: Vec<u8>,
@@ -51,6 +51,7 @@ fn label(it: &Item) -> String {
 fn select(inner: &Inner, job: &crate::StoredJob) -> Vec<Item> {
     let req = &job.request;
     let only: HashSet<&str> = req.only.iter().map(String::as_str).collect();
+    let size = if req.options.archive { BATCH_ARCHIVE } else { BATCH };
     let mut items = Vec::new();
     for d in &req.defs {
         for code in &req.languages {
@@ -61,13 +62,13 @@ fn select(inner: &Inner, job: &crate::StoredJob) -> Vec<Item> {
             }
             let old = inner.library.get(&key);
             match req.kind {
-                JobKind::Compute if old.is_some() => continue,
+                JobKind::Compute if old.is_some() || inner.archive.contains(&key) => continue,
                 // deleted meanwhile: nothing to improve or check
                 JobKind::Improve | JobKind::Review if old.is_none() => continue,
                 _ => {}
             }
             items.push(Item { index: d.index, def: d.def.clone(), lang, key, takes: Vec::new(), old });
-            if items.len() >= BATCH {
+            if items.len() >= size {
                 return items;
             }
         }
@@ -281,17 +282,29 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
     let mut fresh: Vec<Fresh> = Vec::new();
     for (i, it) in items.iter_mut().enumerate() {
         let max_wer = if matches!(it.lang.code, "ja" | "zh" | "ko") { MAX_WER_CJK } else { MAX_WER };
+        // The last attempt of a new voice whose takes all failed only the
+        // speech check (whispers, accents the recognizer doesn't like): keep
+        // the best one anyway; the quality check flags it if it sounds odd.
+        let last_chance = !improving && inner.attempts(id, &it.key) + 1 >= ATTEMPTS;
         let checked = req.options.speech_check && it.lang.asr;
+        let pick = |strict: bool| {
+            it.takes
+                .iter()
+                .enumerate()
+                .filter(|(_, t)| plausible(t) && if checked && strict { t.wer.is_some_and(|w| w <= max_wer) } else { true })
+                .map(|(i, t)| (i, quality::take_score(&it.def, it.lang, &t.analysis, t.wer)))
+                .max_by(|a, b| a.1.total_cmp(&b.1))
+                .map(|(i, _)| i)
+        };
         // Best take: understood, and the least odd (pitch for its gender and
         // age, loudness, pauses, pace – see quality::take_score).
-        let best = it
-            .takes
-            .iter()
-            .enumerate()
-            .filter(|(_, t)| plausible(t) && if checked { t.wer.is_some_and(|w| w <= max_wer) } else { true })
-            .map(|(i, t)| (i, quality::take_score(&it.def, it.lang, &t.analysis, t.wer)))
-            .max_by(|a, b| a.1.total_cmp(&b.1))
-            .map(|(i, _)| i);
+        let best = pick(true).or_else(|| {
+            let b = pick(false).filter(|_| last_chance && checked);
+            if b.is_some() {
+                log::info!("{}: no take passed the speech check in {ATTEMPTS} attempts - keeping the best one", label(it));
+            }
+            b
+        });
         let Some(bi) = best else {
             if improving {
                 inner.round_done(id, req, &it.key, false, None);
@@ -353,6 +366,7 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
             backup: false,
             level,
             quality: None,
+            ref_text: None,
         };
         if improving {
             // a candidate: it replaces the old voice only if it's better
@@ -367,6 +381,10 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
                 j.view.phase = "save".into();
                 j.created.push(entry.key.clone());
             });
+            if req.options.archive {
+                inner.pending.lock().insert(entry.key.clone());
+                inner.save_pending();
+            }
             fresh.push(Fresh { item: i, entry, take, spoken });
         }
     }
@@ -660,6 +678,7 @@ async fn import(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, job: &crate::Sto
                 backup,
                 level,
                 quality: v.quality.clone(),
+                ref_text: None,
             }],
             &[],
         );
@@ -740,7 +759,17 @@ impl Inner {
     /// Re-compares all languages of these definitions ("languages differ").
     pub(crate) fn relate<'a>(&self, defs: impl Iterator<Item = &'a VoiceDef>) {
         let mut seen = HashSet::new();
-        let entries = self.library.entries();
+        let mut entries = self.library.entries();
+        let archived: HashSet<String> = self
+            .archive
+            .entries()
+            .into_iter()
+            .map(|e| {
+                let k = e.key.clone();
+                entries.push(e);
+                k
+            })
+            .collect();
         let mut changed = Vec::new();
         for def in defs {
             let hash = def.hash();
@@ -760,8 +789,101 @@ impl Inner {
                 }
             }
         }
-        if !changed.is_empty() {
-            self.change(changed, &[]);
+        let (old, live): (Vec<LibraryEntry>, Vec<LibraryEntry>) = changed.into_iter().partition(|e| archived.contains(&e.key));
+        if !live.is_empty() {
+            self.change(live, &[]);
+        }
+        if !old.is_empty() {
+            self.archive.apply(old, &[]);
+        }
+    }
+
+    /// Attempts used up for `key` in job `id`.
+    pub(crate) fn attempts(&self, id: &str, key: &str) -> u32 {
+        self.jobs.lock().iter().find(|j| j.view.id == id).and_then(|j| j.attempts.get(key).copied()).unwrap_or(0)
+    }
+
+    pub(crate) fn save_pending(&self) {
+        let p = self.pending.lock().clone();
+        crate::write_json(&self.dir.join("archive-pending.json"), &p);
+    }
+
+    /// Archives the voices of archive jobs that no open job needs any more:
+    /// not in an open compute job (its quality follow-ups come at its end),
+    /// not waiting in a check or improve job.
+    pub(crate) async fn archive_finished(&self, vcp: &ttv_vcp::Client) {
+        let pending: Vec<String> = self.pending.lock().iter().cloned().collect();
+        if pending.is_empty() {
+            return;
+        }
+        let busy: HashSet<String> = {
+            let jobs = self.jobs.lock();
+            jobs.iter()
+                .filter(|j| matches!(j.view.state, JobState::Queued | JobState::Running | JobState::Waiting | JobState::Paused))
+                .flat_map(|j| match j.request.kind {
+                    JobKind::Compute => j.created.clone(),
+                    _ => j.request.only.iter().filter(|k| !j.processed.contains(k) && !j.failed.contains(k)).cloned().collect(),
+                })
+                .collect()
+        };
+        let ready: Vec<String> = pending.into_iter().filter(|k| !busy.contains(k)).collect();
+        if ready.is_empty() {
+            return;
+        }
+        match self.archive_keys(vcp, &ready).await {
+            Ok(n) => log::info!("archive: {n} finished voices left VCP"),
+            Err(e) => log::warn!("archive: {e}"),
+        }
+    }
+
+    /// Moves voices from the library to the archive: keeps a lossless sample
+    /// and what it says, then deletes the voice in VCP.
+    pub(crate) async fn archive_keys(&self, vcp: &ttv_vcp::Client, keys: &[String]) -> Result<u32, String> {
+        let mut moved = Vec::new();
+        let mut gone = Vec::new();
+        let mut failure = None;
+        for k in keys {
+            let Some(e) = self.library.get(k) else {
+                // failed or deleted meanwhile
+                gone.push(k.clone());
+                continue;
+            };
+            let sample = match vcp.voice_sample(&e.voice_id).await {
+                Ok(s) => s,
+                Err(err) => {
+                    failure = Some(format!("{}: {err}", e.voice_name));
+                    break;
+                }
+            };
+            let ref_text = sample.spoken_text().map(str::to_string).or_else(|| langs::get(&e.lang).map(|l| l.text.to_string()));
+            if !self.sample_path(k).exists() {
+                let wav = base64::engine::general_purpose::STANDARD.decode(sample.audio_base64.as_bytes()).unwrap_or_default();
+                if !self.backup(k, &wav) {
+                    failure = Some(format!("{}: can't keep its sample", e.voice_name));
+                    break;
+                }
+            }
+            if let Err(err) = vcp.delete_voice(&e.voice_id).await {
+                failure = Some(format!("VCP refused to delete {}: {err}", e.voice_name));
+                break;
+            }
+            moved.push(LibraryEntry { backup: true, ref_text, ..e });
+            gone.push(k.clone());
+        }
+        let n = moved.len() as u32;
+        let keys_moved: Vec<String> = moved.iter().map(|e| e.key.clone()).collect();
+        self.archive.apply(moved, &[]);
+        self.change(vec![], &keys_moved);
+        {
+            let mut p = self.pending.lock();
+            for k in &gone {
+                p.remove(k);
+            }
+        }
+        self.save_pending();
+        match failure {
+            Some(f) => Err(f),
+            None => Ok(n),
         }
     }
 

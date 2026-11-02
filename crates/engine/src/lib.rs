@@ -32,6 +32,9 @@ pub use store::Library;
 
 /// Voices per batch (between two checkpoint swaps).
 pub(crate) const BATCH: usize = 16;
+/// Ready-made packs (archive jobs) run in the background for days: bigger
+/// batches swap VCP's checkpoints a third as often (~4 s less per voice).
+pub(crate) const BATCH_ARCHIVE: usize = 48;
 /// The engine only calls VCP after this much quiet (chat goes first).
 const GAP: Duration = Duration::from_secs(6);
 /// Designing needs VCP's design checkpoint and speech recognition pushes the
@@ -94,6 +97,11 @@ pub(crate) struct Inner {
     dir: PathBuf,
     vcp: RwLock<Option<ttv_vcp::Client>>,
     library: Library,
+    /// Finished voices of archive jobs that left VCP: lossless sample in
+    /// samples/, data here; exportable as packs.
+    archive: Library,
+    /// Voices of archive jobs that go to the archive once no job needs them.
+    pending: Mutex<std::collections::HashSet<String>>,
     jobs: Mutex<Vec<StoredJob>>,
     stats: Mutex<Stats>,
     events: broadcast::Sender<EngineEvent>,
@@ -120,6 +128,8 @@ impl Engine {
         }
         let inner = Arc::new(Inner {
             library: Library::load(dir.join("library.jsonl")),
+            archive: Library::load(dir.join("archive.jsonl")),
+            pending: Mutex::new(read_json(&dir.join("archive-pending.json")).unwrap_or_default()),
             stats: Mutex::new(read_json(&dir.join("stats.json")).unwrap_or_default()),
             jobs: Mutex::new(jobs),
             dir,
@@ -153,7 +163,20 @@ impl Engine {
             secs_per_voice: self.inner.stats.lock().secs_per_voice,
             library_size: self.inner.library.len() as u32,
             library_rev: self.inner.library.rev(),
+            archived: self.inner.archive.len() as u32,
         }
+    }
+
+    /// Voices kept only in the archive (for ready-made packs).
+    pub fn archived(&self) -> LibrarySnapshot {
+        self.inner.archive.snapshot()
+    }
+
+    /// Moves computed voices to the archive now: their sample stays here
+    /// (lossless) and they leave VCP. Returns how many were archived.
+    pub async fn archive(&self, keys: &[String]) -> Result<u32, String> {
+        let vcp = self.inner.vcp.read().clone().ok_or("Voice Creator Pro is not connected")?;
+        self.inner.archive_keys(&vcp, keys).await
     }
 
     /// Whether a VCP voice is one of the computed (library) voices.
@@ -323,7 +346,7 @@ impl Engine {
     /// returns its path. Samples come from the lossless backups, else from
     /// VCP. Old exports (> 1 h) are cleaned up.
     pub async fn export(&self, req: ExportRequest, app: &str) -> Result<PathBuf, String> {
-        let vcp = self.inner.vcp.read().clone().ok_or("Voice Creator Pro is not connected")?;
+        let vcp = self.inner.vcp.read().clone();
         let dir = self.inner.dir.join("packs");
         std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
         if let Ok(rd) = std::fs::read_dir(&dir) {
@@ -337,17 +360,32 @@ impl Engine {
         let path = dir.join(format!("export-{:08x}.{}", rand::random::<u32>(), pack::EXTENSION));
         let mut w = pack::PackWriter::create(&path, &req.title, app, req.presets.clone())?;
         for v in &req.voices {
-            let Some(e) = self.inner.library.get(&v.key) else { continue };
+            let (e, archived) = match self.inner.library.get(&v.key) {
+                Some(e) => (e, false),
+                None => match self.inner.archive.get(&v.key) {
+                    Some(e) => (e, true),
+                    None => continue,
+                },
+            };
             let Some(lang) = langs::get(&e.lang) else { continue };
-            // VCP knows what the sample says (1.x voices say other sentences)
-            let sample = vcp.voice_sample(&e.voice_id).await.map_err(|err| format!("{}: {err}", e.voice_name))?;
-            let ref_text = sample.spoken_text().unwrap_or(lang.text).to_string();
-            let flac = match self.sample(&e.key) {
-                Some(f) => f,
-                None => {
-                    let wav = base64::engine::general_purpose::STANDARD.decode(sample.audio_base64.as_bytes()).map_err(|e| e.to_string())?;
-                    let (s, r) = audio::decode(&wav).ok_or_else(|| format!("{}: unreadable sample", e.voice_name))?;
-                    audio::flac(&s, r).ok_or("FLAC encoding failed")?
+            let (ref_text, flac) = match (archived, self.sample(&e.key)) {
+                // the archive keeps what the sample says
+                (true, Some(f)) => (e.ref_text.clone().unwrap_or_else(|| lang.text.to_string()), f),
+                (true, None) => return Err(format!("{}: the archived sample is missing", e.voice_name)),
+                (false, backup) => {
+                    let vcp = vcp.as_ref().ok_or("Voice Creator Pro is not connected")?;
+                    // VCP knows what the sample says (1.x voices say other sentences)
+                    let sample = vcp.voice_sample(&e.voice_id).await.map_err(|err| format!("{}: {err}", e.voice_name))?;
+                    let ref_text = sample.spoken_text().unwrap_or(lang.text).to_string();
+                    let flac = match backup {
+                        Some(f) => f,
+                        None => {
+                            let wav = base64::engine::general_purpose::STANDARD.decode(sample.audio_base64.as_bytes()).map_err(|e| e.to_string())?;
+                            let (s, r) = audio::decode(&wav).ok_or_else(|| format!("{}: unreadable sample", e.voice_name))?;
+                            audio::flac(&s, r).ok_or("FLAC encoding failed")?
+                        }
+                    };
+                    (ref_text, flac)
                 }
             };
             let voice = PackVoice {
@@ -440,7 +478,10 @@ impl Inner {
             .iter()
             .flat_map(|d| req.languages.iter().map(move |l| d.def.key(l)))
             .filter(|k| only.is_empty() || only.contains(k.as_str()))
-            .filter(|k| self.library.contains(k) == (req.kind != JobKind::Compute))
+            .filter(|k| match req.kind {
+                JobKind::Compute => !self.library.contains(k) && !self.archive.contains(k),
+                _ => self.library.contains(k),
+            })
             .count() as u32;
         let o = &req.options;
         let eta = match req.kind {
@@ -755,7 +796,10 @@ async fn worker(inner: Arc<Inner>) {
         };
         let wakes = inner.wakes.load(std::sync::atomic::Ordering::SeqCst);
         match run::batch(&inner, &vcp, &id).await {
-            Ok(()) => failures = 0,
+            Ok(()) => {
+                failures = 0;
+                inner.archive_finished(&vcp).await;
+            }
             Err(e) => {
                 log::warn!("job {id}: {e}");
                 if e.contains("timed out") {

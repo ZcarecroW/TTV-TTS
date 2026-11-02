@@ -105,6 +105,7 @@ impl Engine {
             backup: false,
             level: analysis.level,
             quality: None,
+            ref_text: None,
         };
         entry.backup = s.backup && inner.backup(key, &wav);
         let old = inner.library.get(key);

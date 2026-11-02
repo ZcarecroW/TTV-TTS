@@ -189,6 +189,8 @@ pub fn engine_routes() -> Router<Arc<AppState>> {
         .route("/engine/estimate", get(engine_estimate))
         .route("/library", get(library))
         .route("/library/delete", post(library_delete))
+        .route("/library/archive", post(library_archive))
+        .route("/library/archived", get(library_archived))
         .route("/library/adopt", post(library_adopt))
         .route("/library/keep", post(library_keep))
         .route("/library/verify", post(library_verify))
@@ -380,6 +382,19 @@ async fn library_delete(State(state): S, Json(k): Json<Keys>) -> Response {
         Ok(n) => Json(serde_json::json!({ "deleted": n })).into_response(),
         Err(e) => api_error(StatusCode::BAD_GATEWAY, "vcp_unreachable", e),
     }
+}
+
+/// Moves computed voices to the engine's archive (ready-made packs): they
+/// leave VCP, their lossless sample and data stay here for exports.
+async fn library_archive(State(state): S, Json(k): Json<Keys>) -> Response {
+    match state.engine.archive(&k.keys).await {
+        Ok(n) => Json(serde_json::json!({ "archived": n })).into_response(),
+        Err(e) => api_error(StatusCode::BAD_GATEWAY, "vcp_unreachable", e),
+    }
+}
+
+async fn library_archived(State(state): S) -> Json<ttv_link::LibrarySnapshot> {
+    Json(state.engine.archived())
 }
 
 /// A list of entries to adopt, or entries replacing others (re-keying adopted

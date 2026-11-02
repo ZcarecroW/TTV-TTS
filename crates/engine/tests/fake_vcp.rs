@@ -45,6 +45,9 @@ struct Fake {
 
 type S = State<Arc<Fake>>;
 
+/// Pitch of designs whose description contains "WHISPER".
+const WHISPER_HZ: f32 = 333.0;
+
 fn hash(s: &str) -> u64 {
     let mut h = std::collections::hash_map::DefaultHasher::new();
     s.hash(&mut h);
@@ -91,6 +94,8 @@ async fn design(State(f): S, Json(b): Json<Value>) -> Json<Value> {
     let weird = instruct.contains("WEIRD") && f.weird.try_update(Ordering::SeqCst, Ordering::SeqCst, |w| if w == 0 { None } else { Some(if w > 0 { w - 1 } else { w }) }).is_ok();
     let hz = if weird {
         400.0
+    } else if instruct.contains("WHISPER") {
+        WHISPER_HZ
     } else if instruct.contains("-year-old man.") {
         115.0
     } else if instruct.contains("-year-old woman.") {
@@ -107,7 +112,12 @@ async fn transcribe(State(f): S, Json(b): Json<Value>) -> Json<Value> {
     if f.asr_broken.load(Ordering::SeqCst) {
         return Json(json!({ "success": false, "text": null, "error": "ASR model failed to load" }));
     }
-    let bytes = base64::engine::general_purpose::STANDARD.decode(b["audio_base64"].as_str().unwrap_or_default()).unwrap_or_default();
+    let audio = b["audio_base64"].as_str().unwrap_or_default();
+    // a whispered design: the recognizer hears mumbling
+    if f.designed.lock().get(&hash(audio)) == Some(&WHISPER_HZ) {
+        return Json(json!({ "success": true, "text": "mm hm" }));
+    }
+    let bytes = base64::engine::general_purpose::STANDARD.decode(audio).unwrap_or_default();
     let secs = bytes.len().saturating_sub(44) as f32 / 48_000.0;
     let l = lang_of(&b);
     Json(json!({ "success": true, "text": if secs > 5.0 { l.text } else { l.verify } }))
@@ -188,7 +198,7 @@ fn request(voices: u32) -> JobRequest {
 fn odd_request(quality: bool, improve: bool) -> JobRequest {
     JobRequest {
         defs: vec![def(0, "m", "Calm, warm baritone of a radio host."), def(1, "m", "Punchy action-hero baritone. WEIRD")],
-        options: JobOptions { speech_check: true, takes: 1, backup: false, quality, improve, pick: false },
+        options: JobOptions { speech_check: true, takes: 1, backup: false, quality, improve, ..Default::default() },
         ..request(0)
     }
 }
@@ -489,7 +499,7 @@ async fn let_me_pick_keeps_the_takes_until_one_is_chosen() {
     let d = def(0, "m", "Hard-boiled detective.");
     let key = d.def.key("en");
     e.adopt(vec![ttv_link::LibraryEntry { key: key.clone(), def_hash: d.def.hash(), lang: "en".into(), voice_id: "voice_old".into(), gain: 1.0, ..Default::default() }]);
-    let options = JobOptions { speech_check: true, takes: 3, backup: false, quality: false, improve: false, pick: true };
+    let options = JobOptions { speech_check: true, takes: 3, backup: false, quality: false, improve: false, pick: true, archive: false };
     let req = JobRequest { kind: JobKind::Improve, defs: vec![d.clone()], only: vec![key.clone()], rounds: 1, options, ..request(0) };
     e.submit(req.clone()).unwrap();
     until("the takes", || done(&e)).await;
@@ -514,4 +524,67 @@ async fn let_me_pick_keeps_the_takes_until_one_is_chosen() {
     assert!(e.discard_takes(&key));
     assert!(e.takes().is_empty());
     assert_eq!(e.library().entries[0].voice_id, chosen.voice_id);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn a_voice_that_only_fails_the_speech_check_keeps_its_best_take_at_last() {
+    let (fake, base) = serve().await;
+    let e = engine(&base);
+    let mut req = request(0);
+    req.defs = vec![def(0, "f", "A breathy WHISPER, barely audible.")];
+    e.submit(req).unwrap();
+    until("the job", || done(&e)).await;
+    let job = &e.status().jobs[0];
+    // two attempts misheard, the third keeps the best take instead of failing
+    assert_eq!((job.done, job.failed), (1, 0), "{job:?}");
+    assert_eq!(fake.designs.load(Ordering::SeqCst), 3);
+    let x = &e.library().entries[0];
+    assert!(x.wer.is_some_and(|w| w > 0.5), "{x:?}");
+    assert_eq!(fake.voices.lock().len(), 1);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn archive_jobs_move_finished_voices_out_of_vcp() {
+    let (fake, base) = serve().await;
+    // the odd voice's first design comes out odd: it's improved first
+    fake.weird.store(1, Ordering::SeqCst);
+    let e = engine(&base);
+    let mut req = odd_request(true, true);
+    req.options.backup = true;
+    req.options.archive = true;
+    e.submit(req.clone()).unwrap();
+    until("compute, improve and archive", || e.status().jobs.len() == 2 && done(&e) && e.status().archived == 2).await;
+
+    // VCP and the library are empty; the archive has both, improved
+    assert!(fake.voices.lock().is_empty());
+    assert!(e.library().entries.is_empty());
+    let arch = e.archived().entries;
+    assert!(arch.iter().all(|x| x.backup && x.ref_text.as_deref() == Some(ttv_engine::langs::get("en").unwrap().text)), "{arch:?}");
+    assert!(arch.iter().all(|x| x.quality.as_ref().is_some_and(|q| q.score >= FLAG)), "{arch:?}");
+    // archived voices count as computed
+    assert_eq!(e.submit(req.clone()).unwrap().total, 0);
+    // and export without VCP
+    e.set_vcp(None);
+    let voices: Vec<ttv_link::ExportVoice> = req
+        .defs
+        .iter()
+        .map(|d| ttv_link::ExportVoice { key: d.def.key("en"), preset_id: "test".into(), index: d.index, name: d.def.name.clone(), description: d.def.description.clone() })
+        .collect();
+    let preset = ttv_link::PackPreset { id: "test".into(), name: "Test".into(), builtin: false, text: "#ttv-tts preset v1\nname: Test\n---\n".into() };
+    let path = e.export(ttv_link::ExportRequest { title: "Archived".into(), presets: vec![preset], voices }, "test").await.unwrap();
+    assert_eq!(ttv_engine::pack::read_manifest(&path).unwrap().voices.len(), 2);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn existing_voices_can_be_archived_by_hand() {
+    let (fake, base) = serve().await;
+    let e = engine(&base);
+    let mut req = request(2);
+    req.options.backup = true;
+    e.submit(req).unwrap();
+    until("the job", || done(&e)).await;
+    let keys: Vec<String> = e.library().entries.iter().map(|x| x.key.clone()).collect();
+    assert_eq!(e.archive(&keys[..1]).await.unwrap(), 1);
+    assert_eq!((e.library().entries.len(), e.archived().entries.len(), fake.voices.lock().len()), (1, 1, 1));
+    assert_eq!(e.status().archived, 1);
 }

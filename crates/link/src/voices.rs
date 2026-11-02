@@ -62,6 +62,10 @@ pub struct JobOptions {
     /// Keep every usable take for the streamer to choose from ("let me
     /// pick") instead of saving the best one.
     pub pick: bool,
+    /// Ready-made packs: when a voice is finished (checked, improved), keep
+    /// it only in the engine's archive (lossless sample + data, exportable as
+    /// a pack) and remove it from VCP, so VCP's own list stays small.
+    pub archive: bool,
 }
 
 /// Takes of a voice designed again, waiting for the streamer's choice.
@@ -95,7 +99,7 @@ pub struct TakeInfo {
 
 impl Default for JobOptions {
     fn default() -> Self {
-        Self { speech_check: true, takes: 2, backup: true, quality: false, improve: false, pick: false }
+        Self { speech_check: true, takes: 2, backup: true, quality: false, improve: false, pick: false, archive: false }
     }
 }
 
@@ -215,6 +219,9 @@ pub struct LibraryEntry {
     pub quality: Option<Quality>,
     /// A lossless copy of the sample exists on the engine's PC.
     pub backup: bool,
+    /// Archived voices: what the sample says (VCP no longer knows it).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ref_text: Option<String>,
 }
 
 /// `GET /ttv/v1/library`: the whole library at revision `rev`.
@@ -246,6 +253,8 @@ pub struct EngineStatus {
     pub library_size: u32,
     /// Bumped whenever the library changes (clients refetch when it moves).
     pub library_rev: u64,
+    /// Voices kept only in the engine's archive (for ready-made packs).
+    pub archived: u32,
 }
 
 #[cfg(test)]
