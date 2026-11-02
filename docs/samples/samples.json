@@ -1,0 +1,444 @@
+[
+ {
+  "preset": "cinematic",
+  "name": {
+   "en": "Cinematic",
+   "de": "Cinematic"
+  },
+  "desc": {
+   "en": "Trailer narrators, heroes, villains, mentors and sidekicks of the big screen",
+   "de": "Trailer-Sprecher, Erzähler, Helden und Schurken der großen Leinwand"
+  },
+  "icon": "Clapperboard",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Grant Halloway",
+    "text": "In a world where chat never sleeps, one streamer dared to press go live.",
+    "file": "cinematic-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Selene Ward",
+    "text": "In einer Welt, in der der Chat niemals schläft, wagte es ein Streamer, live zu gehen.",
+    "file": "cinematic-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "everyday-neighbors",
+  "name": {
+   "en": "Everyday Neighbors",
+   "de": "Everyday Neighbors"
+  },
+  "desc": {
+   "en": "Ordinary, natural voices – the people next door, at work, at school and in the shop",
+   "de": "Nachbarn, Kollegen, Verwandte – ganz normale Leute von nebenan"
+  },
+  "icon": "House",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Mark Henderson",
+    "text": "Morning! Just popped in to say the stream looks great today. Carry on!",
+    "file": "everyday-neighbors-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Julia Weber",
+    "text": "Hallo zusammen! Ich wollte nur kurz sagen: Der Stream sieht heute richtig gut aus.",
+    "file": "everyday-neighbors-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "fantasy-tavern",
+  "name": {
+   "en": "Fantasy Tavern",
+   "de": "Fantasy Tavern"
+  },
+  "desc": {
+   "en": "Innkeepers, bards, adventurers, wizards and odd regulars by the fire",
+   "de": "Wirte, Barden, Abenteurer, Zauberer und schräge Stammgäste am Kamin"
+  },
+  "icon": "BeerMug",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Borin Ashbeard",
+    "text": "Welcome, traveller! Pull up a stool. The ale is fresh and the stories are long.",
+    "file": "fantasy-tavern-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Maribel Thistle",
+    "text": "Willkommen, Reisende! Setzt euch zu uns, das Bier ist frisch und die Geschichten sind lang.",
+    "file": "fantasy-tavern-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "starship-crew",
+  "name": {
+   "en": "Starship Crew",
+   "de": "Starship Crew"
+  },
+  "desc": {
+   "en": "Captains, pilots, engineers, ship computers and aliens of a far-future crew",
+   "de": "Captains, Ingenieure, Bordcomputer und Außerirdische an Bord"
+  },
+  "icon": "Rocket",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Captain Idris Vale",
+    "text": "Captain, sensors show three new followers off the starboard bow.",
+    "file": "starship-crew-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Lieutenant Mara Quell",
+    "text": "Captain, die Sensoren melden drei neue Follower an Steuerbord.",
+    "file": "starship-crew-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "noir-city",
+  "name": {
+   "en": "Noir City",
+   "de": "Noir City"
+  },
+  "desc": {
+   "en": "Rain-soaked detectives, lounge singers, mobsters and informants of a 1940s city",
+   "de": "Detektive, Gangster, Sängerinnen und Informanten im Regen der Großstadt"
+  },
+  "icon": "TopHat",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Vic Malone",
+    "text": "The rain hadn't stopped in three days. Neither had the chat.",
+    "file": "noir-city-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Lola Fine",
+    "text": "Seit drei Tagen hatte es nicht aufgehört zu regnen. Der Chat auch nicht.",
+    "file": "noir-city-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "saturday-cartoons",
+  "name": {
+   "en": "Saturday Cartoons",
+   "de": "Saturday Cartoons"
+  },
+  "desc": {
+   "en": "Zany heroes, goofy sidekicks, scheming villains and talking animals",
+   "de": "Quirlige Zeichentrickfiguren, Bösewichte und Sidekicks vom Samstagmorgen"
+  },
+  "icon": "Tv",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Captain Zoom",
+    "text": "Ooh, ooh! Did you see that jump? Do it again, do it again!",
+    "file": "saturday-cartoons-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Penny Pockets",
+    "text": "Oh, hast du den Sprung gesehen? Nochmal, nochmal!",
+    "file": "saturday-cartoons-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "high-seas",
+  "name": {
+   "en": "High Seas",
+   "de": "High Seas"
+  },
+  "desc": {
+   "en": "Pirate captains, sailors, sea witches, merchants and harbor folk",
+   "de": "Kapitäne, Piraten, Matrosen und Hafenwirte auf hoher See"
+  },
+  "icon": "Anchor",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Captain Redmane Harlow",
+    "text": "Arr, hoist the colours, lads! The streamer has found the treasure at last!",
+    "file": "high-seas-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Annie Blackwater",
+    "text": "Ahoi! Hisst die Flagge, Leute, der Streamer hat endlich den Schatz gefunden!",
+    "file": "high-seas-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "royal-court",
+  "name": {
+   "en": "Royal Court",
+   "de": "Royal Court"
+  },
+  "desc": {
+   "en": "Kings, queens, knights, advisors, jesters and servants of a medieval palace",
+   "de": "Könige, Königinnen, Ritter, Hofnarren und Intriganten bei Hofe"
+  },
+  "icon": "Crown",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "King Aldemar the Third",
+    "text": "By royal decree, this stream shall continue until the boss is defeated.",
+    "file": "royal-court-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Queen Isabeau",
+    "text": "Auf königlichen Erlass soll dieser Stream weitergehen, bis der Boss besiegt ist.",
+    "file": "royal-court-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "midnight-horror",
+  "name": {
+   "en": "Midnight Horror",
+   "de": "Midnight Horror"
+  },
+  "desc": {
+   "en": "Haunted houses, creepy caretakers, ghosts, monsters and survivors of the night",
+   "de": "Unheimliche Erzähler, Geister, verrückte Wissenschaftler und Überlebende"
+  },
+  "icon": "Ghost",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "The Caretaker",
+    "text": "Did you hear that? Something is moving behind the door. Don't open it.",
+    "file": "midnight-horror-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Abigail Thorne",
+    "text": "Hast du das gehört? Hinter der Tür bewegt sich etwas. Mach sie nicht auf.",
+    "file": "midnight-horror-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "arena-casters",
+  "name": {
+   "en": "Arena Casters",
+   "de": "Arena Casters"
+  },
+  "desc": {
+   "en": "Esports casters, sports commentators, coaches, pros, hype men and superfans",
+   "de": "E-Sport-Caster, Sportkommentatoren, Trainer, Profis und Superfans"
+  },
+  "icon": "Trophy",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Max Volt",
+    "text": "And he goes for it! What a play! The crowd is on its feet!",
+    "file": "arena-casters-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Jade Archer",
+    "text": "Und er wagt es! Was für ein Spielzug! Das Publikum ist völlig aus dem Häuschen!",
+    "file": "arena-casters-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "on-air",
+  "name": {
+   "en": "On Air",
+   "de": "On Air"
+  },
+  "desc": {
+   "en": "Radio DJs, news anchors, podcasters, weather presenters and late-night hosts",
+   "de": "Radiomoderatoren, Nachrichtensprecher, Werbestimmen und Anrufer"
+  },
+  "icon": "Microphone",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Johnny Midnight",
+    "text": "You're listening to the late show, and our next caller has a question about that last boss.",
+    "file": "on-air-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Sandra Bright",
+    "text": "Ihr hört die Spätsendung, und unser nächster Anrufer hat eine Frage zum letzten Boss.",
+    "file": "on-air-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "wild-planet",
+  "name": {
+   "en": "Wild Planet",
+   "de": "Wild Planet"
+  },
+  "desc": {
+   "en": "Talking animals of jungle, savanna, ocean, forest and sky – plus the rangers who listen",
+   "de": "Naturfilm-Erzähler, Ranger, Forscher und Abenteurer in der Wildnis"
+  },
+  "icon": "Paw",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Old Tusk",
+    "text": "Here, in the quiet of the forest, the streamer prepares for the final fight.",
+    "file": "wild-planet-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Zuri Swiftfoot",
+    "text": "Hier, in der Stille des Waldes, bereitet sich der Streamer auf den letzten Kampf vor.",
+    "file": "wild-planet-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "storytime",
+  "name": {
+   "en": "Storytime",
+   "de": "Storytime"
+  },
+  "desc": {
+   "en": "Fairy-tale narrators, gentle grandparents, giants, fairies and bedtime characters",
+   "de": "Märchenerzähler, Großeltern, Fabelwesen und Figuren aus Kinderbüchern"
+  },
+  "icon": "BookOpen",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Grandpa Ellis",
+    "text": "Once upon a time, in a chat not so far away, everyone said hello at once.",
+    "file": "storytime-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Nanna Maple",
+    "text": "Es war einmal ein Chat, nicht weit von hier, in dem alle gleichzeitig Hallo sagten.",
+    "file": "storytime-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "frontier-west",
+  "name": {
+   "en": "Frontier West",
+   "de": "Frontier West"
+  },
+  "desc": {
+   "en": "Sheriffs, outlaws, saloon owners, prospectors and drifters of a dusty frontier town",
+   "de": "Sheriffs, Revolverhelden, Saloon-Wirte und Goldsucher im Wilden Westen"
+  },
+  "icon": "Cactus",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Sheriff Amos Kincaid",
+    "text": "Well howdy, partner. Reckon this here stream's the finest in the whole territory.",
+    "file": "frontier-west-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Belle Starling",
+    "text": "Na, Partner? Ich schätze, das ist der beste Stream im ganzen Territorium.",
+    "file": "frontier-west-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "neon-streets",
+  "name": {
+   "en": "Neon Streets",
+   "de": "Neon Streets"
+  },
+  "desc": {
+   "en": "Hackers, fixers, androids, corporate sharks and street vendors of a rain-soaked future city",
+   "de": "Hacker, Söldner, Konzernleute und Straßenkids einer Neon-Zukunft"
+  },
+  "icon": "Robot",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Jax Voltaire",
+    "text": "Jacked in and ready. Ping me when the next run starts.",
+    "file": "neon-streets-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Mira Kade",
+    "text": "Eingeloggt und bereit. Sag Bescheid, wenn der nächste Run startet.",
+    "file": "neon-streets-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "olympus",
+  "name": {
+   "en": "Olympus",
+   "de": "Olympus"
+  },
+  "desc": {
+   "en": "Gods, titans, heroes, oracles, muses and mythic creatures of an ancient sky-mountain",
+   "de": "Götter, Helden, Orakel und Ungeheuer der alten Sagen"
+  },
+  "icon": "Temple",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Thundros, King of the Sky",
+    "text": "Hear me, mortals! The gods themselves are watching this stream tonight.",
+    "file": "olympus-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Hera of the Golden Throne",
+    "text": "Hört mich an, Sterbliche! Heute Abend schauen sogar die Götter diesem Stream zu.",
+    "file": "olympus-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "capes-and-masks",
+  "name": {
+   "en": "Capes & Masks",
+   "de": "Capes & Masks"
+  },
+  "desc": {
+   "en": "Original superheroes, villains, sidekicks, reporters and citizens of a comic-book city",
+   "de": "Eigene Superhelden, Schurken, Sidekicks, Reporter und Bürger einer Comic-Stadt"
+  },
+  "icon": "Mask",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Captain Meridian",
+    "text": "Fear not, citizens! No lag can stop this hero!",
+    "file": "capes-and-masks-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Nightlark",
+    "text": "Keine Angst, Bürger! Kein Lag kann diesen Helden aufhalten!",
+    "file": "capes-and-masks-de.mp3"
+   }
+  ]
+ }
+]

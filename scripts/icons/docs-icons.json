@@ -1,0 +1,9 @@
+{
+  "_comment": "Documentation-only icons (docs/site/icons.gen.mjs). Counted together with icons.json against the 100-icon limit of the Nucleo license for public repos. Run: npm run icons",
+  "Search": "magnifier/core/outline/24",
+  "ArrowLeft": "arrow-left/core/outline/24",
+  "Windows": "microsoft/social-media/glyph/32",
+  "Apple": "apple/social-media/glyph/32",
+  "Linux": "linux/nucleo/glyph/24",
+  "GitHub": "github/social-media/glyph/32"
+}
