@@ -9,7 +9,10 @@
 
 use serde::{Deserialize, Serialize};
 
+// only the Windows firewall gets a rule of its own
+#[cfg_attr(not(windows), allow(dead_code))]
 pub const RULE_NAME: &str = "TTV-TTS-Proxy";
+#[cfg_attr(not(windows), allow(dead_code))]
 pub const RULE_GROUP: &str = "TTV-TTS";
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]

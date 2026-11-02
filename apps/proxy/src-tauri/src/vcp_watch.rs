@@ -354,7 +354,7 @@ fn spawn_vcp(exe: &Path) -> std::io::Result<()> {
         // Start the .app bundle the program file belongs to.
         let bundle = exe.ancestors().find(|p| p.extension().is_some_and(|e| e == "app")).unwrap_or(exe);
         std::process::Command::new("open").arg("-a").arg(bundle).spawn()?;
-        return Ok(());
+        Ok(())
     }
     #[cfg(not(target_os = "macos"))]
     {
