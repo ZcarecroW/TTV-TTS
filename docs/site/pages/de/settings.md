@@ -54,11 +54,24 @@ Dein Passwort geht nie durch TTV-TTS. Es darf nur sehen, wer dir folgt und welch
 
 ### Deine eigene Twitch-Anwendung {#twitch-app}
 
-Sagt TTV-TTS, dass keine Twitch-Anwendung eingebaut ist, oder willst du lieber deine eigene:
+Zum Anmelden braucht eine App eine *Client ID*: das Namensschild einer bei Twitch registrierten Anwendung. TTV-TTS hat eine eingebaut („TTV-TTS by ZcarecroW“), normalerweise klickst du also einfach auf **Mit Twitch anmelden**. Du kannst stattdessen deine eigene verwenden – kostenlos und in zwei Minuten erledigt.
 
-1. Öffne [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps) und wähl **Register Your Application**.
-2. Name: zum Beispiel „TTV-TTS (dein Name)“; OAuth-Redirect-URL: `http://localhost`; Kategorie: *Application Integration*; Client-Typ: **Public**.
-3. Kopier die **Client ID** (ein Secret wird nicht gebraucht) und füg sie unter **Eigene Twitch-Anwendung verwenden** ein.
+**Warum du vielleicht eine eigene willst:**
+
+- **Du bist unabhängig.** Deine Anmeldung läuft über eine Anwendung, die nur du verwaltest. Würde die eingebaute je geändert, gesperrt oder ersetzt, funktioniert deine Anmeldung weiter.
+- **Du siehst sie und kannst sie widerrufen.** Beim Anmelden zeigt Twitch den Namen *deiner* Anwendung, und unter [Twitch → Einstellungen → Verbindungen](https://www.twitch.tv/settings/connections) steht sie als deine.
+- **Selbst kompilierte Versionen** (siehe [Aus dem Quellcode bauen](building)) haben keine Client ID eingebaut – dort brauchst du deine eigene.
+- **Nichts wird schneller oder langsamer**: Twitch zählt seine Limits pro Nutzer, die eingebaute Anwendung zu teilen kostet dich also nichts. Bist du mit der eingebauten zufrieden, musst du nichts ändern.
+
+**So geht's:**
+
+1. Twitch lässt nur Konten mit **Zwei-Faktor-Authentifizierung** Anwendungen registrieren – schalte sie unter [Einstellungen → Sicherheit](https://www.twitch.tv/settings/security) ein, falls noch nicht geschehen.
+2. Öffne [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps) (mit deinem Twitch-Konto anmelden) und wähl **Register Your Application**.
+3. **Name**: etwas Eindeutiges, zum Beispiel „TTV-TTS (dein Name)“ – vergebene Namen lehnt Twitch ab. **OAuth Redirect URLs**: `http://localhost` (TTV-TTS meldet dich mit einem Code an, den du im Browser bestätigst, diese Adresse wird also nie benutzt). **Category**: *Application Integration*. **Client Type**: **Public**. Dann **Create**.
+4. Klick neben der neuen Anwendung auf **Manage** und kopier die **Client ID**. Ein Client Secret brauchst du nicht – eine öffentliche Anwendung hat keins.
+5. Öffne in TTV-TTS **Einstellungen → Twitch-Konto**, klapp **Eigene Twitch-Anwendung verwenden** auf, füg die Client ID ein und speichere. Dann **Mit Twitch anmelden**.
+
+Zurück zur eingebauten Anwendung: **Die eingebaute verwenden**. Deine Client ID ist kein Geheimnis wie ein Passwort (Twitch schickt sie bei jeder Anfrage mit), aber es gibt auch keinen Grund, sie öffentlich zu posten.
 
 ## Audio-Plugins {#plugins}
 

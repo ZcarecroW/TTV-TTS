@@ -54,11 +54,24 @@ Your password never goes through TTV-TTS. It may only see who follows you and wh
 
 ### Your own Twitch application {#twitch-app}
 
-If TTV-TTS says it has no Twitch application built in, or you prefer your own:
+To log in, an app needs a *client ID*: the name tag of an application registered at Twitch. TTV-TTS has one built in (“TTV-TTS by ZcarecroW”), so normally you just click **Log in with Twitch**. You can use your own instead – it's free and takes two minutes.
 
-1. Open [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps) and choose **Register Your Application**.
-2. Name: for example “TTV-TTS (your name)”; OAuth redirect URL: `http://localhost`; category: *Application Integration*; client type: **Public**.
-3. Copy the **Client ID** (no secret is needed) and paste it under **Use your own Twitch application**.
+**Why you might want your own:**
+
+- **You're independent.** Your login goes through an application only you control. If the built-in one were ever changed, blocked or replaced, your login keeps working.
+- **It's yours to see and revoke.** At login Twitch shows *your* application's name, and under [Twitch → Settings → Connections](https://www.twitch.tv/settings/connections) it's listed as yours.
+- **Builds you compile yourself** (see [Building from source](building)) have no client ID built in – there you need your own.
+- **Nothing gets slower or faster**: Twitch counts its limits per user, so sharing the built-in application costs you nothing. If you're happy with the built-in one, there's no need to change.
+
+**How:**
+
+1. Twitch only lets accounts with **two-factor authentication** register applications – switch it on under [Settings → Security](https://www.twitch.tv/settings/security) if you haven't.
+2. Open [dev.twitch.tv/console/apps](https://dev.twitch.tv/console/apps) (log in with your Twitch account) and choose **Register Your Application**.
+3. **Name**: something unique, for example “TTV-TTS (your name)” – Twitch rejects names that are taken. **OAuth Redirect URLs**: `http://localhost` (TTV-TTS logs in with a code you confirm in the browser, so this address is never used). **Category**: *Application Integration*. **Client Type**: **Public**. Then **Create**.
+4. Click **Manage** next to the new application and copy the **Client ID**. You don't need a client secret – a public application has none.
+5. In TTV-TTS open **Settings → Twitch account**, expand **Use your own Twitch application**, paste the client ID and save. Then **Log in with Twitch**.
+
+To go back to the built-in application, choose **Use the built-in one**. Your client ID isn't secret in the sense of a password (Twitch sends it along with every request), but there's no reason to post it publicly.
 
 ## Audio plugins {#plugins}
 

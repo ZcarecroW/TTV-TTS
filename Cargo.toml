@@ -79,7 +79,14 @@ opt-level = 3
 panic = "abort"
 strip = true
 
+# Debug builds keep line numbers for backtraces but no full debug info: the
+# target folder stays a fraction of the size (it once grew past 130 GB) and
+# links are faster.
+[profile.dev]
+debug = "line-tables-only"
+
 # Dependencies are built with optimizations in dev builds too: the proxy streams
 # audio and the dev build should behave like the release build.
 [profile.dev.package."*"]
 opt-level = 2
+debug = false

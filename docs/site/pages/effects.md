@@ -53,3 +53,31 @@ TTV-TTS looks for VST3 plugins in your system's standard VST3 folders (on Window
 and in the folders listed in the `CLAP_PATH` environment variable.
 
 Plugin windows open on Windows only for now. On macOS and Linux the plugins sound the same, with the settings they had when you added them.
+
+## Free plugins worth trying {#free-plugins}
+
+All of these are free and come straight from their makers. TTV-TTS needs the **VST3** or **CLAP** version – some downloads also contain VST2, AU or AAX files, which you can ignore. Formats and systems as the makers list them (November 2026).
+
+| Plugin | Good for | Formats | Systems |
+|---|---|---|---|
+| [Airwindows Consolidated](https://www.airwindows.com/consolidated/) | 400+ small effects in one plugin: EQs, compressors, lo-fi, tape, reverbs. Open source | CLAP, VST3 | Windows, macOS, Linux |
+| [Surge XT Effects](https://surge-synthesizer.github.io/) | every effect of the Surge synth: vocoder, ring modulator, frequency shifter, chorus, reverb, distortion. Open source | CLAP, VST3 | Windows, macOS, Linux |
+| [TAL-Vocoder](https://tal-software.com/products/tal-vocoder) | robot voices – it has its own carrier synth, so it works on speech alone | CLAP, VST3 | Windows, macOS, Linux (VST3) |
+| [Dragonfly Reverb](https://michaelwillis.github.io/dragonfly-reverb/) | four reverbs: hall, room, plate, early reflections. Open source | CLAP, VST3 | Windows, macOS, Linux |
+| [Graillon 3 Free Edition](https://www.auburnsounds.com/products/Graillon.html) | pitch and formant shifting (deep monster, tiny gremlin), bitcrusher | VST3 | Windows, macOS, Linux |
+| [Valhalla Supermassive](https://valhalladsp.com/shop/reverb/valhalla-supermassive/) | huge, spacey reverbs and echoes – starships, dreams, gods | VST3 | Windows, macOS |
+| [Protoverb](https://u-he.com/products/protoverb/) | strange, experimental rooms | VST3 | Windows, macOS, Linux (beta) |
+| [Kilohearts Essentials](https://kilohearts.com/products/kilohearts_essentials) | 34 small effects: pitch shifter, ring mod, frequency shifter, chorus, flanger, distortion. Free with an account | VST3 | Windows, macOS |
+| [MFreeFXBundle](https://www.meldaproduction.com/MFreeFXBundle) | 30+ effects, among them MAutoPitch (pitch and formant), MRingModulator, EQ, compressor | VST3 | Windows, macOS |
+| [TDR Nova](https://www.tokyodawn.net/tdr-nova/) | dynamic EQ – tames sharp "s" sounds as a de-esser | VST3 | Windows, macOS |
+| [LSP Plugins](https://lsp-plug.in/) | compressors, EQs, de-essers, limiters. Open source | CLAP, VST3 | Linux (Windows builds on the site) |
+
+Ideas to start with:
+
+- **A monster or giant**: Graillon, pitch down 5–7 semitones, formant down a little – then a short hall from Dragonfly.
+- **A robot or ship's computer**: TAL-Vocoder or the Surge XT vocoder; the built-in **Robot** effect is the quick version.
+- **Gods and spirits**: Valhalla Supermassive with a long decay, mixed in at 20–30 %.
+- **Clearer speech for everyone**: TDR Nova as a de-esser plus a gentle compressor at the end of the chain.
+
+> [!TIP]
+> Download plugins only from the maker's own page (the links above), never from "free download" mirror sites – a plugin runs inside TTV-TTS with your rights. Plugins that exist only as VST2 can't be used.

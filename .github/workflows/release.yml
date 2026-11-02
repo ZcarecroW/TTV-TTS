@@ -38,6 +38,13 @@ jobs:
           if [ "v$want" != "$GITHUB_REF_NAME" ]; then echo "::error::Tag $GITHUB_REF_NAME, but Cargo.toml says $want."; exit 1; fi
           case "$want" in *-*) echo "::error::Pre-releases are published with scripts/publish-preview.mjs."; exit 1;; esac
 
+      - name: The Twitch client ID is there
+        shell: bash
+        env:
+          ID: ${{ secrets.TWITCH_CLIENT_ID }}
+        run: |
+          if [ -z "$ID" ]; then echo "::error::The repository secret TWITCH_CLIENT_ID is missing: a release needs the built-in Twitch login."; exit 1; fi
+
       - uses: actions/setup-node@v7
         with:
           node-version: lts/*
