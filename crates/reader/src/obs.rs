@@ -335,7 +335,7 @@ mod tests {
     fn the_clock_follows_the_queued_audio() {
         let s = ObsSink::new();
         let a = s.play(vec![0.0; 2400], 24_000); // 0.1 s
-        let b = s.play(vec![0.0; 2400], 24_000);
+        let b = s.play(vec![0.0; 48_000], 24_000); // 2 s: a busy machine may oversleep, never by that much
         assert!(!s.is_finished(a) && !s.is_finished(b));
         std::thread::sleep(LATENCY + Duration::from_millis(120));
         assert!(s.is_finished(a) && !s.is_finished(b), "b starts after a");
