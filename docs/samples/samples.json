@@ -440,5 +440,31 @@
     "file": "capes-and-masks-de.mp3"
    }
   ]
+ },
+ {
+  "preset": "grand-stage",
+  "name": {
+   "en": "Grand Stage",
+   "de": "Grand Stage"
+  },
+  "desc": {
+   "en": "Stage actors, opera divas, musical stars, circus ringmasters and backstage crews",
+   "de": "Bühnenstars, Opernsänger, Zirkusdirektoren und Theaterleute"
+  },
+  "icon": "TheatreMasks",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Sir Ambrose Fairweather",
+    "text": "Ladies and gentlemen, the curtain rises on tonight's grand performance!",
+    "file": "grand-stage-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Dame Celestine Moreau",
+    "text": "Meine Damen und Herren, der Vorhang hebt sich für die große Vorstellung des Abends!",
+    "file": "grand-stage-de.mp3"
+   }
+  ]
  }
 ]
