@@ -178,13 +178,14 @@ export interface SystemStats {
 export const isTauri = "__TAURI_INTERNALS__" in window;
 
 async function invoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
-  if (isTauri) return tauriInvoke<T>(cmd, args);
+  // release builds never include the demo backend (dead code there)
+  if (isTauri || !import.meta.env.DEV) return tauriInvoke<T>(cmd, args);
   const { demoInvoke } = await import("./demo");
   return demoInvoke<T>(cmd, args);
 }
 
 export async function listen<T>(event: string, cb: (payload: T) => void): Promise<UnlistenFn> {
-  if (isTauri) return tauriListen<T>(event, (e) => cb(e.payload));
+  if (isTauri || !import.meta.env.DEV) return tauriListen<T>(event, (e) => cb(e.payload));
   const { demoListen } = await import("./demo");
   return demoListen(event, cb as (p: unknown) => void);
 }

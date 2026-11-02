@@ -543,6 +543,13 @@ const de: typeof en = {
     notTranslated: "nicht übersetzt: {error}",
   },
   downloads: {
+    allButton: "Fertige Stimmen …",
+    allTip: "Fertige Stimmen für mehrere Presets auf einmal herunterladen, statt sie zu berechnen.",
+    allTitle: "Fertige Stimmen für alle Presets",
+    presets: "Presets",
+    all: "Alle",
+    none: "Keine",
+    many: "Das sind viele: Jede Stimme wird in Voice Creator Pro gespeichert, ein paar Sekunden pro Stimme, in Pausen zwischen Chatnachrichten. Fang mit den Presets und Sprachen an, die du wirklich nutzt.",
     button: "Holen",
     tip: "Fertige Stimmen für dieses Preset: herunterladen statt berechnen (ein paar MB, eine Minute zum Importieren).",
     title: "Fertige Stimmen für „{name}“",

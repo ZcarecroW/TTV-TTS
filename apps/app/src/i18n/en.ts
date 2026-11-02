@@ -541,6 +541,13 @@ export default {
     notTranslated: "not translated: {error}",
   },
   downloads: {
+    allButton: "Ready-made voices …",
+    allTip: "Download ready-made voices for several presets at once, instead of computing them.",
+    allTitle: "Ready-made voices for all presets",
+    presets: "Presets",
+    all: "All",
+    none: "None",
+    many: "That's a lot: every voice is saved in Voice Creator Pro, a few seconds each, in pauses between chat messages. Start with the presets and languages you really use.",
     button: "Get",
     tip: "Ready-made voices for this preset: download them instead of computing them (a few MB, a minute to import).",
     title: "Ready-made voices for “{name}”",
