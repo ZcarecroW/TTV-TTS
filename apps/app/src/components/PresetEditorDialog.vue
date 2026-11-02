@@ -97,7 +97,7 @@ async function save() {
 </script>
 
 <template>
-  <UiModal :title="presetId ? t('editor.editTitle') : t('editor.newTitle')" width="max-w-3xl" @close="emit('close')">
+  <UiModal docs-page="presets" docs-anchor="own-presets" :title="presetId ? t('editor.editTitle') : t('editor.newTitle')" width="max-w-3xl" @close="emit('close')">
     <div class="space-y-5">
       <div class="grid gap-3 sm:grid-cols-[1fr_2fr]">
         <UiField :label="t('editor.name')"><input v-model="name" class="input" maxlength="60" :placeholder="t('editor.namePlaceholder')" /></UiField>

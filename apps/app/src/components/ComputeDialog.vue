@@ -110,7 +110,7 @@ async function start() {
 </script>
 
 <template>
-  <UiModal :title="detail ? t('compute.title', { name: detail.name }) : t('common.loading')" width="max-w-xl" @close="emit('close')">
+  <UiModal docs-page="presets" docs-anchor="compute" :title="detail ? t('compute.title', { name: detail.name }) : t('common.loading')" width="max-w-xl" @close="emit('close')">
     <div v-if="detail" class="space-y-5">
       <UiSegmented v-model="count" :options="tierOptions" :label="t('compute.voices')" :tip="t('tips.computeVoices')" />
 

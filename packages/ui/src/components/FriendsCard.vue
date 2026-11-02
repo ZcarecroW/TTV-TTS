@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import UiTip from "./UiTip.vue";
+import UiDocs from "./UiDocs.vue";
 import UiToggle from "./UiToggle.vue";
 import { copyText } from "../clipboard";
 import { ago } from "../format";
@@ -107,7 +108,8 @@ const duckLine = computed(() => {
   <section class="card p-5">
     <div class="card-head">
       <Users />{{ t("friends.title") }}<UiTip :text="t('tips.friends')" />
-      <span v-if="s?.enabled" class="badge ml-auto" :class="s.listening ? 'badge-ok' : 'badge-err'">{{ s.listening ? t("friends.on", { port: s.port }) : t("friends.portError") }}</span>
+      <UiDocs class="ml-auto" page="friends" />
+      <span v-if="s?.enabled" class="badge" :class="s.listening ? 'badge-ok' : 'badge-err'">{{ s.listening ? t("friends.on", { port: s.port }) : t("friends.portError") }}</span>
     </div>
     <p v-if="error" class="text-sm text-muted">{{ error }}</p>
     <template v-else-if="s">

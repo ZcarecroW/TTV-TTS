@@ -9,6 +9,7 @@ import { api, friends } from "../api";
 import HostSetup from "../components/HostSetup.vue";
 import FriendsCard from "@ttv-tts/ui/components/FriendsCard.vue";
 import { apply, config, guest, host, run, store, toast } from "../store";
+import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
 const { t, locale } = useI18n();
 const changing = ref(false);
@@ -72,7 +73,8 @@ async function forget() {
         <section class="card p-5">
           <div class="card-head">
             <Link />{{ t("host.statusTitle") }}
-            <span class="badge ml-auto" :class="h.connected ? 'badge-ok' : 'badge-err'">{{ h.connected ? t("host.connected") : t("host.disconnected") }}</span>
+            <UiDocs class="ml-auto" page="voice-host" anchor="status" />
+            <span class="badge" :class="h.connected ? 'badge-ok' : 'badge-err'">{{ h.connected ? t("host.connected") : t("host.disconnected") }}</span>
           </div>
           <dl class="space-y-2 text-sm">
             <div class="flex justify-between gap-3"><dt class="muted">{{ h.kind === "proxy" ? t("host.proxy") : t("host.direct") }}</dt><dd class="font-medium">{{ cfg.kind === "proxy" ? cfg.name : "" }}</dd></div>

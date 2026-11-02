@@ -6,6 +6,7 @@ import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { CircleCheck, Lock, Monitor, Network, Refresh, Server, Spinner, Users } from "@ttv-tts/ui/icons";
 import { api, friends, type Found, type Probe } from "../api";
 import { apply, run, store, toast } from "../store";
+import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
 const emit = defineEmits<{ done: [] }>();
 const { t } = useI18n();
@@ -95,7 +96,8 @@ async function useDirect() {
     <section v-if="mode === 'proxy'" class="card p-5">
       <div class="card-head">
         <Network />{{ t("host.found") }}
-        <button class="btn btn-ghost btn-sm ml-auto" :disabled="searching" @click="search">
+        <UiDocs class="ml-auto" page="voice-host" anchor="proxy" />
+        <button class="btn btn-ghost btn-sm" :disabled="searching" @click="search">
           <Refresh :size="15" :class="searching && 'spin'" />{{ searching ? t("common.searching") : t("common.search") }}
         </button>
       </div>

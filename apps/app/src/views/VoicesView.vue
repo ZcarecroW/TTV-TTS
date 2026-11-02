@@ -5,6 +5,7 @@ import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { Play, Spinner, Stop, Waveform } from "@ttv-tts/ui/icons";
 import { api, EFFECTS, LANGUAGES, type SayReport, type Voice } from "../api";
 import { host, run, store } from "../store";
+import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
 const { t } = useI18n();
 const voices = ref<Voice[]>([]);
@@ -68,7 +69,7 @@ const reportText = computed(() => {
     <p v-if="!ready" class="notice notice-warn text-sm">{{ t("voices.noHost") }}</p>
 
     <section class="card p-5">
-      <div class="card-head"><Play />{{ t("voices.tryTitle") }}</div>
+      <div class="card-head"><Play />{{ t("voices.tryTitle") }}<UiDocs class="ml-auto" page="voices" anchor="try" /></div>
       <p class="muted mb-3 text-sm">{{ t("voices.tryText") }}</p>
       <textarea v-model="text" rows="2" class="input h-auto py-2" :placeholder="t('voices.textPlaceholder')" />
       <div class="mt-3 grid gap-3 sm:grid-cols-[2fr_1fr_1fr_1fr]">

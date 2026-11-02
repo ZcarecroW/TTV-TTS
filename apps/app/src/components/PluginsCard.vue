@@ -7,6 +7,7 @@ import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
 import { ChevronDown, FolderOpen, Layers, Pen, Plus, Spinner, Trash, Warning } from "@ttv-tts/ui/icons";
 import { plugins, type PluginInfo, type PluginsView } from "../api";
 import { run, store, toast } from "../store";
+import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
 // Effect plugins (VST3, CLAP) on every voice, after the built-in effects.
 const { t } = useI18n();
@@ -53,7 +54,8 @@ async function edit(id: string) {
   <section class="card p-5 md:col-span-2" data-plugins>
     <div class="card-head">
       <Layers />{{ t("settings.pluginsTitle") }}<UiTip :text="t('tips.plugins')" />
-      <button class="btn btn-sm ml-auto" @click="openAdd"><Plus :size="15" />{{ t("settings.pluginsAdd") }}</button>
+      <UiDocs class="ml-auto" page="effects" anchor="plugins" />
+      <button class="btn btn-sm" @click="openAdd"><Plus :size="15" />{{ t("settings.pluginsAdd") }}</button>
     </div>
     <p v-if="!view?.slots.length" class="text-sm text-muted">{{ t("settings.pluginsEmpty") }}</p>
     <ol v-else class="space-y-1.5">
@@ -72,6 +74,7 @@ async function edit(id: string) {
         </span>
       </li>
     </ol>
+    <p class="mt-3 text-xs text-muted">{{ t("settings.pluginsFree") }} <UiDocs page="effects" anchor="free-plugins" :label="t('settings.pluginsFreeLink')" /></p>
 
     <UiModal v-if="adding" :title="t('settings.pluginsAddTitle')" width="max-w-xl" @close="adding = false">
       <div class="space-y-3" data-plugin-list>

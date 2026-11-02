@@ -14,6 +14,7 @@ import ImportDialog from "../components/ImportDialog.vue";
 import ExportDialog from "../components/ExportDialog.vue";
 import DownloadDialog from "../components/DownloadDialog.vue";
 import { activeJobs, guest, host, loadEngine, loadPresets, run, store, toast } from "../store";
+import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
 const { t } = useI18n();
 const detail = ref<string | null>(null);
@@ -122,7 +123,7 @@ function openEditor(id?: string) {
     </div>
 
     <section v-if="store.engine?.jobs.length && !guest" class="card p-5">
-      <div class="card-head"><Sparkle />{{ t("jobs.title") }}<span v-if="activeJobs.length" class="badge badge-accent ml-1">{{ activeJobs.length }}</span></div>
+      <div class="card-head"><Sparkle />{{ t("jobs.title") }}<span v-if="activeJobs.length" class="badge badge-accent ml-1">{{ activeJobs.length }}</span><UiDocs class="ml-auto" page="presets" anchor="compute" /></div>
       <p class="muted mb-3 text-sm">{{ host?.kind === "direct" ? t("jobs.hintDirect") : t("jobs.hintProxy") }}</p>
       <JobList />
     </section>

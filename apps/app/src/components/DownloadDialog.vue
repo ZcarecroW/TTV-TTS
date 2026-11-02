@@ -59,7 +59,7 @@ const mb = (b: number) => (b / 1048576).toFixed(b > 100 << 20 ? 0 : 1);
 </script>
 
 <template>
-  <UiModal :title="d ? t('downloads.title', { name: d.name }) : t('common.loading')" width="max-w-lg" @close="emit('close')">
+  <UiModal docs-page="packs" docs-anchor="download" :title="d ? t('downloads.title', { name: d.name }) : t('common.loading')" width="max-w-lg" @close="emit('close')">
     <div v-if="d" class="space-y-5">
       <p class="muted text-sm">{{ t("downloads.intro") }}<UiTip :text="t('tips.downloads')" /></p>
       <div>

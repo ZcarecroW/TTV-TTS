@@ -6,6 +6,7 @@ import { ago } from "@ttv-tts/ui/format";
 import { Eye, EyeSlash, Refresh, Trash, Users } from "@ttv-tts/ui/icons";
 import { EFFECTS, presets, reader, viewers, type ViewerView } from "../api";
 import { run, store, toast } from "../store";
+import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
 // Who chatted, which voice they got – reassign, mute or forget them.
 const { t, locale } = useI18n();
@@ -91,7 +92,8 @@ async function forget(v: ViewerView) {
     <section class="card p-5">
       <div class="card-head">
         <Users />{{ t("viewers.title") }}<span class="badge ml-1">{{ total }}</span><UiTip :text="t('tips.viewers')" />
-        <button class="btn btn-ghost btn-sm btn-icon ml-auto" :aria-label="t('viewers.refresh')" :data-tip="t('viewers.refresh')" @click="load"><Refresh :size="15" /></button>
+        <UiDocs class="ml-auto" page="viewers" />
+        <button class="btn btn-ghost btn-sm btn-icon" :aria-label="t('viewers.refresh')" :data-tip="t('viewers.refresh')" @click="load"><Refresh :size="15" /></button>
       </div>
       <div class="mb-4 flex flex-wrap gap-3">
         <select v-if="profiles.length > 1" v-model="profileId" class="input max-w-60">

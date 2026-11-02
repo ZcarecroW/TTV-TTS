@@ -58,7 +58,7 @@ async function save() {
 </script>
 
 <template>
-  <UiModal :title="d ? t('packs.exportTitle', { name: d.name }) : t('common.loading')" width="max-w-lg" @close="emit('close')">
+  <UiModal docs-page="packs" docs-anchor="export" :title="d ? t('packs.exportTitle', { name: d.name }) : t('common.loading')" width="max-w-lg" @close="emit('close')">
     <div v-if="d" class="space-y-5">
       <p class="muted text-sm">{{ t("packs.exportIntro") }}</p>
       <template v-if="!selected.length">

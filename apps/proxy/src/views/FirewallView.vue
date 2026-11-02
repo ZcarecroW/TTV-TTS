@@ -5,6 +5,7 @@ import UiCopy from "@ttv-tts/ui/components/UiCopy.vue";
 import { ChevronRight, CircleCheck, CircleInfo, CircleX, Refresh, ShieldCheck, Warning, Wifi } from "@ttv-tts/ui/icons";
 import { api, errText } from "../api";
 import { checkFirewall, config, status, store, toast } from "../store";
+import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
 const { t } = useI18n();
 const fw = computed(() => store.firewall);
@@ -85,7 +86,7 @@ const infoUrl = computed(() => `https://${ip.value}:${port.value}/ttv/v1/info`);
     </section>
 
     <section class="card p-5">
-      <div class="card-head"><CircleInfo />{{ t("firewall.guidesTitle") }}</div>
+      <div class="card-head"><CircleInfo />{{ t("firewall.guidesTitle") }}<UiDocs class="ml-auto" page="firewall" /></div>
       <div class="divide-y divide-line rounded-xl border border-line">
         <details v-for="g in guides" :key="g" class="group">
           <summary class="flex cursor-pointer list-none items-center gap-2 px-3.5 py-2.5 text-sm font-medium hover:bg-panel-2">

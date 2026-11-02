@@ -5,6 +5,7 @@ import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { Link, Spinner } from "@ttv-tts/ui/icons";
 import { listen, openUrl, twitch, type TwitchStatus } from "../api";
 import { run, store, toast } from "../store";
+import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
 // Optional Twitch login: follows and channel-point rewards without text
 // (EventSub). Chat itself is read anonymously either way.
@@ -47,7 +48,7 @@ const has = (kind: string) => !!s.value?.subscribed.includes(kind);
 
 <template>
   <section class="card p-5" data-twitch>
-    <div class="card-head"><Link />{{ t("settings.twitchTitle") }}<UiTip :text="t('tips.twitch')" /></div>
+    <div class="card-head"><Link />{{ t("settings.twitchTitle") }}<UiTip :text="t('tips.twitch')" /><UiDocs class="ml-auto" page="settings" anchor="twitch" /></div>
     <template v-if="s">
       <p class="muted mb-3 text-sm">{{ t("settings.twitchIntro") }}</p>
 
@@ -85,6 +86,7 @@ const has = (kind: string) => !!s.value?.subscribed.includes(kind);
           <li>{{ t("settings.twitchGuide2") }}</li>
           <li>{{ t("settings.twitchGuide3") }}</li>
         </ol>
+        <p class="mt-2 text-xs text-muted">{{ t("settings.twitchOwnWhy") }} <UiDocs page="settings" anchor="twitch-app" /></p>
         <div class="mt-2 flex gap-2">
           <input v-model="ownId" class="input mono max-w-sm" :placeholder="s.own_client_id ? t('settings.twitchIdStored') : t('settings.twitchIdPlaceholder')" />
           <button class="btn" :disabled="store.busy === 'twitchId' || !ownId.trim()" @click="saveId">{{ t("common.save") }}</button>

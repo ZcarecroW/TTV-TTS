@@ -29,7 +29,7 @@ async function add() {
 </script>
 
 <template>
-  <UiModal :title="info?.title || t('packs.importTitle')" width="max-w-lg" @close="emit('close')">
+  <UiModal docs-page="packs" docs-anchor="import" :title="info?.title || t('packs.importTitle')" width="max-w-lg" @close="emit('close')">
     <div v-if="info" class="space-y-4 text-sm">
       <p class="muted">{{ t("packs.importIntro") }}</p>
       <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">

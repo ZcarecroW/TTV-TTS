@@ -8,6 +8,7 @@ import { CircleInfo, Download, ExternalLink, FolderOpen, Globe, Lock, Power, Ref
 import { copyText } from "@ttv-tts/ui/clipboard";
 import { api, isTauri } from "../api";
 import { config, run, save, status, store, toast } from "../store";
+import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
 const { t, locale } = useI18n();
 const upd = computed(() => status.value!.update);
@@ -76,7 +77,7 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
     </section>
 
     <section class="card p-5">
-      <div class="card-head"><Power />{{ t("settings.startTitle") }}</div>
+      <div class="card-head"><Power />{{ t("settings.startTitle") }}<UiDocs class="ml-auto" page="proxy" anchor="settings" /></div>
       <UiToggle v-model="autostart" :label="isMac ? t('settings.autostartMac') : t('settings.autostart')" :tip="t('tips.autostart')" />
     </section>
 

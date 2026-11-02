@@ -10,6 +10,7 @@ import { Devices, Key, Link, Lock, Network, Trash, Wifi } from "@ttv-tts/ui/icon
 import { ago } from "@ttv-tts/ui/format";
 import { api, type KeyMode } from "../api";
 import { config, openPairing, run, save, status, store, toast } from "../store";
+import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
 const { t, locale } = useI18n();
 
@@ -73,7 +74,7 @@ function saveHttpPort() {
 <template>
   <div class="space-y-5">
     <section class="card p-5">
-      <div class="card-head"><Link />{{ t("connect.pairTitle") }}</div>
+      <div class="card-head"><Link />{{ t("connect.pairTitle") }}<UiDocs class="ml-auto" page="proxy" anchor="pairing" /></div>
       <p class="text-sm">{{ t("connect.pairText") }}</p>
       <p class="muted mt-2 text-sm">{{ t("connect.pairSteps") }}</p>
       <button class="btn btn-primary mt-4" :disabled="store.busy === 'pair'" @click="openPairing()"><Link :size="16" />{{ t("connect.pairButton") }}</button>

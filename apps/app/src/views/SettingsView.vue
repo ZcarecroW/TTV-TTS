@@ -137,7 +137,7 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
     </section>
 
     <section class="card p-5">
-      <div class="card-head"><Sparkle />{{ t("settings.generationTitle") }}</div>
+      <div class="card-head"><Sparkle />{{ t("settings.generationTitle") }}<UiDocs class="ml-auto" page="settings" anchor="generation" /></div>
       <UiSegmented
         v-model="generation"
         :label="t('settings.generation')"
@@ -184,7 +184,7 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
     </section>
 
     <section class="card p-5">
-      <div class="card-head"><Download />{{ t("settings.updatesTitle") }}</div>
+      <div class="card-head"><Download />{{ t("settings.updatesTitle") }}<UiDocs class="ml-auto" page="installation" anchor="updates" /></div>
       <UiSegmented
         v-model="channel"
         :label="t('settings.channel')"
@@ -205,7 +205,7 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
     </section>
 
     <section class="card p-5" data-remote>
-      <div class="card-head"><Link />{{ t("settings.remoteTitle") }}<UiTip :text="t('tips.remote')" /></div>
+      <div class="card-head"><Link />{{ t("settings.remoteTitle") }}<UiTip :text="t('tips.remote')" /><UiDocs class="ml-auto" page="remote-api" /></div>
       <div class="space-y-3">
         <UiToggle :model-value="remote.enabled" :label="t('settings.remoteOn')" @update:model-value="saveRemote({ enabled: $event })" />
         <template v-if="remote.enabled">
@@ -232,7 +232,7 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
     </section>
 
     <section class="card p-5" data-hotkeys>
-      <div class="card-head"><Keyboard />{{ t("settings.hotkeysTitle") }}<UiTip :text="t('tips.hotkeys')" /></div>
+      <div class="card-head"><Keyboard />{{ t("settings.hotkeysTitle") }}<UiTip :text="t('tips.hotkeys')" /><UiDocs class="ml-auto" page="settings" anchor="hotkeys" /></div>
       <div class="space-y-2">
         <div v-for="a in HOTKEY_ACTIONS" :key="a" class="flex items-center gap-2 text-sm">
           <span class="w-36 shrink-0">{{ t(`settings.hotkey.${a}`) }}</span>
@@ -252,7 +252,7 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
     </section>
 
     <section class="card p-5" data-translation-service>
-      <div class="card-head"><Globe />{{ t("settings.translateTitle") }}<UiTip :text="t('tips.translateService')" /></div>
+      <div class="card-head"><Globe />{{ t("settings.translateTitle") }}<UiTip :text="t('tips.translateService')" /><UiDocs class="ml-auto" page="settings" anchor="translation" /></div>
       <div class="space-y-4">
         <UiField :label="t('settings.translateEmail')" :tip="t('tips.translateEmail')">
           <input v-model="email" class="input" type="email" autocomplete="email" :placeholder="t('settings.translateEmailPlaceholder')" @blur="saveEmail" @keydown.enter="saveEmail" />

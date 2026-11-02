@@ -11,6 +11,7 @@ import { Devices, Gear, Globe, Lock, Play, Plus, Sparkle, Trash, Waveform } from
 import { api, EVENT_KINDS, EVENT_TEXTS, reader, TIERS, type Profile, type Role, type Voice, twitch } from "../api";
 import { run, store, toast } from "../store";
 import OutputCard from "../components/OutputCard.vue";
+import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
 const { t } = useI18n();
 const profiles = computed(() => store.reader!.store.profiles);
@@ -159,7 +160,7 @@ const defaultVoice = computed({
 
       <div class="grid gap-5 lg:grid-cols-2">
         <section class="card p-5">
-          <div class="card-head"><Waveform />{{ t("profiles.reading") }}</div>
+          <div class="card-head"><Waveform />{{ t("profiles.reading") }}<UiDocs class="ml-auto" page="profiles" anchor="reading" /></div>
           <div class="space-y-4">
             <UiSegmented
               v-model="p.reading.mode"
@@ -187,7 +188,7 @@ const defaultVoice = computed({
         </section>
 
         <section class="card p-5">
-          <div class="card-head"><Gear />{{ t("profiles.limitsTitle") }}</div>
+          <div class="card-head"><Gear />{{ t("profiles.limitsTitle") }}<UiDocs class="ml-auto" page="profiles" anchor="limits" /></div>
           <div class="grid grid-cols-2 gap-4">
             <UiField :label="t('profiles.maxChars')" :tip="t('tips.maxChars')"><input v-model.number="p.reading.max_chars" type="number" min="20" max="2000" class="input" /></UiField>
             <UiField :label="t('profiles.maxSeconds')"><input v-model.number="p.reading.max_seconds" type="number" min="5" max="300" class="input" /></UiField>
@@ -222,7 +223,7 @@ const defaultVoice = computed({
         </section>
 
         <section class="card p-5">
-          <div class="card-head"><Globe />{{ t("profiles.language") }}</div>
+          <div class="card-head"><Globe />{{ t("profiles.language") }}<UiDocs class="ml-auto" page="profiles" anchor="language" /></div>
           <div class="grid gap-4 sm:grid-cols-2">
             <UiField :label="t('profiles.defaultLang')" :tip="t('tips.defaultLang')">
               <select v-model="p.language.default" class="input"><option v-for="l in LANGS" :key="l" :value="l">{{ l }}</option></select>
@@ -273,7 +274,7 @@ const defaultVoice = computed({
         </section>
 
         <section class="card p-5">
-          <div class="card-head"><Lock />{{ t("profiles.text") }}</div>
+          <div class="card-head"><Lock />{{ t("profiles.text") }}<UiDocs class="ml-auto" page="profiles" anchor="cleanup" /></div>
           <div class="space-y-4">
             <UiSegmented
               v-model="p.text.links"
@@ -318,7 +319,7 @@ const defaultVoice = computed({
         </section>
 
         <section class="card p-5" data-events>
-          <div class="card-head"><Sparkle />{{ t("profiles.eventsTitle") }}<UiTip :text="t('tips.events')" /></div>
+          <div class="card-head"><Sparkle />{{ t("profiles.eventsTitle") }}<UiTip :text="t('tips.events')" /><UiDocs class="ml-auto" page="profiles" anchor="announcements" /></div>
           <div class="space-y-4">
             <UiToggle v-model="p.events.enabled" :label="t('profiles.eventsOn')" />
             <template v-if="p.events.enabled">
@@ -356,7 +357,7 @@ const defaultVoice = computed({
         </section>
 
         <section class="card p-5" data-translate>
-          <div class="card-head"><Globe />{{ t("profiles.translateTitle") }}<UiTip :text="t('tips.translate')" /></div>
+          <div class="card-head"><Globe />{{ t("profiles.translateTitle") }}<UiTip :text="t('tips.translate')" /><UiDocs class="ml-auto" page="profiles" anchor="translate" /></div>
           <div class="space-y-4">
             <UiToggle v-model="p.translate.enabled" :label="t('profiles.translate')" />
             <template v-if="p.translate.enabled">
@@ -396,7 +397,7 @@ const defaultVoice = computed({
         </section>
 
         <section class="card p-5">
-          <div class="card-head"><Gear />{{ t("profiles.mod") }}<UiTip :text="t('tips.mod')" /></div>
+          <div class="card-head"><Gear />{{ t("profiles.mod") }}<UiTip :text="t('tips.mod')" /><UiDocs class="ml-auto" page="profiles" anchor="mod-commands" /></div>
           <div class="space-y-4">
             <UiToggle v-model="p.mod_commands.enabled" :label="t('profiles.modEnabled')" />
             <template v-if="p.mod_commands.enabled">
@@ -417,7 +418,7 @@ const defaultVoice = computed({
         </section>
 
         <section class="card p-5 lg:col-span-2">
-          <div class="card-head"><Waveform />{{ t("profiles.voices") }}</div>
+          <div class="card-head"><Waveform />{{ t("profiles.voices") }}<UiDocs class="ml-auto" page="profiles" anchor="voices" /></div>
           <div class="grid gap-4 lg:grid-cols-2">
             <div class="space-y-4">
               <UiSegmented

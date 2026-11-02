@@ -91,7 +91,7 @@ const checking = computed(() => store.engine?.jobs.some((j) => (j.kind === "revi
 </script>
 
 <template>
-  <UiModal :title="t('quality.title')" width="max-w-4xl" @close="emit('close')">
+  <UiModal docs-page="presets" docs-anchor="quality" :title="t('quality.title')" width="max-w-4xl" @close="emit('close')">
     <div class="space-y-4">
       <p class="muted text-sm">{{ t("quality.intro") }}</p>
 
