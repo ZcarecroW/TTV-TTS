@@ -191,6 +191,7 @@ pub fn run() {
             preset_cmds::verify_library,
             preset_cmds::listen,
             preset_cmds::redo_voice,
+            preset_cmds::debug_sample,
             preset_cmds::list_takes,
             preset_cmds::play_take,
             preset_cmds::choose_take,

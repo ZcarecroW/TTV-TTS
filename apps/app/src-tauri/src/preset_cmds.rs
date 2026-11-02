@@ -264,3 +264,38 @@ pub async fn migrate_classic(state: &Arc<AppState>) {
         }
     }
 }
+
+#[derive(Serialize)]
+pub struct Sample {
+    pub rate: u32,
+    /// 16-bit mono PCM, little endian, base64.
+    pub pcm16: String,
+    pub voice: String,
+}
+
+/// Development builds only: what "listen" would play (gain and the voice's
+/// effect included), returned instead of played – for the docs' samples.
+#[tauri::command]
+pub async fn debug_sample(state: St<'_>, preset_id: String, index: u32, lang: String, text: String) -> Result<Sample, String> {
+    use base64::Engine as _;
+    if !cfg!(debug_assertions) {
+        return Err("only in development builds".into());
+    }
+    let vcp = state.vcp().ok_or("No voice host set up yet.")?;
+    let (key, fx, name) = state.presets.with(&preset_id, |p| p.defs.get(index as usize).map(|d| (d.key(&lang), d.fx.clone(), d.name.clone()))).flatten().ok_or("This voice doesn't exist (any more).")?;
+    let e = state.library.get(&key).ok_or("This voice isn't computed for this language yet.")?;
+    let language = ttv_engine::langs::get(&lang).map(|l| l.vcp).unwrap_or("Auto").to_string();
+    let u = Utterance { text: text.clone(), voice: e.voice_id, language, emotion: None, intensity: None, gain: e.gain, fx };
+    let (samples, rate) = speech::generate(&vcp, &u, &text).await?;
+    let out = match u.fx.as_deref().and_then(crate::fx::Fx::parse) {
+        Some(f) => {
+            let mut c = crate::fx::Chain::new(f, rate);
+            let mut v = c.process(samples, u.gain);
+            v.extend(c.finish());
+            v
+        }
+        None => samples.into_iter().map(|s| s * u.gain).collect(),
+    };
+    let bytes: Vec<u8> = out.iter().flat_map(|s| ((s.clamp(-1.0, 1.0) * 32767.0) as i16).to_le_bytes()).collect();
+    Ok(Sample { rate, pcm16: base64::engine::general_purpose::STANDARD.encode(bytes), voice: name })
+}

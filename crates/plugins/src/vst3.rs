@@ -77,23 +77,28 @@ impl Effect for Vst3Effect {
         if self.editor.is_some() {
             return Ok(());
         }
-        if !cfg!(windows) {
-            return Err("VST3 editors open on Windows only for now".into());
+        #[cfg(not(windows))]
+        {
+            let _ = title;
+            Err("VST3 editors open on Windows only for now".into())
         }
-        if !self.plugin.has_editor() {
-            return Err("this plugin has no editor".into());
+        #[cfg(windows)]
+        {
+            if !self.plugin.has_editor() {
+                return Err("this plugin has no editor".into());
+            }
+            let (w, h) = self.plugin.get_editor_size().unwrap_or((640, 400));
+            let win = Editor::new(title, w, h)?;
+            // SAFETY: the window is alive until close_editor detaches the editor and drops it.
+            let handle = unsafe { vst3_host::plugin::WindowHandle::from_hwnd(win.raw()) };
+            self.plugin.open_editor(handle).map_err(|e| e.to_string())?;
+            if let Ok((w, h)) = self.plugin.get_editor_size() {
+                win.set_client_size(w, h);
+            }
+            win.show();
+            self.editor = Some(win);
+            Ok(())
         }
-        let (w, h) = self.plugin.get_editor_size().unwrap_or((640, 400));
-        let win = Editor::new(title, w, h)?;
-        // SAFETY: the window is alive until close_editor detaches the editor and drops it.
-        let handle = unsafe { vst3_host::plugin::WindowHandle::from_hwnd(win.raw()) };
-        self.plugin.open_editor(handle).map_err(|e| e.to_string())?;
-        if let Ok((w, h)) = self.plugin.get_editor_size() {
-            win.set_client_size(w, h);
-        }
-        win.show();
-        self.editor = Some(win);
-        Ok(())
     }
 
     fn close_editor(&mut self) {

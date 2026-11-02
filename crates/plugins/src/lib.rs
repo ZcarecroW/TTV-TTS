@@ -67,6 +67,8 @@ pub(crate) trait Effect {
     /// How long it may ring out after the input ends (seconds).
     fn tail(&self) -> f32;
     /// The editor window (to check the plugin really drew into it).
+    // only Windows looks into the editor window (tests, closing)
+    #[cfg_attr(not(windows), allow(dead_code))]
     fn editor_window(&self) -> Option<&Editor> {
         None
     }
@@ -79,6 +81,7 @@ pub(crate) type Editor = win32::EditorWindow;
 pub(crate) struct Editor;
 
 #[cfg(not(windows))]
+#[allow(dead_code)] // a stub: not every platform calls every method
 impl Editor {
     fn new(_title: &str, _w: i32, _h: i32) -> Result<Self, String> {
         Err("plugin editors in a host window need Windows".into())

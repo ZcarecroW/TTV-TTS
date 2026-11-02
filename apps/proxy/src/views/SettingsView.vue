@@ -48,7 +48,7 @@ async function openData() {
   const { revealItemInDir } = await import("@tauri-apps/plugin-opener");
   await revealItemInDir(store.ov!.data_dir);
 }
-const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.value === "de" ? "de/" : ""}proxy.html`);
+const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.value === "de" ? "de/" : ""}proxy/`);
 </script>
 
 <template>

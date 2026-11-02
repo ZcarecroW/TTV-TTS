@@ -992,17 +992,34 @@ pub fn viewers(state: &AppState, profile: &str, query: &str, limit: usize) -> (V
 
 /// Gives a viewer another voice role (or a fresh random one with None).
 pub fn set_role(state: &AppState, profile: &str, user_id: &str, role: Option<u32>) {
+    let roles = preset_roles(state, profile);
     let mut a = state.reader.assign.lock();
     let map = a.roles.entry(profile.to_string()).or_default();
-    match role {
-        Some(r) => {
-            map.insert(user_id.to_string(), r);
-        }
-        None => {
-            map.remove(user_id);
-        }
-    }
+    let r = match role {
+        Some(r) => r,
+        // Stored, not just removed: without a stored role the viewer's ID
+        // would give the same voice again.
+        None => other_role(map.get(user_id).copied().unwrap_or_else(|| fnv1a(user_id)), roles, rand::random()),
+    };
+    map.insert(user_id.to_string(), r);
     state.reader.assign_dirty.store(true, Ordering::Relaxed);
+}
+
+/// How many voices the profile's preset offers (0 = not in preset mode).
+fn preset_roles(state: &AppState, profile: &str) -> u32 {
+    let (preset, wanted) = {
+        let s = state.reader.store.read();
+        match s.profiles.iter().find(|p| p.id == profile) {
+            Some(p) if p.voices.mode == VoiceMode::Preset => (p.voices.preset.clone(), p.voices.preset_voices),
+            _ => return 0,
+        }
+    };
+    state.presets.with(&preset, |pr| if wanted == 0 { pr.defs.len() } else { (wanted as usize).min(pr.defs.len()) }).unwrap_or(0) as u32
+}
+
+/// A role other than `current` among `n` (any role when n is unknown).
+fn other_role(current: u32, n: u32, random: u32) -> u32 {
+    if n > 1 { (current % n + 1 + random % (n - 1)) % n } else { random }
 }
 
 /// Sets a viewer's voice effect: a name, "none" (no effect) or None (the
@@ -1022,11 +1039,10 @@ pub fn set_fx(state: &AppState, profile: &str, user_id: &str, fx: Option<String>
 }
 
 /// Forgets a viewer completely (voice role and list entry).
+/// Forgets a viewer: gone from the list, a new random voice next time.
 pub fn forget_viewer(state: &AppState, profile: &str, user_id: &str) {
+    set_role(state, profile, user_id, None);
     let mut a = state.reader.assign.lock();
-    if let Some(m) = a.roles.get_mut(profile) {
-        m.remove(user_id);
-    }
     if let Some(m) = a.viewers.get_mut(profile) {
         m.remove(user_id);
     }
@@ -1540,6 +1556,20 @@ mod tests {
     fn hash_is_stable() {
         assert_eq!(fnv1a("12345"), fnv1a("12345"));
         assert_ne!(fnv1a("a"), fnv1a("b"));
+    }
+
+    #[test]
+    fn a_new_random_voice_is_another_one() {
+        for n in [2u32, 3, 30, 240] {
+            for current in [0u32, 1, n - 1, fnv1a("viewer"), u32::MAX] {
+                for r in [0u32, 1, 7, n, u32::MAX] {
+                    let new = other_role(current, n, r);
+                    assert_ne!(new % n, current % n, "n {n}, current {current}, random {r}");
+                    assert!(new < n);
+                }
+            }
+        }
+        assert_eq!(other_role(5, 0, 42), 42, "unknown number of voices: just random");
     }
 }
 

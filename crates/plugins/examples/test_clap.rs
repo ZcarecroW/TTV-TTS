@@ -49,7 +49,8 @@ impl PluginShared<'_> for Shared {}
 
 pub struct Main<'a> {
     shared: &'a Shared,
-    /// The editor's child window (HWND as an integer, 0 = none).
+    /// The editor's child window (HWND as an integer, 0 = none; Windows only).
+    #[cfg_attr(not(windows), allow(dead_code))]
     child: Cell<isize>,
 }
 
