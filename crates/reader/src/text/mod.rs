@@ -250,7 +250,9 @@ pub fn shorten(s: &str, max: usize) -> String {
     let clause = [", ", "; "].iter().filter_map(|p| cut.rfind(p)).max();
     let len = cut.len();
     if let Some(i) = sentence.filter(|i| *i >= len / 2) {
-        return cut[..=i].to_string();
+        // keep the whole mark ("…" is three bytes)
+        let end = i + cut[i..].chars().next().map_or(1, char::len_utf8);
+        return cut[..end].to_string();
     }
     if let Some(i) = clause.filter(|i| *i * 10 >= len * 6) {
         return format!("{} …", &cut[..i]);

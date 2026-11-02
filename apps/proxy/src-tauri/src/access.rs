@@ -2,7 +2,6 @@
 //! and per-device tokens handed out by pairing. Tokens are stored only as
 //! SHA-256 hashes. Failed attempts are rate limited per address.
 
-use std::collections::HashMap;
 use std::net::IpAddr;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
@@ -57,7 +56,7 @@ pub struct Access {
     path: PathBuf,
     devices: Mutex<Vec<StoredDevice>>,
     pairing: Mutex<Option<Pairing>>,
-    failures: Mutex<HashMap<IpAddr, (u32, Instant)>>,
+    failures: ttv_net::limits::Strikes,
     /// Last time `last_seen` was written to disk.
     saved: Mutex<Instant>,
 }
@@ -74,7 +73,7 @@ impl Access {
             path,
             devices: Mutex::new(devices),
             pairing: Mutex::new(None),
-            failures: Mutex::new(HashMap::new()),
+            failures: ttv_net::limits::Strikes::new(MAX_FAILURES, FAILURE_WINDOW),
             saved: Mutex::new(Instant::now()),
         }
     }
@@ -219,29 +218,11 @@ impl Access {
     }
 
     pub fn locked_out(&self, addr: IpAddr) -> bool {
-        let mut g = self.failures.lock();
-        match g.get(&addr) {
-            Some((n, since)) if since.elapsed() < FAILURE_WINDOW => *n >= MAX_FAILURES,
-            Some(_) => {
-                g.remove(&addr);
-                false
-            }
-            None => false,
-        }
+        self.failures.blocked(addr)
     }
 
     pub fn failed(&self, addr: IpAddr) {
-        let mut g = self.failures.lock();
-        // Keep the map small even under a flood from many addresses.
-        if g.len() > 1024 {
-            g.retain(|_, (_, since)| since.elapsed() < FAILURE_WINDOW);
-        }
-        let e = g.entry(addr).or_insert((0, Instant::now()));
-        if e.1.elapsed() >= FAILURE_WINDOW {
-            *e = (0, Instant::now());
-        }
-        e.0 += 1;
-        if e.0 == MAX_FAILURES {
+        if self.failures.strike(addr) == MAX_FAILURES {
             log::warn!("{addr} sent {MAX_FAILURES} wrong keys within a minute - blocked for a minute");
         }
     }

@@ -22,3 +22,6 @@ pub fn random_key() -> String {
     let mut rng = rand::rng();
     (0..32).map(|_| ABC[rng.random_range(0..ABC.len())] as char).collect()
 }
+
+#[cfg(test)]
+mod hostile_tests;

@@ -114,7 +114,10 @@ pub async fn twitch_login(app: tauri::AppHandle, state: St<'_>) -> Result<Twitch
         s.pending = Some(PendingLogin { user_code: dc.user_code.clone(), verification_uri: dc.verification_uri.clone(), expires_at });
         s.error = None;
     }
-    let _ = app.opener().open_url(&dc.verification_uri, None::<&str>);
+    // only Twitch's own page (the address comes from Twitch's answer)
+    if dc.verification_uri.starts_with("https://www.twitch.tv/") {
+        let _ = app.opener().open_url(&dc.verification_uri, None::<&str>);
+    }
     let st = state.inner().clone();
     tauri::async_runtime::spawn(async move {
         let mut interval = dc.interval.max(1);

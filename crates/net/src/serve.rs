@@ -9,14 +9,12 @@
 use std::future::Future;
 
 use std::sync::Arc;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
 use axum::Router;
 use axum::extract::ConnectInfo;
 use hyper::body::Incoming;
-use hyper_util::rt::{TokioExecutor, TokioIo};
-use hyper_util::server::conn::auto;
+use hyper_util::rt::TokioIo;
 use hyper_util::service::TowerToHyperService;
 use rustls::ServerConfig;
 use tokio::net::TcpListener;
@@ -27,22 +25,18 @@ use tower::ServiceExt;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Secure(pub bool);
 
-/// Open connections at most (each costs a task and a few KB).
+use crate::limits::{self, Connections};
+
+/// Open connections at most (each costs a task and a few KB), and per
+/// address from the internet (a browser source needs two: page and socket).
 const MAX_CONNECTIONS: usize = 512;
-
-struct Count(Arc<AtomicUsize>);
-
-impl Drop for Count {
-    fn drop(&mut self) {
-        self.0.fetch_sub(1, Ordering::Relaxed);
-    }
-}
+const MAX_PER_ADDRESS: usize = 16;
 
 /// Serves `router` on `listener` until `stop` finishes: plain HTTP, and
 /// HTTPS too when `tls` is given.
 pub async fn serve(listener: TcpListener, router: Router, tls: Option<Arc<ServerConfig>>, stop: impl Future<Output = ()>) {
     let acceptor = tls.map(TlsAcceptor::from);
-    let open = Arc::new(AtomicUsize::new(0));
+    let open = Connections::new(MAX_CONNECTIONS, MAX_PER_ADDRESS);
     let (stopped_tx, stopped) = tokio::sync::watch::channel(false);
     tokio::pin!(stop);
     loop {
@@ -57,15 +51,13 @@ pub async fn serve(listener: TcpListener, router: Router, tls: Option<Arc<Server
                 }
             },
         };
-        if open.load(Ordering::Relaxed) >= MAX_CONNECTIONS {
+        let Some(slot) = open.take(addr.ip(), !limits::is_local(addr.ip())) else {
             continue; // dropped
-        }
-        open.fetch_add(1, Ordering::Relaxed);
-        let count = Count(open.clone());
+        };
         let _ = stream.set_nodelay(true);
         let (router, acceptor, mut stopped) = (router.clone(), acceptor.clone(), stopped.clone());
         tokio::spawn(async move {
-            let _count = count;
+            let _slot = slot;
             let mut first = [0u8; 1];
             // a connection that sends nothing is closed after a while
             let tls = match tokio::time::timeout(Duration::from_secs(15), stream.peek(&mut first)).await {
@@ -78,11 +70,13 @@ pub async fn serve(listener: TcpListener, router: Router, tls: Option<Arc<Server
                 req
             });
             let svc = TowerToHyperService::new(svc);
-            let builder = auto::Builder::new(TokioExecutor::new());
+            // HTTP/1.1 only (a browser source needs nothing else): requests
+            // must come within the header deadline, idle connections end
+            let builder = limits::http1();
             let run = async {
                 match (tls, acceptor) {
                     (true, Some(a)) => match tokio::time::timeout(Duration::from_secs(10), a.accept(stream)).await {
-                        Ok(Ok(s)) => builder.serve_connection_with_upgrades(TokioIo::new(s), svc).await,
+                        Ok(Ok(s)) => builder.serve_connection(TokioIo::new(s), svc).with_upgrades().await,
                         Ok(Err(e)) => {
                             log::debug!("TLS handshake with {addr} failed: {e}");
                             Ok(())
@@ -91,7 +85,7 @@ pub async fn serve(listener: TcpListener, router: Router, tls: Option<Arc<Server
                     },
                     // TLS without a certificate: nothing to answer with
                     (true, None) => Ok(()),
-                    (false, _) => builder.serve_connection_with_upgrades(TokioIo::new(stream), svc).await,
+                    (false, _) => builder.serve_connection(TokioIo::new(stream), svc).with_upgrades().await,
                 }
             };
             tokio::select! {

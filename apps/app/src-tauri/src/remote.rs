@@ -6,7 +6,7 @@
 use std::sync::Arc;
 
 use axum::Router;
-use axum::extract::{Query, Request, State};
+use axum::extract::{ConnectInfo, Query, Request, State};
 use axum::http::{StatusCode, header};
 use axum::middleware::{self, Next};
 use axum::response::{IntoResponse, Response};
@@ -67,14 +67,10 @@ pub async fn apply(state: &Arc<AppState>) {
     *RUNNING.lock() = Some((tx, addr.clone()));
     log::info!("remote control on http://{addr}/");
     let app = router(state.clone());
-    tokio::spawn(async move {
-        let r = axum::serve(listener, app).with_graceful_shutdown(async {
-            let _ = rx.await;
-        });
-        if let Err(e) = r.await {
-            log::warn!("remote control stopped: {e}");
-        }
-    });
+    // the shared server: connection limits and the header deadline
+    tokio::spawn(ttv_net::serve::serve(listener, app, None, async {
+        let _ = rx.await;
+    }));
 }
 
 fn router(state: Arc<AppState>) -> Router {
@@ -101,12 +97,22 @@ fn same(a: &str, b: &str) -> bool {
     a.len() == b.len() && a.bytes().zip(b.bytes()).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
 }
 
-async fn auth(State(state): S, req: Request, next: Next) -> Response {
+/// Addresses that sent wrong tokens: locked out for 15 minutes after 20.
+static STRIKES: std::sync::LazyLock<ttv_net::limits::Strikes> = std::sync::LazyLock::new(|| ttv_net::limits::Strikes::new(20, std::time::Duration::from_secs(900)));
+
+async fn auth(State(state): S, ConnectInfo(addr): ConnectInfo<std::net::SocketAddr>, req: Request, next: Next) -> Response {
+    if STRIKES.blocked(addr.ip()) {
+        return (StatusCode::TOO_MANY_REQUESTS, Json(Answer { ok: false, message: Some("too many wrong tokens - try again later".into()) })).into_response();
+    }
     let want = state.cfg.read().remote.token.clone();
     let from_query = req.uri().query().and_then(|q| q.split('&').find_map(|p| p.strip_prefix("token="))).map(percent_decode);
     let from_header = req.headers().get(header::AUTHORIZATION).and_then(|v| v.to_str().ok()).and_then(|v| v.strip_prefix("Bearer ")).map(str::to_string);
-    let ok = !want.is_empty() && from_query.or(from_header).is_some_and(|t| same(t.trim(), &want));
+    let given = from_query.or(from_header);
+    let ok = !want.is_empty() && given.as_deref().is_some_and(|t| same(t.trim(), &want));
     if !ok {
+        if given.is_some() {
+            STRIKES.strike(addr.ip());
+        }
         return (StatusCode::UNAUTHORIZED, Json(Answer { ok: false, message: Some("wrong or missing token".into()) })).into_response();
     }
     next.run(req).await

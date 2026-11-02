@@ -106,7 +106,7 @@ pub fn facts(cert: &[u8]) -> Option<Facts> {
 
 /// UTCTime ("YYMMDDHHMMSSZ") or GeneralizedTime ("YYYYMMDDHHMMSSZ") → unix seconds.
 fn time((tag, v): (u8, &[u8])) -> Option<i64> {
-    let s = std::str::from_utf8(v).ok()?.strip_suffix('Z')?;
+    let s = std::str::from_utf8(v).ok().filter(|s| s.is_ascii())?.strip_suffix('Z')?;
     let (year, rest) = match tag {
         0x17 if s.len() == 12 => {
             let yy: i64 = s[..2].parse().ok()?;
@@ -168,5 +168,35 @@ mod tests {
         assert_eq!(f.serial, vec![0x01, 0x23, 0x45]);
         assert_eq!(f.aki, Some(vec![9, 8, 7, 6]));
         assert!(facts(&cert.der()[..40]).is_none());
+    }
+
+    /// Broken or hostile bytes never panic: a real certificate with bytes
+    /// flipped, cut short, and odd times.
+    #[test]
+    fn hostile_bytes_never_panic() {
+        let key = rcgen::KeyPair::generate().unwrap();
+        let cert = rcgen::CertificateParams::new(vec!["x.duckdns.org".to_string()]).unwrap().self_signed(&key).unwrap();
+        let good = cert.der().to_vec();
+        assert!(facts(&good).is_some());
+        let mut x: u64 = 0x1234_5678_9abc_def1;
+        for round in 0..20_000 {
+            x ^= x << 13;
+            x ^= x >> 7;
+            x ^= x << 17;
+            let mut b = good.clone();
+            for k in 0..(1 + x % 6) {
+                let i = ((x >> (8 * k)) as usize) % b.len();
+                b[i] = (x >> (3 * k)) as u8;
+            }
+            if round % 5 == 0 {
+                b.truncate((x % good.len() as u64) as usize);
+            }
+            let _ = facts(&b);
+        }
+        for t in ["2611021200Z", "26110212000éZ", "ééééééZ", "999999999999Z", "Z", ""] {
+            let _ = time((0x17, t.as_bytes()));
+            let _ = time((0x18, t.as_bytes()));
+        }
+        assert_eq!(time((0x17, "26110212000éZ".as_bytes())), None, "non-ASCII");
     }
 }

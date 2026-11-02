@@ -327,8 +327,23 @@ impl InviteCode {
         let b64 = s.strip_prefix(Self::PREFIX)?;
         let bytes = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(b64.trim_end_matches('=')).ok()?;
         let c: Self = serde_json::from_slice(&bytes).ok()?;
-        (!c.address.is_empty() && c.fingerprint.len() == 64 && c.secret.len() >= 20).then_some(c)
+        // a code comes from someone else: every part must look like what it is
+        let fingerprint = c.fingerprint.len() == 64 && c.fingerprint.bytes().all(|b| b.is_ascii_hexdigit());
+        let secret = (20..=128).contains(&c.secret.len()) && c.secret.bytes().all(|b| b.is_ascii_graphic());
+        (valid_address(&c.address) && fingerprint && secret && c.host.chars().count() <= 80).then_some(c)
     }
+}
+
+/// "name.example.org:8111", "203.0.113.9:8111" or "[2001:db8::1]:8111":
+/// a host and a port, nothing that could change the URL around it.
+pub fn valid_address(a: &str) -> bool {
+    let Some((host, port)) = a.rsplit_once(':') else { return false };
+    let port_ok = port.parse::<u16>().is_ok_and(|p| p > 0);
+    let host_ok = match host.strip_prefix('[').and_then(|h| h.strip_suffix(']')) {
+        Some(v6) => v6.parse::<std::net::Ipv6Addr>().is_ok(),
+        None => !host.is_empty() && host.len() <= 253 && host.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'.' || b == b'-'),
+    };
+    port_ok && host_ok
 }
 
 #[cfg(test)]
@@ -345,5 +360,20 @@ mod invite_tests {
         assert_eq!(InviteCode::decode(&wrapped), Some(c));
         assert_eq!(InviteCode::decode("ttv1:bm9wZQ"), None);
         assert_eq!(InviteCode::decode("hello"), None);
+        // hostile codes: odd fingerprints, addresses that change the URL
+        let bad = |f: &dyn Fn(&mut InviteCode)| {
+            let mut x = InviteCode { address: "me.duckdns.org:8111".into(), fingerprint: "a".repeat(64), secret: "s".repeat(32), host: "VCP-PC".into() };
+            f(&mut x);
+            InviteCode::decode(&x.encode())
+        };
+        assert!(bad(&|c| c.fingerprint = format!("{}{}", "a".repeat(11), "é".repeat(26) + "aaa")).is_none(), "64 bytes, not hex");
+        assert!(bad(&|c| c.fingerprint = "g".repeat(64)).is_none());
+        for a in ["evil.example/x?y=", "me.duckdns.org", "me.duckdns.org:0", "me.duckdns.org:99999", "user@me.org:1", ":8111", "a b:1", "[::1]x:1"] {
+            assert!(bad(&|c| c.address = a.into()).is_none(), "{a}");
+        }
+        for a in ["203.0.113.9:8111", "[2001:db8::1]:8111", "vcp-pc.tail1234.ts.net:8111"] {
+            assert!(bad(&|c| c.address = a.into()).is_some(), "{a}");
+        }
+        assert!(bad(&|c| c.secret = "s\n".repeat(16)).is_none());
     }
 }

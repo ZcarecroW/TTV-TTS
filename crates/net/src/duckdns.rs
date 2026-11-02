@@ -22,12 +22,14 @@ fn web() -> reqwest::Client {
     reqwest::Client::builder().timeout(Duration::from_secs(20)).user_agent(concat!("TTV-TTS/", env!("CARGO_PKG_VERSION"))).build().expect("web client")
 }
 
-/// "name" from "name", "name.duckdns.org" or "https://name.duckdns.org/".
+/// "name" from "name", "name.duckdns.org", "https://Name.DuckDNS.org/" or
+/// "obs.name.duckdns.org" (DuckDNS's name is the label before .duckdns.org).
 pub fn clean_domain(s: &str) -> String {
-    let s = s.trim().trim_start_matches("https://").trim_start_matches("http://");
+    let s = s.trim().to_ascii_lowercase();
+    let s = s.trim_start_matches("https://").trim_start_matches("http://");
     let s = s.split(['/', ':']).next().unwrap_or_default();
-    let s = s.strip_suffix(".duckdns.org").unwrap_or(s);
-    s.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '-').take(63).collect::<String>().to_ascii_lowercase()
+    let s = s.strip_suffix(".duckdns.org").map_or(s, |n| n.rsplit('.').next().unwrap_or(n));
+    s.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '-').take(63).collect()
 }
 
 /// The full name: "name.duckdns.org".
@@ -98,6 +100,8 @@ mod tests {
     fn names() {
         assert_eq!(clean_domain(" https://My-Stream.duckdns.org:8112/o/x "), "my-stream");
         assert_eq!(clean_domain("mystream"), "mystream");
+        assert_eq!(clean_domain("MyStream.DuckDNS.org"), "mystream");
+        assert_eq!(clean_domain("obs.mystream.duckdns.org:8112"), "mystream");
         assert_eq!(fqdn("mystream"), "mystream.duckdns.org");
         assert!(is_duckdns("mystream.duckdns.org"));
         assert!(is_duckdns("MyStream.DuckDNS.org:8112"));

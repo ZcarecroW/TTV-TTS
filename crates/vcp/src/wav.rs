@@ -23,7 +23,14 @@ pub enum WavError {
     Unsupported(u16),
     #[error("WAV header not found in the first 8 KB")]
     HeaderTooLong,
+    #[error("unusable WAV format ({0} Hz, {1} channels)")]
+    BadFormat(u32, u16),
 }
+
+/// Rates and channel counts a voice can sensibly have (anything else is a
+/// broken or hostile stream: a rate of 0 would divide by zero later).
+const RATES: std::ops::RangeInclusive<u32> = 4_000..=384_000;
+const MAX_CHANNELS: u16 = 8;
 
 /// Parses the header. `Ok(None)` = more bytes needed. Returns the format and
 /// the offset where the sample data starts.
@@ -52,9 +59,12 @@ pub fn parse_header(bytes: &[u8]) -> Result<Option<(Format, usize)>, WavError> {
             if f.bits != 16 {
                 return Err(WavError::Unsupported(f.bits));
             }
+            if !RATES.contains(&f.sample_rate) || f.channels > MAX_CHANNELS {
+                return Err(WavError::BadFormat(f.sample_rate, f.channels));
+            }
             return Ok(Some((f, off + 8)));
         }
-        off += 8 + size + (size & 1);
+        off = off.saturating_add(8 + size + (size & 1));
     }
     if bytes.len() > 8192 {
         return Err(WavError::HeaderTooLong);
@@ -146,8 +156,8 @@ mod tests {
         v.extend_from_slice(&1u16.to_le_bytes());
         v.extend_from_slice(&channels.to_le_bytes());
         v.extend_from_slice(&rate.to_le_bytes());
-        v.extend_from_slice(&(rate * channels as u32 * 2).to_le_bytes());
-        v.extend_from_slice(&(channels * 2).to_le_bytes());
+        v.extend_from_slice(&rate.wrapping_mul(channels as u32).wrapping_mul(2).to_le_bytes());
+        v.extend_from_slice(&channels.wrapping_mul(2).to_le_bytes());
         v.extend_from_slice(&16u16.to_le_bytes());
         v.extend_from_slice(b"data");
         v.extend_from_slice(&0x7fff_ffccu32.to_le_bytes());
@@ -198,5 +208,47 @@ mod tests {
     fn duration() {
         let bytes = wav(&vec![0i16; 24000], 24000, 1);
         assert!((duration_secs(&bytes).unwrap() - 1.0).abs() < 1e-6);
+    }
+    #[test]
+    fn hostile_streams_never_panic() {
+        let mut x: u64 = 0x2545_F491_4F6C_DD1D;
+        let mut next = || {
+            x ^= x << 13;
+            x ^= x >> 7;
+            x ^= x << 17;
+            x
+        };
+        for round in 0..20_000 {
+            let mut b = if round % 3 == 0 { Vec::new() } else { wav(&[1, -1, 300, -300], [0, 1, 8000, 24000, u32::MAX][round % 5], [0, 1, 2, 7, 9, u16::MAX][round % 6]) };
+            // flip, cut and append random bytes
+            let n = (next() % 64) as usize;
+            for _ in 0..n {
+                let v = next();
+                if b.is_empty() || v % 4 == 0 {
+                    b.push(v as u8);
+                } else {
+                    let i = (v >> 8) as usize % b.len();
+                    b[i] = (v >> 16) as u8;
+                }
+            }
+            if round % 7 == 0 {
+                b.truncate((next() % 60) as usize);
+            }
+            let mut d = StreamDecoder::new();
+            let mut out = Vec::new();
+            let mut at = 0;
+            while at < b.len() {
+                let step = 1 + (next() % 13) as usize;
+                let end = (at + step).min(b.len());
+                if d.push(&b[at..end], &mut out).is_err() {
+                    break;
+                }
+                at = end;
+            }
+            if let Some(f) = d.format() {
+                assert!(RATES.contains(&f.sample_rate) && (1..=MAX_CHANNELS).contains(&f.channels), "{f:?}");
+            }
+            let _ = duration_secs(&b);
+        }
     }
 }

@@ -136,8 +136,9 @@ impl ProxyPlugins {
         let installed = self.installed.read();
         let local = |p: &PluginInfo| match installed.as_deref() {
             Some(list) => resolve(list, p),
-            // not scanned: the same file as on the gaming PC, if it's here
-            None => std::path::Path::new(&p.path).exists().then(|| p.clone()),
+            // not scanned: the same file as on the gaming PC, if it's here in
+            // a plugin folder (never any other file the app names)
+            None => ttv_plugins::in_standard_folder(std::path::Path::new(&p.path)).then(|| p.clone()),
         };
         if what == "main" {
             return Some(chains.main.iter().filter_map(|s| Some(SlotSpec::from_wire(&s.id, &local(&s.plugin)?, s.enabled, s.state.as_deref()))).collect());

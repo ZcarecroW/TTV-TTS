@@ -16,8 +16,7 @@ use axum::http::{HeaderMap, StatusCode, header};
 use axum::middleware::{self, Next};
 use axum::response::{IntoResponse, Response};
 use hyper::body::Incoming;
-use hyper_util::rt::{TokioExecutor, TokioIo};
-use hyper_util::server::conn::auto;
+use hyper_util::rt::TokioIo;
 use hyper_util::service::TowerToHyperService;
 use tokio::net::TcpListener;
 use tokio_rustls::TlsAcceptor;
@@ -96,7 +95,13 @@ impl Drop for ConnGuard {
     }
 }
 
+/// Connections to the API at most, and per address outside the local
+/// network (the app keeps a few; anything beyond is somebody else).
+const MAX_CONNECTIONS: usize = 1024;
+const MAX_PER_ADDRESS: usize = 32;
+
 async fn accept_loop(listener: TcpListener, tls: Option<TlsAcceptor>, router: Router, state: Arc<AppState>) {
+    let open = ttv_net::limits::Connections::new(MAX_CONNECTIONS, MAX_PER_ADDRESS);
     loop {
         let (stream, addr) = match listener.accept().await {
             Ok(x) => x,
@@ -107,18 +112,21 @@ async fn accept_loop(listener: TcpListener, tls: Option<TlsAcceptor>, router: Ro
                 continue;
             }
         };
+        let Some(slot) = open.take(addr.ip(), !ttv_net::limits::is_local(addr.ip())) else { continue };
         let _ = stream.set_nodelay(true);
         let router = router.clone();
         let tls = tls.clone();
         let state = state.clone();
         tokio::spawn(async move {
+            let _slot = slot;
             let _guard = ConnGuard::new(&state);
             let svc = router.map_request(move |mut req: hyper::Request<Incoming>| {
                 req.extensions_mut().insert(ConnectInfo(addr));
                 req
             });
             let svc = TowerToHyperService::new(svc);
-            let builder = auto::Builder::new(TokioExecutor::new());
+            // headers within the deadline, idle connections end, HTTP/2 pinged
+            let builder = ttv_net::limits::auto();
             let result = match tls {
                 Some(acceptor) => match tokio::time::timeout(Duration::from_secs(10), acceptor.accept(stream)).await {
                     Ok(Ok(tls_stream)) => builder.serve_connection_with_upgrades(TokioIo::new(tls_stream), svc).await,

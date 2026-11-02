@@ -47,7 +47,8 @@ pub async fn run(state: Arc<AppState>) {
             tokio::select! {
                 r = socket.recv_from(&mut buf) => {
                     let Ok((n, from)) = r else { continue };
-                    if !discovery::is_request(&buf[..n]) { continue }
+                    // only this network asks (a forwarded port never gets an answer)
+                    if !ttv_net::limits::is_local(from.ip()) || !discovery::is_request(&buf[..n]) { continue }
                     if window.elapsed() > Duration::from_secs(1) { window = Instant::now(); answered = 0; }
                     answered += 1;
                     if answered > 20 { continue }

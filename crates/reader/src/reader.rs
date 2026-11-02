@@ -687,12 +687,8 @@ impl<H: Host> Reader<H> {
         let mut text = m.text.trim().to_string();
         match r.mode {
             ReadMode::Command => {
-                let cmd = r.command.to_lowercase();
-                let lower = text.to_lowercase();
-                if !lower.starts_with(&format!("{cmd} ")) {
-                    return;
-                }
-                text = text[cmd.len()..].trim().to_string();
+                let Some(rest) = strip_command(&text, &r.command) else { return };
+                text = rest.to_string();
             }
             ReadMode::Privileged if !has_role(&m, &r.allowed_roles) => return self.filtered(&m, "no allowed role"),
             _ => {}
@@ -1214,10 +1210,10 @@ impl<H: Host> Reader<H> {
             return None;
         }
         // first time (or its effect was removed): one at random, by weight
-        let total: u32 = pool.iter().map(|(_, w)| (*w).max(1)).sum();
+        let total: u32 = pool.iter().fold(0u32, |a, (_, w)| a.saturating_add((*w).clamp(1, 1000)));
         let mut r = rand::random::<u32>() % total.max(1);
         let id = pool.iter().find(|(_, w)| {
-            let w = (*w).max(1);
+            let w = (*w).clamp(1, 1000);
             if r < w {
                 true
             } else {
@@ -1798,6 +1794,23 @@ async fn next_clip(clips: &mut mpsc::Receiver<Result<(Vec<f32>, u32), String>>, 
             _ = tokio::time::sleep(Duration::from_millis(100)) => {}
         }
     }
+}
+
+/// The text after the command ("!tts hello" -> "hello"), any case. The
+/// comparison stays on the message's own bytes: lowercasing can change the
+/// length ("K", the Kelvin sign, becomes "k"), so a cut found in the
+/// lowercased copy may fall inside a character of the original.
+pub(crate) fn strip_command<'a>(text: &'a str, command: &str) -> Option<&'a str> {
+    let cmd = command.trim();
+    if cmd.is_empty() {
+        return None;
+    }
+    let head = text.get(..cmd.len())?;
+    if !head.eq_ignore_ascii_case(cmd) && head.to_lowercase() != cmd.to_lowercase() {
+        return None;
+    }
+    let rest = &text[cmd.len()..];
+    rest.starts_with(char::is_whitespace).then(|| rest.trim())
 }
 
 fn has_role(m: &ChatMessage, roles: &[Role]) -> bool {

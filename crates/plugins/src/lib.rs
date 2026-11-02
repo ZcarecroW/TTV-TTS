@@ -149,6 +149,16 @@ pub fn scan_file(path: &std::path::Path) -> Result<Vec<PluginInfo>, String> {
     }
 }
 
+/// Whether `path` is a plugin file inside one of the standard plugin folders
+/// (where installers put them). A path another PC sends is loaded only when
+/// this holds: loading a plugin runs its code, so a file from anywhere else
+/// (downloads, a share) never gets loaded on someone's say-so.
+pub fn in_standard_folder(path: &std::path::Path) -> bool {
+    let ext = path.extension().and_then(|x| x.to_str()).is_some_and(|x| x.eq_ignore_ascii_case("vst3") || x.eq_ignore_ascii_case("clap"));
+    let Ok(real) = std::fs::canonicalize(path) else { return false };
+    ext && vst3_host::discovery::scan_standard_paths().into_iter().chain(clap_dirs()).filter_map(|d| std::fs::canonicalize(d).ok()).any(|d| real.starts_with(&d))
+}
+
 /// Every effect in the standard plugin folders. Loads each plugin file once
 /// (that's how plugins tell what they are), so it can take a while.
 pub fn scan() -> Vec<PluginInfo> {
@@ -579,4 +589,19 @@ fn run(rx: std::sync::mpsc::Receiver<Cmd>, active: Arc<parking_lot::Mutex<HashMa
 /// Whether editors can open in a host window on this system.
 pub fn editors_supported() -> bool {
     cfg!(windows)
+}
+
+#[cfg(test)]
+mod folder_tests {
+    #[test]
+    fn only_files_in_plugin_folders_count() {
+        let dir = std::env::temp_dir().join(format!("ttv-not-a-plugin-folder-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let f = dir.join("evil.clap");
+        std::fs::write(&f, b"x").unwrap();
+        assert!(!super::in_standard_folder(&f), "a .clap outside the plugin folders");
+        assert!(!super::in_standard_folder(&dir.join("missing.vst3")));
+        assert!(!super::in_standard_folder(std::path::Path::new("C:/Windows/System32/kernel32.dll")));
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 }

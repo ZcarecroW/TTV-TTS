@@ -11,7 +11,7 @@
 //! local network are refused unless the link is meant for the internet, and
 //! an address that guesses wrong tokens is locked out for a while.
 
-use std::collections::{HashMap, VecDeque};
+use std::collections::VecDeque;
 use std::net::{IpAddr, SocketAddr};
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
@@ -151,38 +151,28 @@ pub trait Links: Send + Sync + 'static {
 }
 
 /// An address in the local network (or this PC, or a VPN like Tailscale).
-pub fn is_local(ip: IpAddr) -> bool {
-    match ip.to_canonical() {
-        IpAddr::V4(v) => {
-            let o = v.octets();
-            v.is_loopback() || v.is_private() || v.is_link_local() || (o[0] == 100 && (64..128).contains(&o[1]))
-        }
-        IpAddr::V6(v) => v.is_loopback() || (v.segments()[0] & 0xfe00) == 0xfc00 || (v.segments()[0] & 0xffc0) == 0xfe80,
+pub use ttv_net::limits::is_local;
+
+/// Addresses that guessed wrong tokens: locked out for 15 minutes after 20
+/// (IPv6 by /64, bounded memory under a flood).
+struct Guesses(ttv_net::limits::Strikes);
+
+impl Default for Guesses {
+    fn default() -> Self {
+        Self(ttv_net::limits::Strikes::new(Self::LIMIT, Self::WINDOW))
     }
 }
-
-/// Addresses that guessed wrong tokens: locked out for 15 minutes after 20.
-#[derive(Default)]
-struct Guesses(Mutex<HashMap<IpAddr, (u32, Instant)>>);
 
 impl Guesses {
     const LIMIT: u32 = 20;
     const WINDOW: Duration = Duration::from_secs(900);
 
     fn blocked(&self, ip: IpAddr) -> bool {
-        self.0.lock().get(&ip).is_some_and(|(n, t)| *n >= Self::LIMIT && t.elapsed() < Self::WINDOW)
+        self.0.blocked(ip)
     }
 
     fn wrong(&self, ip: IpAddr) {
-        let mut m = self.0.lock();
-        if m.len() > 10_000 {
-            m.retain(|_, (_, t)| t.elapsed() < Self::WINDOW);
-        }
-        let e = m.entry(ip).or_insert((0, Instant::now()));
-        if e.1.elapsed() >= Self::WINDOW {
-            *e = (0, Instant::now());
-        }
-        e.0 += 1;
+        self.0.strike(ip);
     }
 }
 
@@ -230,6 +220,7 @@ async fn page<L: Links>(State(s): S<L>, Path(token): Path<String>, ConnectInfo(a
     h.insert(header::CACHE_CONTROL, HeaderValue::from_static("no-store"));
     h.insert(header::REFERRER_POLICY, HeaderValue::from_static("no-referrer"));
     h.insert("x-robots-tag", HeaderValue::from_static("noindex"));
+    h.insert(header::X_CONTENT_TYPE_OPTIONS, HeaderValue::from_static("nosniff"));
     r
 }
 
@@ -241,7 +232,8 @@ async fn socket<L: Links>(State(s): S<L>, Path(token): Path<String>, ConnectInfo
     if sink.listeners() >= MAX_LISTENERS {
         return refuse(StatusCode::TOO_MANY_REQUESTS, "Too many listeners on this link.");
     }
-    ws.on_upgrade(move |socket| listen(sink, socket))
+    // a listener only answers pings: tiny messages are plenty
+    ws.max_message_size(4096).max_frame_size(4096).on_upgrade(move |socket| listen(sink, socket))
 }
 
 /// Counts a listener while it's connected.

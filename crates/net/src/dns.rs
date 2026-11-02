@@ -170,6 +170,25 @@ mod tests {
         assert_eq!(answer(&r[..r.len() - 30], 7), None, "cut short");
     }
 
+    #[test]
+    fn hostile_answers_never_panic() {
+        let q = query(7, "x.duckdns.org").unwrap();
+        let mut x: u64 = 0x0bad_c0de_dead_beef;
+        for _ in 0..50_000 {
+            x ^= x << 13;
+            x ^= x >> 7;
+            x ^= x << 17;
+            let mut r = q.clone();
+            r[2] = 0x84;
+            r.extend((0..(x % 80)).map(|i| (x >> (i % 56)) as u8));
+            for k in 0..(x % 5) {
+                let i = ((x >> (7 * k)) as usize) % r.len();
+                r[i] = (x >> (5 * k)) as u8;
+            }
+            let _ = answer(&r, u16::from_be_bytes([r[0], r[1]]));
+        }
+    }
+
     /// Live: asks DuckDNS's name servers (needs the internet).
     #[tokio::test]
     #[ignore]

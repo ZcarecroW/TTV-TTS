@@ -18,7 +18,6 @@ use std::collections::HashMap;
 use std::net::{IpAddr, SocketAddr};
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 
 use axum::Router;
@@ -44,6 +43,8 @@ const PER_MINUTE: u32 = 40;
 /// Open connections from the internet in total and per address.
 const MAX_CONNECTIONS: usize = 64;
 const MAX_PER_ADDRESS: usize = 8;
+/// A request without a token (info, join) must be done within this.
+const PUBLIC_DEADLINE: Duration = Duration::from_secs(20);
 /// A guest waits at most this long for the host's chat to pause.
 const HOST_FIRST: Duration = Duration::from_secs(20);
 
@@ -361,7 +362,7 @@ pub fn status(state: &AppState) -> InternetStatus {
         address,
         invites: state.guests.invites(),
         guests: state.guests.guests(),
-        connections: INTERNET_CONNECTIONS.load(Ordering::Relaxed),
+        connections: OPEN.open(),
         obs_https: c.obs_https,
         https: state.certs.status(),
         obs_online: state.hosted.any_online(),
@@ -437,7 +438,15 @@ pub const DUCKDNS_TOKEN: &str = "duckdns-token";
 
 /// Where friends reach this proxy: the DuckDNS name if set, else the public IP.
 pub fn address(c: &crate::config::Config, public_ip: Option<&str>) -> String {
-    let host = if !c.duckdns_domain.trim().is_empty() { format!("{}.duckdns.org", c.duckdns_domain.trim()) } else { public_ip.unwrap_or_default().to_string() };
+    let host = if !c.duckdns_domain.trim().is_empty() {
+        format!("{}.duckdns.org", c.duckdns_domain.trim())
+    } else {
+        match public_ip.unwrap_or_default().parse::<IpAddr>() {
+            // an IPv6 address goes in brackets before the port
+            Ok(IpAddr::V6(v6)) => format!("[{v6}]"),
+            _ => public_ip.unwrap_or_default().to_string(),
+        }
+    };
     if host.is_empty() { String::new() } else { format!("{host}:{}", c.internet_port) }
 }
 
@@ -450,6 +459,9 @@ pub fn invite_code(state: &AppState, secret: &str, over: Option<&str>) -> Result
     let address = given.unwrap_or_else(|| address(&c, state.internet.read().public_ip.as_deref()));
     if address.is_empty() {
         return Err("Set up a DuckDNS name (or test the internet access once, so the public address is known).".into());
+    }
+    if !ttv_link::valid_address(&address) {
+        return Err(format!("\"{address}\" isn't an address friends can use (a name or IP address and a port, like vcp-pc.example.org:8111)."));
     }
     let fingerprint = state.tls.read().fingerprint.clone();
     Ok(InviteCode { address, fingerprint, secret: secret.into(), host: c.display_name() }.encode())
@@ -473,7 +485,11 @@ async fn guest_auth(State(state): S, ConnectInfo(addr): ConnectInfo<SocketAddr>,
         return api_error(StatusCode::TOO_MANY_REQUESTS, "rate_limited", "Too many wrong attempts from this address - try again in a minute.");
     }
     if is_public(req.uri().path()) {
-        return next.run(req).await;
+        // without a token: the whole request (a slow body too) within the deadline
+        return match tokio::time::timeout(PUBLIC_DEADLINE, next.run(req)).await {
+            Ok(r) => r,
+            Err(_) => api_error(StatusCode::REQUEST_TIMEOUT, "timeout", "The request took too long."),
+        };
     }
     let token = presented_key(req.headers(), req.uri().query());
     match token.as_deref().and_then(|t| state.guests.check(t, ip)) {
@@ -505,6 +521,8 @@ pub fn router(state: Arc<AppState>) -> Router {
         .route("/api/v1/system/version", get(read_through))
         .fallback(|| async { api_error(StatusCode::NOT_FOUND, "not_found", "Not available over the internet.") })
         .layer(middleware::from_fn_with_state(state.clone(), guest_auth))
+        // requests are a line of text at most (axum's default allows 2 MB)
+        .layer(axum::extract::DefaultBodyLimit::max(64 * 1024))
         .with_state(state)
 }
 
@@ -563,7 +581,8 @@ async fn library(State(state): S) -> Json<ttv_link::LibrarySnapshot> {
 }
 
 async fn events(State(state): S, axum::Extension(Guest(g)): axum::Extension<Guest>, ws: WebSocketUpgrade) -> Response {
-    ws.on_upgrade(move |socket| guest_events(socket, state, g))
+    // guests send nothing but pings and a close
+    ws.max_message_size(4096).max_frame_size(4096).on_upgrade(move |socket| guest_events(socket, state, g))
 }
 
 /// Status (sanitized, at most every 5 s) and library changes.
@@ -681,37 +700,15 @@ async fn read_through(State(state): S, req: Request) -> Response {
 
 // ── the listener ────────────────────────────────────────────────────────
 
-static INTERNET_CONNECTIONS: AtomicUsize = AtomicUsize::new(0);
-static PER_ADDRESS: Mutex<Option<HashMap<IpAddr, usize>>> = Mutex::new(None);
+/// Open connections from the internet, in total and per address.
+static OPEN: std::sync::LazyLock<ttv_net::limits::Connections> = std::sync::LazyLock::new(|| ttv_net::limits::Connections::new(MAX_CONNECTIONS, MAX_PER_ADDRESS));
 
-/// Counts a connection; refuses beyond the caps.
-struct ConnSlot(IpAddr);
-impl ConnSlot {
-    fn take(ip: IpAddr) -> Option<Self> {
-        let mut g = PER_ADDRESS.lock();
-        let m = g.get_or_insert_with(HashMap::new);
-        let n = m.entry(ip).or_insert(0);
-        if *n >= MAX_PER_ADDRESS || INTERNET_CONNECTIONS.load(Ordering::Relaxed) >= MAX_CONNECTIONS {
-            return None;
-        }
-        *n += 1;
-        INTERNET_CONNECTIONS.fetch_add(1, Ordering::Relaxed);
-        Some(Self(ip))
-    }
-}
-impl Drop for ConnSlot {
-    fn drop(&mut self) {
-        INTERNET_CONNECTIONS.fetch_sub(1, Ordering::Relaxed);
-        let mut g = PER_ADDRESS.lock();
-        if let Some(m) = g.as_mut()
-            && let Some(n) = m.get_mut(&self.0)
-        {
-            *n -= 1;
-            if *n == 0 {
-                m.remove(&self.0);
-            }
-        }
-    }
+/// The proxy's certificate for guests, HTTP/1.1 only: every connection then
+/// falls under the header deadline (an idle HTTP/2 connection never would).
+fn guest_tls(state: &AppState) -> Arc<rustls::ServerConfig> {
+    let mut c = (*state.tls.read().config).clone();
+    c.alpn_protocols = vec![b"http/1.1".to_vec()];
+    Arc::new(c)
 }
 
 async fn bind(addr: SocketAddr) -> std::io::Result<tokio::net::TcpListener> {
@@ -727,7 +724,7 @@ async fn bind(addr: SocketAddr) -> std::io::Result<tokio::net::TcpListener> {
 }
 
 async fn accept(listener: tokio::net::TcpListener, state: Arc<AppState>) {
-    use hyper_util::rt::{TokioExecutor, TokioIo};
+    use hyper_util::rt::TokioIo;
     use hyper_util::service::TowerToHyperService;
     use tower::ServiceExt;
     let router = router(state.clone());
@@ -739,9 +736,9 @@ async fn accept(listener: tokio::net::TcpListener, state: Arc<AppState>) {
                 continue;
             }
         };
-        let Some(slot) = ConnSlot::take(addr.ip()) else { continue };
+        let Some(slot) = OPEN.take(addr.ip(), true) else { continue };
         let _ = stream.set_nodelay(true);
-        let acceptor = tokio_rustls::TlsAcceptor::from(state.tls.read().config.clone());
+        let acceptor = tokio_rustls::TlsAcceptor::from(guest_tls(&state));
         let router = router.clone();
         let st = state.clone();
         tokio::spawn(async move {
@@ -752,11 +749,11 @@ async fn accept(listener: tokio::net::TcpListener, state: Arc<AppState>) {
             });
             let svc = TowerToHyperService::new(svc);
             let Ok(Ok(tls)) = tokio::time::timeout(Duration::from_secs(10), acceptor.accept(stream)).await else { return };
-            let builder = hyper_util::server::conn::auto::Builder::new(TokioExecutor::new());
+            let builder = ttv_net::limits::http1();
             // Switched off or changed: open connections (keep-alive, events)
             // end too, not only the listener.
             tokio::select! {
-                _ = builder.serve_connection_with_upgrades(TokioIo::new(tls), svc) => {}
+                _ = builder.serve_connection(TokioIo::new(tls), svc).with_upgrades() => {}
                 _ = st.internet_rebind.notified() => {}
             }
         });
@@ -950,6 +947,7 @@ mod tests {
         assert_eq!(ttv_net::duckdns::clean_domain("bad name!"), "badname");
         let mut c = crate::config::Config { internet_port: 8111, ..Default::default() };
         assert_eq!(address(&c, Some("203.0.113.9")), "203.0.113.9:8111");
+        assert_eq!(address(&c, Some("2a02:810d::1")), "[2a02:810d::1]:8111");
         c.duckdns_domain = "mystream".into();
         assert_eq!(address(&c, Some("203.0.113.9")), "mystream.duckdns.org:8111");
     }
