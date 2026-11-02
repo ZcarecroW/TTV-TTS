@@ -15,7 +15,6 @@ use crate::config::Config;
 use crate::error::AppResult;
 use crate::library::VoiceLibrary;
 use crate::presets::PresetStore;
-use crate::reader::ReaderData;
 use crate::secrets::Secrets;
 
 /// What the window shows about the voice host.
@@ -41,7 +40,7 @@ pub struct AppState {
     pub data_dir: PathBuf,
     pub secrets: Secrets,
     pub audio: Arc<Audio>,
-    pub reader: ReaderData,
+    pub reader: Arc<crate::reader::Reader>,
     pub presets: PresetStore,
     /// Computed preset voices (engine on the proxy or in this app).
     pub library: VoiceLibrary,
@@ -51,8 +50,6 @@ pub struct AppState {
     pub host_changed: Notify,
     /// The window wants live system stats of the proxy PC.
     pub watch_system: AtomicBool,
-    /// "Translate for me" (MyMemory, DeepL or VCP), with a small cache.
-    pub translator: crate::translate::Translator,
     /// Optional Twitch login (follows, rewards without text).
     pub twitch: crate::twitch::account::Account,
     /// Audio plugins on all speech (their own thread).
@@ -74,13 +71,12 @@ impl AppState {
         let rack = Arc::new(ttv_plugins::Rack::start(move |id, data| {
             let _ = state_tx.send((id, data));
         }));
-        Arc::new(Self {
+        let state = Arc::new(Self {
             rack,
             plugin_errors: parking_lot::Mutex::new(Default::default()),
             plugin_states: parking_lot::Mutex::new(Some(state_rx)),
             twitch: crate::twitch::account::Account::new(web.clone()),
-            translator: crate::translate::Translator::new(web),
-            reader: ReaderData::load(&data_dir),
+            reader: Arc::new(crate::reader::Reader::new(crate::reader::AppHost::new(web), &data_dir)),
             presets: PresetStore::load(&data_dir),
             library: VoiceLibrary::new(&data_dir),
             cfg: RwLock::new(cfg),
@@ -93,7 +89,9 @@ impl AppState {
             host_changed: Notify::new(),
             watch_system: AtomicBool::new(false),
             app: OnceLock::new(),
-        })
+        });
+        state.reader.host.attach(&state);
+        state
     }
 
     pub fn set_app(&self, app: AppHandle) {

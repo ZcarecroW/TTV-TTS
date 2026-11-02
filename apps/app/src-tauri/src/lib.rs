@@ -80,7 +80,7 @@ pub fn run() {
             tauri::async_runtime::spawn(library::local_events(state.clone()));
             tauri::async_runtime::spawn(monitor::run(state.clone()));
             let st = state.clone();
-            tauri::async_runtime::spawn(async move { reader::start(st) });
+            tauri::async_runtime::spawn(async move { reader::start(&st) });
             tauri::async_runtime::spawn(updater::run(app.handle().clone(), state.clone()));
             let st = state.clone();
             tauri::async_runtime::spawn(async move { remote::apply(&st).await });
@@ -224,7 +224,7 @@ pub fn run() {
                 let st = app.state::<std::sync::Arc<AppState>>().inner().clone();
                 // the plugins' latest settings (an open editor may have changed them)
                 tauri::async_runtime::block_on(async { tokio::time::timeout(std::time::Duration::from_secs(2), plugin_cmds::save_all(&st)).await.ok() });
-                reader::flush(&st);
+                st.reader.flush();
             }
         });
 }

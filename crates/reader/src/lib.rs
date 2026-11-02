@@ -4,6 +4,9 @@
 //! announcements and translation.
 
 pub mod announce;
+pub mod output;
+pub mod reader;
+pub mod storage;
 pub mod fx;
 pub mod profile;
 pub mod speech;

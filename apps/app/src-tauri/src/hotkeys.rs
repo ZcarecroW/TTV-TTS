@@ -49,22 +49,22 @@ pub fn apply(app: &AppHandle, state: &Arc<AppState>) -> Vec<String> {
 fn run(state: &Arc<AppState>, action: &str) {
     log::info!("hotkey: {action}");
     match action {
-        "skip" => crate::reader::skip(state),
+        "skip" => state.reader.skip(),
         "pause" => {
             let on = !state.reader.is_paused();
-            crate::reader::set_paused(state, on);
+            state.reader.set_paused(on);
         }
-        "clear" => crate::reader::clear(state, "hotkey"),
+        "clear" => state.reader.clear("hotkey"),
         "replay" => {
-            if let Err(e) = crate::reader::replay(state, None) {
+            if let Err(e) = state.reader.replay(None) {
                 log::info!("replay: {e}");
             }
         }
         "approve" => {
-            crate::reader::approve(state, None);
+            state.reader.approve(None);
         }
         "reject" => {
-            crate::reader::reject(state, None);
+            state.reader.reject(None);
         }
         _ => {}
     }

@@ -291,7 +291,7 @@ pub async fn try_translate(state: St<'_>, text: String, from: Option<String>, ta
     let vcp = state.vcp();
     let t0 = std::time::Instant::now();
     let svc = crate::translate::Service { provider: &provider, email: &email, deepl_key: deepl.as_deref(), vcp: vcp.as_ref() };
-    let out = state.translator.translate(&svc, &text, &from, &target).await?;
+    let out = ttv_reader::reader::Host::translator(&state.reader.host).translate(&svc, &text, &from, &target).await?;
     Ok(Translated { text: out, ms: t0.elapsed().as_millis() as u64 })
 }
 
@@ -345,7 +345,7 @@ pub fn save_profile(state: St, profile: crate::profile::Profile) -> ReaderView {
         }
     }
     state.reader.save_store();
-    crate::reader::apply_channels(&state);
+    state.reader.apply_channels();
     reader_view(&state)
 }
 
@@ -359,7 +359,7 @@ pub fn delete_profile(state: St, id: String) -> ReaderView {
         }
     }
     state.reader.save_store();
-    crate::reader::apply_channels(&state);
+    state.reader.apply_channels();
     reader_view(&state)
 }
 
@@ -372,41 +372,41 @@ pub fn set_active_profiles(state: St, ids: Vec<String>) -> ReaderView {
         s.active = ids.into_iter().filter(|i| known.contains(i)).collect();
     }
     state.reader.save_store();
-    crate::reader::apply_channels(&state);
+    state.reader.apply_channels();
     reader_view(&state)
 }
 
 #[tauri::command]
 pub fn reader_skip(state: St) {
-    crate::reader::skip(&state);
+    state.reader.skip();
 }
 
 #[tauri::command]
 pub fn reader_clear(state: St) {
-    crate::reader::clear(&state, "app");
+    state.reader.clear("app");
 }
 
 #[tauri::command]
 pub fn reader_pause(state: St, on: bool) {
-    crate::reader::set_paused(&state, on);
+    state.reader.set_paused(on);
 }
 
 /// Approval mode: a waiting message is read (None = the oldest).
 #[tauri::command]
 pub fn reader_approve(state: St, id: Option<u64>) -> bool {
-    crate::reader::approve(&state, id)
+    state.reader.approve(id)
 }
 
 /// Approval mode: a waiting message is dropped (None = the oldest).
 #[tauri::command]
 pub fn reader_reject(state: St, id: Option<u64>) -> bool {
-    crate::reader::reject(&state, id)
+    state.reader.reject(id)
 }
 
 /// Plays a spoken message again (None = the last one), without VCP.
 #[tauri::command]
 pub fn reader_replay(state: St, id: Option<u64>) -> Result<(), String> {
-    crate::reader::replay(&state, id)
+    state.reader.replay(id)
 }
 
 /// The last speed measurement of the two generation modes (this host).
@@ -486,7 +486,7 @@ pub fn set_hotkey(app: tauri::AppHandle, state: St, action: String, accel: Optio
 /// An example event announcement (sub, resub, subgift, submysterygift, raid, bits).
 #[tauri::command]
 pub fn test_event(state: St, profile: String, kind: String) -> Result<(), String> {
-    crate::reader::test_event(&state, &profile, &kind)
+    state.reader.test_event(&profile, &kind)
 }
 
 /// Sends a test message through the pipeline of a profile's first channel.
@@ -500,13 +500,13 @@ pub fn test_message(state: St, profile: String, user: String, text: String) -> R
         }
         p.channels.first().cloned().ok_or("Add a channel to this profile first.")?
     };
-    crate::reader::test_message(&state, &channel, if user.trim().is_empty() { "TestUser" } else { user.trim() }, &text);
+    state.reader.test_message(&channel, if user.trim().is_empty() { "TestUser" } else { user.trim() }, &text);
     Ok(())
 }
 
 #[tauri::command]
 pub fn mute_viewer(state: St, profile: String, login: String, on: bool) -> ReaderView {
-    crate::reader::set_muted(&state, &profile, &login.to_ascii_lowercase(), on);
+    state.reader.set_muted(&profile, &login.to_ascii_lowercase(), on);
     reader_view(&state)
 }
 
@@ -519,25 +519,25 @@ pub struct ViewerList {
 
 #[tauri::command]
 pub fn list_viewers(state: St, profile: String, query: String) -> ViewerList {
-    let (viewers, total) = crate::reader::viewers(&state, &profile, &query, 300);
+    let (viewers, total) = state.reader.viewers(&profile, &query, 300);
     ViewerList { viewers, total }
 }
 
 /// Another voice for a viewer; None = a new random one on the next message.
 #[tauri::command]
 pub fn set_viewer_role(state: St, profile: String, user_id: String, role: Option<u32>) {
-    crate::reader::set_role(&state, &profile, &user_id, role);
+    state.reader.set_role(&profile, &user_id, role);
 }
 
 /// A voice effect for a viewer: a name, "none" or None (the voice's own).
 #[tauri::command]
 pub fn set_viewer_fx(state: St, profile: String, user_id: String, fx: Option<String>) {
-    crate::reader::set_fx(&state, &profile, &user_id, fx);
+    state.reader.set_fx(&profile, &user_id, fx);
 }
 
 #[tauri::command]
 pub fn forget_viewer(state: St, profile: String, user_id: String) {
-    crate::reader::forget_viewer(&state, &profile, &user_id);
+    state.reader.forget_viewer(&profile, &user_id);
 }
 
 // ── updates ─────────────────────────────────────────────────────────────

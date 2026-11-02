@@ -66,7 +66,7 @@ pub async fn install(app: &AppHandle, state: &Arc<AppState>) -> Result<(), Strin
     let channel = state.cfg.read().update_channel.clone();
     let Some(update) = find(app, &channel).await? else { return Ok(()) };
     set(app, UpdateInfo { phase: "downloading".into(), ..info() });
-    crate::reader::flush(state);
+    state.reader.flush();
     update.download_and_install(|_, _| {}, || log::info!("update downloaded, installing")).await.map_err(|e| {
         set(app, UpdateInfo { phase: "error".into(), error: Some(e.to_string()), ..info() });
         e.to_string()

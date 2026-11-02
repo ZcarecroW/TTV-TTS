@@ -172,38 +172,38 @@ async fn status_route(State(state): S) -> Json<StatusAnswer> {
 }
 
 async fn skip(State(state): S) -> Json<Answer> {
-    crate::reader::skip(&state);
+    state.reader.skip();
     done(true, None)
 }
 async fn pause(State(state): S) -> Json<Answer> {
-    crate::reader::set_paused(&state, true);
+    state.reader.set_paused(true);
     done(true, None)
 }
 async fn resume(State(state): S) -> Json<Answer> {
-    crate::reader::set_paused(&state, false);
+    state.reader.set_paused(false);
     done(true, None)
 }
 async fn toggle_pause(State(state): S) -> Json<Answer> {
     let on = !state.reader.is_paused();
-    crate::reader::set_paused(&state, on);
+    state.reader.set_paused(on);
     done(true, Some(if on { "paused".into() } else { "reading".into() }))
 }
 async fn clear(State(state): S) -> Json<Answer> {
-    crate::reader::clear(&state, "remote control");
+    state.reader.clear("remote control");
     done(true, None)
 }
 async fn replay(State(state): S) -> Json<Answer> {
-    match crate::reader::replay(&state, None) {
+    match state.reader.replay(None) {
         Ok(()) => done(true, None),
         Err(e) => done(false, Some(e)),
     }
 }
 async fn approve(State(state): S) -> Json<Answer> {
-    let ok = crate::reader::approve(&state, None);
+    let ok = state.reader.approve(None);
     done(ok, (!ok).then(|| "nothing waits for approval".into()))
 }
 async fn reject(State(state): S) -> Json<Answer> {
-    let ok = crate::reader::reject(&state, None);
+    let ok = state.reader.reject(None);
     done(ok, (!ok).then(|| "nothing waits for approval".into()))
 }
 
@@ -231,7 +231,7 @@ async fn say(State(state): S, Query(q): Query<Say>, body: axum::body::Bytes) -> 
         st.profiles.iter().filter(|p| st.active.contains(&p.id)).find_map(|p| p.channels.first().cloned())
     };
     let Some(channel) = channel else { return done(false, Some("no profile reads a channel right now".into())) };
-    crate::reader::test_message(&state, &channel, &user, &text);
+    state.reader.test_message(&channel, &user, &text);
     done(true, None)
 }
 
