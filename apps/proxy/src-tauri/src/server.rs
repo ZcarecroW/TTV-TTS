@@ -126,17 +126,22 @@ async fn accept_loop(listener: TcpListener, tls: Option<TlsAcceptor>, router: Ro
             });
             let svc = TowerToHyperService::new(svc);
             // headers within the deadline, idle connections end, HTTP/2 pinged
-            let builder = ttv_net::limits::auto();
             let result = match tls {
                 Some(acceptor) => match tokio::time::timeout(Duration::from_secs(10), acceptor.accept(stream)).await {
-                    Ok(Ok(tls_stream)) => builder.serve_connection_with_upgrades(TokioIo::new(tls_stream), svc).await,
+                    Ok(Ok(tls_stream)) => {
+                        if tls_stream.get_ref().1.alpn_protocol() == Some(b"h2".as_slice()) {
+                            ttv_net::limits::http2().serve_connection(TokioIo::new(tls_stream), svc).await
+                        } else {
+                            ttv_net::limits::http1().serve_connection(TokioIo::new(tls_stream), svc).with_upgrades().await
+                        }
+                    }
                     Ok(Err(e)) => {
                         log::debug!("TLS handshake with {addr} failed: {e}");
                         return;
                     }
                     Err(_) => return,
                 },
-                None => builder.serve_connection_with_upgrades(TokioIo::new(stream), svc).await,
+                None => ttv_net::limits::http1().serve_connection(TokioIo::new(stream), svc).with_upgrades().await,
             };
             if let Err(e) = result {
                 log::debug!("connection {addr}: {e}");

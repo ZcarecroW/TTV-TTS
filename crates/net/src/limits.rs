@@ -5,7 +5,7 @@
 //!
 //! - [`Connections`]: open connections in total and per address.
 //! - [`Strikes`]: wrong guesses per address; locked out beyond a limit.
-//! - [`http1`] / [`auto`]: a request's headers must arrive within
+//! - [`http1`] / [`http2`]: a request's headers must arrive within
 //!   [`HEADER_TIMEOUT`], and an idle keep-alive connection ends after it too.
 //!
 //! IPv6 addresses count by their /64 network: one home (or one rented
@@ -186,14 +186,14 @@ pub fn http1() -> hyper::server::conn::http1::Builder {
     b
 }
 
-/// HTTP/1.1 and HTTP/2 (the proxy's own API): the same header deadline;
-/// HTTP/2 connections are pinged, so dead ones end, and carry at most 128
-/// requests at once.
-pub fn auto() -> hyper_util::server::conn::auto::Builder<TokioExecutor> {
-    let mut b = hyper_util::server::conn::auto::Builder::new(TokioExecutor::new());
-    b.http1().timer(TokioTimer::new()).header_read_timeout(HEADER_TIMEOUT);
-    b.http2()
-        .timer(TokioTimer::new())
+/// HTTP/2 (the proxy's own API, when TLS agreed on it): connections are
+/// pinged, so dead ones end, and carry at most 128 requests at once. The
+/// protocol is picked from TLS (ALPN), never guessed from the first bytes:
+/// hyper-util's auto builder waits for those forever (even with
+/// `http1_only`, its upgradeable connection reads them first).
+pub fn http2() -> hyper::server::conn::http2::Builder<TokioExecutor> {
+    let mut b = hyper::server::conn::http2::Builder::new(TokioExecutor::new());
+    b.timer(TokioTimer::new())
         .keep_alive_interval(Some(Duration::from_secs(30)))
         .keep_alive_timeout(Duration::from_secs(20))
         .max_concurrent_streams(128);
@@ -311,5 +311,10 @@ Host: x
         assert!(std::str::from_utf8(&buf[..n]).unwrap().ends_with("hi"));
         let t = closed_within(s, Duration::from_secs(3)).await.expect("idle keep-alive: closed");
         assert!(t < Duration::from_secs(2), "{t:?}");
+        // a connection that never sends a byte (auto would wait for the first ones forever)
+        let s = tokio::net::TcpStream::connect(addr).await.unwrap();
+        let t = closed_within(s, Duration::from_secs(3)).await.expect("silent: closed");
+        assert!(t < Duration::from_secs(2), "{t:?}");
     }
+
 }
