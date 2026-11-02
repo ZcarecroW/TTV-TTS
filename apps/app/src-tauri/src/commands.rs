@@ -307,6 +307,83 @@ pub fn set_deepl_key(state: St, key: Option<String>) -> AppResult<AppView> {
     Ok(view(&state))
 }
 
+/// The system voices (fallback) and their settings.
+#[derive(Serialize)]
+pub struct OsVoicesView {
+    pub voices: Vec<crate::os_voice::OsVoice>,
+    pub config: crate::os_voice::OsVoiceConfig,
+    /// Languages TTV-TTS reads -> the voice pack Windows can install.
+    pub packs: Vec<(String, String)>,
+    /// "windows", "macos", "linux".
+    pub os: &'static str,
+}
+
+fn os_voices_view(state: &AppState) -> OsVoicesView {
+    OsVoicesView {
+        voices: crate::os_voice::voices(),
+        config: state.cfg.read().os_voice.clone(),
+        packs: crate::os_voice::PACKS.iter().map(|(l, p)| (l.to_string(), p.to_string())).collect(),
+        os: if cfg!(windows) { "windows" } else if cfg!(target_os = "macos") { "macos" } else { "linux" },
+    }
+}
+
+#[tauri::command]
+pub async fn os_voices(state: St<'_>) -> Result<OsVoicesView, String> {
+    let st = state.inner().clone();
+    tokio::task::spawn_blocking(move || os_voices_view(&st)).await.map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn set_os_voices(state: St<'_>, config: crate::os_voice::OsVoiceConfig) -> Result<OsVoicesView, String> {
+    {
+        let mut c = state.cfg.write();
+        c.os_voice = config;
+        c.normalize();
+    }
+    state.save_config().map_err(|e| e.to_string())?;
+    os_voices(state).await
+}
+
+#[derive(Serialize)]
+pub struct OsVoiceTry {
+    /// Seconds of speech and how long it took to make.
+    pub secs: f32,
+    pub ms: u64,
+}
+
+/// Says a text with one system voice (or the one for `lang`) on the output.
+#[tauri::command]
+pub async fn try_os_voice(state: St<'_>, voice: Option<String>, lang: String, text: String, config: Option<crate::os_voice::OsVoiceConfig>) -> Result<OsVoiceTry, String> {
+    let mut cfg = config.unwrap_or_else(|| state.cfg.read().os_voice.clone());
+    cfg.normalize();
+    let text: String = text.trim().chars().take(300).collect();
+    if text.is_empty() {
+        return Err("Type something to say.".into());
+    }
+    let t0 = std::time::Instant::now();
+    let (samples, rate) = match voice {
+        Some(id) => crate::os_voice::speak_with(&text, &id, &cfg).await?,
+        None => crate::os_voice::speak(&text, &lang, &cfg).await?,
+    };
+    let ms = t0.elapsed().as_millis() as u64;
+    let secs = samples.len() as f32 / rate.max(1) as f32;
+    state.audio.play(samples, rate, 1.0);
+    Ok(OsVoiceTry { secs, ms })
+}
+
+/// Installs Microsoft's voices of a language (Windows; one UAC prompt).
+#[tauri::command]
+pub async fn install_os_voices(state: St<'_>, locale: String) -> Result<OsVoicesView, String> {
+    crate::os_voice::install(&locale).await?;
+    os_voices(state).await
+}
+
+/// Opens the system's speech settings.
+#[tauri::command]
+pub fn open_os_voice_settings() -> Result<(), String> {
+    crate::os_voice::open_settings()
+}
+
 #[tauri::command]
 pub async fn speak_test(state: St<'_>, utterance: Utterance) -> Result<SayReport, String> {
     let vcp = state.vcp().ok_or("No voice host set up yet.")?;

@@ -48,6 +48,16 @@ const demoFound = [
   { format: "clap" as const, path: "C:/Program Files/Common Files/CLAP/Room Verb.clap", id: "room.verb", name: "Room Verb", vendor: "Example Audio" },
   { format: "clap" as const, path: "C:/Plugins/Soft Comp.clap", id: "soft.comp", name: "Soft Comp", vendor: "Studio Nine" },
 ];
+const demoOsVoices = {
+  voices: [
+    { id: "onecore:demo-david", name: "Microsoft David", language: "en-US", gender: "male" as const },
+    { id: "onecore:demo-zira", name: "Microsoft Zira", language: "en-US", gender: "female" as const },
+    { id: "sapi:demo-rhvoice", name: "Anna (RHVoice)", language: "ru-RU", gender: "female" as const },
+  ] as { id: string; name: string; language: string; gender: "female" | "male" | "" }[],
+  config: { voices: {} as Record<string, string>, rate: 1, pitch: 1 },
+  packs: [["en", "en-US"], ["de", "de-DE"], ["ru", "ru-RU"], ["fr", "fr-FR"], ["es", "es-ES"], ["it", "it-IT"], ["pt", "pt-BR"], ["ja", "ja-JP"], ["zh", "zh-CN"], ["ko", "ko-KR"]] as [string, string][],
+  os: "windows" as const,
+};
 const demoPlugins = {
   slots: [{ id: "eq1", plugin: demoFound[0]!, enabled: true, state: null as string | null }],
   variants: [
@@ -236,6 +246,19 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
     case "set_twitch_client_id":
       demoTwitch.own_client_id = !!String(args.id).trim();
       return r(structuredClone(demoTwitch));
+    case "os_voices":
+    case "set_os_voices":
+      if (cmd === "set_os_voices") demoOsVoices.config = structuredClone(args.config as never);
+      return r(structuredClone(demoOsVoices));
+    case "try_os_voice":
+      await new Promise((res) => setTimeout(res, 200));
+      return r({ secs: 2.4, ms: 61 });
+    case "install_os_voices":
+      await new Promise((res) => setTimeout(res, 900));
+      demoOsVoices.voices.push({ id: "onecore:demo-hedda", name: "Microsoft Hedda", language: "de-DE", gender: "female" }, { id: "onecore:demo-stefan", name: "Microsoft Stefan", language: "de-DE", gender: "male" });
+      return r(structuredClone(demoOsVoices));
+    case "open_os_voice_settings":
+      return r(undefined);
     case "plugins_list":
       return r(structuredClone(demoPlugins));
     case "plugins_scan":

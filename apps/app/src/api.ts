@@ -765,6 +765,38 @@ export interface PluginSlot {
   state: string | null;
 }
 
+/** An installed system voice (the fallback). */
+export interface OsVoice {
+  id: string;
+  name: string;
+  /** BCP 47, e.g. "de-DE" */
+  language: string;
+  gender: "female" | "male" | "";
+}
+
+export interface OsVoiceConfig {
+  /** language code -> voice id (missing: the first of the language) */
+  voices: Record<string, string>;
+  rate: number;
+  pitch: number;
+}
+
+export interface OsVoicesView {
+  voices: OsVoice[];
+  config: OsVoiceConfig;
+  /** language -> Windows voice pack */
+  packs: [string, string][];
+  os: "windows" | "macos" | "linux";
+}
+
+export const osVoices = {
+  list: () => invoke<OsVoicesView>("os_voices"),
+  set: (config: OsVoiceConfig) => invoke<OsVoicesView>("set_os_voices", { config }),
+  try: (voice: string | null, lang: string, text: string, config?: OsVoiceConfig) => invoke<{ secs: number; ms: number }>("try_os_voice", { voice, lang, text, config }),
+  install: (locale: string) => invoke<OsVoicesView>("install_os_voices", { locale }),
+  openSettings: () => invoke<void>("open_os_voice_settings"),
+};
+
 /** A plugin effect viewers can get at random (one plugin with its settings). */
 export interface ViewerPlugin {
   id: string;

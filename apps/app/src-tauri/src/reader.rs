@@ -116,7 +116,8 @@ impl Host for AppHost {
     }
 
     async fn os_speak(&self, text: &str, lang: &str) -> Result<(Vec<f32>, u32), String> {
-        crate::os_voice::speak(text, lang).await
+        let cfg = self.state().map(|s| s.cfg.read().os_voice.clone()).unwrap_or_default();
+        crate::os_voice::speak(text, lang, &cfg).await
     }
 
     fn plugin_pool(&self) -> Vec<(String, u32)> {

@@ -9,6 +9,7 @@ import { api, HOTKEY_ACTIONS, isTauri, updates, type Measured } from "../api";
 import { apply, config, guest, host, run, store, toast } from "../store";
 import { copyText } from "@ttv-tts/ui/clipboard";
 import PluginsCard from "../components/PluginsCard.vue";
+import OsVoicesCard from "../components/OsVoicesCard.vue";
 import TwitchCard from "../components/TwitchCard.vue";
 import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
 import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
@@ -270,6 +271,7 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
     <TwitchCard />
 
     <PluginsCard />
+    <OsVoicesCard />
 
     <section class="card p-5 md:col-span-2">
       <div class="card-head"><CircleInfo />{{ t("settings.aboutTitle") }}</div>

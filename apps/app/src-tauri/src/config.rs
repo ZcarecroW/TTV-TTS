@@ -89,6 +89,8 @@ pub struct Config {
     pub plugins: Vec<PluginSlot>,
     /// Plugin effects viewers get at random (which viewers: per profile).
     pub viewer_plugins: Vec<ViewerPlugin>,
+    /// The system voice (fallback): which voice per language, speed, pitch.
+    pub os_voice: crate::os_voice::OsVoiceConfig,
     /// Client ID of the streamer's own Twitch application ("" = built in).
     pub twitch_client_id: String,
     /// OBS links served by this app (profiles that play in OBS on this PC).
@@ -162,6 +164,7 @@ impl Default for Config {
             remote: RemoteConfig::default(),
             plugins: Vec::new(),
             viewer_plugins: Vec::new(),
+            os_voice: Default::default(),
             twitch_client_id: String::new(),
             obs: ObsConfig::default(),
             effects_on_host: true,
@@ -171,6 +174,7 @@ impl Default for Config {
 
 impl Config {
     pub fn normalize(&mut self) {
+        self.os_voice.normalize();
         if self.remote.token.is_empty() {
             self.remote.token = crate::secrets::random_key()[..24].to_string();
         }

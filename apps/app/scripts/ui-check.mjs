@@ -122,6 +122,23 @@ check(await page.locator("#ttv-tip").isVisible(), "tooltip appears on hover");
   check((await pc.locator("[data-variant]").count()) === 2, "a viewer effect can be removed");
 }
 {
+  // the system voices (fallback)
+  const ov = page.locator("main [data-os-voices]");
+  check((await ov.locator("[data-os-lang]").count()) === 10, "the system voice is set per language", String(await ov.locator("[data-os-lang]").count()));
+  check(/(no voice installed|keine Stimme installiert)/.test(await ov.locator("[data-os-lang=de]").innerText()), "a language without a system voice says so");
+  check(/David/.test(await ov.locator("[data-os-lang=en] select option").first().innerText()), "the automatic choice names the voice", await ov.locator("[data-os-lang=en] select option").first().innerText());
+  await ov.locator("[data-os-lang=de]").getByRole("button", { name: /^(Install|Installieren)$/ }).click();
+  await page.waitForTimeout(1300);
+  check(/Hedda/.test(await ov.locator("[data-os-lang=de]").innerText()), "voices of a language can be installed", await ov.locator("[data-os-lang=de]").innerText());
+  await ov.locator("[data-os-lang=de]").getByRole("button", { name: /^(Try|Anhören)$/ }).click();
+  await page.waitForTimeout(400);
+  check(/(s of speech, made in|s Sprache, erzeugt in)/.test(await page.locator("body").innerText()), "a system voice can be tried");
+  await ov.locator("input[type=range]").first().fill("1.5");
+  await ov.locator("input[type=range]").first().dispatchEvent("change");
+  await page.waitForTimeout(300);
+  check(/1.50×/.test(await ov.innerText()), "the speed can be set");
+}
+{
   const hk = page.locator("main [data-hotkeys]");
   check(/Ctrl \+ Alt \+ S/.test(await hk.locator("[data-hotkey=skip]").innerText()), "hotkeys are shown readably", await hk.locator("[data-hotkey=skip]").innerText());
   await hk.locator("[data-hotkey=pause]").click();
