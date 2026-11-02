@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/vcp", "crates/link", "crates/engine", "crates/plugins", "apps/proxy/src-tauri", "apps/app/src-tauri"]
+members = ["crates/vcp", "crates/link", "crates/engine", "crates/plugins", "crates/reader", "apps/proxy/src-tauri", "apps/app/src-tauri"]
 
 [workspace.package]
 version = "2.1.0-alpha.1"
@@ -15,6 +15,7 @@ ttv-vcp = { path = "crates/vcp" }
 ttv-link = { path = "crates/link" }
 ttv-engine = { path = "crates/engine" }
 ttv-plugins = { path = "crates/plugins" }
+ttv-reader = { path = "crates/reader" }
 
 tauri = { version = "2.12.5", features = ["tray-icon"] }
 tauri-build = { version = "2.7.4", features = [] }

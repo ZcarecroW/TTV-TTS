@@ -1,9 +1,9 @@
 //! Measures how loud every voice effect plays compared with the dry voice,
 //! on real voice samples (a folder of WAV files), and how long it takes.
-//!   cargo run --release -p ttv-tts --example fx_levels -- <dir with .wav> [--out <dir>]
+//!   cargo run --release -p ttv-reader --example fx_levels -- <dir with .wav> [--out <dir>]
 //! `--out` also writes each effect applied to the first sample (to listen).
 
-use ttv_tts_lib::fx::{ALL, apply};
+use ttv_reader::fx::{ALL, apply};
 
 fn loud(x: &[f32]) -> Option<f32> {
     let (mut sum, mut n) = (0f64, 0usize);

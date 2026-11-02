@@ -5956,6 +5956,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "ttv-reader"
+version = "2.1.0-alpha.1"
+dependencies = [
+ "base64 0.23.1",
+ "chrono",
+ "futures-util",
+ "log",
+ "parking_lot 0.13.0",
+ "rand 0.10.3",
+ "realfft",
+ "regex",
+ "reqwest",
+ "rustls",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-tungstenite 0.30.0",
+ "ttv-link",
+ "ttv-vcp",
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "ttv-tts"
 version = "2.1.0-alpha.1"
 dependencies = [
@@ -5997,6 +6020,7 @@ dependencies = [
  "ttv-engine",
  "ttv-link",
  "ttv-plugins",
+ "ttv-reader",
  "ttv-vcp",
  "unicode-segmentation",
  "url",

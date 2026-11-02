@@ -11,29 +11,27 @@ mod library;
 mod logbuf;
 mod monitor;
 mod friends_cmds;
-mod announce;
 mod bench;
-pub mod fx;
 #[cfg(desktop)]
 mod hotkeys;
 mod os_voice;
 mod plugin_cmds;
 mod twitch_cmds;
 mod remote;
-mod translate;
 mod pack_cmds;
 mod preset_cmds;
 mod quality_cmds;
 mod presets;
-mod profile;
 mod reader;
 mod secrets;
 mod speech;
 mod state;
 mod storage;
-mod text;
 mod twitch;
 mod updater;
+
+// The chat reader parts shared with the proxy, under their old names.
+pub use ttv_reader::{announce, fx, profile, text, translate};
 
 use tauri::Manager;
 

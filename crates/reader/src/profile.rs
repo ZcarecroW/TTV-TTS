@@ -453,7 +453,7 @@ impl Default for Profile {
 impl Profile {
     pub fn normalize(&mut self) {
         if self.id.is_empty() {
-            self.id = crate::secrets::random_key()[..10].to_ascii_lowercase();
+            self.id = crate::random_key()[..10].to_ascii_lowercase();
         }
         let mut chans: Vec<String> = self
             .channels

@@ -1,4 +1,3 @@
 pub mod account;
-pub mod emotes;
 pub mod eventsub;
-pub mod irc;
+pub use ttv_reader::twitch::{emotes, irc};

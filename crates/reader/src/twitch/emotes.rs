@@ -86,6 +86,12 @@ pub struct Emotes {
     seven: LiveMap,
 }
 
+impl Default for Emotes {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Emotes {
     pub fn new() -> Self {
         let http = reqwest::Client::builder()
