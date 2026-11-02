@@ -5,6 +5,7 @@ import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
 import { ArrowRight, Check, Clock, Play, Refresh, Stop, Trash, Waveform, Warning, X } from "@ttv-tts/ui/icons";
 import { reader, type ItemView } from "../api";
+import { reasonText } from "../reasons";
 import { host, run, store, toast } from "../store";
 
 const { t } = useI18n();
@@ -171,7 +172,7 @@ async function sendTest() {
               <span class="badge" :class="stateCls[h.state]">{{ t(`live.states.${h.state}`) }}</span>
               <span v-if="h.event" class="badge badge-accent" data-event>{{ t(`events.kinds.${h.event}`) }}</span>
               <span v-if="h.emotion" class="badge" data-emotion :data-tip="t('tips.emotionBadge')">{{ t(`emotions.${h.emotion}`) }} · {{ t(`emotions.levels.${h.intensity}`) }}</span>
-              <span v-if="h.reason" class="text-xs text-muted">{{ h.reason }}</span>
+              <span v-if="h.reason" class="text-xs text-muted">{{ reasonText(h.reason) }}</span>
             </div>
             <div class="truncate text-muted" :title="h.original">{{ h.speech || h.original }}</div>
             <div v-if="h.translation" class="truncate text-xs" data-translation>→ {{ h.translation }}</div>

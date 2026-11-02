@@ -136,7 +136,8 @@ check(/0\.52 s (per s of speech|pro s Sprache)/.test(await page.locator("main [d
 await nav("live");
 await page.waitForTimeout(300);
 const live = await page.locator("main").innerText();
-check(live.includes("Mikey_TV") && /ignored user/.test(live), "live page shows the current message and filtered ones with a reason");
+check((query.includes("lang=de") ? /ignorierter Nutzer \(Bot\)/ : /ignored user \(bot\)/).test(live), "reasons for unread messages are in the interface language");
+check(live.includes("Mikey_TV") && /ignored user|ignorierter Nutzer/.test(live), "live page shows the current message and filtered ones with a reason");
 check(/(raid|Raid)/.test(await page.locator("main [data-event]").first().innerText().catch(() => "")), "announcements are marked in the history");
 check((await page.locator("main [data-replay]").count()) >= 1, "spoken messages can be played again", String(await page.locator("main [data-replay]").count()));
 check(/(joy|Freude) \(normal\)/.test(await page.locator("main [data-emotion]").first().innerText()), "the current message shows its emotion", await page.locator("main [data-emotion]").first().innerText());
