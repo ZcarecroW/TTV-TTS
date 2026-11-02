@@ -208,6 +208,7 @@ pub fn engine_routes() -> Router<Arc<AppState>> {
         .route("/packs/import", post(pack_import))
         .route("/jobs", post(job_submit))
         .route("/jobs/{id}/{action}", post(job_control))
+        .route("/speak", post(crate::speak::speak))
         .route("/hosted", get(hosted_list))
         .route("/hosted/{id}", get(hosted_one).put(hosted_put).delete(hosted_delete))
         .route("/hosted/{id}/history", get(hosted_history))

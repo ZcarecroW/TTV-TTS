@@ -52,6 +52,7 @@ pub struct SettingsPatch {
     generation: Option<GenerationMode>,
     setup_done: Option<bool>,
     translate_email: Option<String>,
+    effects_on_host: Option<bool>,
 }
 
 #[tauri::command]
@@ -75,6 +76,9 @@ pub fn update_settings(state: St, patch: SettingsPatch) -> AppResult<AppView> {
         }
         if let Some(v) = patch.translate_email {
             c.translate_email = v.trim().to_string();
+        }
+        if let Some(v) = patch.effects_on_host {
+            c.effects_on_host = v;
         }
         c.normalize();
     }

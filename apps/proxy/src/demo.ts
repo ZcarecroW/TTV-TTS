@@ -24,6 +24,7 @@ const config: Config = {
   restart_when_slow: true,
   hang_restart_secs: 180,
   http_port: 0,
+  obs_port: 8112,
   autostart: true,
   update_channel: "stable",
   auto_update: true,
@@ -198,6 +199,13 @@ export async function demoInvoke<T>(cmd: string, args: Record<string, unknown> =
         rule: { enabled: true, action: "Allow", profile: "Private, Domain", program: firewall.program },
       });
       return r(structuredClone(firewall));
+    case "obs_links":
+    case "obs_remove": {
+      const links = new URLSearchParams(location.search).has("obs")
+        ? [{ id: "p1", name: "Friend: Lena", channels: ["lenaplays"], online: true, listeners: 1, reading: true, status: { current: { display: "Mikey_TV", speech: "Mikey sagt: gute Runde!" }, queue: [], paused: false }, lan: ["http://192.168.178.25:8112/o/Xk3vQ9pLm2RtW7aZ"], internet: "http://mystream.duckdns.org:8112/o/Xk3vQ9pLm2RtW7aZ" }]
+        : [];
+      return { port: 8112, error: null, links } as T;
+    }
     case "get_logs":
       return r(logs);
     case "watch_system":

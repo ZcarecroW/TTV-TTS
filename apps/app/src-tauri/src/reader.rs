@@ -21,11 +21,13 @@ pub type Reader = ttv_reader::reader::Reader<AppHost>;
 pub struct AppHost {
     state: OnceLock<Weak<AppState>>,
     translator: Translator,
+    /// The voice host turned out not to apply effects (an older proxy).
+    no_host_fx: std::sync::atomic::AtomicBool,
 }
 
 impl AppHost {
     pub fn new(http: reqwest::Client) -> Self {
-        Self { state: OnceLock::new(), translator: Translator::new(http) }
+        Self { state: OnceLock::new(), translator: Translator::new(http), no_host_fx: Default::default() }
     }
 
     pub fn attach(&self, state: &Arc<AppState>) {
@@ -60,6 +62,17 @@ impl Host for AppHost {
             (Some(s), _) => s.audio.clone(),
             (None, _) => Arc::new(Silent),
         }
+    }
+
+    fn effects_on_host(&self) -> bool {
+        let Some(s) = self.state() else { return false };
+        let c = s.cfg.read();
+        // a friend's proxy (guest) offers no effects
+        c.effects_on_host && matches!(c.host, crate::config::HostConfig::Proxy { guest: false, .. }) && !self.no_host_fx.load(std::sync::atomic::Ordering::Relaxed)
+    }
+
+    fn effects_unsupported(&self) {
+        self.no_host_fx.store(true, std::sync::atomic::Ordering::Relaxed);
     }
 
     fn reads(&self, profile: &Profile) -> bool {

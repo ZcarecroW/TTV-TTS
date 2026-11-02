@@ -19,6 +19,7 @@ mod logbuf;
 mod secrets;
 mod server;
 mod shell;
+mod speak;
 mod state;
 mod storage;
 mod sysmon;
@@ -164,6 +165,8 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             commands::get_overview,
+            commands::obs_links,
+            commands::obs_remove,
             commands::update_settings,
             commands::set_vcp_key,
             commands::clear_vcp_key,

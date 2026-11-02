@@ -89,6 +89,7 @@ export interface Config {
   restart_when_slow: boolean;
   hang_restart_secs: number;
   http_port: number;
+  obs_port: number;
   autostart: boolean;
   update_channel: string;
   auto_update: boolean;
@@ -194,6 +195,8 @@ export const api = {
   installUpdate: () => invoke<void>("install_update"),
   resetCertificate: () => invoke<Overview>("reset_certificate"),
   diagnostics: () => invoke<unknown>("diagnostics"),
+  obsLinks: () => invoke<ObsLinks>("obs_links"),
+  obsRemove: (id: string) => invoke<ObsLinks>("obs_remove", { id }),
 };
 
 /** Internet access for friends (the same card as in the app). */
@@ -209,4 +212,23 @@ export const friends: FriendsApi = {
 /** Error text of a failed command (Rust errors arrive as strings). */
 export function errText(e: unknown): string {
   return typeof e === "string" ? e : e instanceof Error ? e.message : JSON.stringify(e);
+}
+
+/** A profile this proxy reads for OBS. */
+export interface ObsLink {
+  id: string;
+  name: string;
+  channels: string[];
+  online: boolean;
+  listeners: number;
+  reading: boolean;
+  status: { current: { display: string; speech: string } | null; queue: unknown[]; paused: boolean };
+  lan: string[];
+  internet: string | null;
+}
+
+export interface ObsLinks {
+  port: number;
+  error: string | null;
+  links: ObsLink[];
 }

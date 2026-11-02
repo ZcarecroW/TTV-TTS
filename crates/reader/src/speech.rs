@@ -171,16 +171,97 @@ pub async fn generate(vcp: &ttv_vcp::Client, u: &Utterance, text: &str) -> Resul
     }
     let b64 = r.audio_base64.ok_or("VCP returned no audio")?;
     let bytes = base64::engine::general_purpose::STANDARD.decode(b64.as_bytes()).map_err(|e| e.to_string())?;
+    decode_mono(&bytes)
+}
+
+/// A WAV file as mono samples and its rate.
+pub fn decode_mono(bytes: &[u8]) -> Result<(Vec<f32>, u32), String> {
     let mut dec = wav::StreamDecoder::new();
     let mut samples = Vec::new();
-    dec.push(&bytes, &mut samples).map_err(|e| e.to_string())?;
-    let f = dec.format().ok_or("VCP returned an empty WAV")?;
+    dec.push(bytes, &mut samples).map_err(|e| e.to_string())?;
+    let f = dec.format().ok_or("an empty WAV")?;
     // Mono for playback.
     if f.channels > 1 {
         let ch = f.channels as usize;
         samples = samples.chunks(ch).map(|c| c.iter().sum::<f32>() / ch as f32).collect();
     }
     Ok((samples, f.sample_rate))
+}
+
+/// Mono samples as a 16-bit WAV file.
+pub fn encode_wav16(samples: &[f32], rate: u32) -> Vec<u8> {
+    let n = samples.len() as u32;
+    let mut b = Vec::with_capacity(44 + samples.len() * 2);
+    b.extend_from_slice(b"RIFF");
+    b.extend_from_slice(&(36 + n * 2).to_le_bytes());
+    b.extend_from_slice(b"WAVEfmt ");
+    b.extend_from_slice(&16u32.to_le_bytes());
+    b.extend_from_slice(&1u16.to_le_bytes());
+    b.extend_from_slice(&1u16.to_le_bytes());
+    b.extend_from_slice(&rate.to_le_bytes());
+    b.extend_from_slice(&(rate * 2).to_le_bytes());
+    b.extend_from_slice(&2u16.to_le_bytes());
+    b.extend_from_slice(&16u16.to_le_bytes());
+    b.extend_from_slice(b"data");
+    b.extend_from_slice(&(n * 2).to_le_bytes());
+    for s in samples {
+        b.extend_from_slice(&((s.clamp(-1.0, 1.0) * 32767.0).round() as i16).to_le_bytes());
+    }
+    b
+}
+
+/// `POST /ttv/v1/speak` on TTV-TTS Proxy: one piece, generated there with the
+/// voice's effect and loudness correction applied there too, so the gaming
+/// PC only plays it.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct SpeakRequest {
+    pub voice: String,
+    pub text: String,
+    /// VCP language name.
+    pub language: String,
+    pub emotion: Option<String>,
+    pub intensity: Option<String>,
+    pub gain: f32,
+    /// Effect name ("radio", …).
+    pub fx: Option<String>,
+    /// Pieces of one message share the effect's state (echo tails).
+    pub stream: String,
+    /// The message's last piece: the effect's tail comes with it.
+    pub last: bool,
+}
+
+/// Why a piece couldn't be made on the voice host.
+pub enum HostError {
+    /// This proxy can't (an older version).
+    Unsupported,
+    Failed(String),
+}
+
+/// Generates one piece on TTV-TTS Proxy with its effect applied there.
+pub async fn generate_on_host(vcp: &ttv_vcp::Client, req: &SpeakRequest) -> Result<(Vec<f32>, u32), HostError> {
+    if cfg!(debug_assertions) && DEBUG_FAIL.load(std::sync::atomic::Ordering::Relaxed) {
+        return Err(HostError::Failed("VCP failed (simulated)".into()));
+    }
+    touch();
+    let r = vcp
+        .request(reqwest::Method::POST, "/ttv/v1/speak")
+        .json(req)
+        .timeout(Duration::from_secs(300))
+        .send()
+        .await
+        .map_err(|e| HostError::Failed(e.to_string()))?;
+    touch();
+    if r.status() == reqwest::StatusCode::NOT_FOUND {
+        return Err(HostError::Unsupported);
+    }
+    let ok = r.status().is_success();
+    let bytes = r.bytes().await.map_err(|e| HostError::Failed(e.to_string()))?;
+    if !ok {
+        let why = serde_json::from_slice::<serde_json::Value>(&bytes).ok().and_then(|v| v["error"].as_str().map(str::to_string)).unwrap_or_else(|| String::from_utf8_lossy(&bytes).into_owned());
+        return Err(HostError::Failed(why));
+    }
+    decode_mono(&bytes).map_err(HostError::Failed)
 }
 
 /// A streaming generation that failed; `sent` = some of its audio was

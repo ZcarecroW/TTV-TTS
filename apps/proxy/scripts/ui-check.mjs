@@ -24,14 +24,14 @@ const check = (cond, name, extra = "") => {
 await page.goto(base + query);
 await page.waitForSelector("nav button");
 const navItems = await page.locator("nav button").allTextContents();
-check(navItems.length === 7, "seven pages in the navigation", navItems.join(" | "));
+check(navItems.length === 8, "eight pages in the navigation", navItems.join(" | "));
 
 for (let i = 0; i < navItems.length; i++) {
   await page.locator("nav button").nth(i).click();
   await page.waitForTimeout(250);
   const text = await page.locator("main").innerText();
   // vue-i18n shows the key itself when a message is missing.
-  const raw = text.match(/\b(common|nav|status|overview|connect|vcp|firewall|log|settings|setup|tips|friends)\.[a-zA-Z.]+\b/g);
+  const raw = text.match(/\b(common|nav|status|overview|connect|vcp|firewall|log|settings|setup|tips|friends|obs)\.[a-zA-Z.]+\b/g);
   check(!raw, `page "${navItems[i].trim()}" renders without raw i18n keys`, raw?.slice(0, 3).join(", ") ?? `${text.length} chars`);
 }
 

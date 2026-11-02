@@ -382,6 +382,9 @@ const de: typeof en = {
     twitchIdStored: "deine eigene Client-ID wird verwendet",
     twitchIdRemove: "Die eingebaute verwenden",
     twitchIdSaved: "Gespeichert.",
+    fxOnHost: "Stimmeffekte auf dem Stimmen-PC",
+    fxOnHostOn: "Funk, Roboter, Höhle & Co. wendet der Stimmen-PC an – dieser PC spielt nur ab. Audio-Plugins laufen weiterhin hier.",
+    fxOnHostOff: "Stimmeffekte werden auf diesem PC angewendet.",
     pluginsTitle: "Audio-Plugins (VST3, CLAP)",
     pluginsEmpty: "Noch keine. Füg einen EQ, einen Kompressor oder einen Hall für alle Stimmen hinzu.",
     pluginsAdd: "Plugin hinzufügen …",
@@ -762,6 +765,7 @@ const de: typeof en = {
     saved: "„{name}“ mit {n} Stimmen gespeichert.",
   },
   tips: {
+    fxOnHost: "Empfohlen, wenn du auf diesem PC spielst: Der Stimmen-PC erzeugt die Stimme und wendet ihren Effekt in einem Schritt an, dieser PC hat also weniger zu tun. Schalte es nur aus, wenn dieser PC es machen soll (zum Beispiel zum Vergleichen).",
     hosted: "Diese Profile liest TTV-TTS Proxy auf dem Stimmen-PC, sie spielen über ihren Link in OBS – dieser PC ist nicht beteiligt. Steuerung und Testnachrichten gehen an den Stimmen-PC.",
     output: "Wo die Stimmen dieses Profils spielen. OBS-Links sind für Stream-Setups, in denen die Stimmen eine eigene OBS-Quelle sein sollen – oder in denen der Stimmen-PC die ganze Arbeit machen soll, sogar für den Stream eines Freundes.",
     outputLan: "Erlaubt OBS auf einem anderen PC in deinem Netzwerk (einem Streaming-PC), den Link zu öffnen. Windows fragt eventuell einmal, ob TTV-TTS Verbindungen annehmen darf.",

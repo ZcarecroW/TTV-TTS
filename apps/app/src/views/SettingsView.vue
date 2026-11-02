@@ -6,11 +6,12 @@ import UiSegmented from "@ttv-tts/ui/components/UiSegmented.vue";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { CircleInfo, Copy, Download, ExternalLink, Globe, Keyboard, Link, Sparkle, Spinner, Waveform } from "@ttv-tts/ui/icons";
 import { api, HOTKEY_ACTIONS, isTauri, updates, type Measured } from "../api";
-import { apply, config, run, store, toast } from "../store";
+import { apply, config, guest, host, run, store, toast } from "../store";
 import { copyText } from "@ttv-tts/ui/clipboard";
 import PluginsCard from "../components/PluginsCard.vue";
 import TwitchCard from "../components/TwitchCard.vue";
 import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
+import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
 const { t, locale } = useI18n();
 const c = computed(() => config.value!);
@@ -25,6 +26,12 @@ const gap = ref(c.value.audio.gap_ms);
 watch(() => c.value.audio.volume, (v) => (volume.value = Math.round(v * 100)));
 const saveVolume = () => void run("audio", () => api.setAudio({ volume: volume.value / 100 })).then(apply);
 const saveGap = () => void run("audio", () => api.setAudio({ gap_ms: gap.value })).then(apply);
+// voice effects on the voice host PC (own proxy only)
+const fxOnHost = computed({
+  get: () => c.value.effects_on_host,
+  set: (v: boolean) => void run("settings", () => api.updateSettings({ effects_on_host: v })).then(apply),
+});
+const ownProxy = computed(() => host.value?.kind === "proxy" && !guest.value);
 
 const setting = <K extends "language" | "theme" | "update_channel" | "generation">(key: K) =>
   computed({ get: () => c.value[key] as string, set: (v: string) => void run("settings", () => api.updateSettings({ [key]: v } as never)).then(apply) });
@@ -121,6 +128,10 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
         <div>
           <label class="label">{{ t("settings.gap") }}<UiTip :text="t('tips.gap')" /><span class="ml-auto font-normal tabular-nums text-muted">{{ gap }} ms</span></label>
           <input v-model.number="gap" type="range" min="0" max="1500" step="50" class="w-full accent-[var(--accent)]" @change="saveGap" />
+        </div>
+        <div v-if="ownProxy" data-fx-host>
+          <UiToggle v-model="fxOnHost" :label="t('settings.fxOnHost')" :tip="t('tips.fxOnHost')" />
+          <p class="mt-1 text-xs text-muted">{{ fxOnHost ? t("settings.fxOnHostOn") : t("settings.fxOnHostOff") }} <UiDocs page="effects" anchor="where" /></p>
         </div>
       </div>
     </section>

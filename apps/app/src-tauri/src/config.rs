@@ -91,6 +91,9 @@ pub struct Config {
     pub twitch_client_id: String,
     /// OBS links served by this app (profiles that play in OBS on this PC).
     pub obs: ObsConfig,
+    /// Voice effects are applied on the voice host PC (TTV-TTS Proxy), not
+    /// here: less work for the gaming PC. Audio plugins always run here.
+    pub effects_on_host: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -157,6 +160,7 @@ impl Default for Config {
             plugins: Vec::new(),
             twitch_client_id: String::new(),
             obs: ObsConfig::default(),
+            effects_on_host: true,
         }
     }
 }

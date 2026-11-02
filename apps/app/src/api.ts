@@ -98,6 +98,8 @@ export interface Config {
   remote: { enabled: boolean; port: number; lan: boolean; token: string };
   /** OBS links served by this app. */
   obs: { port: number; lan: boolean; public_host: string };
+  /** Voice effects on the voice host PC (proxy) instead of here. */
+  effects_on_host: boolean;
 }
 
 export interface OutputDevice {
@@ -189,7 +191,7 @@ export async function listen<T>(event: string, cb: (payload: T) => void): Promis
 
 export const api = {
   state: () => invoke<AppView>("get_state"),
-  updateSettings: (patch: Partial<Pick<Config, "language" | "theme" | "update_channel" | "generation" | "setup_done" | "translate_email">>) => invoke<AppView>("update_settings", { patch }),
+  updateSettings: (patch: Partial<Pick<Config, "language" | "theme" | "update_channel" | "generation" | "setup_done" | "translate_email" | "effects_on_host">>) => invoke<AppView>("update_settings", { patch }),
   discover: () => invoke<Found[]>("discover_proxies"),
   probe: (address: string) => invoke<Probe>("probe_proxy", { address }),
   pair: (address: string, fingerprint: string, code: string) => invoke<AppView>("pair_proxy", { address, fingerprint, code }),

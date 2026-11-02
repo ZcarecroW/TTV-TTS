@@ -380,6 +380,9 @@ export default {
     twitchIdStored: "your own client ID is used",
     twitchIdRemove: "Use the built-in one",
     twitchIdSaved: "Saved.",
+    fxOnHost: "Voice effects on the voice host PC",
+    fxOnHostOn: "Radio, robot, cave & co. are applied on the voice host PC – this PC only plays. Audio plugins still run here.",
+    fxOnHostOff: "Voice effects are applied on this PC.",
     pluginsTitle: "Audio plugins (VST3, CLAP)",
     pluginsEmpty: "None yet. Add an EQ, a compressor or a reverb for every voice.",
     pluginsAdd: "Add plugin …",
@@ -760,6 +763,7 @@ export default {
     saved: "“{name}” saved with {n} voices.",
   },
   tips: {
+    fxOnHost: "Recommended when you game on this PC: the voice host PC generates the voice and applies its effect in one go, so this PC has less to do. Turn it off only if you want this PC to do it (for example to compare).",
     hosted: "These profiles are read by TTV-TTS Proxy on the voice host PC and play in OBS through their link – this PC isn't involved. Controls and test messages go to the voice host PC.",
     output: "Where this profile's voices play. OBS links are for streaming setups where the voices should be an OBS source of their own – or where the voice host PC should do all the work, even for a friend's stream.",
     outputLan: "Lets OBS on another PC in your network (a streaming PC) open the link. Windows may ask once whether TTV-TTS may accept connections.",

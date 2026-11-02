@@ -57,6 +57,13 @@ pub trait Host: Send + Sync + 'static {
     fn with_preset<R>(&self, id: &str, f: impl FnOnce(&[ttv_link::VoiceDef]) -> R) -> Option<R>;
     /// Where a profile's voices play.
     fn output(&self, profile: &Profile) -> Arc<dyn Output>;
+    /// Voice effects are applied on the voice host PC (TTV-TTS Proxy) instead
+    /// of here. Only asked when a message has an effect.
+    fn effects_on_host(&self) -> bool {
+        false
+    }
+    /// The voice host can't apply effects (an older proxy): stop asking it.
+    fn effects_unsupported(&self) {}
     /// This host reads the profile's chat (the app leaves profiles that the
     /// voice host PC reads for OBS to it).
     fn reads(&self, _profile: &Profile) -> bool {
@@ -1333,7 +1340,11 @@ impl<H: Host> Reader<H> {
             let fx = if p.voices.effects { self.viewer_fx(&p.id, &item.user_id).unwrap_or(voice_fx) } else { None };
             let cue = item.cue.filter(|_| self.voices.read().emotional);
             let fell_back: Arc<Mutex<Option<String>>> = Arc::default();
-            if tx.send(Prepared { item, out, clips: crx, gain, fx, fell_back: fell_back.clone() }).await.is_err() {
+            // The effect (and the loudness correction) on the voice host PC:
+            // this PC then only plays what comes back.
+            let on_host = fx.filter(|_| self.host.effects_on_host()).map(|f| (f, format!("m{}-{}", item.view.id, rand::random::<u32>())));
+            let (player_fx, player_gain) = if on_host.is_some() { (None, 1.0) } else { (fx, gain) };
+            if tx.send(Prepared { item, out, clips: crx, gain: player_gain, fx: player_fx, fell_back: fell_back.clone() }).await.is_err() {
                 return;
             }
             let mut u = speech::Utterance {
@@ -1345,10 +1356,29 @@ impl<H: Host> Reader<H> {
                 gain,
                 fx: None,
             };
-            let streaming = self.host.settings().streaming;
-            for piece in speech::split(&u.text) {
+            let streaming = self.host.settings().streaming && on_host.is_none();
+            let pieces = speech::split(&u.text);
+            let then_pieces = then.as_ref().map(|(t, ..)| speech::split(t)).unwrap_or_default();
+            let (n, m) = (pieces.len(), then_pieces.len());
+            for (k, piece) in pieces.into_iter().enumerate() {
                 if cancel.load(Ordering::Relaxed) {
                     break;
+                }
+                if let Some((f, stream)) = &on_host {
+                    let r = self.piece_on_host(&vcp, &mut u, &piece.0, *f, stream, k + 1 == n && m == 0).await;
+                    let r = match r {
+                        Err(e) if fallback => {
+                            log::info!("voice host failed ({e}) - system voice");
+                            fell_back.lock().get_or_insert_with(|| e.clone());
+                            self.host.os_speak(&piece.0, &lang).await
+                        }
+                        r => r,
+                    };
+                    let failed = r.is_err();
+                    if ctx.send(r).await.is_err() || failed {
+                        break;
+                    }
+                    continue;
                 }
                 if streaming {
                     match speech::generate_streaming(&vcp, &u, &piece.0, &ctx).await {
@@ -1393,10 +1423,18 @@ impl<H: Host> Reader<H> {
             if let Some((t, v, vl)) = then {
                 // its voice entry has its own loudness correction; the player applies the first one's
                 let ratio = if gain > 0.0 { v.gain / gain } else { 1.0 };
-                let u2 = speech::Utterance { text: t, voice: v.id, language: vl, emotion: u.emotion.clone(), intensity: u.intensity.clone(), gain: v.gain, fx: None };
-                for piece in speech::split(&u2.text) {
+                let mut u2 = speech::Utterance { text: t, voice: v.id, language: vl, emotion: u.emotion.clone(), intensity: u.intensity.clone(), gain: v.gain, fx: None };
+                for (k, piece) in then_pieces.into_iter().enumerate() {
                     if cancel.load(Ordering::Relaxed) {
                         break;
+                    }
+                    if let Some((f, stream)) = &on_host {
+                        let r = self.piece_on_host(&vcp, &mut u2, &piece.0, *f, stream, k + 1 == m).await;
+                        let failed = r.is_err();
+                        if ctx.send(r).await.is_err() || failed {
+                            break;
+                        }
+                        continue;
                     }
                     let r = speech::generate(&vcp, &u2, &piece.0).await.map(|(mut s, rate)| {
                         if (ratio - 1.0).abs() > 1e-3 {
@@ -1409,6 +1447,40 @@ impl<H: Host> Reader<H> {
                         break;
                     }
                 }
+            }
+        }
+    }
+
+    /// One piece generated on the voice host PC with its effect (and the
+    /// voice's loudness correction) applied there. A voice host that can't
+    /// do that (an older proxy) is noted and the effect is played here.
+    async fn piece_on_host(&self, vcp: &ttv_vcp::Client, u: &mut speech::Utterance, text: &str, fx: crate::fx::Fx, stream: &str, last: bool) -> Result<(Vec<f32>, u32), String> {
+        let req = |u: &speech::Utterance| speech::SpeakRequest {
+            voice: u.voice.clone(),
+            text: text.to_string(),
+            language: u.language.clone(),
+            emotion: u.emotion.clone(),
+            intensity: u.intensity.clone(),
+            gain: u.gain,
+            fx: Some(fx.name().to_string()),
+            stream: stream.to_string(),
+            last,
+        };
+        let mut r = speech::generate_on_host(vcp, &req(u)).await;
+        if matches!(r, Err(speech::HostError::Failed(_))) && u.emotion.is_some() {
+            // an emotion VCP can't do must not cost the message
+            u.emotion = None;
+            u.intensity = None;
+            r = speech::generate_on_host(vcp, &req(u)).await;
+        }
+        match r {
+            Ok(x) => Ok(x),
+            Err(speech::HostError::Failed(e)) => Err(e),
+            Err(speech::HostError::Unsupported) => {
+                log::info!("the voice host can't play effects (older proxy) - this PC plays them");
+                self.host.effects_unsupported();
+                let (s, rate) = speech::generate(vcp, u, text).await?;
+                Ok((crate::fx::apply(fx, s, rate, u.gain), rate))
             }
         }
     }

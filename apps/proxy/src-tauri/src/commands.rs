@@ -69,6 +69,7 @@ pub struct SettingsPatch {
     language: Option<String>,
     theme: Option<String>,
     setup_done: Option<bool>,
+    obs_port: Option<u16>,
 }
 
 #[tauri::command]
@@ -146,6 +147,13 @@ pub fn update_settings(app: AppHandle, state: St, patch: SettingsPatch) -> AppRe
         }
         if let Some(v) = patch.setup_done {
             c.setup_done = v;
+        }
+        if let Some(v) = patch.obs_port {
+            if v < 1024 || v == c.port || v == c.internet_port {
+                return Err(AppError::msg("Please use a free port from 1024 to 65535 (not one the proxy uses already)."));
+            }
+            c.obs_port = v;
+            state.hosted_changed.notify_waiters();
         }
         c.normalize();
         (
@@ -490,4 +498,27 @@ pub fn set_guest_limit(state: St, id: String, chars_per_day: u64) {
 #[tauri::command]
 pub async fn test_internet(state: St<'_>) -> Result<bool, String> {
     crate::internet::test(state.inner()).await
+}
+
+// ── OBS links read here ─────────────────────────────────────────────────
+
+#[derive(serde::Serialize)]
+pub struct ObsLinks {
+    pub port: u16,
+    pub error: Option<String>,
+    pub links: Vec<crate::hosted::HostedView>,
+}
+
+/// The profiles this proxy reads for OBS (handed over by the apps).
+#[tauri::command]
+pub fn obs_links(state: St) -> ObsLinks {
+    ObsLinks { port: state.cfg.read().obs_port, error: state.obs_error.read().clone(), links: state.hosted.list(&state) }
+}
+
+/// Stops reading a profile here; its link stops working.
+#[tauri::command]
+pub fn obs_remove(state: St, id: String) -> ObsLinks {
+    state.hosted.remove(&id);
+    state.hosted_changed.notify_waiters();
+    obs_links(state)
 }

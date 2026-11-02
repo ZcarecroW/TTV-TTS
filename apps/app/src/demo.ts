@@ -74,6 +74,7 @@ const state: AppView = {
     hotkeys: { skip: "Ctrl+Alt+KeyS" },
     remote: { enabled: false, port: 8130, lan: false, token: "demoToken123" },
     obs: { port: 8131, lan: false, public_host: "" },
+    effects_on_host: true,
   },
   host: params.has("nohost")
     ? { kind: "none", connected: false, error: null, proxy: null, vcp: null }
