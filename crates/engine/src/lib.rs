@@ -139,6 +139,7 @@ impl Engine {
             wake: Notify::new(),
             wakes: Default::default(),
         });
+        inner.relate_all();
         Self { inner }
     }
 

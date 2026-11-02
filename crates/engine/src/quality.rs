@@ -310,24 +310,38 @@ fn outside(def: &VoiceDef, f0: f32) -> f32 {
 
 /// The same character should sound alike in every language: compares the
 /// pitch of all languages of one definition and (re)sets their
-/// "languages_differ" issue. If only the other version is out of range, that
-/// one is the odd one (it has its own pitch issue). Returns whether anything
-/// changed.
-pub fn relate(def: &VoiceDef, group: &mut [(String, Quality)]) -> bool {
-    let pitches: Vec<(String, Option<f32>)> = group.iter().map(|(l, q)| (l.clone(), q.f0)).collect();
+/// "languages_differ" issue. With three or more languages, each one is
+/// compared with the group's median – only the odd one out is noted, not the
+/// many that agree. With two, each is compared with the other; if only the
+/// other version is out of range for the description (`def`), that one is the
+/// odd one (it has its own pitch issue). Returns whether anything changed.
+pub fn relate(def: Option<&VoiceDef>, group: &mut [(String, Quality)]) -> bool {
+    let pitches: Vec<(String, f32)> = group.iter().filter_map(|(l, q)| Some((l.clone(), q.f0?))).collect();
+    let median = (pitches.len() >= 3).then(|| {
+        let mut v: Vec<f32> = pitches.iter().map(|p| p.1).collect();
+        v.sort_by(f32::total_cmp);
+        let m = v.len() / 2;
+        if v.len() % 2 == 1 { v[m] } else { (v[m - 1] * v[m]).sqrt() }
+    });
     let mut changed = false;
     for (lang, q) in group.iter_mut() {
         let before = q.issues.clone();
         q.issues.retain(|i| i.code != "languages_differ");
-        if let Some(f0) = q.f0
-            && let Some((other_lang, other)) = pitches
+        let compared = q.f0.and_then(|f0| match median {
+            // the language closest to the median stands for the group
+            Some(m) => pitches
                 .iter()
                 .filter(|(l, _)| l != lang)
-                .filter_map(|(l, p)| Some((l, (*p)?)))
+                .min_by(|a, b| (a.1 / m).log2().abs().total_cmp(&(b.1 / m).log2().abs()))
+                .map(|(l, p)| (f0, m, l.clone(), *p, false)),
+            None => pitches
+                .iter()
+                .filter(|(l, _)| l != lang)
                 .max_by(|a, b| (a.1 / f0).log2().abs().total_cmp(&(b.1 / f0).log2().abs()))
-        {
-            let st = 12.0 * (f0 / other).log2().abs();
-            let only_other_odd = outside(def, f0) <= 1.0 && outside(def, other) > 1.0;
+                .map(|(l, p)| (f0, *p, l.clone(), *p, def.is_some_and(|d| outside(d, f0) <= 1.0 && outside(d, *p) > 1.0))),
+        });
+        if let Some((f0, reference, other_lang, other, only_other_odd)) = compared {
+            let st = 12.0 * (f0 / reference).log2().abs();
             if st > 6.0 && !only_other_odd {
                 let weight = ((st - 6.0) * 0.04 + 0.1).min(0.35);
                 q.issues.push(QualityIssue { code: "languages_differ".into(), value: other.round(), weight: (weight * 100.0).round() / 100.0, extra: Some(other_lang.clone()) });
@@ -416,18 +430,26 @@ mod tests {
         // The German version is fine, the English one sounds like a child:
         // only the odd one gets "languages differ".
         let mut group = vec![("de".to_string(), ok.clone()), ("en".to_string(), bad.clone())];
-        assert!(relate(&d, &mut group));
+        assert!(relate(Some(&d), &mut group));
         assert!(group[0].1.issues.is_empty(), "{:?}", group[0].1);
         assert!(group[1].1.issues.iter().any(|i| i.code == "languages_differ" && i.extra.as_deref() == Some("de")));
         assert!(group[1].1.score < bad.score);
-        assert!(!relate(&d, &mut group), "stable");
+        assert!(!relate(Some(&d), &mut group), "stable");
         // Both plausible but far apart: both get a mild note.
         let low = Analysis { f0: Some(80.0), ..good.clone() };
         let high = Analysis { f0: Some(170.0), ..good.clone() };
         let mk = |a: &Analysis| assess(&Input { def: &d, lang: en, reference: a, reference_text: text, reference_wer: Some(0.0), new: None, new_wer: None });
         let mut pair = vec![("de".to_string(), mk(&low)), ("en".to_string(), mk(&high))];
-        relate(&d, &mut pair);
+        relate(Some(&d), &mut pair);
         assert!(pair.iter().all(|(_, q)| q.issues.iter().any(|i| i.code == "languages_differ")));
+        // Many languages that agree and one that doesn't: only that one.
+        let mid = Analysis { f0: Some(118.0), ..good.clone() };
+        let mut many: Vec<(String, Quality)> = ["de", "en", "fr", "es"].iter().map(|l| (l.to_string(), mk(&good))).collect();
+        many.push(("it".to_string(), mk(&mid)));
+        many.push(("ko".to_string(), mk(&high)));
+        relate(None, &mut many);
+        let flagged: Vec<&str> = many.iter().filter(|(_, q)| q.issues.iter().any(|i| i.code == "languages_differ")).map(|(l, _)| l.as_str()).collect();
+        assert_eq!(flagged, vec!["ko"]);
     }
 
     #[test]

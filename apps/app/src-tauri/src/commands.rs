@@ -373,6 +373,10 @@ pub fn delete_profile(state: St, id: String) -> ReaderView {
             s.active.retain(|a| *a != id);
         }
     }
+    if !state.reader.store.read().profiles.iter().any(|p| p.id == id) {
+        // its viewers go too
+        state.reader.forget_profile(&id);
+    }
     state.reader.save_store();
     state.reader.apply_channels();
     links_changed(&state);

@@ -55,7 +55,9 @@ pub async fn push(state: &Arc<AppState>, id: &str) -> Result<serde_json::Value, 
 /// Takes a profile back from the proxy (and the viewers' voices it gave out).
 pub async fn take_back(state: &Arc<AppState>, id: &str) -> Result<(), String> {
     let c = proxy(state)?;
-    if let Ok(v) = c.get::<serde_json::Value>(&format!("/ttv/v1/hosted/{id}/viewers?limit=100000"), T).await {
+    // a deleted profile doesn't need its viewers back
+    let exists = state.reader.store.read().profiles.iter().any(|p| p.id == id);
+    if exists && let Ok(v) = c.get::<serde_json::Value>(&format!("/ttv/v1/hosted/{id}/viewers?limit=100000"), T).await {
         let mut roles = std::collections::HashMap::new();
         let mut fx = std::collections::HashMap::new();
         for row in v["viewers"].as_array().into_iter().flatten() {

@@ -781,7 +781,7 @@ impl Inner {
                 continue;
             }
             let mut group: Vec<(String, Quality)> = mine.iter().map(|e| (e.lang.clone(), e.quality.clone().unwrap_or_default())).collect();
-            if quality::relate(def, &mut group) {
+            if quality::relate(Some(def), &mut group) {
                 for (e, (_, q)) in mine.iter().zip(group) {
                     if e.quality.as_ref() != Some(&q) {
                         changed.push(LibraryEntry { quality: Some(q), ..(*e).clone() });
@@ -790,6 +790,44 @@ impl Inner {
             }
         }
         let (old, live): (Vec<LibraryEntry>, Vec<LibraryEntry>) = changed.into_iter().partition(|e| archived.contains(&e.key));
+        if !live.is_empty() {
+            self.change(live, &[]);
+        }
+        if !old.is_empty() {
+            self.archive.apply(old, &[]);
+        }
+    }
+
+    /// Compares the languages of every definition with three or more of them
+    /// again (on start: voices checked by an older version were compared
+    /// pairwise, which notes languages that agree with most of the others).
+    pub(crate) fn relate_all(&self) {
+        let mut groups: std::collections::HashMap<String, Vec<(LibraryEntry, bool)>> = std::collections::HashMap::new();
+        for e in self.library.entries() {
+            groups.entry(e.def_hash.clone()).or_default().push((e, false));
+        }
+        for e in self.archive.entries() {
+            groups.entry(e.def_hash.clone()).or_default().push((e, true));
+        }
+        let (mut live, mut old) = (Vec::new(), Vec::new());
+        for members in groups.into_values() {
+            let mine: Vec<&(LibraryEntry, bool)> = members.iter().filter(|(e, _)| e.quality.is_some()).collect();
+            if mine.len() < 3 {
+                continue;
+            }
+            let mut group: Vec<(String, Quality)> = mine.iter().map(|(e, _)| (e.lang.clone(), e.quality.clone().unwrap_or_default())).collect();
+            if quality::relate(None, &mut group) {
+                for ((e, archived), (_, q)) in mine.iter().zip(group) {
+                    if e.quality.as_ref() != Some(&q) {
+                        let x = LibraryEntry { quality: Some(q), ..e.clone() };
+                        if *archived { old.push(x) } else { live.push(x) }
+                    }
+                }
+            }
+        }
+        if !live.is_empty() || !old.is_empty() {
+            log::info!("quality: compared the languages again, {} voices changed", live.len() + old.len());
+        }
         if !live.is_empty() {
             self.change(live, &[]);
         }

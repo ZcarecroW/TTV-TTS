@@ -294,13 +294,21 @@ impl<H: Host> Reader<H> {
             store.profiles.push(crate::profile::Profile::default());
         }
         store.profiles.iter_mut().for_each(|p| p.normalize());
+        // viewers of profiles that are gone (deleted with an older version)
+        let mut assign: Assignments = crate::storage::read_json(&assign_path).unwrap_or_default();
+        let known: std::collections::HashSet<&str> = store.profiles.iter().map(|p| p.id.as_str()).collect();
+        let before = assign.roles.len() + assign.viewers.len() + assign.fx.len();
+        assign.roles.retain(|k, _| known.contains(k.as_str()));
+        assign.viewers.retain(|k, _| known.contains(k.as_str()));
+        assign.fx.retain(|k, _| known.contains(k.as_str()));
+        let orphans = before != assign.roles.len() + assign.viewers.len() + assign.fx.len();
         Self {
             host,
             store: RwLock::new(store),
             store_path,
-            assign: Mutex::new(crate::storage::read_json(&assign_path).unwrap_or_default()),
+            assign: Mutex::new(assign),
             assign_path,
-            assign_dirty: AtomicBool::new(false),
+            assign_dirty: AtomicBool::new(orphans),
             chat: Mutex::new(None),
             emotes: Emotes::new(),
             queue: Mutex::new(VecDeque::new()),
@@ -391,6 +399,18 @@ impl<H: Host> Reader<H> {
         drop(a);
         self.assign_dirty.store(true, Ordering::Relaxed);
         self.save_assignments();
+    }
+
+    /// Drops everything kept about a profile's viewers (the profile was deleted).
+    pub fn forget_profile(&self, profile: &str) {
+        let mut a = self.assign.lock();
+        let had = a.roles.remove(profile).is_some() | a.viewers.remove(profile).is_some() | a.fx.remove(profile).is_some();
+        drop(a);
+        if had {
+            self.assign_dirty.store(true, Ordering::Relaxed);
+            self.save_assignments();
+        }
+        self.lang.lock().remove(profile);
     }
 
     /// The viewers' voices and effects of a profile (to hand them over).

@@ -71,7 +71,7 @@ fn main() {
         }
         for (def, group) in reports.values_mut() {
             let mut qs: Vec<(String, ttv_link::Quality)> = group.iter().map(|(l, q, _, _)| (l.clone(), q.clone())).collect();
-            ttv_engine::quality::relate(def, &mut qs);
+            ttv_engine::quality::relate(Some(def), &mut qs);
             for ((_, q, r, a), (_, related)) in group.iter_mut().zip(qs) {
                 *q = related;
                 println!("{}", serde_json::json!({ "file": r.file, "name": r.name, "lang": r.lang, "gender": r.gender, "age": r.age, "q": q, "a": a }));
