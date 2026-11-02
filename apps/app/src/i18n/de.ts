@@ -204,6 +204,7 @@ const de: typeof en = {
     notListening: "OBS nicht verbunden",
     reading: "liest den Chat",
     handingOver: "Übergebe das Profil an den Stimmen-PC …",
+    proxyTooOld: "Der TTV-TTS Proxy auf dem Stimmen-PC ist zu alt für OBS-Links – aktualisiere ihn auf der Seite Stimmen-Host.",
     lan: "Auch für andere PCs",
     port: "Port",
     online: "Auch aus dem Internet",

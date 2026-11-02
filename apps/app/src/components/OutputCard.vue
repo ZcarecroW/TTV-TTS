@@ -40,7 +40,7 @@ async function refresh() {
       remote.value = (await hosted.list()).find((h) => h.id === p.value.id) ?? null;
       remoteError.value = "";
     } catch (e) {
-      remoteError.value = String(e);
+      remoteError.value = /too old for OBS links/.test(String(e)) ? t("output.proxyTooOld") : String(e);
     }
   }
 }

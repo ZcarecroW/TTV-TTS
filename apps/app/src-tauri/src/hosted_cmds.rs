@@ -17,6 +17,14 @@ type St<'a> = tauri::State<'a, Arc<AppState>>;
 
 const T: Duration = Duration::from_secs(15);
 
+/// What went wrong, in words: an older proxy doesn't know OBS links.
+fn why(e: ttv_vcp::Error) -> String {
+    match e {
+        ttv_vcp::Error::Http { status: 404, .. } => "The TTV-TTS Proxy on the voice host PC is too old for OBS links – update it (Voice host → Update proxy).".into(),
+        e => e.to_string(),
+    }
+}
+
 /// The proxy (not as a guest): only it can read profiles for us.
 fn proxy(state: &AppState) -> Result<ttv_vcp::Client, String> {
     match &state.cfg.read().host {
@@ -49,7 +57,7 @@ pub async fn push(state: &Arc<AppState>, id: &str) -> Result<serde_json::Value, 
     };
     let (roles, fx) = state.reader.viewer_roles(id);
     let body = serde_json::json!({ "profile": profile, "preset": preset, "settings": settings, "roles": roles, "fx": fx });
-    c.put(&format!("/ttv/v1/hosted/{id}"), &body, T).await.map_err(|e| e.to_string())
+    c.put(&format!("/ttv/v1/hosted/{id}"), &body, T).await.map_err(why)
 }
 
 /// Takes a profile back from the proxy (and the viewers' voices it gave out).
@@ -112,33 +120,33 @@ pub fn profile_saved(state: &Arc<AppState>, id: &str, was: Option<OutputMode>) {
 #[tauri::command]
 pub async fn hosted_list(state: St<'_>) -> Result<serde_json::Value, String> {
     let c = proxy(&state)?;
-    c.get("/ttv/v1/hosted", T).await.map_err(|e| e.to_string())
+    c.get("/ttv/v1/hosted", T).await.map_err(why)
 }
 
 #[tauri::command]
 pub async fn hosted_history(state: St<'_>, id: String) -> Result<serde_json::Value, String> {
     let c = proxy(&state)?;
-    c.get(&format!("/ttv/v1/hosted/{id}/history"), T).await.map_err(|e| e.to_string())
+    c.get(&format!("/ttv/v1/hosted/{id}/history"), T).await.map_err(why)
 }
 
 /// skip, clear, pause, resume, replay
 #[tauri::command]
 pub async fn hosted_control(state: St<'_>, id: String, action: String) -> Result<(), String> {
     let c = proxy(&state)?;
-    c.post::<_, serde_json::Value>(&format!("/ttv/v1/hosted/{id}/do/{action}"), &(), T).await.map(|_| ()).map_err(|e| e.to_string())
+    c.post::<_, serde_json::Value>(&format!("/ttv/v1/hosted/{id}/do/{action}"), &(), T).await.map(|_| ()).map_err(why)
 }
 
 #[tauri::command]
 pub async fn hosted_test(state: St<'_>, id: String, user: String, text: String) -> Result<(), String> {
     let c = proxy(&state)?;
-    c.post::<_, serde_json::Value>(&format!("/ttv/v1/hosted/{id}/test"), &serde_json::json!({ "user": user, "text": text }), T).await.map(|_| ()).map_err(|e| e.to_string())
+    c.post::<_, serde_json::Value>(&format!("/ttv/v1/hosted/{id}/test"), &serde_json::json!({ "user": user, "text": text }), T).await.map(|_| ()).map_err(why)
 }
 
 #[tauri::command]
 pub async fn hosted_viewers(state: St<'_>, id: String, query: String) -> Result<serde_json::Value, String> {
     let c = proxy(&state)?;
     let q: String = query.chars().filter(|c| c.is_alphanumeric() || *c == '_').collect();
-    c.get(&format!("/ttv/v1/hosted/{id}/viewers?q={q}&limit=300"), T).await.map_err(|e| e.to_string())
+    c.get(&format!("/ttv/v1/hosted/{id}/viewers?q={q}&limit=300"), T).await.map_err(why)
 }
 
 #[derive(Debug, Deserialize)]
@@ -148,5 +156,5 @@ pub struct ViewerPatch(serde_json::Value);
 #[tauri::command]
 pub async fn hosted_viewer(state: St<'_>, id: String, user_id: String, patch: ViewerPatch) -> Result<(), String> {
     let c = proxy(&state)?;
-    c.post::<_, serde_json::Value>(&format!("/ttv/v1/hosted/{id}/viewers/{user_id}"), &patch.0, T).await.map(|_| ()).map_err(|e| e.to_string())
+    c.post::<_, serde_json::Value>(&format!("/ttv/v1/hosted/{id}/viewers/{user_id}"), &patch.0, T).await.map(|_| ()).map_err(why)
 }

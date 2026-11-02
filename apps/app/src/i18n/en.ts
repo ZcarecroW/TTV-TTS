@@ -202,6 +202,7 @@ export default {
     notListening: "OBS not connected",
     reading: "reading chat",
     handingOver: "Handing the profile over to the voice host PC …",
+    proxyTooOld: "The TTV-TTS Proxy on the voice host PC is too old for OBS links – update it on the Voice host page.",
     lan: "Also for other PCs",
     port: "Port",
     online: "Also from the internet",

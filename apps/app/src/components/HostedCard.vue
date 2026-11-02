@@ -24,7 +24,7 @@ async function load() {
       if (!recent[h.id]) recent[h.id] = ((await hosted.history(h.id).catch(() => [])) ?? []).slice(-5).reverse();
     }
   } catch (e) {
-    error.value = String(e);
+    error.value = /too old for OBS links/.test(String(e)) ? t("output.proxyTooOld") : String(e);
   }
 }
 
