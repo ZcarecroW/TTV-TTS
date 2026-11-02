@@ -23,7 +23,7 @@ Ein **Profil** enthält alles zum Vorlesen des Chats eines Streamers: Kanäle, R
 
 ### Systemstimme als Ersatz {#os-voice}
 
-Mit **Systemstimme, wenn der Stimmen-Host ausfällt** gehen Nachrichten nicht verloren, wenn Voice Creator Pro nicht sprechen kann (beendet, startet neu, sein PC aus oder nicht erreichbar): Die eigene Stimme deines Betriebssystems liest sie stattdessen – schlicht, aber der Chat läuft weiter. Windows nimmt eine installierte Stimme der Nachrichtensprache, macOS seine eingebaute Stimme (`say`), Linux `espeak-ng` (vorher installieren). Sobald Voice Creator Pro wieder antwortet, übernehmen dessen Stimmen.
+Mit **Systemstimme, wenn der Stimmen-Host ausfällt** gehen Nachrichten nicht verloren, wenn Voice Creator Pro nicht sprechen kann (beendet, startet neu, sein PC aus oder nicht erreichbar): Die eigene Stimme deines Betriebssystems liest sie stattdessen – schlicht, aber der Chat läuft weiter. Welche Stimme welche Sprache liest, wie schnell und wie hoch, stellst du unter [Einstellungen → Systemstimme](settings#system-voice) ein – dort steht auch, wie du weitere Stimmen installierst. Sobald Voice Creator Pro wieder antwortet, übernehmen dessen Stimmen.
 
 ### Grenzen {#limits}
 
@@ -78,6 +78,10 @@ Mit **Gefühle aus dem Chat** machen Lach-Emotes (KEKW), Emojis (😂 😭 😱)
 ### Stimmeffekte {#effects}
 
 **Stimmeffekte** lässt die Effekte eines Presets spielen (Radio, Telefon …) – siehe [Effekte & Plugins](effects).
+
+### Plugin-Effekte für Zuschauer {#viewer-plugins}
+
+**Plugin-Effekte für Zuschauer: … % bekommen einen** – der Anteil der Zuschauer, die zufällig einen der [Plugin-Effekte](effects#viewer-plugins) aus den Einstellungen bekommen. **Nicht auf Stimmen, die einen eigenen Effekt haben** verhindert, dass eine Funkstimme noch einen Pitch-Shifter obendrauf bekommt.
 
 ## Ansagen {#announcements}
 

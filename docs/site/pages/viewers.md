@@ -14,6 +14,7 @@ Choose another voice in the **Voice** column. The viewer speaks with it from the
 
 - **New random voice** – the viewer gets another one with the next message.
 - **Effect** – one viewer can get an effect of their own (for example *robot* for your favorite bot-like regular), or none, whatever their voice normally has.
+- **Plugin effect** – with [plugin effects for viewers](effects#viewer-plugins) set up: *at random* (what the profile's share gives them), none, or a particular one.
 - **Mute** – the viewer is no longer read in this profile. **Read again** undoes it.
 - **Forget this viewer** – as if they never wrote: a new voice with the next message.
 

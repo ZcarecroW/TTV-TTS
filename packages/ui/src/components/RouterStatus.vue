@@ -20,7 +20,7 @@ const kind = computed(() => {
 
 <template>
   <div class="text-sm" data-upnp>
-    <p v-if="kind === 'open'" class="flex items-start gap-1.5 text-ok"><CircleCheck :size="15" class="mt-0.5 shrink-0" />{{ t("friends.upnpOpen", { ports: status!.mapped.join(", "), router: status!.router ?? "?" }) }}</p>
+    <p v-if="kind === 'open'" class="flex items-start gap-1.5 text-ok"><CircleCheck :size="15" class="mt-0.5 shrink-0" />{{ t("friends.upnpOpen", { ports: status!.mapped.join(", "), router: status!.router ?? "?" }, status!.mapped.length) }}</p>
     <p v-else-if="kind === 'nopublic'" class="flex items-start gap-1.5 text-warn"><Warning :size="15" class="mt-0.5 shrink-0" />{{ t("friends.upnpNoPublic", { ip: status!.external_ip ?? "?" }) }}</p>
     <p v-else-if="kind === 'failed'" class="flex items-start gap-1.5 text-warn"><Warning :size="15" class="mt-0.5 shrink-0" />{{ status!.error }}</p>
     <p v-else-if="kind === 'off'" class="flex items-start gap-1.5 text-muted"><Network :size="15" class="mt-0.5 shrink-0" />{{ t("friends.upnpOff") }}</p>

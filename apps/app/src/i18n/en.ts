@@ -864,7 +864,7 @@ export default {
     events: "Off by default – chat bots like WizeBot or Streamlabs often announce already. When on, subs, gifted subs, raids and cheers are read in the profile's language. 20 gifted subs at once are one announcement, not 21. Works without a Twitch login.",
     eventsVoice: "One voice for all announcements, so they sound different from chat. Any voice of Voice Creator Pro.",
     eventsTexts: "Empty fields use the sentence shown. Placeholders: {'{user}'}, {'{months}'}, {'{recipient}'}, {'{count}'}, {'{viewers}'}, {'{bits}'}, {'{reward}'}.",
-    osFallback: "If Voice Creator Pro or its PC can't speak (stopped, restarting, unreachable), your operating system's own voice reads the messages instead of skipping them – plain, but chat isn't lost. Windows uses an installed voice of the message's language, macOS \u201csay\u201d, Linux espeak-ng.",
+    osFallback: "If Voice Creator Pro or its PC can't speak (stopped, restarting, unreachable), your operating system's own voice reads the messages instead of skipping them – plain, but chat isn't lost. Which voice per language, how fast and how high: Settings \u2192 System voice.",
     hotkeys: "These work everywhere, also while a game or OBS has the focus. Click a field and press the combination; Esc cancels. A combination another program already uses can't be taken.",
     pending: "Approval is on for this profile: nothing is read until you OK it here (or with the hotkey). Messages nobody approves are dropped after the set minutes.",
     approval: "For sensitive streams: every message waits on the Live page until you approve it with a click or a hotkey.",

@@ -11,7 +11,7 @@ icon: Gear
 - **Ausgabegerät** – wo TTV-TTS spielt. *Systemstandard* folgt deinem System. Sollen die Stimmen eine eigene OBS-Quelle sein, nimm statt eines virtuellen Kabels einen [OBS-Link](obs).
 - **Lautstärke** – auch aus dem Chat mit `!ttsvol` ([Mod-Befehle](profiles#mod-commands)).
 - **Pause zwischen Nachrichten** – ein kurzes Durchatmen zwischen zwei Nachrichten.
-- **Stimmeffekte auf dem Stimmen-PC** (mit TTV-TTS Proxy) – der Stimmen-Host wendet die Effekte an, dieser PC spielt nur ab (siehe [Effekte](effects#where)).
+- **Stimmeffekte auf dem Stimmen-PC** (mit TTV-TTS Proxy) – der Stimmen-Host wendet die Effekte an und auch die Audio-Plugins, die er hat; dieser PC spielt nur ab (siehe [Effekte](effects#where)).
 
 ## Spracherzeugung {#generation}
 
@@ -76,7 +76,26 @@ Zurück zur eingebauten Anwendung: **Die eingebaute verwenden**. Deine Client ID
 
 ## Audio-Plugins {#plugins}
 
-VST3- und CLAP-Effekte auf jeder Stimme – siehe [Effekte & Plugins](effects#plugins).
+VST3- und CLAP-Effekte auf jeder Stimme, und Plugin-Effekte, die Zuschauer zufällig bekommen – siehe [Effekte & Plugins](effects#plugins) und [Plugin-Effekte für Zuschauer](effects#viewer-plugins).
+
+## Systemstimme {#system-voice}
+
+Die eigenen Stimmen deines Betriebssystems lesen, wenn Voice Creator Pro nicht kann ([pro Profil einschalten](profiles#os-voice)). Hier wählst du, welche Stimme welche Sprache liest, wie schnell und wie hoch.
+
+![Die Systemstimme in den Einstellungen](settings-os-voices.webp)
+
+- **Pro Sprache** eine Stimme, oder *automatisch* (die erste dieser Sprache). Eine Sprache ohne eigene Stimme zeigt **keine Stimme installiert** – sie würde von der Standardstimme gelesen, meist schlecht.
+- **Installieren** (Windows) fügt Microsofts Stimmen dieser Sprache hinzu. Windows fragt einmal nach Administratorrechten; der Download dauert ein, zwei Minuten. Dasselbe steht in Windows unter **Einstellungen → Zeit und Sprache → Spracherkennung → Stimmen hinzufügen** (der Knopf öffnet es).
+- **Tempo** und **Tonhöhe**: Die Windows-Stimmen können beides, `say` unter macOS nur das Tempo.
+- **Anhören** (der Play-Knopf) sagt deinen Text, oder einen Beispielsatz, mit dieser Stimme auf deinem Ausgabegerät.
+
+Welche Stimmen es gibt:
+
+| | |
+|---|---|
+| **Windows** | Microsofts Stimmen (Einstellungen → Spracherkennung; ein bis drei pro Sprache) und klassische **SAPI5**-Stimmen anderer Hersteller – zum Beispiel das kostenlose [RHVoice](https://rhvoice.org) (Russisch, Ukrainisch, Englisch und mehr). TTV-TTS zeigt beides. |
+| **macOS** | die Stimmen aus Systemeinstellungen → Bedienungshilfen → Gesprochene Inhalte → Systemstimme → **Stimmen verwalten** (viele Sprachen; die „Erweitert“- und „Premium“-Stimmen klingen deutlich besser). |
+| **Linux** | `espeak-ng` (mit der Paketverwaltung installieren); seine mbrola-Stimmen klingen natürlicher. |
 
 ## Aussehen & Sprache {#look}
 

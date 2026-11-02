@@ -131,6 +131,7 @@ const fmt = (p: PluginInfo) => (p.format === "clap" ? "CLAP" : "VST3");
     </ol>
 
     <!-- plugin effects for viewers -->
+    <div data-viewer-variants>
     <div class="mt-5 mb-1.5 flex items-center gap-2" data-variants>
       <Mask :size="16" class="text-muted" />
       <span class="label m-0">{{ t("settings.variantsTitle") }}</span><UiTip :text="t('tips.viewerPlugins')" />
@@ -156,6 +157,7 @@ const fmt = (p: PluginInfo) => (p.format === "clap" ? "CLAP" : "VST3");
         </span>
       </li>
     </ul>
+    </div>
     <p class="mt-3 text-xs text-muted">{{ t("settings.pluginsFree") }} <UiDocs page="effects" anchor="free-plugins" :label="t('settings.pluginsFreeLink')" /></p>
 
     <UiModal v-if="adding" :title="adding === 'variant' ? t('settings.variantsAddTitle') : t('settings.pluginsAddTitle')" width="max-w-xl" @close="adding = null">

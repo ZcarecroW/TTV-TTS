@@ -11,7 +11,7 @@ icon: Gear
 - **Output device** – where TTV-TTS plays. *System default* follows your system. To give the voices their own OBS source, use an [OBS link](obs) instead of a virtual cable.
 - **Volume** – also settable from chat with `!ttsvol` ([mod commands](profiles#mod-commands)).
 - **Pause between messages** – a short breath between two messages.
-- **Voice effects on the voice host PC** (with TTV-TTS Proxy) – the voice host applies the effects, this PC only plays (see [Effects](effects#where)).
+- **Voice effects on the voice host PC** (with TTV-TTS Proxy) – the voice host applies the effects and the audio plugins it has too, this PC only plays (see [Effects](effects#where)).
 
 ## Speech generation {#generation}
 
@@ -76,7 +76,26 @@ To go back to the built-in application, choose **Use the built-in one**. Your cl
 
 ## Audio plugins {#plugins}
 
-VST3 and CLAP effects on every voice – see [Effects & plugins](effects#plugins).
+VST3 and CLAP effects on every voice, and plugin effects viewers get at random – see [Effects & plugins](effects#plugins) and [Plugin effects for viewers](effects#viewer-plugins).
+
+## System voice {#system-voice}
+
+Your operating system's own voices read when Voice Creator Pro can't ([switch it on per profile](profiles#os-voice)). Here you choose which voice reads which language, how fast and how high.
+
+![The system voice in the settings](settings-os-voices.webp)
+
+- **Per language** a voice, or *automatic* (the first one of that language). A language without a voice of its own says **no voice installed** – it would be read by the default voice, usually badly.
+- **Install** (Windows) adds Microsoft's voices of that language. Windows asks for admin rights once; the download takes a minute or two. The same is in Windows under **Settings → Time & language → Speech → Add voices** (the button opens it).
+- **Speed** and **pitch**: Windows' voices can do both; macOS's `say` only the speed.
+- **Try** (the play button) says your text, or a sample sentence, with that voice on your output device.
+
+Which voices exist:
+
+| | |
+|---|---|
+| **Windows** | Microsoft's voices (Settings → Speech; one to three per language) and classic **SAPI5** voices of other makers – for example the free [RHVoice](https://rhvoice.org) (Russian, Ukrainian, English and more). TTV-TTS shows both. |
+| **macOS** | the voices of System Settings → Accessibility → Spoken Content → System voice → **Manage Voices** (many languages, "Enhanced" and "Premium" ones sound much better). |
+| **Linux** | `espeak-ng` (install it with your package manager); its mbrola voices sound more natural. |
 
 ## Look & language {#look}
 

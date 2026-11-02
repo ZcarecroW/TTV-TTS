@@ -23,7 +23,7 @@ A **profile** holds everything about reading one streamer's chat: channels, rule
 
 ### System voice fallback {#os-voice}
 
-With **System voice when the voice host is down**, messages aren't lost when Voice Creator Pro can't speak (stopped, restarting, its PC off or unreachable): your operating system's own voice reads them instead – plain, but chat keeps going. Windows uses an installed voice of the message's language, macOS its built-in voice (`say`), Linux `espeak-ng` (install it first). As soon as Voice Creator Pro answers again, its voices take over.
+With **System voice when the voice host is down**, messages aren't lost when Voice Creator Pro can't speak (stopped, restarting, its PC off or unreachable): your operating system's own voice reads them instead – plain, but chat keeps going. Which voice reads which language, how fast and how high is set in [Settings → System voice](settings#system-voice) – also how to install more voices. As soon as Voice Creator Pro answers again, its voices take over.
 
 ### Limits {#limits}
 
@@ -78,6 +78,10 @@ With **Emotions from chat** on, laughing emotes (KEKW), emojis (😂 😭 😱),
 ### Voice effects {#effects}
 
 **Voice effects** lets the effects of a preset play (radio, telephone …) – see [Effects & plugins](effects).
+
+### Plugin effects for viewers {#viewer-plugins}
+
+**Plugin effects for viewers: … % get one** – the share of viewers who get one of the [plugin effects](effects#viewer-plugins) from the settings at random. **Not on voices that have an effect of their own** keeps a radio voice from getting a pitch shifter on top.
 
 ## Announcements {#announcements}
 

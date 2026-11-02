@@ -21,22 +21,27 @@ You see each friend's use today, when they were last seen and from where, and ca
 
 ## Setting it up {#setup}
 
-Switch on **Allow friends over the internet**. The proxy opens port **8111** on its PC (for invited friends only). Then four steps:
+First a name (DuckDNS – [OBS links from the internet](obs#online) use it too), then switch on **Allow friends over the internet**. The proxy opens port **8111** on its PC (for invited friends only). Then:
 
 ### 1. A name: DuckDNS {#duckdns}
 
-Your internet address changes now and then. [DuckDNS](https://www.duckdns.org) is free: sign in (with GitHub or Google), pick a name and copy the **token**. Enter both in the card. The proxy keeps `yourname.duckdns.org` pointing at you. The token stays on the proxy's PC, in its credential store.
+Your internet address changes now and then. [DuckDNS](https://www.duckdns.org) is free: sign in (with GitHub or Google), pick a name and copy the **token**. Enter both in the card. The proxy keeps `yourname.duckdns.org` pointing at you – every 5 minutes, so a new address after the daily reconnect is out within minutes. It asks the router for its internet address (UPnP), so even a VPN on that PC can't point the name at the VPN. The token stays on the proxy's PC, in its credential store.
 
 ### 2. Open the port on your router {#router}
 
-Forward **TCP port 8111** to the proxy's PC (its address is on the [Voice host](voice-host#status) page, for example `192.168.178.25`).
+Usually there's nothing to do: with **Open the ports in the router by itself (UPnP)** (on by default) the proxy asks the router to forward exactly the ports of what you share – 8111 for friends, 8112 for [OBS links](obs#online) – to its own PC, renews that every 25 minutes and closes them again when they're no longer needed or the proxy quits. The card then says *Port 8111 is open in the router*.
+
+- **FRITZ!Box**: it only allows that for devices you permit: Internet → Permit Access → Port Sharing → the proxy's PC → **Permit independent port sharing for this device**. Otherwise the card says that the router doesn't let this PC open ports.
+- **UPnP off in the router**, or you prefer to do it yourself: switch **UPnP** off in the card and forward the port by hand, as below.
+
+By hand: forward **TCP port 8111** to the proxy's PC (its address is on the [Voice host](voice-host#status) page, for example `192.168.178.25`).
 
 - **FRITZ!Box**: Internet → Permit Access → Port Sharing → Add Device for Sharing → the proxy's PC → New Sharing → Port Sharing, TCP, port 8111 to port 8111, “Permit IPv4”.
 - Other routers call it *Port forwarding*, *Virtual server* or *NAT*.
 - **Windows Firewall**: the proxy's rule covers port 8111 already. Windows Firewall Control or another firewall: allow incoming TCP 8111 for TTV-TTS Proxy.
 
 > [!WARNING]
-> No public IPv4 address (DS-Lite, common with cable and fiber)? Then forwarding can't work over IPv4. Ask your provider for a public IPv4 address – or use Tailscale (below).
+> No public IPv4 address (DS-Lite, common with cable and fiber)? Then forwarding can't work over IPv4 – the card tells you when the router's internet address isn't a public one. Ask your provider for a public IPv4 address – or use Tailscale (below).
 
 ### 3. Check from the internet {#test}
 

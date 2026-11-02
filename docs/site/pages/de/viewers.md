@@ -14,6 +14,7 @@ Wähl in der Spalte **Stimme** eine andere. Der Zuschauer spricht ab seiner näc
 
 - **Neue zufällige Stimme** – der Zuschauer bekommt mit der nächsten Nachricht eine andere.
 - **Effekt** – ein Zuschauer kann einen eigenen Effekt bekommen (zum Beispiel *Roboter* für deinen Lieblings-Stammgast mit Bot-Charme) oder keinen, egal was seine Stimme sonst hat.
+- **Plugin-Effekt** – wenn [Plugin-Effekte für Zuschauer](effects#viewer-plugins) eingerichtet sind: *zufällig* (was der Anteil im Profil ihm gibt), keiner oder ein bestimmter.
 - **Stummschalten** – der Zuschauer wird in diesem Profil nicht mehr vorgelesen. **Wieder vorlesen** macht es rückgängig.
 - **Diesen Zuschauer vergessen** – als hätte er nie geschrieben: eine neue Stimme mit der nächsten Nachricht.
 

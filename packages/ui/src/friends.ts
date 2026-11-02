@@ -128,6 +128,11 @@ export function demoFriends(): FriendsApi {
     https: { domain: null, valid_from: null, valid_until: null, renew_at: null, step: null, error: null, error_at: null, next_try: null, staging: false },
     obs_online: true,
   };
+  // ?https: a name and a valid certificate already (screenshots)
+  if (typeof location !== "undefined" && new URLSearchParams(location.search).has("https")) {
+    Object.assign(internet, { domain: "mystream", duckdns_token: true, duckdns_at: now() - 120, duckdns_result: "OK", address: "mystream.duckdns.org:8111" });
+    internet.https = { ...internet.https!, domain: "mystream.duckdns.org", valid_from: now() - 3 * 86400, valid_until: now() + 87 * 86400, renew_at: now() + 57 * 86400 };
+  }
   const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
   return {
     status: async () => structuredClone(internet),

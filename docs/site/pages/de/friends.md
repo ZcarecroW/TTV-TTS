@@ -21,22 +21,27 @@ Du siehst bei jedem Freund den heutigen Verbrauch, wann und woher er zuletzt da 
 
 ## Einrichten {#setup}
 
-Schalte **Freunde über das Internet zulassen** ein. Der Proxy öffnet Port **8111** auf seinem PC (nur für eingeladene Freunde). Dann vier Schritte:
+Zuerst ein Name (DuckDNS – [OBS-Links aus dem Internet](obs#online) nutzen ihn auch), dann **Freunde über das Internet zulassen** einschalten. Der Proxy öffnet Port **8111** auf seinem PC (nur für eingeladene Freunde). Dann:
 
 ### 1. Ein Name: DuckDNS {#duckdns}
 
-Deine Internet-Adresse ändert sich ab und zu. [DuckDNS](https://www.duckdns.org) ist kostenlos: anmelden (mit GitHub oder Google), einen Namen wählen und den **Token** kopieren. Trag beides in der Karte ein. Der Proxy hält `deinname.duckdns.org` auf dich gerichtet. Der Token bleibt auf dem PC des Proxys, in seinem Anmeldedaten-Speicher.
+Deine Internet-Adresse ändert sich ab und zu. [DuckDNS](https://www.duckdns.org) ist kostenlos: anmelden (mit GitHub oder Google), einen Namen wählen und den **Token** kopieren. Trag beides in der Karte ein. Der Proxy hält `deinname.duckdns.org` auf dich gerichtet – alle 5 Minuten, eine neue Adresse nach der täglichen Zwangstrennung ist also nach wenigen Minuten bekannt. Er fragt den Router nach dessen Internetadresse (UPnP), so kann nicht einmal ein VPN auf diesem PC den Namen auf das VPN lenken. Der Token bleibt auf dem PC des Proxys, in seinem Anmeldedaten-Speicher.
 
 ### 2. Den Port am Router öffnen {#router}
 
-Leite **TCP-Port 8111** an den PC des Proxys weiter (seine Adresse steht auf der Seite [Stimmen-Host](voice-host#status), zum Beispiel `192.168.178.25`).
+Meist ist nichts zu tun: Mit **Ports im Router selbst öffnen (UPnP)** (standardmäßig an) bittet der Proxy den Router, genau die Ports dessen weiterzuleiten, was du teilst – 8111 für Freunde, 8112 für [OBS-Links](obs#online) –, und zwar an seinen eigenen PC. Er erneuert das alle 25 Minuten und schließt die Ports wieder, wenn sie nicht mehr gebraucht werden oder der Proxy beendet wird. Die Karte zeigt dann *Port 8111 ist im Router offen*.
+
+- **FRITZ!Box**: Sie erlaubt das nur Geräten, die du freigibst: Internet → Freigaben → Portfreigaben → der PC des Proxys → **Selbstständige Portfreigaben für dieses Gerät erlauben**. Sonst sagt die Karte, dass der Router diesem PC keine Ports öffnen lässt.
+- **UPnP im Router aus**, oder du machst es lieber selbst: Schalte **UPnP** in der Karte aus und leite den Port von Hand weiter, wie unten.
+
+Von Hand: Leite **TCP-Port 8111** an den PC des Proxys weiter (seine Adresse steht auf der Seite [Stimmen-Host](voice-host#status), zum Beispiel `192.168.178.25`).
 
 - **FRITZ!Box**: Internet → Freigaben → Portfreigaben → Gerät für Freigaben hinzufügen → der PC des Proxys → Neue Freigabe → Portfreigabe, TCP, Port 8111 bis Port 8111, „IPv4 freigeben“.
 - Andere Router nennen es *Portweiterleitung*, *Virtueller Server* oder *NAT*.
 - **Windows-Firewall**: Die Regel des Proxys deckt Port 8111 schon ab. Windows Firewall Control oder eine andere Firewall: eingehend TCP 8111 für TTV-TTS Proxy erlauben.
 
 > [!WARNING]
-> Keine öffentliche IPv4-Adresse (DS-Lite, häufig bei Kabel und Glasfaser)? Dann kann die Weiterleitung über IPv4 nicht funktionieren. Frag deinen Anbieter nach einer öffentlichen IPv4-Adresse – oder nimm Tailscale (unten).
+> Keine öffentliche IPv4-Adresse (DS-Lite, häufig bei Kabel und Glasfaser)? Dann kann die Weiterleitung über IPv4 nicht funktionieren – die Karte sagt es dir, wenn die Internetadresse des Routers keine öffentliche ist. Frag deinen Anbieter nach einer öffentlichen IPv4-Adresse – oder nimm Tailscale (unten).
 
 ### 3. Aus dem Internet prüfen {#test}
 

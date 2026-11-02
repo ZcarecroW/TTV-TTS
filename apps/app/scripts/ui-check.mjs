@@ -239,7 +239,7 @@ check(/(Computed|Berechnet): de 41 · en 30/.test(prof), "profile shows how much
   check(/https:\/\/mystream\.duckdns\.org:8131\/o\//.test(oct) && /\bHTTPS\b/.test(oct), "an OBS link from the internet uses HTTPS with a DuckDNS name", oct.match(/https:[^\s]*/)?.[0] ?? oct.slice(0, 120));
   check(/HTTPS certificate for mystream\.duckdns\.org|HTTPS-Zertifikat für mystream\.duckdns\.org/.test(oct), "the profile shows the certificate");
   check(/DuckDNS token|DuckDNS-Token/.test(oct), "the DuckDNS token can be entered in the profile");
-  check(/(Ports 8131 are open in the router|Ports 8131 sind im Router)/.test(oct), "the OBS port is opened in the router (UPnP)", oct.match(/Ports[^\n]*/)?.[0] ?? "");
+  check(/(Port 8131 is open in the router|Port 8131 ist im Router)/.test(oct), "the OBS port is opened in the router (UPnP)", oct.match(/Ports[^\n]*/)?.[0] ?? "");
   await oc.getByRole("switch", { name: /use HTTPS|nutzen HTTPS/ }).click();
   await page.waitForTimeout(3500);
   const off = (await oc.innerText()) + " " + (await links());
