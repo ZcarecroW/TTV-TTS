@@ -316,6 +316,7 @@ impl Certs {
         let chain = order.poll_certificate(&RetryPolicy::new().timeout(Duration::from_secs(120))).await.map_err(acme_err)?;
         self.install(&chain, &key, true)?;
         *self.ari.lock() = None;
+        self.step(None);
         log::info!("new HTTPS certificate for {fqdn}");
         Ok(())
     }
@@ -482,6 +483,43 @@ mod tests {
         let (chain, key) = self_signed("my.duckdns.org", 0);
         c.install(&chain, &key, false).unwrap();
         assert_eq!(c.due("my.duckdns.org").await, None, "two thirds have passed");
+    }
+
+    /// Live, the whole way with a real DuckDNS name against Let's Encrypt's
+    /// staging system: TXT record through DuckDNS, wait for DuckDNS's name
+    /// servers, validation, issuing, install, TXT removed again.
+    /// `TTV_LIVE_DUCKDNS_DOMAIN=name TTV_LIVE_DUCKDNS_TOKEN=… cargo test -p ttv-net duckdns_staging -- --ignored --nocapture`
+    #[tokio::test]
+    #[ignore]
+    async fn duckdns_staging_live() {
+        let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+        let (Ok(domain), Ok(token)) = (std::env::var("TTV_LIVE_DUCKDNS_DOMAIN"), std::env::var("TTV_LIVE_DUCKDNS_TOKEN")) else {
+            eprintln!("TTV_LIVE_DUCKDNS_DOMAIN / TTV_LIVE_DUCKDNS_TOKEN not set - skipped");
+            return;
+        };
+        // SAFETY: set before anything reads it; no other test uses it
+        unsafe { std::env::set_var("TTV_ACME_STAGING", "1") };
+        let dir = std::env::temp_dir().join(format!("ttv-net-duckdns-{}", rand::random::<u32>()));
+        let c = Certs::new(&dir, || {});
+        let w = Want { domain: domain.clone(), token };
+        let fqdn = duckdns::fqdn(&domain);
+        let t0 = Instant::now();
+        let r = c.obtain(&w).await;
+        println!("{} ms: {r:?}", t0.elapsed().as_millis());
+        r.unwrap();
+        assert!(c.valid_for(&fqdn));
+        let s = c.status();
+        println!("{s:?}");
+        assert!(s.staging && s.domain.as_deref() == Some(fqdn.as_str()) && s.step.is_none());
+        // the TXT record is gone again
+        let servers = dns::duckdns_servers().await;
+        let txt = dns::txt(servers[0], &format!("_acme-challenge.{fqdn}")).await.unwrap();
+        println!("TXT after: {txt:?}");
+        assert!(txt.iter().all(|t| t.is_empty()), "{txt:?}");
+        // a second start finds the certificate and doesn't want a new one
+        let again = Certs::new(&dir, || {});
+        assert!(again.due(&fqdn).await.is_some());
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     /// Live, against Let's Encrypt's staging (test) system: an account (kept
