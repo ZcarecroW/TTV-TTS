@@ -4,6 +4,7 @@ import { useI18n } from "vue-i18n";
 import UiTip from "./UiTip.vue";
 import UiDocs from "./UiDocs.vue";
 import UiToggle from "./UiToggle.vue";
+import HttpsStatus from "./HttpsStatus.vue";
 import { copyText } from "../clipboard";
 import { ago } from "../format";
 import { Copy, Globe, Lock, Plus, ShieldCheck, Spinner, Trash, Users, X } from "../icons";
@@ -30,6 +31,7 @@ const quota = ref(30000);
 const via = ref("");
 const fresh = ref<{ name: string; code: string; expires: number } | null>(null);
 
+let quick = 0;
 async function load() {
   try {
     s.value = await friends.status();
@@ -38,13 +40,19 @@ async function load() {
   } catch (e) {
     error.value = String(e);
   }
+  // while a certificate is being fetched, look every 2 seconds
+  clearTimeout(quick);
+  if (s.value?.https?.step) quick = window.setTimeout(load, 2000);
 }
 let timer = 0;
 onMounted(() => {
   void load();
   timer = window.setInterval(load, 15000);
 });
-onBeforeUnmount(() => clearInterval(timer));
+onBeforeUnmount(() => {
+  clearInterval(timer);
+  clearTimeout(quick);
+});
 
 async function toggle(on: boolean) {
   const r = await run("internet", () => friends.set({ enabled: on }));
@@ -58,8 +66,14 @@ async function saveName() {
   if (r) {
     s.value = r;
     token.value = "";
+    if (r.https?.step) quick = window.setTimeout(load, 2000);
     toast(r.duckdns_result === "OK" ? "ok" : "err", r.duckdns_result === "OK" ? t("friends.duckOk", { name: `${r.domain}.duckdns.org` }) : (r.duckdns_result ?? t("friends.duckSaved")));
   }
+}
+
+async function setHttps(on: boolean) {
+  const r = await run("https", () => friends.set({ obs_https: on }));
+  if (r) s.value = r;
 }
 
 async function test() {
@@ -114,21 +128,26 @@ const duckLine = computed(() => {
     <p v-if="error" class="text-sm text-muted">{{ error }}</p>
     <template v-else-if="s">
       <p class="muted mb-3 text-sm">{{ t("friends.intro") }}</p>
+      <!-- 1. a name (friends and OBS links from the internet both use it) -->
+      <div class="mb-5" data-duckdns>
+        <div class="label">1 · {{ t("friends.nameTitle") }}<UiTip :text="t('tips.duckdns')" /></div>
+        <div class="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
+          <div class="flex items-center gap-1"><input v-model="domain" class="input mono" :placeholder="t('friends.domainPlaceholder')" /><span class="shrink-0 text-sm text-muted">.duckdns.org</span></div>
+          <input v-model="token" type="password" autocomplete="off" class="input mono" :placeholder="s.duckdns_token ? t('friends.tokenStored') : t('friends.tokenPlaceholder')" />
+          <button class="btn" :disabled="busy === 'duckdns' || !domain.trim()" @click="saveName"><Spinner v-if="busy === 'duckdns'" :size="14" class="spin" />{{ t("common.save") }}</button>
+        </div>
+        <p class="hint mt-1.5">{{ duckLine || t("friends.duckHint") }}</p>
+        <!-- HTTPS for OBS links from the internet -->
+        <div v-if="s.https" class="mt-3 space-y-2 rounded-xl border border-line p-3.5">
+          <UiToggle :model-value="s.obs_https ?? true" :disabled="busy === 'https'" :label="t('friends.httpsToggle')" :hint="t('friends.httpsHint')" @update:model-value="setHttps" />
+          <HttpsStatus :status="s.https" :on="s.obs_https ?? true" />
+          <UiDocs page="obs" anchor="https" />
+        </div>
+      </div>
       <UiToggle :model-value="s.enabled" :disabled="busy === 'internet'" :label="t('friends.enable')" :hint="t('friends.enableHint', { port: s.port })" @update:model-value="toggle" />
       <p v-if="s.error" class="mt-2 text-sm text-err">{{ s.error }}</p>
 
       <div v-if="s.enabled" class="mt-5 space-y-5">
-        <!-- 1. a name -->
-        <div>
-          <div class="label">1 · {{ t("friends.nameTitle") }}<UiTip :text="t('tips.duckdns')" /></div>
-          <div class="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-            <div class="flex items-center gap-1"><input v-model="domain" class="input mono" :placeholder="t('friends.domainPlaceholder')" /><span class="shrink-0 text-sm text-muted">.duckdns.org</span></div>
-            <input v-model="token" type="password" autocomplete="off" class="input mono" :placeholder="s.duckdns_token ? t('friends.tokenStored') : t('friends.tokenPlaceholder')" />
-            <button class="btn" :disabled="busy === 'duckdns' || !domain.trim()" @click="saveName"><Spinner v-if="busy === 'duckdns'" :size="14" class="spin" />{{ t("common.save") }}</button>
-          </div>
-          <p class="hint mt-1.5">{{ duckLine || t("friends.duckHint") }}</p>
-        </div>
-
         <!-- 2. router + firewall -->
         <details class="rounded-xl border border-line p-3.5 text-sm">
           <summary class="cursor-pointer font-medium">2 · {{ t("friends.routerTitle", { port: s.port }) }}</summary>

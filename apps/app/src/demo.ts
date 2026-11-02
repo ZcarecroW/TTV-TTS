@@ -73,7 +73,7 @@ const state: AppView = {
     translate_email: "",
     hotkeys: { skip: "Ctrl+Alt+KeyS" },
     remote: { enabled: false, port: 8130, lan: false, token: "demoToken123" },
-    obs: { port: 8131, lan: false, public_host: "" },
+    obs: { port: 8131, lan: false, public_host: "", https: true },
     effects_on_host: true,
   },
   host: params.has("nohost")
@@ -265,6 +265,7 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
       const profiles = (readerState.store.profiles as Profile[]).filter((p) => p.output.mode === "obs");
       const c = state.config.obs;
       const lan = c.lan || profiles.some((p) => p.output.online);
+      const duck = /\.duckdns\.org$/i.test(c.public_host);
       return r({
         listening: profiles.length ? `${lan ? "0.0.0.0" : "127.0.0.1"}:${c.port}` : null,
         error: null,
@@ -272,13 +273,21 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
           profile: p.id,
           local: `http://127.0.0.1:${c.port}/o/${p.output.token}`,
           lan: lan ? [`http://192.168.178.40:${c.port}/o/${p.output.token}`] : [],
-          online: p.output.online && c.public_host ? `http://${c.public_host}:${c.port}/o/${p.output.token}` : null,
+          online: p.output.online && c.public_host ? `${duck && c.https ? "https" : "http"}://${c.public_host}:${c.port}/o/${p.output.token}` : null,
+          online_secure: duck && c.https,
+          securing: false,
           listeners: params.has("obs") ? 1 : 0,
         })),
+        duckdns: duck,
+        duckdns_token: duck,
+        duckdns_update: duck ? { at: Math.floor(Date.now() / 1000) - 120, error: null, ip: "203.0.113.42" } : null,
+        https: duck
+          ? { domain: c.public_host, valid_from: Math.floor(Date.now() / 1000) - 86400, valid_until: Math.floor(Date.now() / 1000) + 89 * 86400, renew_at: Math.floor(Date.now() / 1000) + 59 * 86400, step: null, error: null, error_at: null, next_try: null, staging: false }
+          : { domain: null, valid_from: null, valid_until: null, renew_at: null, step: null, error: null, error_at: null, next_try: null, staging: false },
       });
     }
     case "set_obs":
-      Object.assign(state.config.obs, { lan: !!args.lan, port: Number(args.port), public_host: String(args.publicHost ?? "") });
+      Object.assign(state.config.obs, { lan: !!args.lan, port: Number(args.port), public_host: String(args.publicHost ?? ""), https: args.https !== false });
       return demoInvoke("obs_status");
     case "obs_new_link": {
       const p = (readerState.store.profiles as Profile[]).find((x) => x.id === args.profile);
@@ -297,7 +306,9 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
           reading: params.has("obs"),
           status: { ...readerState.status, current: params.has("obs") ? readerState.history[0] : null, queue: [] },
           lan: [`http://192.168.178.25:8112/o/${p.output.token}`],
-          internet: p.output.online ? `http://mystream.duckdns.org:8112/o/${p.output.token}` : null,
+          internet: p.output.online ? `https://mystream.duckdns.org:8112/o/${p.output.token}` : null,
+          internet_secure: p.output.online,
+          securing: false,
         })),
       );
     }

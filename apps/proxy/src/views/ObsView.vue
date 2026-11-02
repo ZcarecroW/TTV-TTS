@@ -57,7 +57,10 @@ const savePort = () => void save({ obs_port: Number(port.value) || 8112 }).then(
             </div>
             <div v-if="l.internet" class="flex items-center gap-1">
               <input readonly class="input mono min-w-0 flex-1 text-xs" :value="l.internet" @focus="($event.target as HTMLInputElement).select()" /><UiCopy :value="l.internet" /><span class="text-xs text-muted">{{ t("obs.internet") }}</span>
+              <span class="badge" :class="l.internet_secure ? 'badge-ok' : 'badge-warn'">{{ l.internet_secure ? t("obs.httpsBadge") : t("obs.plainBadge") }}</span>
             </div>
+            <p v-if="l.securing" class="text-xs text-muted">{{ t("obs.securing") }}</p>
+            <p v-else-if="l.internet && !l.internet_secure" class="text-xs text-warn">{{ t("obs.plainHint") }}</p>
           </div>
         </div>
       </div>

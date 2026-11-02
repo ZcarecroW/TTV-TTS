@@ -467,12 +467,22 @@ pub fn obs_status(state: St) -> crate::obs::ObsStatus {
 /// OBS links on this PC: for other PCs too (LAN, internet), port, and the
 /// address friends use from the internet.
 #[tauri::command]
-pub async fn set_obs(state: St<'_>, lan: bool, port: u16, public_host: String) -> Result<crate::obs::ObsStatus, String> {
+pub async fn set_obs(state: St<'_>, lan: bool, port: u16, public_host: String, https: Option<bool>, duckdns_token: Option<String>) -> Result<crate::obs::ObsStatus, String> {
+    if let Some(t) = &duckdns_token {
+        let t = t.trim();
+        if !t.is_empty() && (t.len() < 30 || !t.chars().all(|c| c.is_ascii_hexdigit() || c == '-')) {
+            return Err("That doesn't look like a DuckDNS token (it looks like 1a2b3c4d-…).".into());
+        }
+        state.secrets.set(crate::secrets::DUCKDNS_TOKEN, (!t.is_empty()).then_some(t)).map_err(|e| e.to_string())?;
+    }
     {
         let mut c = state.cfg.write();
         c.obs.lan = lan;
         c.obs.port = port;
         c.obs.public_host = public_host;
+        if let Some(h) = https {
+            c.obs.https = h;
+        }
         c.normalize();
     }
     state.save_config().map_err(|e| e.to_string())?;

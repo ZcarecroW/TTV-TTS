@@ -1,6 +1,8 @@
 // Bridge to the Rust side. Outside Tauri (plain browser) a demo backend
 // answers, for UI development, tests and the docs screenshots.
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
+import type { CertStatus } from "@ttv-tts/ui/friends";
+export type { CertStatus };
 import { listen as tauriListen, type UnlistenFn } from "@tauri-apps/api/event";
 
 export interface VcpState {
@@ -97,7 +99,7 @@ export interface Config {
   hotkeys: Record<string, string>;
   remote: { enabled: boolean; port: number; lan: boolean; token: string };
   /** OBS links served by this app. */
-  obs: { port: number; lan: boolean; public_host: string };
+  obs: { port: number; lan: boolean; public_host: string; https: boolean };
   /** Voice effects on the voice host PC (proxy) instead of here. */
   effects_on_host: boolean;
 }
@@ -343,6 +345,10 @@ export interface LinkView {
   local: string;
   lan: string[];
   online: string | null;
+  /** that link uses HTTPS */
+  online_secure: boolean;
+  /** shared on the internet, the HTTPS certificate is being fetched */
+  securing: boolean;
   listeners: number;
 }
 
@@ -350,6 +356,11 @@ export interface ObsStatus {
   listening: string | null;
   error: string | null;
   links: LinkView[];
+  /** the address from the internet is a DuckDNS name */
+  duckdns: boolean;
+  duckdns_token: boolean;
+  duckdns_update: { at: number; error: string | null; ip: string | null } | null;
+  https: CertStatus;
 }
 
 /** A profile the voice host PC reads for OBS. */
@@ -363,11 +374,14 @@ export interface HostedView {
   status: ReaderStatus;
   lan: string[];
   internet: string | null;
+  internet_secure: boolean;
+  securing: boolean;
 }
 
 export const obs = {
   status: () => invoke<ObsStatus>("obs_status"),
-  set: (lan: boolean, port: number, publicHost: string) => invoke<ObsStatus>("set_obs", { lan, port, publicHost }),
+  /** `duckdnsToken`: "" removes it, undefined keeps it */
+  set: (lan: boolean, port: number, publicHost: string, https: boolean, duckdnsToken?: string) => invoke<ObsStatus>("set_obs", { lan, port, publicHost, https, duckdnsToken }),
   newLink: (profile: string) => invoke<ReaderView>("obs_new_link", { profile }),
 };
 

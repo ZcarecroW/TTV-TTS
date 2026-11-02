@@ -14,12 +14,17 @@ struct OneLink {
     token: String,
     sink: Arc<ObsSink>,
     online: bool,
+    /// Treat every address as one from the internet, with a certificate on the server.
+    internet_https: bool,
 }
 
 impl Links for OneLink {
-    fn sink(&self, token: &str, from: IpAddr) -> Result<Arc<ObsSink>, Refusal> {
+    fn sink(&self, token: &str, from: IpAddr, secure: bool) -> Result<Arc<ObsSink>, Refusal> {
         if token != self.token {
             return Err(Refusal::Unknown);
+        }
+        if self.internet_https {
+            return if secure { Ok(self.sink.clone()) } else { Err(Refusal::NeedsHttps) };
         }
         if !self.online && !obs::is_local(from) {
             return Err(Refusal::NotOnline);
@@ -29,10 +34,15 @@ impl Links for OneLink {
 }
 
 async fn serve(links: Arc<OneLink>) -> String {
+    serve_tls(links, None).await
+}
+
+/// Like the app and the proxy: HTTP and (with a certificate) HTTPS on one port.
+async fn serve_tls(links: Arc<OneLink>, tls: Option<Arc<rustls::ServerConfig>>) -> String {
     let app = obs::router(links);
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let base = format!("127.0.0.1:{}", listener.local_addr().unwrap().port());
-    tokio::spawn(async move { axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>()).await.unwrap() });
+    tokio::spawn(ttv_net::serve::serve(listener, app, tls, std::future::pending()));
     base
 }
 
@@ -48,7 +58,7 @@ async fn until(what: &str, f: impl Fn() -> bool) {
 async fn a_browser_source_gets_the_audio_and_the_skips() {
     let token = obs::new_token();
     let sink = ObsSink::new();
-    let base = serve(Arc::new(OneLink { token: token.clone(), sink: sink.clone(), online: false })).await;
+    let base = serve(Arc::new(OneLink { token: token.clone(), sink: sink.clone(), online: false, internet_https: false })).await;
 
     let page = reqwest::get(format!("http://{base}/o/{token}")).await.unwrap();
     assert_eq!(page.status(), 200);
@@ -74,7 +84,7 @@ async fn a_browser_source_gets_the_audio_and_the_skips() {
 #[tokio::test(flavor = "multi_thread")]
 async fn wrong_links_are_refused_and_guessers_locked_out() {
     let token = obs::new_token();
-    let base = serve(Arc::new(OneLink { token: token.clone(), sink: ObsSink::new(), online: false })).await;
+    let base = serve(Arc::new(OneLink { token: token.clone(), sink: ObsSink::new(), online: false, internet_https: false })).await;
     let get = |path: String| {
         let url = format!("http://{base}{path}");
         async move { reqwest::get(url).await.unwrap().status().as_u16() }
@@ -86,4 +96,40 @@ async fn wrong_links_are_refused_and_guessers_locked_out() {
     }
     // locked out now, even with the right token
     assert_eq!(get(format!("/o/{token}")).await, 429);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn from_the_internet_only_https_works_once_there_is_a_certificate() {
+    let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+    let key = rcgen::KeyPair::generate().unwrap();
+    let cert = rcgen::CertificateParams::new(vec!["mystream.duckdns.org".to_string()]).unwrap().self_signed(&key).unwrap();
+    let mut cfg = rustls::ServerConfig::builder()
+        .with_no_client_auth()
+        .with_single_cert(vec![cert.der().clone()], rustls::pki_types::PrivateKeyDer::Pkcs8(key.serialize_der().into()))
+        .unwrap();
+    cfg.alpn_protocols = vec![b"http/1.1".to_vec()];
+    let token = obs::new_token();
+    let sink = ObsSink::new();
+    let base = serve_tls(Arc::new(OneLink { token: token.clone(), sink: sink.clone(), online: true, internet_https: true }), Some(Arc::new(cfg))).await;
+    let port: u16 = base.rsplit(':').next().unwrap().parse().unwrap();
+
+    let plain = reqwest::get(format!("http://{base}/o/{token}")).await.unwrap();
+    assert_eq!(plain.status(), 403);
+    assert!(plain.text().await.unwrap().contains("https://"));
+
+    let mut roots = rustls::RootCertStore::empty();
+    roots.add(cert.der().clone()).unwrap();
+    let client_tls = rustls::ClientConfig::builder().with_root_certificates(roots).with_no_client_auth();
+    let client = reqwest::Client::builder().tls_backend_preconfigured(client_tls.clone()).resolve("mystream.duckdns.org", SocketAddr::from(([127, 0, 0, 1], port))).build().unwrap();
+    let page = client.get(format!("https://mystream.duckdns.org:{port}/o/{token}")).send().await.unwrap();
+    assert_eq!(page.status(), 200);
+
+    // the audio socket over TLS (wss://), as the page opens it
+    let tcp = tokio::net::TcpStream::connect(("127.0.0.1", port)).await.unwrap();
+    let connector = tokio_tungstenite::Connector::Rustls(Arc::new(client_tls));
+    let (mut ws, _) = tokio_tungstenite::client_async_tls_with_config(format!("wss://mystream.duckdns.org:{port}/o/{token}/ws"), tcp, None, Some(connector)).await.unwrap();
+    until("the listener", || sink.listening()).await;
+    sink.play(vec![0.25; 480], 24_000);
+    let f = ws.next().await.unwrap().unwrap();
+    assert!(matches!(f, Message::Binary(ref b) if b.len() == 8 + 960), "{f:?}");
 }

@@ -236,6 +236,7 @@ async fn hosted_one(State(state): S, axum::extract::Path(id): IdPath) -> Respons
 async fn hosted_put(State(state): S, axum::extract::Path(id): IdPath, Json(req): Json<crate::hosted::HostedRequest>) -> Response {
     let r = state.hosted.put(&state, &id, req);
     state.hosted_changed.notify_waiters();
+    state.certs.wake();
     match r {
         Ok(v) => Json(v).into_response(),
         Err(e) => api_error(StatusCode::BAD_REQUEST, "bad_request", e),
@@ -245,6 +246,7 @@ async fn hosted_put(State(state): S, axum::extract::Path(id): IdPath, Json(req):
 async fn hosted_delete(State(state): S, axum::extract::Path(id): IdPath) -> Json<Ack> {
     let ok = state.hosted.remove(&id);
     state.hosted_changed.notify_waiters();
+    state.certs.wake();
     Json(Ack { ok, message: None })
 }
 

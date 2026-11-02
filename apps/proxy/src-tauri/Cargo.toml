@@ -20,6 +20,7 @@ ttv-vcp = { workspace = true }
 ttv-link = { workspace = true }
 ttv-engine = { workspace = true }
 ttv-reader = { workspace = true }
+ttv-net = { workspace = true }
 tauri = { workspace = true }
 tauri-plugin-opener = { workspace = true }
 tauri-plugin-process = { workspace = true }

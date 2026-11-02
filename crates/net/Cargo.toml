@@ -1,0 +1,30 @@
+[package]
+name = "ttv-net"
+description = "Internet side of TTV-TTS: DuckDNS updates, free HTTPS certificates from Let's Encrypt (DNS-01 through DuckDNS) and HTTP + HTTPS on one port"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+# ACME client; its default HTTP client (hyper-rustls + platform verifier) is in the tree through reqwest already
+instant-acme = { workspace = true }
+rustls = { workspace = true }
+tokio-rustls = { workspace = true }
+reqwest = { workspace = true }
+tokio = { workspace = true }
+axum = { workspace = true }
+hyper = { workspace = true }
+hyper-util = { workspace = true }
+tower = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+log = { workspace = true }
+parking_lot = { workspace = true }
+rand = { workspace = true }
+time = { workspace = true }
+
+[dev-dependencies]
+rcgen = { workspace = true }

@@ -7,6 +7,8 @@ import UiField from "@ttv-tts/ui/components/UiField.vue";
 import UiSegmented from "@ttv-tts/ui/components/UiSegmented.vue";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
+import HttpsStatus from "@ttv-tts/ui/components/HttpsStatus.vue";
+import { ago } from "@ttv-tts/ui/format";
 import { Refresh, Tv } from "@ttv-tts/ui/icons";
 import { hosted, obs, type HostedView, type ObsStatus, type OutputMode, type Profile } from "../api";
 import { config, guest, host, run, store, toast } from "../store";
@@ -15,7 +17,7 @@ import { config, guest, host, run, store, toast } from "../store";
 // source served by this app, or one served by the voice host PC (which then
 // reads the chat itself).
 const p = defineModel<Profile>({ required: true });
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const proxyReady = computed(() => host.value?.kind === "proxy" && !guest.value);
 const options = computed(() => [
@@ -63,11 +65,16 @@ const listeners = computed(() => (p.value.output.mode === "obs" ? link.value?.li
 const lan = ref(config.value?.obs.lan ?? false);
 const port = ref(config.value?.obs.port ?? 8131);
 const publicHost = ref(config.value?.obs.public_host ?? "");
+const https = ref(config.value?.obs.https ?? true);
+const duckToken = ref("");
+const isDuck = computed(() => /\.duckdns\.org(:\d+)?$/i.test(publicHost.value.trim()));
 async function saveServer() {
-  const s = await run("obs", () => obs.set(lan.value, Number(port.value) || 8131, publicHost.value));
+  const token = duckToken.value.trim() || undefined;
+  const s = await run("obs", () => obs.set(lan.value, Number(port.value) || 8131, publicHost.value, https.value, token));
   if (s) {
     local.value = s;
-    if (store.app) store.app.config.obs = { lan: lan.value, port: Number(port.value) || 8131, public_host: publicHost.value };
+    duckToken.value = "";
+    if (store.app) store.app.config.obs = { lan: lan.value, port: Number(port.value) || 8131, public_host: publicHost.value, https: https.value };
   }
 }
 
@@ -105,7 +112,10 @@ async function newLink() {
           </div>
           <div v-if="link.online" class="flex items-center gap-1">
             <input readonly class="input mono min-w-0 flex-1 text-xs" :value="link.online" @focus="($event.target as HTMLInputElement).select()" /><UiCopy :value="link.online" /><span class="text-xs text-muted">{{ t("output.internet") }}</span>
+            <span class="badge" :class="link.online_secure ? 'badge-ok' : 'badge-warn'">{{ link.online_secure ? t("output.httpsBadge") : t("output.plainBadge") }}</span>
           </div>
+          <p v-if="link.securing" class="text-xs text-muted">{{ t("output.securing") }}</p>
+          <p v-else-if="link.online && !link.online_secure" class="text-xs text-warn">{{ t("output.plainHint") }}</p>
         </div>
         <p v-else-if="local?.error" class="text-sm text-err">{{ local.error }}</p>
         <p v-else class="text-sm text-muted">{{ t("common.loading") }}</p>
@@ -114,9 +124,20 @@ async function newLink() {
           <UiField :label="t('output.port')"><input v-model.number="port" type="number" min="1024" max="65535" class="input w-28" @change="saveServer" /></UiField>
           <UiToggle v-model="p.output.online" :label="t('output.online')" :tip="t('tips.outputOnline')" />
         </div>
-        <UiField v-if="p.output.online" :label="t('output.publicHost')" :tip="t('tips.outputPublicHost')">
-          <input v-model="publicHost" class="input mono" placeholder="mystream.duckdns.org" @change="saveServer" />
-        </UiField>
+        <div v-if="p.output.online" class="grid gap-4 md:grid-cols-2">
+          <UiField :label="t('output.publicHost')" :tip="t('tips.outputPublicHost')">
+            <input v-model="publicHost" class="input mono" placeholder="mystream.duckdns.org" @change="saveServer" />
+          </UiField>
+          <UiField v-if="isDuck" :label="t('output.duckToken')" :tip="t('tips.duckdns')">
+            <input v-model="duckToken" type="password" autocomplete="off" class="input mono" :placeholder="local?.duckdns_token ? t('output.duckTokenStored') : '1a2b3c4d-…'" @change="saveServer" />
+          </UiField>
+        </div>
+        <template v-if="p.output.online && isDuck">
+          <p v-if="local && !local.duckdns_token" class="text-xs text-warn">{{ t("output.duckNeedsToken") }}</p>
+          <p v-else-if="local?.duckdns_update" class="text-xs" :class="local.duckdns_update.error ? 'text-warn' : 'text-muted'">{{ local.duckdns_update.error ?? t("output.duckUpdated", { ago: ago(local.duckdns_update.at, locale), ip: local.duckdns_update.ip ?? "?" }) }}</p>
+          <UiToggle v-model="https" :label="t('friends.httpsToggle')" :hint="t('friends.httpsHint')" @update:model-value="saveServer" />
+          <HttpsStatus v-if="local" :status="local.https" :on="https" />
+        </template>
         <p v-if="p.output.online" class="text-xs text-muted">{{ t("output.onlineHint", { port }) }} <UiDocs page="obs" anchor="online" /></p>
       </template>
 
@@ -132,11 +153,14 @@ async function newLink() {
           <div v-for="l in remote.lan" :key="l" class="flex items-center gap-1"><input readonly class="input mono min-w-0 flex-1 text-xs" :value="l" @focus="($event.target as HTMLInputElement).select()" /><UiCopy :value="l" /></div>
           <div v-if="remote.internet" class="flex items-center gap-1">
             <input readonly class="input mono min-w-0 flex-1 text-xs" :value="remote.internet" @focus="($event.target as HTMLInputElement).select()" /><UiCopy :value="remote.internet" /><span class="text-xs text-muted">{{ t("output.internet") }}</span>
+            <span class="badge" :class="remote.internet_secure ? 'badge-ok' : 'badge-warn'">{{ remote.internet_secure ? t("output.httpsBadge") : t("output.plainBadge") }}</span>
           </div>
+          <p v-if="remote.securing" class="text-xs text-muted">{{ t("output.securing") }}</p>
+          <p v-else-if="remote.internet && !remote.internet_secure" class="text-xs text-warn">{{ t("output.plainHostHint") }}</p>
         </div>
         <p v-else class="text-sm text-muted">{{ t("output.handingOver") }}</p>
         <UiToggle v-model="p.output.online" :label="t('output.online')" :tip="t('tips.outputOnlineHost')" />
-        <p v-if="p.output.online && remote && !remote.internet" class="text-xs text-muted">{{ t("output.onlineHostHint") }} <UiDocs page="obs" anchor="online" /></p>
+        <p v-if="p.output.online && remote && !remote.internet && !remote.securing" class="text-xs text-muted">{{ t("output.onlineHostHint") }} <UiDocs page="obs" anchor="online" /></p>
       </template>
 
       <div v-if="p.output.mode !== 'device'" class="flex flex-wrap items-center gap-3">

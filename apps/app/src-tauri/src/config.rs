@@ -104,13 +104,16 @@ pub struct ObsConfig {
     /// forwarding); else only OBS on this PC.
     pub lan: bool,
     /// How friends reach this PC from the internet (a DuckDNS name or the
-    /// public IP) – only for the link shown.
+    /// public IP). With a DuckDNS name and its token, TTV-TTS keeps the name
+    /// pointing here and gets an HTTPS certificate for it.
     pub public_host: String,
+    /// Links from the internet use HTTPS (needs a DuckDNS name and token).
+    pub https: bool,
 }
 
 impl Default for ObsConfig {
     fn default() -> Self {
-        Self { port: 8131, lan: false, public_host: String::new() }
+        Self { port: 8131, lan: false, public_host: String::new(), https: true }
     }
 }
 

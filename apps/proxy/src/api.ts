@@ -226,6 +226,8 @@ export interface ObsLink {
   status: { current: { display: string; speech: string } | null; queue: unknown[]; paused: boolean };
   lan: string[];
   internet: string | null;
+  internet_secure: boolean;
+  securing: boolean;
 }
 
 export interface ObsLinks {

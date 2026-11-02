@@ -88,6 +88,11 @@ pub fn run() {
             tauri::async_runtime::spawn(async move { remote::apply(&st).await });
             let st = state.clone();
             tauri::async_runtime::spawn(async move { obs::apply(&st).await });
+            tauri::async_runtime::spawn(obs::duckdns(state.clone()));
+            {
+                let s = std::sync::Arc::downgrade(&state);
+                tauri::async_runtime::spawn(state.certs.clone().run(move || s.upgrade().and_then(|s| obs::https_want(&s))));
+            }
             // audio plugins: load the chain once the output device runs, keep
             // the settings the plugin thread hands over
             let st = state.clone();

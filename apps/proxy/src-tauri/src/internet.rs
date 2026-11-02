@@ -319,6 +319,12 @@ pub struct InternetStatus {
     pub guests: Vec<GuestInfo>,
     /// Open connections from the internet.
     pub connections: usize,
+    /// OBS links from the internet use HTTPS.
+    pub obs_https: bool,
+    /// Their certificate (Let's Encrypt, for the DuckDNS name).
+    pub https: ttv_net::CertStatus,
+    /// Some OBS link is shared on the internet (the certificate is needed).
+    pub obs_online: bool,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -352,7 +358,55 @@ pub fn status(state: &AppState) -> InternetStatus {
         invites: state.guests.invites(),
         guests: state.guests.guests(),
         connections: INTERNET_CONNECTIONS.load(Ordering::Relaxed),
+        obs_https: c.obs_https,
+        https: state.certs.status(),
+        obs_online: state.hosted.any_online(),
     }
+}
+
+/// The DuckDNS name and token, when both are set.
+pub fn duckdns_login(state: &AppState) -> Option<ttv_net::Want> {
+    let domain = state.cfg.read().duckdns_domain.clone();
+    let token = state.secrets.get(DUCKDNS_TOKEN)?;
+    (!domain.is_empty()).then_some(ttv_net::Want { domain, token })
+}
+
+/// What the certificate is needed for: OBS links shared on the internet, with HTTPS on.
+pub fn https_want(state: &AppState) -> Option<ttv_net::Want> {
+    (state.cfg.read().obs_https && state.hosted.any_online()).then(|| duckdns_login(state)).flatten()
+}
+
+/// How OBS links from the internet start: (`https://name.duckdns.org:port`,
+/// true) with a certificate, the plain address when HTTPS is off or can't be
+/// had, `None` while the certificate is being fetched (a link sent now
+/// would stop working in a minute).
+pub fn obs_internet_base(state: &AppState) -> Option<(String, bool)> {
+    let c = state.cfg.read().clone();
+    let public = address(&c, state.internet.read().public_ip.as_deref());
+    // the address carries the guests' port: OBS links use their own
+    let host = public.rsplit_once(':').map(|(h, _)| h.to_string()).unwrap_or(public);
+    if host.is_empty() {
+        return None;
+    }
+    let fqdn = (!c.duckdns_domain.is_empty()).then(|| ttv_net::duckdns::fqdn(&c.duckdns_domain));
+    match fqdn {
+        Some(f) if c.obs_https && state.secrets.get(DUCKDNS_TOKEN).is_some() => {
+            if state.certs.valid_for(&f) {
+                Some((format!("https://{f}:{}", c.obs_port), true))
+            } else if state.certs.status().error.is_some() {
+                Some((format!("http://{f}:{}", c.obs_port), false))
+            } else {
+                None
+            }
+        }
+        _ => Some((format!("http://{host}:{}", c.obs_port), false)),
+    }
+}
+
+/// From the internet over plain HTTP while HTTPS works: refused.
+pub fn needs_https(state: &AppState) -> bool {
+    let c = state.cfg.read();
+    c.obs_https && !c.duckdns_domain.is_empty() && state.certs.valid_for(&ttv_net::duckdns::fqdn(&c.duckdns_domain))
 }
 
 pub const DUCKDNS_TOKEN: &str = "duckdns-token";
@@ -363,12 +417,6 @@ pub fn address(c: &crate::config::Config, public_ip: Option<&str>) -> String {
     if host.is_empty() { String::new() } else { format!("{host}:{}", c.internet_port) }
 }
 
-/// "name" from "name", "name.duckdns.org" or "https://name.duckdns.org/".
-pub fn clean_domain(s: &str) -> String {
-    let s = s.trim().trim_start_matches("https://").trim_start_matches("http://").trim_end_matches('/');
-    let s = s.strip_suffix(".duckdns.org").unwrap_or(s);
-    s.chars().filter(|c| c.is_ascii_alphanumeric() || *c == '-').take(63).collect::<String>().to_ascii_lowercase()
-}
 
 /// An invite code friends paste into TTV-TTS.
 /// `over` replaces the address (e.g. a Tailscale name: "vcp-pc.tail1234.ts.net:8111").
@@ -757,17 +805,18 @@ fn web() -> reqwest::Client {
     reqwest::Client::builder().timeout(Duration::from_secs(20)).user_agent(concat!("TTV-TTS-Proxy/", env!("CARGO_PKG_VERSION"))).build().expect("web client")
 }
 
-/// Keeps the DuckDNS name pointing at this network (every 5 minutes).
+/// Keeps the DuckDNS name pointing at this network (every 5 minutes, so a
+/// new address after the daily reconnect is out within minutes) while
+/// friends use this proxy or an OBS link is shared on the internet.
 pub async fn duckdns(state: Arc<AppState>) {
+    let mut last: Option<(std::time::Instant, bool)> = None;
     loop {
-        let (on, domain) = {
-            let c = state.cfg.read();
-            (c.internet, c.duckdns_domain.clone())
-        };
-        if on && !domain.is_empty()
-            && let Some(token) = state.secrets.get(DUCKDNS_TOKEN)
-        {
-            let r = update_duckdns(&domain, &token).await;
+        let needed = state.cfg.read().internet || state.hosted.any_online();
+        // an OBS link change wakes this up too: at most one update a minute
+        let recent = last.is_some_and(|(t, needed_then)| needed_then == needed && t.elapsed() < Duration::from_secs(60));
+        if needed && !recent && let Some(ttv_net::Want { domain, token }) = duckdns_login(&state) {
+            last = Some((std::time::Instant::now(), needed));
+            let r = ttv_net::duckdns::update_ip(&domain, &token).await;
             set_live(&state, |l| {
                 l.duckdns_at = Some(chrono::Utc::now().timestamp());
                 match r {
@@ -782,20 +831,10 @@ pub async fn duckdns(state: Arc<AppState>) {
             });
         }
         tokio::select! {
-            _ = state.internet_rebind.notified() => {}
-            _ = tokio::time::sleep(Duration::from_secs(300)) => {}
+            _ = state.internet_rebind.notified() => last = None,
+            _ = state.hosted_changed.notified() => {}
+            _ = tokio::time::sleep(Duration::from_secs(300)) => last = None,
         }
-    }
-}
-
-/// One DuckDNS update; returns the public IPv4 DuckDNS saw.
-pub async fn update_duckdns(domain: &str, token: &str) -> Result<Option<String>, String> {
-    let url = format!("https://www.duckdns.org/update?domains={domain}&token={token}&verbose=true");
-    let body = web().get(url).send().await.map_err(|e| format!("DuckDNS didn't answer: {}", e.without_url()))?.text().await.map_err(|e| e.to_string())?;
-    let mut lines = body.lines();
-    match lines.next() {
-        Some("OK") => Ok(lines.next().map(str::trim).filter(|s| !s.is_empty()).map(str::to_string)),
-        _ => Err("DuckDNS said KO: check the name and the token.".into()),
     }
 }
 
@@ -883,8 +922,8 @@ mod tests {
 
     #[test]
     fn domains_and_addresses() {
-        assert_eq!(clean_domain(" https://My-Stream.duckdns.org/ "), "my-stream");
-        assert_eq!(clean_domain("bad name!"), "badname");
+        assert_eq!(ttv_net::duckdns::clean_domain(" https://My-Stream.duckdns.org/ "), "my-stream");
+        assert_eq!(ttv_net::duckdns::clean_domain("bad name!"), "badname");
         let mut c = crate::config::Config { internet_port: 8111, ..Default::default() };
         assert_eq!(address(&c, Some("203.0.113.9")), "203.0.113.9:8111");
         c.duckdns_domain = "mystream".into();

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/vcp", "crates/link", "crates/engine", "crates/plugins", "crates/reader", "apps/proxy/src-tauri", "apps/app/src-tauri"]
+members = ["crates/vcp", "crates/link", "crates/engine", "crates/plugins", "crates/reader", "crates/net", "apps/proxy/src-tauri", "apps/app/src-tauri"]
 
 [workspace.package]
 version = "2.1.0"
@@ -16,6 +16,7 @@ ttv-link = { path = "crates/link" }
 ttv-engine = { path = "crates/engine" }
 ttv-plugins = { path = "crates/plugins" }
 ttv-reader = { path = "crates/reader" }
+ttv-net = { path = "crates/net" }
 
 tauri = { version = "2.12.5", features = ["tray-icon"] }
 tauri-build = { version = "2.7.4", features = [] }
@@ -37,6 +38,8 @@ reqwest = { version = "0.13.5", default-features = false, features = ["json", "s
 rustls = { version = "0.23.46", default-features = false, features = ["aws_lc_rs", "std", "tls12", "logging"] }
 tokio-rustls = { version = "0.26.6", default-features = false, features = ["aws_lc_rs", "tls12", "logging"] }
 rcgen = { version = "0.14.10", default-features = false, features = ["crypto", "pem", "aws_lc_rs"] }
+# ACME (Let's Encrypt) for HTTPS on online OBS links
+instant-acme = { version = "0.8.5", features = ["rcgen", "time"] }
 axum = { version = "0.8.9", default-features = false, features = ["tokio", "http1", "http2", "json", "query", "ws"] }
 hyper = { version = "1.12.0", features = ["server", "http1", "http2"] }
 hyper-util = { version = "0.1.21", features = ["server-auto", "tokio", "service"] }

@@ -145,6 +145,10 @@ pub fn run() {
             tauri::async_runtime::spawn(engine_events(state.clone()));
             state.hosted.load(&state);
             tauri::async_runtime::spawn(hosted::serve(state.clone()));
+            {
+                let s = Arc::downgrade(&state);
+                tauri::async_runtime::spawn(state.certs.clone().run(move || s.upgrade().and_then(|s| internet::https_want(&s))));
+            }
             tauri::async_runtime::spawn(hosted::Hosted::supervise(state.clone()));
 
             shell::setup_tray(app.handle(), &state)?;

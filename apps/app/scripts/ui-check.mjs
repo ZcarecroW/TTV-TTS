@@ -123,7 +123,7 @@ await page.waitForTimeout(400);
 const voiceCount = await page.locator("main ul li").count();
 check(voiceCount >= 5, "voice library lists voices", String(voiceCount));
 await page.locator("main").getByRole("button", { name: /^(speak|sprechen)$/i }).click();
-await page.waitForTimeout(1600);
+await page.waitForTimeout(2600);
 check(/1.2 s|1,2 s/.test(await page.locator("main").innerText()), "speech test shows its timing report");
 
 // Voice host: live system tiles arrive.
@@ -152,7 +152,7 @@ await nav("host");
 await page.waitForTimeout(500);
 const fr = page.locator("section", { hasText: /Friends over the internet|Freunde über das Internet/ });
 check(/Mia/.test(await fr.innerText()), "the host sees friends with access", (await fr.innerText()).match(/Mia[^\n]*/)?.[0]);
-await fr.getByRole("switch").first().click();
+await fr.getByRole("switch", { name: /Allow friends|Freunde über das Internet zulassen/ }).click();
 await page.waitForTimeout(500);
 check(/port 8111 open|Port 8111 offen/.test(await fr.innerText()), "internet access can be switched on");
 await fr.getByPlaceholder(/my-stream|mein-stream/).fill("my-stream");
@@ -160,6 +160,10 @@ await fr.getByPlaceholder(/DuckDNS/).fill("1a2b3c4d-1a2b-1a2b-1a2b-1a2b3c4d5e6f"
 await fr.getByRole("button", { name: /^(save|speichern)$/i }).click();
 await page.waitForTimeout(500);
 check(/my-stream\.duckdns\.org points at|my-stream\.duckdns\.org zeigt jetzt/.test(await page.locator("body").innerText()), "DuckDNS is set up from the app");
+// the HTTPS certificate of OBS links from the internet (the demo "fetches" one)
+check(/HTTPS|Let's Encrypt/.test(await fr.locator("[data-https]").innerText()), "the HTTPS certificate is shown with the name", (await fr.locator("[data-https]").innerText()).slice(0, 90));
+await page.waitForTimeout(2600);
+check(/HTTPS certificate for my-stream\.duckdns\.org|HTTPS-Zertifikat für my-stream\.duckdns\.org/.test(await fr.locator("[data-https]").innerText()), "the certificate is valid", (await fr.locator("[data-https]").innerText()).slice(0, 120));
 await fr.getByRole("button", { name: /check from the internet|aus dem internet prüfen/i }).click();
 await page.waitForTimeout(900);
 check(/Reachable at my-stream\.duckdns\.org:8111|Erreichbar unter my-stream\.duckdns\.org:8111/.test(await fr.innerText()), "the reachability check reports the address");
@@ -178,6 +182,30 @@ await page.waitForTimeout(300);
 const prof = await page.locator("main").innerText();
 check(prof.includes("zcarecrow"), "profile editor shows the channel");
 check(/(Computed|Berechnet): de 41 · en 30/.test(prof), "profile shows how much of its preset is computed", prof.match(/(Computed|Berechnet):[^\n]*/)?.[0] ?? "");
+{
+  // an OBS link from the internet with a DuckDNS name: HTTPS
+  const oc = page.locator("main [data-output]");
+  await oc.locator(".inline-flex button").nth(1).click();
+  await page.waitForTimeout(400);
+  await oc.getByRole("switch", { name: /Also from the internet|Auch aus dem Internet/ }).click();
+  await page.waitForTimeout(400);
+  await oc.getByPlaceholder("mystream.duckdns.org").fill("mystream.duckdns.org");
+  await oc.getByPlaceholder("mystream.duckdns.org").press("Tab");
+  await page.waitForTimeout(3500);
+  const links = async () => (await oc.locator("input[readonly]").evaluateAll((els) => els.map((e) => e.value))).join(" ");
+  const oct = (await oc.innerText()) + " " + (await links());
+  check(/https:\/\/mystream\.duckdns\.org:8131\/o\//.test(oct) && /\bHTTPS\b/.test(oct), "an OBS link from the internet uses HTTPS with a DuckDNS name", oct.match(/https:[^\s]*/)?.[0] ?? oct.slice(0, 120));
+  check(/HTTPS certificate for mystream\.duckdns\.org|HTTPS-Zertifikat für mystream\.duckdns\.org/.test(oct), "the profile shows the certificate");
+  check(/DuckDNS token|DuckDNS-Token/.test(oct), "the DuckDNS token can be entered in the profile");
+  await oc.getByRole("switch", { name: /use HTTPS|nutzen HTTPS/ }).click();
+  await page.waitForTimeout(3500);
+  const off = (await oc.innerText()) + " " + (await links());
+  check(/http:\/\/mystream\.duckdns\.org:8131\/o\//.test(off) && /not encrypted|unverschlüsselt/.test(off), "without HTTPS the link says it isn't encrypted");
+  await oc.getByRole("switch", { name: /use HTTPS|nutzen HTTPS/ }).click();
+  await oc.getByRole("switch", { name: /Also from the internet|Auch aus dem Internet/ }).click();
+  await oc.locator(".inline-flex button").nth(0).click();
+  await page.waitForTimeout(800);
+}
 {
   const tc = page.locator("main [data-translate]");
   const tct = await tc.innerText();

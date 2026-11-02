@@ -17,7 +17,7 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 
-use axum::Router;
+use axum::{Extension, Router};
 use axum::extract::ws::{Message, WebSocket, WebSocketUpgrade};
 use axum::extract::{ConnectInfo, Path, State};
 use axum::http::{HeaderValue, StatusCode, header};
@@ -28,6 +28,7 @@ use parking_lot::Mutex;
 use tokio::sync::broadcast;
 
 use crate::output::Output;
+use ttv_net::Secure;
 
 /// The browser source: no markup to render, no requests but the socket.
 pub const PAGE: &str = r#"<!doctype html><meta charset="utf-8"><title>TTV-TTS</title><style>html,body{margin:0;background:transparent}</style><script>
@@ -139,11 +140,14 @@ pub enum Refusal {
     Unknown,
     /// The link works only in the local network.
     NotOnline,
+    /// From the internet, the link must use HTTPS (this server has a certificate).
+    NeedsHttps,
 }
 
 /// The links a server knows: token -> audio, and who may open it.
 pub trait Links: Send + Sync + 'static {
-    fn sink(&self, token: &str, from: IpAddr) -> Result<Arc<ObsSink>, Refusal>;
+    /// `secure`: the request came over HTTPS.
+    fn sink(&self, token: &str, from: IpAddr, secure: bool) -> Result<Arc<ObsSink>, Refusal>;
 }
 
 /// An address in the local network (or this PC, or a VPN like Tailscale).
@@ -200,23 +204,24 @@ fn refuse(status: StatusCode, text: &'static str) -> Response {
     (status, [(header::CACHE_CONTROL, "no-store")], text).into_response()
 }
 
-fn check<L: Links>(s: &Served<L>, token: &str, from: IpAddr) -> Result<Arc<ObsSink>, (StatusCode, &'static str)> {
+fn check<L: Links>(s: &Served<L>, token: &str, from: IpAddr, secure: bool) -> Result<Arc<ObsSink>, (StatusCode, &'static str)> {
     let from = from.to_canonical();
     if s.guesses.blocked(from) {
         return Err((StatusCode::TOO_MANY_REQUESTS, "Too many wrong links from this address. Try again later."));
     }
-    match s.links.sink(token, from) {
+    match s.links.sink(token, from, secure) {
         Ok(sink) => Ok(sink),
         Err(Refusal::Unknown) => {
             s.guesses.wrong(from);
             Err((StatusCode::NOT_FOUND, "This TTV-TTS link doesn't exist (any more)."))
         }
         Err(Refusal::NotOnline) => Err((StatusCode::FORBIDDEN, "This TTV-TTS link only works in the local network.")),
+        Err(Refusal::NeedsHttps) => Err((StatusCode::FORBIDDEN, "This TTV-TTS link needs https:// now. Copy the new link from TTV-TTS.")),
     }
 }
 
-async fn page<L: Links>(State(s): S<L>, Path(token): Path<String>, ConnectInfo(addr): ConnectInfo<SocketAddr>) -> Response {
-    if let Err((code, why)) = check(&s, &token, addr.ip()) {
+async fn page<L: Links>(State(s): S<L>, Path(token): Path<String>, ConnectInfo(addr): ConnectInfo<SocketAddr>, secure: Option<Extension<Secure>>) -> Response {
+    if let Err((code, why)) = check(&s, &token, addr.ip(), secure.is_some_and(|Extension(Secure(x))| x)) {
         return refuse(code, why);
     }
     let mut r = PAGE.into_response();
@@ -228,8 +233,8 @@ async fn page<L: Links>(State(s): S<L>, Path(token): Path<String>, ConnectInfo(a
     r
 }
 
-async fn socket<L: Links>(State(s): S<L>, Path(token): Path<String>, ConnectInfo(addr): ConnectInfo<SocketAddr>, ws: WebSocketUpgrade) -> Response {
-    let sink = match check(&s, &token, addr.ip()) {
+async fn socket<L: Links>(State(s): S<L>, Path(token): Path<String>, ConnectInfo(addr): ConnectInfo<SocketAddr>, secure: Option<Extension<Secure>>, ws: WebSocketUpgrade) -> Response {
+    let sink = match check(&s, &token, addr.ip(), secure.is_some_and(|Extension(Secure(x))| x)) {
         Ok(sink) => sink,
         Err((code, why)) => return refuse(code, why),
     };

@@ -29,6 +29,9 @@ axum = { workspace = true }
 bytes = { workspace = true }
 # FFT for the whisper effect (already in the tree through rubato)
 realfft = { workspace = true }
+# HTTPS for OBS links from the internet (Secure marker)
+ttv-net = { workspace = true }
 
 [dev-dependencies]
 rustls = { workspace = true }
+rcgen = { workspace = true }

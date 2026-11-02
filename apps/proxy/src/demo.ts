@@ -202,7 +202,7 @@ export async function demoInvoke<T>(cmd: string, args: Record<string, unknown> =
     case "obs_links":
     case "obs_remove": {
       const links = new URLSearchParams(location.search).has("obs")
-        ? [{ id: "p1", name: "Friend: Lena", channels: ["lenaplays"], online: true, listeners: 1, reading: true, status: { current: { display: "Mikey_TV", speech: "Mikey sagt: gute Runde!" }, queue: [], paused: false }, lan: ["http://192.168.178.25:8112/o/Xk3vQ9pLm2RtW7aZ"], internet: "http://mystream.duckdns.org:8112/o/Xk3vQ9pLm2RtW7aZ" }]
+        ? [{ id: "p1", name: "Friend: Lena", channels: ["lenaplays"], online: true, listeners: 1, reading: true, status: { current: { display: "Mikey_TV", speech: "Mikey sagt: gute Runde!" }, queue: [], paused: false }, lan: ["http://192.168.178.25:8112/o/Xk3vQ9pLm2RtW7aZ"], internet: "https://mystream.duckdns.org:8112/o/Xk3vQ9pLm2RtW7aZ", internet_secure: true, securing: false }]
         : [];
       return { port: 8112, error: null, links } as T;
     }

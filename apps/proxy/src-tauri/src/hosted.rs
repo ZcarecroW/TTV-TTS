@@ -1,14 +1,16 @@
 //! OBS links on the voice host PC: profiles that the app hands over ("play
 //! in OBS through the voice host PC") are read here, each by its own chat
-//! reader (the same code as in the app), and played to OBS browser sources
-//! over plain HTTP (OBS doesn't trust the proxy's own certificate).
+//! reader (the same code as in the app), and played to OBS browser sources:
+//! over plain HTTP in the network, over HTTPS from the internet (OBS doesn't
+//! trust the proxy's own certificate, so these links use a Let's Encrypt
+//! certificate for the DuckDNS name; see `ttv_net`).
 //!
 //! A hosted profile reads its chat only while a browser source listens (and
 //! a minute after the last one left), so a friend's link costs nothing while
 //! they're offline. Each one keeps its viewers' voices in its own folder.
 
 use std::collections::HashMap;
-use std::net::{IpAddr, SocketAddr};
+use std::net::IpAddr;
 use std::path::PathBuf;
 use std::sync::{Arc, Weak};
 use std::time::{Duration, Instant};
@@ -88,6 +90,10 @@ pub struct HostedView {
     pub lan: Vec<String>,
     /// The link from the internet (DuckDNS name or public IP + forwarded port).
     pub internet: Option<String>,
+    /// That link uses HTTPS.
+    pub internet_secure: bool,
+    /// Shared on the internet, but the HTTPS certificate is still being fetched.
+    pub securing: bool,
 }
 
 /// Shared by a hosted profile's reader host and its entry.
@@ -321,10 +327,11 @@ impl Hosted {
         let c = state.cfg.read();
         let path = format!("/o/{}", p.output.token);
         let lan = state.addresses.read().iter().map(|a| format!("http://{}:{}{path}", a.ip, c.obs_port)).collect();
-        let public = crate::internet::address(&c, state.internet.read().public_ip.as_deref());
-        // the internet address carries the guests' port: OBS links use their own
-        let host = public.rsplit_once(':').map(|(h, _)| h.to_string()).unwrap_or(public);
-        let internet = (p.output.online && !host.is_empty()).then(|| format!("http://{host}:{}{path}", c.obs_port));
+        drop(c);
+        let base = p.output.online.then(|| crate::internet::obs_internet_base(state)).flatten();
+        let securing = p.output.online && base.is_none() && crate::internet::duckdns_login(state).is_some();
+        let internet_secure = base.as_ref().is_some_and(|b| b.1);
+        let internet = base.map(|(b, _)| format!("{b}{path}"));
         HostedView {
             id: p.id.clone(),
             name: p.name.clone(),
@@ -335,7 +342,14 @@ impl Hosted {
             status: e.reader.status(),
             lan,
             internet,
+            internet_secure,
+            securing,
         }
+    }
+
+    /// Some hosted profile's link is shared on the internet.
+    pub fn any_online(&self) -> bool {
+        self.entries.read().values().any(|e| e.profile().output.online)
     }
 
     pub fn history(&self, id: &str) -> Option<Vec<ItemView>> {
@@ -440,43 +454,51 @@ fn same(a: &str, b: &str) -> bool {
 struct ProxyLinks(Weak<AppState>);
 
 impl Links for ProxyLinks {
-    fn sink(&self, token: &str, from: IpAddr) -> Result<Arc<ObsSink>, Refusal> {
+    fn sink(&self, token: &str, from: IpAddr, secure: bool) -> Result<Arc<ObsSink>, Refusal> {
         let st = self.0.upgrade().ok_or(Refusal::Unknown)?;
-        let entries = st.hosted.entries.read();
-        let e = entries.values().find(|e| e.reader.store.read().profiles.first().is_some_and(|p| same(&p.output.token, token))).ok_or(Refusal::Unknown)?;
-        if !obs::is_local(from) && !e.profile().output.online {
-            return Err(Refusal::NotOnline);
+        let sink = {
+            let entries = st.hosted.entries.read();
+            let e = entries.values().find(|e| e.reader.store.read().profiles.first().is_some_and(|p| same(&p.output.token, token))).ok_or(Refusal::Unknown)?;
+            if !obs::is_local(from) && !e.profile().output.online {
+                return Err(Refusal::NotOnline);
+            }
+            e.shared.sink.clone()
+        };
+        // from the internet the link (its token) must not travel unencrypted
+        if !obs::is_local(from) && !secure && crate::internet::needs_https(&st) {
+            return Err(Refusal::NeedsHttps);
         }
-        Ok(e.shared.sink.clone())
+        Ok(sink)
     }
 }
 
-/// The plain-HTTP port of the OBS links; listens while hosted profiles exist
-/// and moves when the port setting changes.
+/// The port of the OBS links (HTTP, and HTTPS when switched on); listens
+/// while hosted profiles exist and moves when the port setting changes.
 pub async fn serve(state: Arc<AppState>) {
-    let mut running: Option<(u16, tokio::sync::oneshot::Sender<()>)> = None;
+    let mut running: Option<((u16, bool), tokio::sync::oneshot::Sender<()>)> = None;
+    let tls = state.certs.server_config();
     loop {
-        let want = (!state.hosted.is_empty()).then(|| state.cfg.read().obs_port);
+        let want = (!state.hosted.is_empty()).then(|| {
+            let c = state.cfg.read();
+            (c.obs_port, c.obs_https)
+        });
         if running.as_ref().map(|(p, _)| *p) != want {
             if let Some((_, stop)) = running.take() {
                 let _ = stop.send(());
                 tokio::time::sleep(Duration::from_millis(200)).await;
             }
-            if let Some(port) = want {
+            if let Some((port, https)) = want {
                 match tokio::net::TcpListener::bind(("0.0.0.0", port)).await {
                     Ok(listener) => {
                         let (tx, rx) = tokio::sync::oneshot::channel::<()>();
                         let app = obs::router(Arc::new(ProxyLinks(Arc::downgrade(&state))));
                         log::info!("OBS links on port {port}");
                         *state.obs_error.write() = None;
-                        tokio::spawn(async move {
-                            let _ = axum::serve(listener, app.into_make_service_with_connect_info::<SocketAddr>())
-                                .with_graceful_shutdown(async {
-                                    let _ = rx.await;
-                                })
-                                .await;
-                        });
-                        running = Some((port, tx));
+                        let tls = https.then(|| tls.clone());
+                        tokio::spawn(ttv_net::serve::serve(listener, app, tls, async {
+                            let _ = rx.await;
+                        }));
+                        running = Some(((port, https), tx));
                     }
                     Err(e) => {
                         let msg = format!("port {port} can't be used for OBS links: {e}");

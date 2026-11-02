@@ -2,6 +2,10 @@
 
 All notable changes to TTV-TTS are listed here. Downloads: [Releases](https://github.com/ZcarecroW/TTV-TTS/releases).
 
+## Unreleased
+
+- **HTTPS for links from the internet, automatic**: with a DuckDNS name and its token, TTV-TTS (and TTV-TTS Proxy) get a free certificate from Let's Encrypt for the name and renew it on their own – no port 80, no certificate files, nothing to know. OBS links from the internet then use `https://` (and an encrypted audio socket); the same port keeps plain HTTP for your own network. Once HTTPS works, a link from the internet over plain HTTP is refused, so its token never travels unencrypted. The DuckDNS name also gets updated for OBS links alone (every 5 minutes, so the daily reconnect is no problem), and TTV-TTS without a second PC updates it too.
+
 ## [2.1.0] – 2026-11-02
 
 - **OBS links**: a profile can play its voices in OBS as a browser source instead of on a sound device – a source of its own with fader and filters. The page shows nothing and loads nothing but the voices (about 1 KB). Messages are only generated while OBS is connected.

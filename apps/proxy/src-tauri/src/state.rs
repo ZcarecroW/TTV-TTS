@@ -54,6 +54,8 @@ pub struct AppState {
     pub hosted_changed: Notify,
     /// Why the OBS port can't be used.
     pub obs_error: RwLock<Option<String>>,
+    /// The HTTPS certificate of the OBS links from the internet.
+    pub certs: Arc<ttv_net::Certs>,
     app: OnceLock<AppHandle>,
 }
 
@@ -69,7 +71,15 @@ impl AppState {
         let activity: ttv_engine::Activity = Arc::new(crate::forward::last_work);
         let engine = ttv_engine::Engine::new(data_dir.join("engine"), activity);
         engine.set_vcp(Some(vcp.clone()));
-        Arc::new(Self {
+        Arc::new_cyclic(|me: &std::sync::Weak<Self>| {
+        let me = me.clone();
+        let certs = ttv_net::Certs::new(&data_dir.join("acme"), move || {
+            if let Some(s) = me.upgrade() {
+                s.publish_internet();
+            }
+        });
+        Self {
+            certs,
             engine,
             guests: crate::internet::Guests::load(&data_dir),
             internet: RwLock::new(Default::default()),
@@ -96,6 +106,7 @@ impl AppState {
             rebind: Notify::new(),
             listen_error: RwLock::new(None),
             app: OnceLock::new(),
+        }
         })
     }
 

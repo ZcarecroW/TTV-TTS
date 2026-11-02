@@ -43,6 +43,8 @@ pub struct AppState {
     pub reader: Arc<crate::reader::Reader>,
     /// The audio of profiles that play in OBS on this PC.
     pub obs: crate::obs::Sinks,
+    /// HTTPS certificate of OBS links from the internet (Let's Encrypt, DuckDNS name).
+    pub certs: Arc<ttv_net::Certs>,
     pub presets: PresetStore,
     /// Computed preset voices (engine on the proxy or in this app).
     pub library: VoiceLibrary,
@@ -74,6 +76,7 @@ impl AppState {
             let _ = state_tx.send((id, data));
         }));
         let state = Arc::new(Self {
+            certs: ttv_net::Certs::new(&data_dir.join("acme"), || {}),
             rack,
             plugin_errors: parking_lot::Mutex::new(Default::default()),
             plugin_states: parking_lot::Mutex::new(Some(state_rx)),

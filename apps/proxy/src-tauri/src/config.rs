@@ -63,8 +63,12 @@ pub struct Config {
     pub internet_port: u16,
     /// DuckDNS name ("mystream" for mystream.duckdns.org); its token is a secret.
     pub duckdns_domain: String,
-    /// Plain-HTTP port of the OBS links (OBS can't use the proxy's own certificate).
+    /// Port of the OBS links: plain HTTP in the network, HTTPS from the
+    /// internet (OBS can't use the proxy's own certificate, so links from the
+    /// internet get a free one from Let's Encrypt for the DuckDNS name).
     pub obs_port: u16,
+    /// Links from the internet use HTTPS (a Let's Encrypt certificate for the DuckDNS name).
+    pub obs_https: bool,
 }
 
 impl Default for Config {
@@ -95,6 +99,7 @@ impl Default for Config {
             internet_port: 8111,
             duckdns_domain: String::new(),
             obs_port: 8112,
+            obs_https: true,
         }
     }
 }
@@ -119,7 +124,7 @@ impl Config {
         if self.internet_port == 0 || self.internet_port == self.port {
             self.internet_port = if self.port == 8111 { 8112 } else { 8111 };
         }
-        self.duckdns_domain = crate::internet::clean_domain(&self.duckdns_domain);
+        self.duckdns_domain = ttv_net::duckdns::clean_domain(&self.duckdns_domain);
         if !matches!(self.update_channel.as_str(), "stable" | "preview") {
             self.update_channel = "stable".into();
         }

@@ -16,6 +16,9 @@ const SERVICE: &str = "TTV-TTS";
 pub const VCP_KEY: &str = "vcp-api-key";
 /// The streamer's own DeepL API key ("translate for me").
 pub const DEEPL_KEY: &str = "deepl-api-key";
+/// DuckDNS token: keeps the name pointing here and gets the HTTPS certificate
+/// of OBS links from the internet.
+pub const DUCKDNS_TOKEN: &str = "duckdns-token";
 
 /// Device token for a paired proxy.
 pub fn proxy_token(proxy_id: &str) -> String {
