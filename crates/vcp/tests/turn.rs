@@ -10,6 +10,8 @@ use tokio::net::TcpListener;
 
 #[derive(Default)]
 struct Seen {
+    /// how long VCP "works" on a POST (ms)
+    hold: u64,
     active_posts: AtomicUsize,
     max_posts: AtomicUsize,
     gets_during_post: AtomicUsize,
@@ -52,7 +54,7 @@ async fn serve(seen: Arc<Seen>) -> String {
                         seen.order.lock().push(String::from_utf8_lossy(&buf[head_end..]).to_string());
                         let now = seen.active_posts.fetch_add(1, Ordering::SeqCst) + 1;
                         seen.max_posts.fetch_max(now, Ordering::SeqCst);
-                        tokio::time::sleep(Duration::from_millis(120)).await;
+                        tokio::time::sleep(Duration::from_millis(seen.hold)).await;
                         seen.active_posts.fetch_sub(1, Ordering::SeqCst);
                     } else if seen.active_posts.load(Ordering::SeqCst) > 0 {
                         seen.gets_during_post.fetch_add(1, Ordering::SeqCst);
@@ -71,7 +73,7 @@ async fn serve(seen: Arc<Seen>) -> String {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn work_requests_take_turns() {
-    let seen = Arc::new(Seen::default());
+    let seen = Arc::new(Seen { hold: 250, ..Default::default() });
     let base = serve(seen.clone()).await;
     let t0 = Instant::now();
     let mut tasks = Vec::new();
@@ -85,7 +87,12 @@ async fn work_requests_take_turns() {
     }
     // lookups are not held up
     let c = ttv_vcp::Client::new(&base, None);
-    tokio::time::sleep(Duration::from_millis(60)).await;
+    // once VCP works on one of them (slow CI runners need a while to connect)
+    let wait = Instant::now();
+    while seen.active_posts.load(Ordering::SeqCst) == 0 {
+        assert!(wait.elapsed() < Duration::from_secs(5), "no work request reached VCP");
+        tokio::time::sleep(Duration::from_millis(2)).await;
+    }
     let g = Instant::now();
     let _: serde_json::Value = c.get("/api/v1/voices", Duration::from_secs(5)).await.unwrap();
     let get_ms = g.elapsed().as_millis();
@@ -93,8 +100,9 @@ async fn work_requests_take_turns() {
         t.await.unwrap();
     }
     assert_eq!(seen.max_posts.load(Ordering::SeqCst), 1, "two work requests reached VCP at once");
-    assert!(t0.elapsed() >= Duration::from_millis(4 * 120), "{:?}", t0.elapsed());
-    assert!(get_ms < 100, "a lookup waited {get_ms} ms");
+    assert!(t0.elapsed() >= Duration::from_millis(4 * 250), "{:?}", t0.elapsed());
+    // behind the turn it would have waited for all four (about a second)
+    assert!(get_ms < 200, "a lookup waited {get_ms} ms");
     assert!(seen.gets_during_post.load(Ordering::SeqCst) >= 1, "the lookup ran while VCP worked");
     assert!(ttv_vcp::is_work(&ttv_vcp::Method::POST, "/api/v1/generation/clone?sync=true"));
     assert!(!ttv_vcp::is_work(&ttv_vcp::Method::POST, "/api/v1/generation/stop"));
@@ -106,7 +114,7 @@ async fn work_requests_take_turns() {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn chat_goes_before_background_work() {
-    let seen = Arc::new(Seen::default());
+    let seen = Arc::new(Seen { hold: 600, ..Default::default() });
     let base = serve(seen.clone()).await;
     let post = |name: &'static str, background: bool, delay: u64| {
         let c = ttv_vcp::Client::new(&base, None);
@@ -118,8 +126,8 @@ async fn chat_goes_before_background_work() {
     };
     // chat A works, a job queues up (B), then more chat arrives (C): C first
     let a = post("A", false, 0);
-    let b = post("B", true, 30);
-    let c = post("C", false, 60);
+    let b = post("B", true, 150);
+    let c = post("C", false, 300);
     for t in [a, b, c] {
         t.await.unwrap();
     }
