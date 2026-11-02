@@ -464,6 +464,13 @@ const defaultVoice = computed({
                 </select>
               </UiField>
               <UiToggle v-model="p.voices.effects" :label="t('profiles.effects')" :tip="t('tips.voiceEffects')" />
+              <div v-if="p.voices.effects && p.voices.viewer_plugins" class="space-y-2 rounded-xl border border-line p-3.5" data-viewer-plugins>
+                <UiField :label="t('profiles.viewerPlugins', { n: p.voices.viewer_plugins.share })" :tip="t('tips.viewerPluginsShare')">
+                  <input v-model.number="p.voices.viewer_plugins.share" type="range" min="0" max="100" step="5" class="w-full max-w-72" />
+                </UiField>
+                <p class="hint">{{ p.voices.viewer_plugins.share ? t("profiles.viewerPluginsOn") : t("profiles.viewerPluginsOff") }} <UiDocs page="effects" anchor="viewer-plugins" /></p>
+                <UiToggle v-if="p.voices.viewer_plugins.share" v-model="p.voices.viewer_plugins.skip_voice_fx" :label="t('profiles.viewerPluginsSkip')" />
+              </div>
               <UiToggle v-model="p.voices.os_fallback" :label="t('profiles.osFallback')" :tip="t('tips.osFallback')" />
               <UiToggle v-model="p.voices.emotions" :label="t('profiles.emotions')" :tip="t('tips.emotions')" />
               <UiSegmented

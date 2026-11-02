@@ -45,6 +45,17 @@ pub async fn speak(State(state): State<Arc<AppState>>, Json(req): Json<SpeakRequ
             s
         }
     };
+    // then the viewer's plugin effect and the chain on every voice
+    let (out, rate) = match &req.plugins {
+        Some(pl) => {
+            let (mut out, r) = state.plugins.run("speak", pl.variant.as_deref(), pl.main, out, rate).await;
+            if req.last || req.stream.is_empty() {
+                out.extend(state.plugins.tail("speak", pl.variant.as_deref(), pl.main).await);
+            }
+            (out, r)
+        }
+        None => (out, rate),
+    };
     ([(header::CONTENT_TYPE, "audio/wav"), (header::CACHE_CONTROL, "no-store")], speech::encode_wav16(&out, rate)).into_response()
 }
 

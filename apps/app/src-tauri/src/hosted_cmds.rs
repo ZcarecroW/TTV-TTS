@@ -56,7 +56,8 @@ pub async fn push(state: &Arc<AppState>, id: &str) -> Result<serde_json::Value, 
         serde_json::json!({ "gap_ms": cfg.audio.gap_ms, "streaming": streaming, "translate_email": cfg.translate_email })
     };
     let (roles, fx) = state.reader.viewer_roles(id);
-    let body = serde_json::json!({ "profile": profile, "preset": preset, "settings": settings, "roles": roles, "fx": fx });
+    let plugins = state.reader.viewer_plugins(id);
+    let body = serde_json::json!({ "profile": profile, "preset": preset, "settings": settings, "roles": roles, "fx": fx, "plugins": plugins });
     c.put(&format!("/ttv/v1/hosted/{id}"), &body, T).await.map_err(why)
 }
 
@@ -68,8 +69,12 @@ pub async fn take_back(state: &Arc<AppState>, id: &str) -> Result<(), String> {
     if exists && let Ok(v) = c.get::<serde_json::Value>(&format!("/ttv/v1/hosted/{id}/viewers?limit=100000"), T).await {
         let mut roles = std::collections::HashMap::new();
         let mut fx = std::collections::HashMap::new();
+        let mut plugins = std::collections::HashMap::new();
         for row in v["viewers"].as_array().into_iter().flatten() {
             let Some(user) = row["user_id"].as_str() else { continue };
+            if let Some(p) = row["plugin"].as_str() {
+                plugins.insert(user.to_string(), ttv_reader::reader::PluginPick { id: p.to_string(), manual: row["plugin_manual"].as_bool().unwrap_or(false) });
+            }
             if let Some(r) = row["role"].as_u64() {
                 roles.insert(user.to_string(), r as u32);
             }
@@ -77,7 +82,7 @@ pub async fn take_back(state: &Arc<AppState>, id: &str) -> Result<(), String> {
                 fx.insert(user.to_string(), f.to_string());
             }
         }
-        state.reader.adopt_viewers(id, &roles, &fx);
+        state.reader.adopt_viewers(id, &roles, &fx, &plugins);
     }
     c.request(reqwest::Method::DELETE, &format!("/ttv/v1/hosted/{id}")).timeout(T).send().await.map_err(|e| e.to_string())?;
     Ok(())

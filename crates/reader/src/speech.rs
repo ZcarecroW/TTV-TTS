@@ -229,6 +229,18 @@ pub struct SpeakRequest {
     pub stream: String,
     /// The message's last piece: the effect's tail comes with it.
     pub last: bool,
+    /// Audio plugins to run on the voice host PC too (newer proxies).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub plugins: Option<SpeakPlugins>,
+}
+
+/// The plugins of one message on the voice host PC: the viewer's effect and
+/// the chain on every voice, in that order (after the built-in effect).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct SpeakPlugins {
+    pub variant: Option<String>,
+    pub main: bool,
 }
 
 /// Why a piece couldn't be made on the voice host.

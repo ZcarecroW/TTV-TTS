@@ -171,3 +171,43 @@ async fn plugins_load_again_after_their_editor_was_open() {
     remove(clap);
     remove(vst3);
 }
+
+/// Chains are independent: the same plugin in two chains with different
+/// settings, each with its own instance; dropping one leaves the other.
+/// Also measures what a viewer effect costs: loading an instance and
+/// processing speech offline.
+#[tokio::test(flavor = "multi_thread")]
+async fn chains_are_independent_and_cheap() {
+    let path = plugin("test_clap", "clap");
+    let info = ttv_plugins::scan_file(&path).unwrap().remove(0);
+    let rack = Rack::start_keyed(|_, _, _| {});
+    let half = Some(0.5f32.to_bits().to_le_bytes().to_vec());
+    let quarter = Some(0.25f32.to_bits().to_le_bytes().to_vec());
+    let t0 = std::time::Instant::now();
+    rack.set_chain("v:a", 48_000, vec![SlotSpec { id: "a".into(), plugin: info.clone(), enabled: true, state: half }]).await;
+    let load_ms = t0.elapsed().as_secs_f64() * 1000.0;
+    rack.set_chain("v:b", 48_000, vec![SlotSpec { id: "b".into(), plugin: info.clone(), enabled: true, state: quarter }]).await;
+    assert!(rack.has_chain("v:a") && rack.has_chain("v:b") && !rack.has_chain("v:c"));
+    assert!(rack.is_idle(), "the main chain is empty");
+    let x = sine(48_000, 1.0, 0.8);
+    let a = rack.process_chain("v:a", x.clone()).await;
+    let b = rack.process_chain("v:b", x.clone()).await;
+    assert!((peak(&a) - 0.4).abs() < 0.01 && (peak(&b) - 0.2).abs() < 0.01, "{} {}", peak(&a), peak(&b));
+    assert_eq!(rack.process_chain("v:none", x.clone()).await, x, "a missing chain passes audio through");
+    // ten seconds of speech through one effect
+    let t1 = std::time::Instant::now();
+    for _ in 0..10 {
+        rack.process_chain("v:a", x.clone()).await;
+    }
+    let per_sec_ms = t1.elapsed().as_secs_f64() * 100.0;
+    println!("viewer effect: load {load_ms:.1} ms, {per_sec_ms:.2} ms per second of speech");
+    assert!(per_sec_ms < 20.0, "{per_sec_ms} ms per second of speech");
+    rack.drop_chain("v:a");
+    assert!(!rack.has_chain("v:a"));
+    let b2 = rack.process_chain("v:b", x.clone()).await;
+    assert!((peak(&b2) - 0.2).abs() < 0.01);
+    let states = rack.save_states().await;
+    assert_eq!(states.len(), 1, "{states:?}");
+    rack.drop_chain("v:b");
+    remove(path);
+}

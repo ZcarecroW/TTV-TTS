@@ -10,7 +10,7 @@ pub use ttv_reader::speech::*;
 /// is ready. Returns when the last piece finished playing (or was skipped).
 pub async fn say(vcp: ttv_vcp::Client, state: &Arc<crate::state::AppState>, u: Utterance) -> Result<SayReport, String> {
     let audio = state.audio.clone();
-    let stage = crate::plugin_cmds::Stage::new(state).await;
+    let stage = crate::plugin_cmds::Stage::new(state, None, false).await;
     let pieces = split(&u.text);
     if pieces.is_empty() {
         return Ok(SayReport::default());

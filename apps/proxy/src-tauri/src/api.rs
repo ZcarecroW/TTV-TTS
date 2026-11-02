@@ -209,6 +209,10 @@ pub fn engine_routes() -> Router<Arc<AppState>> {
         .route("/jobs", post(job_submit))
         .route("/jobs/{id}/{action}", post(job_control))
         .route("/speak", post(crate::speak::speak))
+        .route("/plugins", get(plugins_get))
+        .route("/plugins/scan", post(plugins_scan))
+        .route("/plugins/chains", axum::routing::put(plugins_chains))
+        .route("/plugins/edit/{slot}", post(plugins_edit))
         .route("/hosted", get(hosted_list))
         .route("/hosted/{id}", get(hosted_one).put(hosted_put).delete(hosted_delete))
         .route("/hosted/{id}/history", get(hosted_history))
@@ -239,6 +243,36 @@ async fn hosted_put(State(state): S, axum::extract::Path(id): IdPath, Json(req):
     state.certs.wake();
     match r {
         Ok(v) => Json(v).into_response(),
+        Err(e) => api_error(StatusCode::BAD_REQUEST, "bad_request", e),
+    }
+}
+
+// ── audio plugins run here ──────────────────────────────────────────────
+
+async fn plugins_get(State(state): S) -> Json<ttv_plugins::wire::HostView> {
+    // the first look starts the scan (it loads every plugin once)
+    if state.plugins.view().installed.is_none() {
+        state.plugins.scan();
+    }
+    Json(state.plugins.view())
+}
+
+async fn plugins_scan(State(state): S) -> Json<ttv_plugins::wire::HostView> {
+    state.plugins.scan();
+    Json(state.plugins.view())
+}
+
+async fn plugins_chains(State(state): S, Json(c): Json<ttv_plugins::wire::Chains>) -> Json<ttv_plugins::wire::HostView> {
+    state.plugins.set_chains(c).await;
+    if state.plugins.view().installed.is_none() {
+        state.plugins.scan();
+    }
+    Json(state.plugins.view())
+}
+
+async fn plugins_edit(State(state): S, axum::extract::Path(slot): IdPath) -> Response {
+    match state.plugins.edit(&slot).await {
+        Ok(()) => Json(Ack { ok: true, message: None }).into_response(),
         Err(e) => api_error(StatusCode::BAD_REQUEST, "bad_request", e),
     }
 }
@@ -306,6 +340,7 @@ async fn hosted_viewers(State(state): S, axum::extract::Path(id): IdPath, Query(
 struct ViewerPatch {
     role: Option<Option<u32>>,
     fx: Option<Option<String>>,
+    plugin: Option<Option<String>>,
     forget: bool,
     mute: Option<String>,
     on: bool,
@@ -321,6 +356,8 @@ async fn hosted_viewer(State(state): S, axum::extract::Path((id, user)): axum::e
         ViewerChange::Role(role)
     } else if let Some(fx) = p.fx {
         ViewerChange::Fx(fx)
+    } else if let Some(plugin) = p.plugin {
+        ViewerChange::Plugin(plugin)
     } else {
         return api_error(StatusCode::BAD_REQUEST, "bad_request", "nothing to change");
     };

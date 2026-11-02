@@ -98,7 +98,8 @@ pub fn run() {
             let st = state.clone();
             tauri::async_runtime::spawn(async move {
                 tokio::time::sleep(std::time::Duration::from_millis(800)).await;
-                if !st.cfg.read().plugins.is_empty() {
+                let any = { let c = st.cfg.read(); !c.plugins.is_empty() || !c.viewer_plugins.is_empty() };
+                if any {
                     plugin_cmds::apply(&st).await;
                 }
             });
@@ -174,6 +175,13 @@ pub fn run() {
             plugin_cmds::plugins_toggle,
             plugin_cmds::plugins_move,
             plugin_cmds::plugins_edit,
+            plugin_cmds::plugins_edit_on_host,
+            plugin_cmds::plugins_host,
+            plugin_cmds::plugins_host_scan,
+            plugin_cmds::viewer_plugins_add,
+            plugin_cmds::viewer_plugins_set,
+            plugin_cmds::viewer_plugins_remove,
+            plugin_cmds::set_viewer_plugin,
             plugin_cmds::debug_plugin_file,
             plugin_cmds::debug_plugins_probe,
             plugin_cmds::debug_plugin_editor,

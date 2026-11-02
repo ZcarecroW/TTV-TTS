@@ -199,6 +199,14 @@ export async function demoInvoke<T>(cmd: string, args: Record<string, unknown> =
         rule: { enabled: true, action: "Allow", profile: "Private, Domain", program: firewall.program },
       });
       return r(structuredClone(firewall));
+    case "plugins_view":
+    case "plugins_rescan": {
+      const eq = { format: "clap" as const, path: "C:/Program Files/Common Files/CLAP/Surge XT Effects.clap", id: "org.surge-synth-team.surge-xt-fx", name: "Surge XT Effects", vendor: "Surge Synth Team" };
+      const pitch = { format: "vst3" as const, path: "C:/Program Files/Common Files/VST3/Graillon 3.vst3", id: "5653544731673367", name: "Graillon 3", vendor: "Auburn Sounds" };
+      return { installed: [eq, pitch], scanning: false, missing: ["demon"], errors: {}, chains: { main: [{ id: "eq1", plugin: eq, enabled: true }], variants: [{ id: "chip", name: "Chipmunk", plugin: pitch, enabled: true, weight: 2 }, { id: "demon", name: "Demon", plugin: { ...pitch, id: "other", name: "Big Pitch" }, enabled: true, weight: 1 }] }, editors: true } as T;
+    }
+    case "plugins_open":
+      return undefined as T;
     case "obs_links":
     case "obs_remove": {
       const links = new URLSearchParams(location.search).has("obs")

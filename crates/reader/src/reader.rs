@@ -81,9 +81,20 @@ pub trait Host: Send + Sync + 'static {
     fn translator(&self) -> &Translator;
     /// The system's own voice (fallback when the voice host can't speak).
     fn os_speak(&self, text: &str, lang: &str) -> impl Future<Output = Result<(Vec<f32>, u32), String>> + Send;
-    /// Audio plugins after the built-in effects, set up once per message.
+    /// Plugin effects viewers can get at random: (id, weight). Empty: none.
+    fn plugin_pool(&self) -> Vec<(String, u32)> {
+        Vec::new()
+    }
+    /// The voice host PC can run this message's plugins (the viewer's effect
+    /// and the chain on every voice) – and there is something to run.
+    fn plugins_on_host(&self, _variant: Option<&str>) -> bool {
+        false
+    }
+    /// Audio plugins after the built-in effects, set up once per message:
+    /// the viewer's effect (`variant`), then the chain on every voice.
+    /// `on_host`: the voice host PC ran them already.
     type Stage: Send + Sync;
-    fn stage(&self) -> impl Future<Output = Self::Stage> + Send;
+    fn stage(&self, variant: Option<&str>, on_host: bool) -> impl Future<Output = Self::Stage> + Send;
     fn stage_run(&self, stage: &Self::Stage, samples: Vec<f32>, rate: u32) -> impl Future<Output = (Vec<f32>, u32)> + Send;
     /// What the plugins still play after the last clip (reverb tails).
     fn stage_tail(&self, stage: &Self::Stage) -> impl Future<Output = Option<(Vec<f32>, u32)>> + Send;
@@ -110,6 +121,17 @@ pub struct Assignments {
     /// profile -> user id -> voice effect set in the viewer list ("none"
     /// switches the voice's own effect off).
     pub fx: HashMap<String, HashMap<String, String>>,
+    /// profile -> user id -> the viewer's plugin effect.
+    pub plugins: HashMap<String, HashMap<String, PluginPick>>,
+}
+
+/// A viewer's plugin effect: picked at random (kept while it exists), or
+/// set in the viewer list (`manual`; "none" = none).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PluginPick {
+    pub id: String,
+    pub manual: bool,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -140,6 +162,10 @@ pub struct ViewerView {
     pub fx: Option<String>,
     /// The effect of the voice itself (preset definition).
     pub voice_fx: Option<String>,
+    /// The viewer's plugin effect (id), if any.
+    pub plugin: Option<String>,
+    /// Set in the viewer list (not picked at random).
+    pub plugin_manual: bool,
 }
 
 // ── views for the window ────────────────────────────────────────────────
@@ -232,6 +258,10 @@ struct Prepared {
     /// Loudness correction of the voice.
     gain: f32,
     fx: Option<crate::fx::Fx>,
+    /// The viewer's plugin effect.
+    variant: Option<String>,
+    /// The voice host PC runs the plugins.
+    host_plugins: bool,
     /// Set when the system voice had to read (why the voice host failed).
     fell_back: Arc<Mutex<Option<String>>>,
 }
@@ -297,11 +327,12 @@ impl<H: Host> Reader<H> {
         // viewers of profiles that are gone (deleted with an older version)
         let mut assign: Assignments = crate::storage::read_json(&assign_path).unwrap_or_default();
         let known: std::collections::HashSet<&str> = store.profiles.iter().map(|p| p.id.as_str()).collect();
-        let before = assign.roles.len() + assign.viewers.len() + assign.fx.len();
+        let before = assign.roles.len() + assign.viewers.len() + assign.fx.len() + assign.plugins.len();
         assign.roles.retain(|k, _| known.contains(k.as_str()));
         assign.viewers.retain(|k, _| known.contains(k.as_str()));
         assign.fx.retain(|k, _| known.contains(k.as_str()));
-        let orphans = before != assign.roles.len() + assign.viewers.len() + assign.fx.len();
+        assign.plugins.retain(|k, _| known.contains(k.as_str()));
+        let orphans = before != assign.roles.len() + assign.viewers.len() + assign.fx.len() + assign.plugins.len();
         Self {
             host,
             store: RwLock::new(store),
@@ -383,8 +414,8 @@ impl<H: Host> Reader<H> {
 
     /// Takes over viewers' voices and effects from elsewhere (a profile that
     /// moves from the app to the voice host PC); viewers known here keep theirs.
-    pub fn adopt_viewers(&self, profile: &str, roles: &HashMap<String, u32>, fx: &HashMap<String, String>) {
-        if roles.is_empty() && fx.is_empty() {
+    pub fn adopt_viewers(&self, profile: &str, roles: &HashMap<String, u32>, fx: &HashMap<String, String>, plugins: &HashMap<String, PluginPick>) {
+        if roles.is_empty() && fx.is_empty() && plugins.is_empty() {
             return;
         }
         let mut a = self.assign.lock();
@@ -396,6 +427,10 @@ impl<H: Host> Reader<H> {
         for (user, effect) in fx {
             f.entry(user.clone()).or_insert_with(|| effect.clone());
         }
+        let pl = a.plugins.entry(profile.to_string()).or_default();
+        for (user, pick) in plugins {
+            pl.entry(user.clone()).or_insert_with(|| pick.clone());
+        }
         drop(a);
         self.assign_dirty.store(true, Ordering::Relaxed);
         self.save_assignments();
@@ -404,7 +439,7 @@ impl<H: Host> Reader<H> {
     /// Drops everything kept about a profile's viewers (the profile was deleted).
     pub fn forget_profile(&self, profile: &str) {
         let mut a = self.assign.lock();
-        let had = a.roles.remove(profile).is_some() | a.viewers.remove(profile).is_some() | a.fx.remove(profile).is_some();
+        let had = a.roles.remove(profile).is_some() | a.viewers.remove(profile).is_some() | a.fx.remove(profile).is_some() | a.plugins.remove(profile).is_some();
         drop(a);
         if had {
             self.assign_dirty.store(true, Ordering::Relaxed);
@@ -417,6 +452,11 @@ impl<H: Host> Reader<H> {
     pub fn viewer_roles(&self, profile: &str) -> (HashMap<String, u32>, HashMap<String, String>) {
         let a = self.assign.lock();
         (a.roles.get(profile).cloned().unwrap_or_default(), a.fx.get(profile).cloned().unwrap_or_default())
+    }
+
+    /// The viewers' plugin effects of a profile (to hand them over).
+    pub fn viewer_plugins(&self, profile: &str) -> HashMap<String, PluginPick> {
+        self.assign.lock().plugins.get(profile).cloned().unwrap_or_default()
     }
 
     // ── start & events ──────────────────────────────────────────────────────
@@ -1073,13 +1113,17 @@ impl<H: Host> Reader<H> {
         rows.sort_unstable_by_key(|x| std::cmp::Reverse(x.1.last_seen));
         rows.truncate(limit.max(1));
         let fxs = a.fx.get(profile);
-        let rows: Vec<(String, Viewer, Option<u32>, Option<String>)> = rows.into_iter().map(|(id, v)| (id.clone(), v.clone(), roles.and_then(|r| r.get(id).copied()), fxs.and_then(|m| m.get(id).cloned()))).collect();
+        let picks = a.plugins.get(profile);
+        let rows: Vec<ViewerRow> = rows.into_iter().map(|(id, v)| (id.clone(), v.clone(), roles.and_then(|r| r.get(id).copied()), fxs.and_then(|m| m.get(id).cloned()), picks.and_then(|m| m.get(id).cloned()))).collect();
         drop(a);
+        let pool = self.host.plugin_pool();
         let out = rows
             .into_iter()
-            .map(|(user_id, info, role, fx)| ViewerView {
+            .map(|(user_id, info, role, fx, pick)| ViewerView {
                 voice: role.and_then(|r| self.role_voice(&p, r)),
                 voice_fx: role.and_then(|r| self.role_fx(&p, r)),
+                plugin: effective_plugin(&p, &user_id, pick.as_ref(), &pool, role.and_then(|r| self.role_fx(&p, r)).is_some()),
+                plugin_manual: pick.as_ref().is_some_and(|x| x.manual),
                 fx,
                 pinned: p.voices.users.get(&info.login).cloned(),
                 muted: p.muted.contains(&info.login),
@@ -1134,12 +1178,69 @@ impl<H: Host> Reader<H> {
         self.assign_dirty.store(true, Ordering::Relaxed);
     }
 
+    /// Sets a viewer's plugin effect: an id, "none" (no plugin effect) or
+    /// None (picked at random again).
+    pub fn set_plugin(&self, profile: &str, user_id: &str, plugin: Option<String>) {
+        let mut a = self.assign.lock();
+        let map = a.plugins.entry(profile.to_string()).or_default();
+        match plugin.map(|x| x.trim().to_string()).filter(|x| !x.is_empty()) {
+            Some(id) => {
+                map.insert(user_id.to_string(), PluginPick { id, manual: true });
+            }
+            None => {
+                map.remove(user_id);
+            }
+        }
+        self.assign_dirty.store(true, Ordering::Relaxed);
+    }
+
+    /// The plugin effect of a viewer's message (assigns one at random the
+    /// first time, when the viewer falls into the profile's share).
+    fn viewer_plugin(&self, p: &crate::profile::Profile, user_id: &str, voice_has_fx: bool) -> Option<String> {
+        if !p.voices.effects {
+            return None;
+        }
+        let pool = self.host.plugin_pool();
+        if pool.is_empty() {
+            return None;
+        }
+        let mut a = self.assign.lock();
+        let map = a.plugins.entry(p.id.clone()).or_default();
+        let pick = map.get(user_id).cloned();
+        if let Some(id) = effective_plugin(p, user_id, pick.as_ref(), &pool, voice_has_fx) {
+            return Some(id);
+        }
+        if pick.as_ref().is_some_and(|x| x.manual) || !in_share(p, user_id) || (p.voices.viewer_plugins.skip_voice_fx && voice_has_fx) {
+            return None;
+        }
+        // first time (or its effect was removed): one at random, by weight
+        let total: u32 = pool.iter().map(|(_, w)| (*w).max(1)).sum();
+        let mut r = rand::random::<u32>() % total.max(1);
+        let id = pool.iter().find(|(_, w)| {
+            let w = (*w).max(1);
+            if r < w {
+                true
+            } else {
+                r -= w;
+                false
+            }
+        })?;
+        let id = id.0.clone();
+        map.insert(user_id.to_string(), PluginPick { id: id.clone(), manual: false });
+        drop(a);
+        self.assign_dirty.store(true, Ordering::Relaxed);
+        Some(id)
+    }
+
     /// Forgets a viewer completely (voice role and list entry).
     /// Forgets a viewer: gone from the list, a new random voice next time.
     pub fn forget_viewer(&self, profile: &str, user_id: &str) {
         self.set_role(profile, user_id, None);
         let mut a = self.assign.lock();
         if let Some(m) = a.viewers.get_mut(profile) {
+            m.remove(user_id);
+        }
+        if let Some(m) = a.plugins.get_mut(profile) {
             m.remove(user_id);
         }
         self.assign_dirty.store(true, Ordering::Relaxed);
@@ -1337,7 +1438,7 @@ impl<H: Host> Reader<H> {
                     self.inflight.lock().push((item.view.id, item.user_id.clone(), item.msg_id.clone(), item.view.login.clone(), item.cancel.clone()));
                     let (ctx, crx) = mpsc::channel(8);
                     let cancel = item.cancel.clone();
-                    if tx.send(Prepared { item, out: out.clone(), clips: crx, gain: 1.0, fx: None, fell_back: Arc::default() }).await.is_err() {
+                    if tx.send(Prepared { item, out: out.clone(), clips: crx, gain: 1.0, fx: None, variant: None, host_plugins: false, fell_back: Arc::default() }).await.is_err() {
                         return;
                     }
                     for piece in speech::split(&text) {
@@ -1362,9 +1463,13 @@ impl<H: Host> Reader<H> {
             let fell_back: Arc<Mutex<Option<String>>> = Arc::default();
             // The effect (and the loudness correction) on the voice host PC:
             // this PC then only plays what comes back.
-            let on_host = fx.filter(|_| self.host.effects_on_host()).map(|f| (f, format!("m{}-{}", item.view.id, rand::random::<u32>())));
+            let variant = if event { None } else { self.viewer_plugin(&p, &item.user_id, fx.is_some()) };
+            // the plugins too, when the voice host PC has them all
+            let host_plugins = self.host.effects_on_host() && self.host.plugins_on_host(variant.as_deref());
+            let on_host = ((fx.is_some() || host_plugins) && self.host.effects_on_host()).then(|| (fx, format!("m{}-{}", item.view.id, rand::random::<u32>())));
+            let plugins = host_plugins.then(|| speech::SpeakPlugins { variant: variant.clone(), main: true });
             let (player_fx, player_gain) = if on_host.is_some() { (None, 1.0) } else { (fx, gain) };
-            if tx.send(Prepared { item, out, clips: crx, gain: player_gain, fx: player_fx, fell_back: fell_back.clone() }).await.is_err() {
+            if tx.send(Prepared { item, out, clips: crx, gain: player_gain, fx: player_fx, variant, host_plugins, fell_back: fell_back.clone() }).await.is_err() {
                 return;
             }
             let mut u = speech::Utterance {
@@ -1385,7 +1490,7 @@ impl<H: Host> Reader<H> {
                     break;
                 }
                 if let Some((f, stream)) = &on_host {
-                    let r = self.piece_on_host(&vcp, &mut u, &piece.0, *f, stream, k + 1 == n && m == 0).await;
+                    let r = self.piece_on_host(&vcp, &mut u, &piece.0, *f, plugins.clone(), stream, k + 1 == n && m == 0).await;
                     let r = match r {
                         Err(e) if fallback => {
                             log::info!("voice host failed ({e}) - system voice");
@@ -1449,7 +1554,7 @@ impl<H: Host> Reader<H> {
                         break;
                     }
                     if let Some((f, stream)) = &on_host {
-                        let r = self.piece_on_host(&vcp, &mut u2, &piece.0, *f, stream, k + 1 == m).await;
+                        let r = self.piece_on_host(&vcp, &mut u2, &piece.0, *f, plugins.clone(), stream, k + 1 == m).await;
                         let failed = r.is_err();
                         if ctx.send(r).await.is_err() || failed {
                             break;
@@ -1474,7 +1579,8 @@ impl<H: Host> Reader<H> {
     /// One piece generated on the voice host PC with its effect (and the
     /// voice's loudness correction) applied there. A voice host that can't
     /// do that (an older proxy) is noted and the effect is played here.
-    async fn piece_on_host(&self, vcp: &ttv_vcp::Client, u: &mut speech::Utterance, text: &str, fx: crate::fx::Fx, stream: &str, last: bool) -> Result<(Vec<f32>, u32), String> {
+    #[allow(clippy::too_many_arguments)]
+    async fn piece_on_host(&self, vcp: &ttv_vcp::Client, u: &mut speech::Utterance, text: &str, fx: Option<crate::fx::Fx>, plugins: Option<speech::SpeakPlugins>, stream: &str, last: bool) -> Result<(Vec<f32>, u32), String> {
         let req = |u: &speech::Utterance| speech::SpeakRequest {
             voice: u.voice.clone(),
             text: text.to_string(),
@@ -1482,9 +1588,10 @@ impl<H: Host> Reader<H> {
             emotion: u.emotion.clone(),
             intensity: u.intensity.clone(),
             gain: u.gain,
-            fx: Some(fx.name().to_string()),
+            fx: fx.map(|f| f.name().to_string()),
             stream: stream.to_string(),
             last,
+            plugins: plugins.clone(),
         };
         let mut r = speech::generate_on_host(vcp, &req(u)).await;
         if matches!(r, Err(speech::HostError::Failed(_))) && u.emotion.is_some() {
@@ -1500,13 +1607,16 @@ impl<H: Host> Reader<H> {
                 log::info!("the voice host can't play effects (older proxy) - this PC plays them");
                 self.host.effects_unsupported();
                 let (s, rate) = speech::generate(vcp, u, text).await?;
-                Ok((crate::fx::apply(fx, s, rate, u.gain), rate))
+                Ok(match fx {
+                    Some(fx) => (crate::fx::apply(fx, s, rate, u.gain), rate),
+                    None => (s.into_iter().map(|x| x * u.gain.max(f32::MIN_POSITIVE)).collect(), rate),
+                })
             }
         }
     }
 
     async fn play_loop(self: Arc<Self>, mut rx: mpsc::Receiver<Prepared>) {
-        while let Some(Prepared { mut item, out: output, mut clips, gain, fx, fell_back }) = rx.recv().await {
+        while let Some(Prepared { mut item, out: output, mut clips, gain, fx, variant, host_plugins, fell_back }) = rx.recv().await {
             let max_secs = self.store.read().profiles.iter().find(|p| p.id == item.profile).map(|p| p.reading.max_seconds).unwrap_or(60) as f32;
             let t0 = Instant::now();
             item.view.state = ItemState::Speaking;
@@ -1521,7 +1631,7 @@ impl<H: Host> Reader<H> {
             // what was played, for "play again"
             let mut played: Vec<Vec<f32>> = Vec::new();
             let mut played_rate = 0;
-            let stage = self.host.stage().await;
+            let stage = self.host.stage(variant.as_deref(), host_plugins).await;
             // a skip shows at once, even while the next piece is still being generated
             while let Some(r) = next_clip(&mut clips, &item.cancel).await {
                 match r {
@@ -1723,6 +1833,23 @@ fn natural_cmp(a: &str, b: &str) -> std::cmp::Ordering {
     key(a).cmp(&key(b))
 }
 
+/// Whether a viewer falls into the profile's share of plugin effects (the
+/// same viewers stay in when the share grows).
+fn in_share(p: &crate::profile::Profile, user_id: &str) -> bool {
+    fnv1a(&format!("{}|{user_id}|plugin", p.id)) % 100 < p.voices.viewer_plugins.share as u32
+}
+
+/// The plugin effect a viewer has right now (without picking a new one).
+fn effective_plugin(p: &crate::profile::Profile, user_id: &str, pick: Option<&PluginPick>, pool: &[(String, u32)], voice_has_fx: bool) -> Option<String> {
+    let pick = pick?;
+    let exists = pool.iter().any(|(i, _)| *i == pick.id);
+    if pick.manual {
+        return (exists && p.voices.effects).then(|| pick.id.clone());
+    }
+    let vp = &p.voices.viewer_plugins;
+    (exists && p.voices.effects && in_share(p, user_id) && !(vp.skip_voice_fx && voice_has_fx)).then(|| pick.id.clone())
+}
+
 fn fnv1a(s: &str) -> u32 {
     let mut h: u32 = 0x811c9dc5;
     for b in s.bytes() {
@@ -1736,6 +1863,9 @@ fn fnv1a(s: &str) -> u32 {
 fn other_role(current: u32, n: u32, random: u32) -> u32 {
     if n > 1 { (current % n + 1 + random % (n - 1)) % n } else { random }
 }
+
+/// A viewer list row before its voice is looked up: id, info, role, effect, plugin effect.
+type ViewerRow = (String, Viewer, Option<u32>, Option<String>, Option<PluginPick>);
 
 /// A voice for one message.
 struct Picked {
@@ -1814,6 +1944,7 @@ mod tests {
     struct FakeHost {
         out: Arc<FakeOut>,
         translator: Translator,
+        pool: Mutex<Vec<(String, u32)>>,
     }
 
     impl Host for FakeHost {
@@ -1848,8 +1979,11 @@ mod tests {
             // 10 ms of "speech" per letter
             Ok((vec![0.1; text.chars().count() * 240], 24_000))
         }
+        fn plugin_pool(&self) -> Vec<(String, u32)> {
+            self.pool.lock().clone()
+        }
         type Stage = ();
-        async fn stage(&self) {}
+        async fn stage(&self, _variant: Option<&str>, _on_host: bool) {}
         async fn stage_run(&self, _stage: &(), samples: Vec<f32>, rate: u32) -> (Vec<f32>, u32) {
             (samples, rate)
         }
@@ -1861,7 +1995,7 @@ mod tests {
     fn reader(fallback: bool) -> (Arc<Reader<FakeHost>>, Arc<FakeOut>) {
         let dir = std::env::temp_dir().join(format!("ttv-reader-test-{}", rand::random::<u32>()));
         let out = Arc::new(FakeOut::default());
-        let r = Arc::new(Reader::new(FakeHost { out: out.clone(), translator: Translator::new(reqwest::Client::new()) }, &dir));
+        let r = Arc::new(Reader::new(FakeHost { out: out.clone(), translator: Translator::new(reqwest::Client::new()), pool: Mutex::default() }, &dir));
         {
             let mut s = r.store.write();
             let p = &mut s.profiles[0];
@@ -1873,6 +2007,61 @@ mod tests {
         }
         r.clone().run();
         (r, out)
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn viewers_get_plugin_effects_by_share_and_keep_them() {
+        let (r, _) = reader(false);
+        *r.host.pool.lock() = vec![("a".into(), 1), ("b".into(), 3)];
+        let pid = r.store.read().profiles[0].id.clone();
+        let with_share = |share: u8| {
+            let mut s = r.store.write();
+            s.profiles[0].voices.viewer_plugins.share = share;
+            s.profiles[0].clone()
+        };
+        let users: Vec<String> = (0..400).map(|i| format!("user{i}")).collect();
+        let p0 = with_share(0);
+        assert!(users.iter().all(|u| r.viewer_plugin(&p0, u, false).is_none()), "share 0: off");
+        let p50 = with_share(50);
+        let got: Vec<Option<String>> = users.iter().map(|u| r.viewer_plugin(&p50, u, false)).collect();
+        let n = got.iter().filter(|g| g.is_some()).count();
+        assert!((150..250).contains(&n), "{n} of 400 at 50 %");
+        let b = got.iter().filter(|g| g.as_deref() == Some("b")).count();
+        assert!(b * 2 > n, "weight 3 of 4: {b} of {n}");
+        for (u, g) in users.iter().zip(&got) {
+            assert_eq!(&r.viewer_plugin(&p50, u, false), g, "kept");
+        }
+        // a bigger share keeps everyone who had one, and adds viewers
+        let p80 = with_share(80);
+        let more = users.iter().zip(&got).filter(|(u, g)| {
+            let now = r.viewer_plugin(&p80, u, false);
+            if g.is_some() {
+                assert_eq!(&now, *g);
+            }
+            now.is_some()
+        });
+        assert!(more.count() > n);
+        // not on top of a voice's own effect
+        let some = users.iter().zip(&got).find(|(_, g)| g.as_deref() == Some("a")).map(|(u, _)| u.clone()).expect("someone has a");
+        assert!(r.viewer_plugin(&p80, &some, true).is_none());
+        // set in the viewer list: wins, also on a voice with an effect
+        r.set_plugin(&pid, &some, Some("none".into()));
+        assert!(r.viewer_plugin(&p80, &some, false).is_none());
+        r.set_plugin(&pid, &some, Some("b".into()));
+        assert_eq!(r.viewer_plugin(&p80, &some, true).as_deref(), Some("b"));
+        let listed = r.viewers(&pid, "", 1000).0;
+        assert!(listed.is_empty() || listed.iter().all(|v| v.user_id != some || (v.plugin.as_deref() == Some("b") && v.plugin_manual)));
+        // back to random: keeps a random one
+        r.set_plugin(&pid, &some, None);
+        assert!(r.viewer_plugin(&p80, &some, false).is_some());
+        // an effect that was removed: another one at random
+        let had_a = users.iter().find(|u| r.assign.lock().plugins[&pid].get(*u).is_some_and(|x| x.id == "a" && !x.manual)).cloned().expect("someone with a");
+        *r.host.pool.lock() = vec![("b".into(), 1)];
+        assert_eq!(r.viewer_plugin(&p80, &had_a, false).as_deref(), Some("b"));
+        // effects switched off in the profile: none at all
+        r.store.write().profiles[0].voices.effects = false;
+        let off = r.store.read().profiles[0].clone();
+        assert!(users.iter().all(|u| r.viewer_plugin(&off, u, false).is_none()));
     }
 
     async fn settled(r: &Reader<FakeHost>, n: usize) -> Vec<ItemView> {

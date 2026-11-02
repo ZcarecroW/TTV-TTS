@@ -35,6 +35,17 @@ for (let i = 0; i < navItems.length; i++) {
   check(!raw, `page "${navItems[i].trim()}" renders without raw i18n keys`, raw?.slice(0, 3).join(", ") ?? `${text.length} chars`);
 }
 
+// OBS page: the plugins the app's chains need, here
+await page.locator("nav button").nth(navItems.findIndex((n) => /OBS/i.test(n))).click();
+await page.waitForTimeout(300);
+{
+  const pc = page.locator("main [data-plugins-here]");
+  const txt = await pc.innerText();
+  check(/(2 effect plugins on this PC|2 Effekt-Plugins auf diesem PC)/.test(txt) && /Chipmunk/.test(txt), "the OBS page lists this PC's plugins and the app's chains", txt.slice(0, 120));
+  check(/(not installed here|hier nicht installiert)/.test(txt), "a plugin missing here is marked");
+  check((await pc.getByRole("button", { name: /^(Window|Fenster)$/ }).count()) === 2, "installed plugins can open their window here");
+}
+
 // Tooltips: hovering an info button shows the explanation.
 await page.locator("nav button").nth(1).click();
 await page.locator(".tip-btn").first().hover();

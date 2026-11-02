@@ -62,6 +62,8 @@ pub struct AppState {
     pub plugin_errors: parking_lot::Mutex<std::collections::HashMap<String, String>>,
     /// Plugin settings handed over by the plugin thread, to keep.
     pub plugin_states: parking_lot::Mutex<Option<PluginStates>>,
+    /// The voice host PC's plugins and the chains last sent to it.
+    pub host_plugins: RwLock<Option<(ttv_plugins::wire::HostView, ttv_plugins::wire::Chains)>>,
     app: OnceLock<AppHandle>,
 }
 
@@ -80,6 +82,7 @@ impl AppState {
             rack,
             plugin_errors: parking_lot::Mutex::new(Default::default()),
             plugin_states: parking_lot::Mutex::new(Some(state_rx)),
+            host_plugins: RwLock::new(None),
             twitch: crate::twitch::account::Account::new(web.clone()),
             reader: Arc::new(crate::reader::Reader::new(crate::reader::AppHost::new(web), &data_dir)),
             obs: Default::default(),

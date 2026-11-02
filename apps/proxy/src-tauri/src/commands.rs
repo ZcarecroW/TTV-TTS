@@ -523,6 +523,25 @@ pub fn obs_links(state: St) -> ObsLinks {
     ObsLinks { port: state.cfg.read().obs_port, error: state.obs_error.read().clone(), links: state.hosted.list(&state) }
 }
 
+/// The audio plugins of this PC and what the app's chains need.
+#[tauri::command]
+pub fn plugins_view(state: St) -> ttv_plugins::wire::HostView {
+    state.plugins.view()
+}
+
+/// Looks for plugins in the standard folders again.
+#[tauri::command]
+pub fn plugins_rescan(state: St) -> ttv_plugins::wire::HostView {
+    state.plugins.scan();
+    state.plugins.view()
+}
+
+/// Opens a plugin's window here; its settings go to the app when it closes.
+#[tauri::command]
+pub async fn plugins_open(state: St<'_>, slot: String) -> Result<(), String> {
+    state.plugins.edit(&slot).await
+}
+
 /// Stops reading a profile here; its link stops working.
 #[tauri::command]
 pub fn obs_remove(state: St, id: String) -> ObsLinks {

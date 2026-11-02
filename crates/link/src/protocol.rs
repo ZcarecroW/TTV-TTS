@@ -217,6 +217,9 @@ pub enum Event {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         item: Option<serde_json::Value>,
     },
+    /// A plugin's settings changed in its editor on the voice host PC
+    /// (base64, as the plugin saved them): the app keeps them.
+    PluginState { slot: String, state: String },
 }
 
 /// `POST /ttv/v1/vcp/{start|stop|restart}` answer and other simple results.

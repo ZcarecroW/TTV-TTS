@@ -48,7 +48,17 @@ const demoFound = [
   { format: "clap" as const, path: "C:/Program Files/Common Files/CLAP/Room Verb.clap", id: "room.verb", name: "Room Verb", vendor: "Example Audio" },
   { format: "clap" as const, path: "C:/Plugins/Soft Comp.clap", id: "soft.comp", name: "Soft Comp", vendor: "Studio Nine" },
 ];
-const demoPlugins = { slots: [{ id: "eq1", plugin: demoFound[0]!, enabled: true, state: null as string | null }], errors: {} as Record<string, string>, editors: true };
+const demoPlugins = {
+  slots: [{ id: "eq1", plugin: demoFound[0]!, enabled: true, state: null as string | null }],
+  variants: [
+    { id: "chip", name: "Chipmunk", plugin: demoFound[1]!, enabled: true, weight: 2, state: null as string | null },
+    { id: "demon", name: "Demon", plugin: demoFound[1]!, enabled: true, weight: 1, state: null as string | null },
+  ],
+  errors: {} as Record<string, string>,
+  editors: true,
+  host: { installed: [demoFound[0]!, demoFound[1]!], scanning: false, missing: [] as string[], errors: {}, chains: { main: [], variants: [] }, editors: true },
+  host_runs: true,
+};
 
 const state: AppView = {
   version: "2.0.0",
@@ -251,7 +261,23 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
       return r(structuredClone(demoPlugins));
     }
     case "plugins_edit":
+    case "plugins_edit_on_host":
+    case "set_viewer_plugin":
       return r(undefined);
+    case "plugins_host":
+    case "plugins_host_scan":
+      return r(structuredClone(demoPlugins));
+    case "viewer_plugins_add":
+      demoPlugins.variants.push({ id: "v" + Date.now(), name: String(args.name), plugin: args.plugin as never, enabled: true, weight: 1, state: null });
+      return r(structuredClone(demoPlugins));
+    case "viewer_plugins_set": {
+      const v = demoPlugins.variants.find((x) => x.id === args.id);
+      if (v) Object.assign(v, Object.fromEntries(Object.entries(args.patch as object).filter(([, x]) => x !== undefined)));
+      return r(structuredClone(demoPlugins));
+    }
+    case "viewer_plugins_remove":
+      demoPlugins.variants = demoPlugins.variants.filter((x) => x.id !== args.id);
+      return r(structuredClone(demoPlugins));
     case "generation_info":
       return r({ host: "proxy:demo", model: "Higher Quality (1.7B)", at: Math.floor(Date.now() / 1000) - 3600, sentences_first_ms: 2600, sentences_rtf: 0.51, streaming_first_ms: 2800, streaming_rtf: 3.6, pick: "sentences" });
     case "measure_generation":

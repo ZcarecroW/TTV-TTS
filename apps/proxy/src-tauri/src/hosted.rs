@@ -65,6 +65,8 @@ pub struct HostedRequest {
     pub roles: HashMap<String, u32>,
     /// Viewers' own effects (user id -> effect).
     pub fx: HashMap<String, String>,
+    /// Viewers' plugin effects.
+    pub plugins: HashMap<String, ttv_reader::reader::PluginPick>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -170,16 +172,29 @@ impl Host for ProxyHost {
         Err("the voice host PC has no fallback voice".into())
     }
 
-    type Stage = ();
-
-    async fn stage(&self) {}
-
-    async fn stage_run(&self, _stage: &(), samples: Vec<f32>, rate: u32) -> (Vec<f32>, u32) {
-        (samples, rate)
+    fn plugin_pool(&self) -> Vec<(String, u32)> {
+        self.state.upgrade().map(|s| s.plugins.view().chains.variants.iter().filter(|v| v.enabled).map(|v| (v.id.clone(), v.weight)).collect()).unwrap_or_default()
     }
 
-    async fn stage_tail(&self, _stage: &()) -> Option<(Vec<f32>, u32)> {
-        None
+    /// The app's plugins run here, in this profile's own instances.
+    type Stage = Option<(Arc<AppState>, Option<String>)>;
+
+    async fn stage(&self, variant: Option<&str>, _on_host: bool) -> Self::Stage {
+        let s = self.state.upgrade()?;
+        s.plugins.has_work(variant, true).then(|| (s, variant.map(str::to_string)))
+    }
+
+    async fn stage_run(&self, stage: &Self::Stage, samples: Vec<f32>, rate: u32) -> (Vec<f32>, u32) {
+        match stage {
+            Some((s, v)) => s.plugins.run(&format!("h:{}", self.shared.id), v.as_deref(), true, samples, rate).await,
+            None => (samples, rate),
+        }
+    }
+
+    async fn stage_tail(&self, stage: &Self::Stage) -> Option<(Vec<f32>, u32)> {
+        let (s, v) = stage.as_ref()?;
+        let t = s.plugins.tail(&format!("h:{}", self.shared.id), v.as_deref(), true).await;
+        (!t.is_empty()).then_some((t, crate::plugins::RATE))
     }
 }
 
@@ -296,7 +311,7 @@ impl Hosted {
             s.profiles = vec![profile];
             s.active = if reading { vec![id.to_string()] } else { Vec::new() };
         }
-        e.reader.adopt_viewers(id, &req.roles, &req.fx);
+        e.reader.adopt_viewers(id, &req.roles, &req.fx, &req.plugins);
         e.reader.apply_channels();
         e.save();
         Ok(self.view(state, &e))
@@ -392,6 +407,7 @@ impl Hosted {
         match change {
             ViewerChange::Role(role) => r.set_role(id, user_id, role),
             ViewerChange::Fx(fx) => r.set_fx(id, user_id, fx),
+            ViewerChange::Plugin(p) => r.set_plugin(id, user_id, p),
             ViewerChange::Forget => r.forget_viewer(id, user_id),
             ViewerChange::Mute(login, on) => r.set_muted(id, &login, on),
         }
@@ -442,6 +458,7 @@ impl Hosted {
 pub enum ViewerChange {
     Role(Option<u32>),
     Fx(Option<String>),
+    Plugin(Option<String>),
     Forget,
     Mute(String, bool),
 }

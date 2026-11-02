@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { ago } from "@ttv-tts/ui/format";
 import { Eye, EyeSlash, Refresh, Trash, Users } from "@ttv-tts/ui/icons";
-import { EFFECTS, presets, reader, viewers, type ViewerView } from "../api";
+import { EFFECTS, plugins, presets, reader, viewers, type ViewerPlugin, type ViewerView } from "../api";
 import { run, store, toast } from "../store";
 import UiDocs from "@ttv-tts/ui/components/UiDocs.vue";
 
@@ -67,6 +67,17 @@ async function reassign(v: ViewerView, role: string) {
 
 const fxName = (f: string | null) => (f ? t(`fx.names.${f}`) : "");
 
+// plugin effects viewers can get (Settings → Audio plugins)
+const variants = ref<ViewerPlugin[]>([]);
+onMounted(async () => (variants.value = ((await plugins.list().catch(() => null))?.variants ?? []).filter((v) => v.enabled)));
+const variantName = (id: string | null | undefined) => variants.value.find((v) => v.id === id)?.name ?? "";
+async function setPlugin(v: ViewerView, value: string) {
+  const id = value === "" ? null : value;
+  await run("viewer", () => viewers.setPlugin(profileId.value, v.user_id, id));
+  toast("ok", id === null ? t("fx.pluginRandom", { name: v.display }) : id === "none" ? t("fx.pluginOff", { name: v.display }) : t("fx.pluginSet", { name: v.display, fx: variantName(id) }));
+  await load();
+}
+
 async function setFx(v: ViewerView, value: string) {
   const fx = value || null;
   await run("viewer", () => viewers.setFx(profileId.value, v.user_id, fx));
@@ -112,6 +123,7 @@ async function forget(v: ViewerView) {
               <th class="pb-2 font-medium">{{ t("viewers.viewer") }}</th>
               <th class="pb-2 font-medium">{{ t("viewers.voice") }}</th>
               <th class="pb-2 font-medium">{{ t("fx.title") }}<UiTip :text="t('tips.fxColumn')" /></th>
+              <th v-if="variants.length" class="pb-2 font-medium">{{ t("fx.pluginTitle") }}<UiTip :text="t('tips.pluginColumn')" /></th>
               <th class="pb-2 font-medium">{{ t("viewers.lastSeen") }}</th>
               <th class="pb-2 text-right font-medium">{{ t("viewers.messages") }}</th>
               <th class="pb-2" />
@@ -136,6 +148,13 @@ async function forget(v: ViewerView) {
                   <option value="">{{ v.voice_fx ? t("fx.own", { fx: fxName(v.voice_fx) }) : t("fx.ownNone") }}</option>
                   <option value="none">{{ t("fx.off") }}</option>
                   <option v-for="e in EFFECTS" :key="e" :value="e">{{ fxName(e) }}</option>
+                </select>
+              </td>
+              <td v-if="variants.length" class="py-2 pr-3">
+                <select class="input h-8 max-w-44 py-0 text-sm" data-viewer-plugin :disabled="!profile?.voices.effects" :value="v.plugin_manual ? (v.plugin ?? 'none') : ''" @change="setPlugin(v, ($event.target as HTMLSelectElement).value)">
+                  <option value="">{{ v.plugin && !v.plugin_manual ? t("fx.pluginAuto", { fx: variantName(v.plugin) }) : t("fx.pluginAutoNone") }}</option>
+                  <option value="none">{{ t("fx.off") }}</option>
+                  <option v-for="x in variants" :key="x.id" :value="x.id">{{ x.name }}</option>
                 </select>
               </td>
               <td class="py-2 pr-3 text-muted">{{ ago(v.last_seen, locale) }}</td>

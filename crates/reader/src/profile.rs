@@ -331,6 +331,25 @@ pub struct VoiceRules {
     pub effects: bool,
     /// When the voice host can't speak, the system's own voice reads.
     pub os_fallback: bool,
+    /// Audio plugin effects that viewers get at random (like their voices).
+    pub viewer_plugins: ViewerPlugins,
+}
+
+/// Plugin effects for viewers: a share of them gets one of the effects set
+/// up in Settings → Audio plugins, at random, and keeps it.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
+pub struct ViewerPlugins {
+    /// Percent of viewers who get one (0 = off).
+    pub share: u8,
+    /// Not on top of a voice that has an effect of its own (radio, robot …).
+    pub skip_voice_fx: bool,
+}
+
+impl Default for ViewerPlugins {
+    fn default() -> Self {
+        Self { share: 0, skip_voice_fx: true }
+    }
 }
 
 impl Default for VoiceRules {
@@ -349,6 +368,7 @@ impl Default for VoiceRules {
             emotion_strength: "normal".into(),
             effects: true,
             os_fallback: false,
+            viewer_plugins: ViewerPlugins::default(),
         }
     }
 }

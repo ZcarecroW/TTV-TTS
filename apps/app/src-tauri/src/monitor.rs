@@ -72,6 +72,7 @@ async fn proxy_session(state: &Arc<AppState>, address: &str, fingerprint: &str, 
                                     Err(e) => log::warn!("library: {e}"),
                                 }
                                 crate::hosted_cmds::sync_all(&st).await;
+                                crate::plugin_cmds::push_host(&st).await;
                             });
                         }
                         let vcp = s.vcp.clone();
@@ -84,6 +85,7 @@ async fn proxy_session(state: &Arc<AppState>, address: &str, fingerprint: &str, 
                     }
                     Ok(Event::Job(j)) => crate::library::VoiceLibrary::on_job(state, &j),
                     Ok(Event::Library(c)) => state.library.on_change(state, c),
+                    Ok(Event::PluginState { slot, state: data }) => crate::plugin_cmds::host_state(state, &slot, data),
                     Ok(Event::Hosted { id, status, item }) => {
                         if let Some(app) = state.app() {
                             let _ = app.emit("app://hosted", serde_json::json!({ "id": id, "status": status, "item": item }));

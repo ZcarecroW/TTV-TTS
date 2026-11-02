@@ -87,12 +87,15 @@ pub struct Config {
     pub remote: RemoteConfig,
     /// Audio plugins (VST3, CLAP) on all speech, in this order.
     pub plugins: Vec<PluginSlot>,
+    /// Plugin effects viewers get at random (which viewers: per profile).
+    pub viewer_plugins: Vec<ViewerPlugin>,
     /// Client ID of the streamer's own Twitch application ("" = built in).
     pub twitch_client_id: String,
     /// OBS links served by this app (profiles that play in OBS on this PC).
     pub obs: ObsConfig,
-    /// Voice effects are applied on the voice host PC (TTV-TTS Proxy), not
-    /// here: less work for the gaming PC. Audio plugins always run here.
+    /// Voice effects (and audio plugins the voice host PC has too) are
+    /// applied on the voice host PC (TTV-TTS Proxy), not here: less work for
+    /// the gaming PC.
     pub effects_on_host: bool,
 }
 
@@ -117,15 +120,10 @@ impl Default for ObsConfig {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct PluginSlot {
-    pub id: String,
-    pub plugin: ttv_plugins::PluginInfo,
-    pub enabled: bool,
-    /// The plugin's settings as it saved them (base64).
-    #[serde(default)]
-    pub state: Option<String>,
-}
+/// One effect of the chain on every voice (its settings in base64).
+pub type PluginSlot = ttv_plugins::wire::Slot;
+/// A plugin effect viewers can get.
+pub type ViewerPlugin = ttv_plugins::wire::Variant;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(default)]
@@ -161,6 +159,7 @@ impl Default for Config {
             hotkeys: Default::default(),
             remote: RemoteConfig::default(),
             plugins: Vec::new(),
+            viewer_plugins: Vec::new(),
             twitch_client_id: String::new(),
             obs: ObsConfig::default(),
             effects_on_host: true,

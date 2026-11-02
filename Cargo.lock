@@ -5995,10 +5995,14 @@ dependencies = [
 name = "ttv-plugins"
 version = "2.1.0"
 dependencies = [
+ "audioadapter-buffers",
+ "base64 0.23.1",
  "clack-extensions",
  "clack-host",
  "clack-plugin",
  "log",
+ "parking_lot 0.13.0",
+ "rubato",
  "serde",
  "tokio",
  "vst3",
@@ -6125,6 +6129,7 @@ dependencies = [
  "ttv-engine",
  "ttv-link",
  "ttv-net",
+ "ttv-plugins",
  "ttv-reader",
  "ttv-vcp",
  "url",

@@ -287,6 +287,8 @@ export interface Profile {
     emotion_strength: "mild" | "normal" | "strong";
     effects: boolean;
     os_fallback: boolean;
+    /** plugin effects viewers get at random */
+    viewer_plugins: { share: number; skip_voice_fx: boolean };
   };
   translate: { enabled: boolean; into: string; mine: string[]; read: "translation" | "both" | "show"; provider: "mymemory" | "deepl" | "vcp" };
   events: { enabled: boolean; subs: boolean; gifts: boolean; raids: boolean; bits: boolean; follows: boolean; redemptions: boolean; min_bits: number; min_raid: number; voice: string; texts: Record<string, string> };
@@ -761,10 +763,37 @@ export interface PluginSlot {
   state: string | null;
 }
 
+/** A plugin effect viewers can get at random (one plugin with its settings). */
+export interface ViewerPlugin {
+  id: string;
+  name: string;
+  plugin: PluginInfo;
+  enabled: boolean;
+  /** how often it's picked compared with the others (1–5) */
+  weight: number;
+  state: string | null;
+}
+
+/** The voice host PC's plugins. */
+export interface HostPlugins {
+  /** null: not scanned yet */
+  installed: PluginInfo[] | null;
+  scanning: boolean;
+  /** slot and effect ids it doesn't have */
+  missing: string[];
+  errors: Record<string, string>;
+  chains: { main: PluginSlot[]; variants: ViewerPlugin[] };
+  editors: boolean;
+}
+
 export interface PluginsView {
   slots: PluginSlot[];
+  variants: ViewerPlugin[];
   errors: Record<string, string>;
   editors: boolean;
+  host: HostPlugins | null;
+  /** plugins run on the voice host PC when it has them */
+  host_runs: boolean;
 }
 
 export const plugins = {
@@ -776,6 +805,12 @@ export const plugins = {
   toggle: (id: string, enabled: boolean) => invoke<PluginsView>("plugins_toggle", { id, enabled }),
   move: (id: string, delta: number) => invoke<PluginsView>("plugins_move", { id, delta }),
   edit: (id: string) => invoke<void>("plugins_edit", { id }),
+  editOnHost: (id: string) => invoke<void>("plugins_edit_on_host", { id }),
+  host: () => invoke<PluginsView>("plugins_host"),
+  hostScan: () => invoke<PluginsView>("plugins_host_scan"),
+  addVariant: (plugin: PluginInfo, name: string) => invoke<PluginsView>("viewer_plugins_add", { plugin, name }),
+  setVariant: (id: string, patch: { name?: string; enabled?: boolean; weight?: number }) => invoke<PluginsView>("viewer_plugins_set", { id, patch }),
+  removeVariant: (id: string) => invoke<PluginsView>("viewer_plugins_remove", { id }),
 };
 
 /** What a global hotkey can do (same order as the backend). */
@@ -826,6 +861,10 @@ export interface ViewerView {
   fx: string | null;
   /** The effect of the voice itself (from the preset). */
   voice_fx: string | null;
+  /** The viewer's plugin effect (id). */
+  plugin?: string | null;
+  /** set by hand (not at random) */
+  plugin_manual?: boolean;
 }
 
 /** Built-in voice effects (same order as the backend). */
@@ -835,5 +874,7 @@ export const viewers = {
   list: (profile: string, query: string) => invoke<{ viewers: ViewerView[]; total: number }>("list_viewers", { profile, query }),
   setRole: (profile: string, userId: string, role: number | null) => invoke<void>("set_viewer_role", { profile, userId, role }),
   setFx: (profile: string, userId: string, fx: string | null) => invoke<void>("set_viewer_fx", { profile, userId, fx }),
+  /** an id, "none", or null (at random again) */
+  setPlugin: (profile: string, userId: string, plugin: string | null) => invoke<void>("set_viewer_plugin", { profile, userId, plugin }),
   forget: (profile: string, userId: string) => invoke<void>("forget_viewer", { profile, userId }),
 };

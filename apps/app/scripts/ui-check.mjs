@@ -102,6 +102,24 @@ check(await page.locator("#ttv-tip").isVisible(), "tooltip appears on hover");
   await pc.locator("[data-plugin]").first().getByRole("button", { name: /^(Remove|Entfernen)$/ }).click();
   await page.waitForTimeout(250);
   check((await pc.locator("[data-plugin]").count()) === 1 && /Clean EQ/.test(await pc.innerText()), "a plugin can be removed");
+  // the voice host PC runs the plugins it has
+  check(/(voice host PC has 2 effect plugins|Stimmen-PC hat 2 Effekt-Plugins)/.test(await pc.locator("[data-plugins-host]").innerText()), "the voice host PC's plugins are shown", await pc.locator("[data-plugins-host]").innerText());
+  check(/(voice host PC|Stimmen-PC)/.test(await pc.locator("[data-plugin]").first().innerText()), "a plugin the voice host PC has runs there");
+  // plugin effects for viewers
+  check((await pc.locator("[data-variant]").count()) === 2, "viewer plugin effects are listed", String(await pc.locator("[data-variant]").count()));
+  await pc.getByRole("button", { name: /^(Add effect|Effekt hinzufügen)/ }).click();
+  await page.waitForTimeout(300);
+  const vl = page.locator("[data-plugin-list]");
+  await vl.locator("input").first().fill("Giant");
+  await vl.locator("li button").first().click();
+  await page.waitForTimeout(300);
+  check((await pc.locator("[data-variant]").count()) === 3 && (await pc.locator("[data-variant] input").nth(2).inputValue()) === "Giant", "a viewer effect is added with its name");
+  await pc.locator("[data-variant]").nth(2).locator("select").selectOption("3");
+  await page.waitForTimeout(200);
+  check((await pc.locator("[data-variant]").nth(2).locator("select").inputValue()) === "3", "how often an effect is picked can be set");
+  await pc.locator("[data-variant]").nth(2).getByRole("button", { name: /^(Remove|Entfernen)$/ }).click();
+  await page.waitForTimeout(250);
+  check((await pc.locator("[data-variant]").count()) === 2, "a viewer effect can be removed");
 }
 {
   const hk = page.locator("main [data-hotkeys]");
@@ -183,6 +201,12 @@ const prof = await page.locator("main").innerText();
 check(prof.includes("zcarecrow"), "profile editor shows the channel");
 check(/(Computed|Berechnet): de 41 · en 30/.test(prof), "profile shows how much of its preset is computed", prof.match(/(Computed|Berechnet):[^\n]*/)?.[0] ?? "");
 {
+  // plugin effects for a share of the viewers
+  const vp = page.locator("main [data-viewer-plugins]");
+  check(/25 %/.test(await vp.innerText()) && /(at random|zufällig)/.test(await vp.innerText()), "the profile sets the share of viewers with a plugin effect", (await vp.innerText()).slice(0, 100));
+  await vp.locator("input[type=range]").fill("50");
+  await page.waitForTimeout(200);
+  check(/50 %/.test(await vp.innerText()), "the share can be changed");
   // an OBS link from the internet with a DuckDNS name: HTTPS
   const oc = page.locator("main [data-output]");
   await oc.locator(".inline-flex button").nth(1).click();
@@ -245,6 +269,14 @@ check(/Radio/.test(await fxSel.nth(1).locator("option:checked").innerText()) && 
 await fxSel.first().selectOption("whisper");
 await page.waitForTimeout(300);
 check(/Mikey_TV (now speaks with the effect|spricht jetzt mit dem Effekt) (Whisper|Flüstern)/.test(await page.locator("body").innerText()), "setting an effect confirms it");
+{
+  const ps = page.locator("main [data-viewer-plugin]");
+  check((await ps.count()) === 4 && (await ps.first().locator("option").count()) === 4, "every viewer can get a plugin effect", `${await ps.count()} selects, ${await ps.first().locator("option").count()} options`);
+  check(/(Chipmunk)/.test(await ps.first().locator("option:checked").innerText()) && /Demon/.test(await ps.nth(1).locator("option:checked").innerText()), "the list shows random and set plugin effects", `${await ps.first().locator("option:checked").innerText()} / ${await ps.nth(1).locator("option:checked").innerText()}`);
+  await ps.nth(2).selectOption("chip");
+  await page.waitForTimeout(300);
+  check(/xx_Gamer_xx (now speaks with|spricht jetzt mit) Chipmunk/.test(await page.locator("body").innerText()), "a plugin effect can be given to a viewer");
+}
 
 await nav("voices");
 await page.waitForTimeout(300);

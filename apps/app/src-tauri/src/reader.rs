@@ -119,11 +119,19 @@ impl Host for AppHost {
         crate::os_voice::speak(text, lang).await
     }
 
+    fn plugin_pool(&self) -> Vec<(String, u32)> {
+        self.state().map(|s| s.cfg.read().viewer_plugins.iter().filter(|v| v.enabled).map(|v| (v.id.clone(), v.weight)).collect()).unwrap_or_default()
+    }
+
+    fn plugins_on_host(&self, variant: Option<&str>) -> bool {
+        self.state().is_some_and(|s| crate::plugin_cmds::on_host(&s, variant))
+    }
+
     type Stage = Option<crate::plugin_cmds::Stage>;
 
-    async fn stage(&self) -> Self::Stage {
+    async fn stage(&self, variant: Option<&str>, on_host: bool) -> Self::Stage {
         let s = self.state()?;
-        Some(crate::plugin_cmds::Stage::new(&s).await)
+        Some(crate::plugin_cmds::Stage::new(&s, variant, on_host).await)
     }
 
     async fn stage_run(&self, stage: &Self::Stage, samples: Vec<f32>, rate: u32) -> (Vec<f32>, u32) {

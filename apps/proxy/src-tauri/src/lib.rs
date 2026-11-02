@@ -16,6 +16,7 @@ mod gpu_procs;
 mod hosted;
 mod internet;
 mod logbuf;
+mod plugins;
 mod secrets;
 mod server;
 mod shell;
@@ -145,6 +146,7 @@ pub fn run() {
             tauri::async_runtime::spawn(engine_events(state.clone()));
             state.hosted.load(&state);
             tauri::async_runtime::spawn(hosted::serve(state.clone()));
+            tauri::async_runtime::spawn(plugins::run(state.clone()));
             {
                 let s = Arc::downgrade(&state);
                 tauri::async_runtime::spawn(state.certs.clone().run(move || s.upgrade().and_then(|s| internet::https_want(&s))));
@@ -171,6 +173,9 @@ pub fn run() {
             commands::get_overview,
             commands::obs_links,
             commands::obs_remove,
+            commands::plugins_view,
+            commands::plugins_rescan,
+            commands::plugins_open,
             commands::update_settings,
             commands::set_vcp_key,
             commands::clear_vcp_key,

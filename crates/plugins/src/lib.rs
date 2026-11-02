@@ -12,15 +12,19 @@
 //! Plugins run inside the app: a faulty plugin can take it down.
 
 mod clap;
+mod resample;
 mod vst3;
+pub mod wire;
 #[cfg(windows)]
 mod win32;
 
+use std::collections::HashMap;
 use std::sync::Arc;
-use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
+
+pub use resample::Resamplers;
 use tokio::sync::oneshot;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -176,83 +180,140 @@ fn load(p: &PluginInfo, rate: f64, block: usize) -> Result<Box<dyn Effect>, Stri
 
 const BLOCK: usize = 512;
 
+/// The chain the app's single-chain calls use.
+pub const MAIN: &str = "main";
+
 struct Loaded {
     spec: SlotSpec,
     effect: Box<dyn Effect>,
 }
 
+/// One named chain: its own plugin instances at its own rate.
+struct Chain {
+    rate: u32,
+    slots: Vec<Loaded>,
+}
+
 type SetReply = oneshot::Sender<Vec<(String, Result<(), String>)>>;
 
 enum Cmd {
-    /// The whole chain (instances of unchanged slots are kept).
-    Set(u32, Vec<SlotSpec>, SetReply),
-    Process(Vec<f32>, oneshot::Sender<Vec<f32>>),
-    Tail(oneshot::Sender<Vec<f32>>),
+    /// A whole chain (instances of unchanged slots are kept).
+    Set(String, u32, Vec<SlotSpec>, SetReply),
+    Process(String, Vec<f32>, oneshot::Sender<Vec<f32>>),
+    Tail(String, oneshot::Sender<Vec<f32>>),
+    /// Removes a chain (its plugins' settings go to `on_state`).
+    Drop(String),
+    /// Slot ids are looked up in every chain (the first match).
     Open(String, oneshot::Sender<Result<(), String>>),
     Close(String),
     Save(oneshot::Sender<Vec<(String, Vec<u8>)>>),
     Children(String, oneshot::Sender<usize>),
 }
 
-/// The effect chain on its own thread.
+/// Called with (chain, slot id, settings) when a plugin's settings should be kept.
+type OnState = Box<dyn Fn(&str, String, Vec<u8>) + Send>;
+
+/// Effect chains on their own thread. Each chain (key) has its own plugin
+/// instances, so chains never hear each other's audio: the app's chain for
+/// every voice ("main"), one per viewer effect, and on the proxy one set per
+/// reader. The cost of a chain is its plugins' memory; processing speech
+/// offline takes a few percent of real time for typical effects.
 pub struct Rack {
     tx: std::sync::mpsc::Sender<Cmd>,
-    /// Enabled effects in the chain (0 = nothing to do).
-    active: Arc<AtomicU32>,
-    rate: Arc<AtomicU32>,
+    /// Enabled effects per chain (missing or 0 = nothing to do).
+    active: Arc<parking_lot::Mutex<HashMap<String, (u32, u32)>>>,
 }
 
 impl Rack {
     /// Starts the plugin thread. `on_state` gets a plugin's settings when
-    /// the user closes its editor or it leaves the chain (to keep them).
+    /// the user closes its editor or it leaves its chain (to keep them).
     pub fn start(on_state: impl Fn(String, Vec<u8>) + Send + 'static) -> Self {
+        Self::start_keyed(move |_, id, data| on_state(id, data))
+    }
+
+    /// Like [`Rack::start`], with the chain the settings come from.
+    pub fn start_keyed(on_state: impl Fn(&str, String, Vec<u8>) + Send + 'static) -> Self {
         let (tx, rx) = std::sync::mpsc::channel::<Cmd>();
-        let active = Arc::new(AtomicU32::new(0));
-        let rate = Arc::new(AtomicU32::new(48_000));
+        let active = Arc::new(parking_lot::Mutex::new(HashMap::new()));
         let a = active.clone();
+        let on_state: OnState = Box::new(on_state);
         std::thread::Builder::new().name("ttv-plugins".into()).spawn(move || run(rx, a, on_state)).expect("plugin thread");
-        Self { tx, active, rate }
+        Self { tx, active }
     }
 
-    /// Nothing in the chain is switched on.
+    /// Nothing in the main chain is switched on.
     pub fn is_idle(&self) -> bool {
-        self.active.load(Ordering::Relaxed) == 0
+        self.chain_idle(MAIN)
     }
 
-    /// The rate the chain runs at (clips must be resampled to it).
+    /// Nothing in this chain is switched on (or it doesn't exist).
+    pub fn chain_idle(&self, chain: &str) -> bool {
+        self.active.lock().get(chain).is_none_or(|(n, _)| *n == 0)
+    }
+
+    /// Whether the chain exists (loaded with `set_chain`).
+    pub fn has_chain(&self, chain: &str) -> bool {
+        self.active.lock().contains_key(chain)
+    }
+
+    /// The rate the main chain runs at (clips must be resampled to it).
     pub fn rate(&self) -> u32 {
-        self.rate.load(Ordering::Relaxed)
+        self.chain_rate(MAIN)
     }
 
-    /// Loads, reorders and removes effects to match `slots`, at `rate`.
-    /// Returns per slot whether it is ready.
+    pub fn chain_rate(&self, chain: &str) -> u32 {
+        self.active.lock().get(chain).map_or(48_000, |(_, r)| *r)
+    }
+
+    /// Loads, reorders and removes the main chain's effects to match `slots`.
     pub async fn set(&self, rate: u32, slots: Vec<SlotSpec>) -> Vec<(String, Result<(), String>)> {
-        self.rate.store(rate, Ordering::Relaxed);
+        self.set_chain(MAIN, rate, slots).await
+    }
+
+    /// Loads, reorders and removes a chain's effects to match `slots`, at
+    /// `rate`. Returns per slot whether it is ready.
+    pub async fn set_chain(&self, chain: &str, rate: u32, slots: Vec<SlotSpec>) -> Vec<(String, Result<(), String>)> {
         let (t, r) = oneshot::channel();
-        let _ = self.tx.send(Cmd::Set(rate, slots, t));
+        let _ = self.tx.send(Cmd::Set(chain.to_string(), rate, slots, t));
         r.await.unwrap_or_default()
     }
 
-    /// Runs mono samples through the switched-on effects.
+    /// Runs mono samples through the main chain's switched-on effects.
     pub async fn process(&self, samples: Vec<f32>) -> Vec<f32> {
-        if self.is_idle() {
+        self.process_chain(MAIN, samples).await
+    }
+
+    /// Runs mono samples (at the chain's rate) through a chain.
+    pub async fn process_chain(&self, chain: &str, samples: Vec<f32>) -> Vec<f32> {
+        if self.chain_idle(chain) {
             return samples;
         }
         let (t, r) = oneshot::channel();
-        if self.tx.send(Cmd::Process(samples, t)).is_err() {
+        if self.tx.send(Cmd::Process(chain.to_string(), samples, t)).is_err() {
             return Vec::new();
         }
         r.await.unwrap_or_default()
     }
 
-    /// The ring-out of the chain after a message.
+    /// The ring-out of the main chain after a message.
     pub async fn tail(&self) -> Vec<f32> {
-        if self.is_idle() {
+        self.tail_chain(MAIN).await
+    }
+
+    /// The ring-out of a chain after a message.
+    pub async fn tail_chain(&self, chain: &str) -> Vec<f32> {
+        if self.chain_idle(chain) {
             return Vec::new();
         }
         let (t, r) = oneshot::channel();
-        let _ = self.tx.send(Cmd::Tail(t));
+        let _ = self.tx.send(Cmd::Tail(chain.to_string(), t));
         r.await.unwrap_or_default()
+    }
+
+    /// Removes a chain and unloads its plugins.
+    pub fn drop_chain(&self, chain: &str) {
+        self.active.lock().remove(chain);
+        let _ = self.tx.send(Cmd::Drop(chain.to_string()));
     }
 
     pub async fn open_editor(&self, id: &str) -> Result<(), String> {
@@ -273,99 +334,183 @@ impl Rack {
         r.await.unwrap_or(0)
     }
 
-    /// The current settings of every effect (to store them).
+    /// The current settings of every effect in every chain (slot id; a slot
+    /// in several chains comes once, from the first).
     pub async fn save_states(&self) -> Vec<(String, Vec<u8>)> {
         let (t, r) = oneshot::channel();
         let _ = self.tx.send(Cmd::Save(t));
         r.await.unwrap_or_default()
     }
+
+    /// Runs samples through several chains one after the other (a viewer's
+    /// effect, then the chain on every voice).
+    pub async fn process_chains(&self, chains: &[String], mut samples: Vec<f32>) -> Vec<f32> {
+        for c in chains {
+            samples = self.process_chain(c, samples).await;
+        }
+        samples
+    }
+
+    /// The ring-out of several chains in a row: each one's tail also passes
+    /// through the chains after it.
+    pub async fn tail_chains(&self, chains: &[String]) -> Vec<f32> {
+        let mut out = Vec::new();
+        for (i, c) in chains.iter().enumerate() {
+            let t = self.tail_chain(c).await;
+            if t.is_empty() {
+                continue;
+            }
+            out.extend(self.process_chains(&chains[i + 1..], t).await);
+        }
+        out
+    }
 }
 
-fn run(rx: std::sync::mpsc::Receiver<Cmd>, active: Arc<AtomicU32>, on_state: impl Fn(String, Vec<u8>)) {
-    let mut chain: Vec<Loaded> = Vec::new();
-    let mut rate = 48_000u32;
+impl SlotSpec {
+    /// A slot as the app stores it (settings in base64).
+    pub fn from_wire(id: &str, plugin: &PluginInfo, enabled: bool, state: Option<&str>) -> Self {
+        use base64::Engine as _;
+        Self { id: id.to_string(), plugin: plugin.clone(), enabled, state: state.and_then(|b| base64::engine::general_purpose::STANDARD.decode(b).ok()) }
+    }
+}
+
+/// Plugin settings as text (base64) for configs and the wire.
+pub fn state_to_text(data: &[u8]) -> String {
+    use base64::Engine as _;
+    base64::engine::general_purpose::STANDARD.encode(data)
+}
+
+fn clean(x: &mut [f32]) {
+    for s in x.iter_mut() {
+        // a broken plugin must not blow up the speakers
+        *s = if s.is_finite() { s.clamp(-1.0, 1.0) } else { 0.0 };
+    }
+}
+
+/// Loads, keeps and reorders a chain's slots; returns per slot whether it's ready.
+fn set_slots(chain: &mut Chain, key: &str, rate: u32, slots: Vec<SlotSpec>, on_state: &OnState) -> Vec<(String, Result<(), String>)> {
+    let rate_changed = rate != chain.rate;
+    chain.rate = rate;
+    let mut old: Vec<Loaded> = std::mem::take(&mut chain.slots);
+    let mut results = Vec::new();
+    for spec in slots {
+        // keep a running instance of the same plugin (its sound and editor)
+        let kept = (!rate_changed).then(|| old.iter().position(|l| l.spec.id == spec.id && l.spec.plugin == spec.plugin)).flatten().map(|i| old.remove(i));
+        let loaded = match kept {
+            Some(mut l) => {
+                l.spec.enabled = spec.enabled;
+                // settings changed elsewhere (the app, for the voice host PC's
+                // instances) go into the running instance – not while its
+                // window is open (that would undo what the user just did)
+                if let Some(s) = spec.state.as_ref().filter(|s| Some(*s) != l.spec.state.as_ref())
+                    && !l.effect.editor_open()
+                {
+                    if let Err(e) = l.effect.load_state(s) {
+                        log::info!("plugin {}: new settings not loaded: {e}", spec.plugin.name);
+                    }
+                    l.spec.state = Some(s.clone());
+                }
+                Ok(l)
+            }
+            None => load(&spec.plugin, rate as f64, BLOCK).map(|mut effect| {
+                if let Some(s) = &spec.state
+                    && let Err(e) = effect.load_state(s)
+                {
+                    log::info!("plugin {}: settings not loaded: {e}", spec.plugin.name);
+                }
+                Loaded { spec: spec.clone(), effect }
+            }),
+        };
+        match loaded {
+            Ok(l) => {
+                results.push((spec.id.clone(), Ok(())));
+                chain.slots.push(l);
+            }
+            Err(e) => {
+                log::warn!("plugin {}: {e}", spec.plugin.name);
+                results.push((spec.id.clone(), Err(e)));
+            }
+        }
+    }
+    // removed or reloaded ones: keep their last settings
+    for mut l in old {
+        if let Some(s) = l.effect.save_state() {
+            on_state(key, l.spec.id.clone(), s);
+        }
+    }
+    results
+}
+
+/// What a chain still plays after its input ended, up to the longest tail
+/// its plugins report (at most 5 s), without trailing silence.
+fn ring_out(chain: &mut Chain) -> Vec<f32> {
+    let rate = chain.rate;
+    let max = chain.slots.iter().filter(|l| l.spec.enabled).map(|l| l.effect.tail()).fold(0f32, f32::max).min(5.0);
+    let block = ((rate as f32 * 0.05) as usize).max(1);
+    // until 0.3 s stay quiet (a delay's next echo may follow a short gap),
+    // without that trailing quiet
+    let enough = (rate as f32 * 0.3) as usize;
+    let mut out = Vec::new();
+    let mut quiet_run = 0;
+    while (out.len() as f32) < max * rate as f32 && quiet_run < enough {
+        let mut b = vec![0.0f32; block];
+        for l in chain.slots.iter_mut().filter(|l| l.spec.enabled) {
+            l.effect.process(&mut b);
+        }
+        clean(&mut b);
+        let quiet = b.iter().map(|s| s * s).sum::<f32>() / b.len() as f32 <= 1e-8;
+        quiet_run = if quiet { quiet_run + b.len() } else { 0 };
+        out.extend(b);
+    }
+    out.truncate(out.len() - quiet_run);
+    let fade = (rate as usize / 50).min(out.len());
+    let n = out.len();
+    for (i, s) in out[n - fade..].iter_mut().enumerate() {
+        *s *= 1.0 - (i + 1) as f32 / fade as f32;
+    }
+    out
+}
+
+fn run(rx: std::sync::mpsc::Receiver<Cmd>, active: Arc<parking_lot::Mutex<HashMap<String, (u32, u32)>>>, on_state: OnState) {
+    let mut chains: HashMap<String, Chain> = HashMap::new();
+    let publish = |key: &str, c: &Chain| {
+        active.lock().insert(key.to_string(), (c.slots.iter().filter(|l| l.spec.enabled).count() as u32, c.rate));
+    };
     loop {
-        let wait = if chain.iter().any(|l| l.effect.editor_open()) { Duration::from_millis(10) } else { Duration::from_millis(250) };
+        let editing = chains.values().flat_map(|c| &c.slots).any(|l| l.effect.editor_open());
+        let wait = if editing { Duration::from_millis(10) } else { Duration::from_millis(250) };
         match rx.recv_timeout(wait) {
-            Ok(Cmd::Set(r, slots, reply)) => {
-                let rate_changed = r != rate;
-                rate = r;
-                let mut old: Vec<Loaded> = std::mem::take(&mut chain);
-                let mut results = Vec::new();
-                for spec in slots {
-                    // keep a running instance of the same plugin (its sound and editor)
-                    let kept = (!rate_changed).then(|| old.iter().position(|l| l.spec.id == spec.id && l.spec.plugin == spec.plugin)).flatten().map(|i| old.remove(i));
-                    let loaded = match kept {
-                        Some(mut l) => {
-                            l.spec.enabled = spec.enabled;
-                            Ok(l)
-                        }
-                        None => load(&spec.plugin, rate as f64, BLOCK).map(|mut effect| {
-                            if let Some(s) = &spec.state
-                                && let Err(e) = effect.load_state(s)
-                            {
-                                log::info!("plugin {}: settings not loaded: {e}", spec.plugin.name);
-                            }
-                            Loaded { spec: spec.clone(), effect }
-                        }),
-                    };
-                    match loaded {
-                        Ok(l) => {
-                            results.push((spec.id.clone(), Ok(())));
-                            chain.push(l);
-                        }
-                        Err(e) => {
-                            log::warn!("plugin {}: {e}", spec.plugin.name);
-                            results.push((spec.id.clone(), Err(e)));
-                        }
-                    }
-                }
-                // removed or reloaded ones: keep their last settings
-                for mut l in old {
-                    if let Some(s) = l.effect.save_state() {
-                        on_state(l.spec.id.clone(), s);
-                    }
-                }
-                active.store(chain.iter().filter(|l| l.spec.enabled).count() as u32, Ordering::Relaxed);
+            Ok(Cmd::Set(key, rate, slots, reply)) => {
+                let chain = chains.entry(key.clone()).or_insert_with(|| Chain { rate, slots: Vec::new() });
+                let results = set_slots(chain, &key, rate, slots, &on_state);
+                publish(&key, chain);
                 let _ = reply.send(results);
             }
-            Ok(Cmd::Process(mut x, reply)) => {
-                for l in chain.iter_mut().filter(|l| l.spec.enabled) {
-                    l.effect.process(&mut x);
-                }
-                for s in x.iter_mut() {
-                    // a broken plugin must not blow up the speakers
-                    *s = if s.is_finite() { s.clamp(-1.0, 1.0) } else { 0.0 };
+            Ok(Cmd::Process(key, mut x, reply)) => {
+                if let Some(c) = chains.get_mut(&key) {
+                    for l in c.slots.iter_mut().filter(|l| l.spec.enabled) {
+                        l.effect.process(&mut x);
+                    }
+                    clean(&mut x);
                 }
                 let _ = reply.send(x);
             }
-            Ok(Cmd::Tail(reply)) => {
-                let max = chain.iter().filter(|l| l.spec.enabled).map(|l| l.effect.tail()).fold(0f32, f32::max).min(5.0);
-                let block = ((rate as f32 * 0.05) as usize).max(1);
-                // until 0.3 s stay quiet (a delay's next echo may follow a
-                // short gap), without that trailing quiet
-                let enough = (rate as f32 * 0.3) as usize;
-                let mut out = Vec::new();
-                let mut quiet_run = 0;
-                while (out.len() as f32) < max * rate as f32 && quiet_run < enough {
-                    let mut b = vec![0.0f32; block];
-                    for l in chain.iter_mut().filter(|l| l.spec.enabled) {
-                        l.effect.process(&mut b);
-                    }
-                    let quiet = b.iter().map(|s| s * s).sum::<f32>() / b.len() as f32 <= 1e-8;
-                    quiet_run = if quiet { quiet_run + b.len() } else { 0 };
-                    out.extend(b.iter().map(|s| if s.is_finite() { s.clamp(-1.0, 1.0) } else { 0.0 }));
-                }
-                out.truncate(out.len() - quiet_run);
-                let fade = (rate as usize / 50).min(out.len());
-                let n = out.len();
-                for (i, s) in out[n - fade..].iter_mut().enumerate() {
-                    *s *= 1.0 - (i + 1) as f32 / fade as f32;
-                }
+            Ok(Cmd::Tail(key, reply)) => {
+                let out = chains.get_mut(&key).map(ring_out).unwrap_or_default();
                 let _ = reply.send(out);
             }
+            Ok(Cmd::Drop(key)) => {
+                if let Some(c) = chains.remove(&key) {
+                    for mut l in c.slots {
+                        l.effect.close_editor();
+                        if let Some(s) = l.effect.save_state() {
+                            on_state(&key, l.spec.id.clone(), s);
+                        }
+                    }
+                }
+            }
             Ok(Cmd::Open(id, reply)) => {
-                let r = match chain.iter_mut().find(|l| l.spec.id == id) {
+                let r = match chains.values_mut().flat_map(|c| c.slots.iter_mut()).find(|l| l.spec.id == id) {
                     Some(l) => {
                         if l.effect.has_editor() {
                             let title = format!("{} – TTV-TTS", l.spec.plugin.name);
@@ -379,22 +524,39 @@ fn run(rx: std::sync::mpsc::Receiver<Cmd>, active: Arc<AtomicU32>, on_state: imp
                 let _ = reply.send(r);
             }
             Ok(Cmd::Close(id)) => {
-                if let Some(l) = chain.iter_mut().find(|l| l.spec.id == id) {
-                    l.effect.close_editor();
-                    if let Some(s) = l.effect.save_state() {
-                        on_state(id, s);
+                for (key, c) in chains.iter_mut() {
+                    if let Some(l) = c.slots.iter_mut().find(|l| l.spec.id == id && l.effect.editor_open()) {
+                        l.effect.close_editor();
+                        if let Some(s) = l.effect.save_state() {
+                            on_state(key, id.clone(), s);
+                        }
                     }
                 }
             }
             Ok(Cmd::Save(reply)) => {
-                let states = chain.iter_mut().filter_map(|l| l.effect.save_state().map(|s| (l.spec.id.clone(), s))).collect();
+                let mut states: Vec<(String, Vec<u8>)> = Vec::new();
+                let mut keys: Vec<&String> = chains.keys().collect();
+                keys.sort_by_key(|k| (k.as_str() != MAIN, k.as_str()));
+                let keys: Vec<String> = keys.into_iter().cloned().collect();
+                for k in keys {
+                    for l in chains.get_mut(&k).into_iter().flat_map(|c| c.slots.iter_mut()) {
+                        if !states.iter().any(|(id, _)| *id == l.spec.id)
+                            && let Some(s) = l.effect.save_state()
+                        {
+                            states.push((l.spec.id.clone(), s));
+                        }
+                    }
+                }
                 let _ = reply.send(states);
             }
             Ok(Cmd::Children(id, reply)) => {
                 #[cfg(windows)]
-                let n = chain.iter().find(|l| l.spec.id == id).and_then(|l| l.effect.editor_window()).map_or(0, |w| win32::child_count(w.hwnd));
+                let n = chains.values().flat_map(|c| &c.slots).find(|l| l.spec.id == id && l.effect.editor_window().is_some()).and_then(|l| l.effect.editor_window()).map_or(0, |w| win32::child_count(w.hwnd));
                 #[cfg(not(windows))]
-                let n = { let _ = id; 0 };
+                let n = {
+                    let _ = id;
+                    0
+                };
                 let _ = reply.send(n);
             }
             Err(std::sync::mpsc::RecvTimeoutError::Timeout) => {}
@@ -402,11 +564,13 @@ fn run(rx: std::sync::mpsc::Receiver<Cmd>, active: Arc<AtomicU32>, on_state: imp
         }
         #[cfg(windows)]
         win32::pump();
-        for l in &mut chain {
-            if l.effect.idle()
-                && let Some(s) = l.effect.save_state()
-            {
-                on_state(l.spec.id.clone(), s);
+        for (key, c) in chains.iter_mut() {
+            for l in &mut c.slots {
+                if l.effect.idle()
+                    && let Some(s) = l.effect.save_state()
+                {
+                    on_state(key, l.spec.id.clone(), s);
+                }
             }
         }
     }

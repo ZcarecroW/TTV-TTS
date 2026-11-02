@@ -56,6 +56,8 @@ pub struct AppState {
     pub obs_error: RwLock<Option<String>>,
     /// The HTTPS certificate of the OBS links from the internet.
     pub certs: Arc<ttv_net::Certs>,
+    /// Audio plugins the app's chains use, run here.
+    pub plugins: Arc<crate::plugins::ProxyPlugins>,
     app: OnceLock<AppHandle>,
 }
 
@@ -80,6 +82,7 @@ impl AppState {
         });
         Self {
             certs,
+            plugins: Arc::new(crate::plugins::ProxyPlugins::new(&data_dir)),
             engine,
             guests: crate::internet::Guests::load(&data_dir),
             internet: RwLock::new(Default::default()),

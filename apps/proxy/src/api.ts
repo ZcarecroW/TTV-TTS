@@ -198,6 +198,9 @@ export const api = {
   diagnostics: () => invoke<unknown>("diagnostics"),
   obsLinks: () => invoke<ObsLinks>("obs_links"),
   obsRemove: (id: string) => invoke<ObsLinks>("obs_remove", { id }),
+  plugins: () => invoke<PluginsHere>("plugins_view"),
+  pluginsRescan: () => invoke<PluginsHere>("plugins_rescan"),
+  pluginsOpen: (slot: string) => invoke<void>("plugins_open", { slot }),
 };
 
 /** Internet access for friends (the same card as in the app). */
@@ -228,6 +231,24 @@ export interface ObsLink {
   internet: string | null;
   internet_secure: boolean;
   securing: boolean;
+}
+
+export interface PluginInfo {
+  format: "vst3" | "clap";
+  path: string;
+  id: string;
+  name: string;
+  vendor: string;
+}
+
+/** This PC's plugins and the chains TTV-TTS sent. */
+export interface PluginsHere {
+  installed: PluginInfo[] | null;
+  scanning: boolean;
+  missing: string[];
+  errors: Record<string, string>;
+  chains: { main: { id: string; plugin: PluginInfo; enabled: boolean }[]; variants: { id: string; name: string; plugin: PluginInfo; enabled: boolean; weight: number }[] };
+  editors: boolean;
 }
 
 export interface ObsLinks {
