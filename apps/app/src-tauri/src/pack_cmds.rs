@@ -286,3 +286,34 @@ pub async fn download_packs(app: AppHandle, state: St<'_>, files: Vec<String>) -
     }
     Ok(jobs)
 }
+
+#[derive(Serialize)]
+pub struct ProxyAnswer {
+    pub status: u16,
+    /// The answer's body, base64.
+    pub body: String,
+}
+
+/// Development builds only: one request to the paired proxy with this app's
+/// pairing – the maintainer's pack builder (scripts/build-voice-packs.mjs)
+/// uses it, so no token has to leave the app. Only `/ttv/v1/` paths.
+#[tauri::command]
+pub async fn debug_proxy_fetch(state: St<'_>, method: String, path: String, body: Option<String>) -> Result<ProxyAnswer, String> {
+    use base64::Engine as _;
+    if !cfg!(debug_assertions) {
+        return Err("only in development builds".into());
+    }
+    if !path.starts_with("/ttv/v1/") {
+        return Err("only /ttv/v1/ paths".into());
+    }
+    let c = state.vcp().ok_or("No voice host set up yet.")?;
+    let m = reqwest::Method::from_bytes(method.to_ascii_uppercase().as_bytes()).map_err(|e| e.to_string())?;
+    let mut r = c.request(m, &path).timeout(std::time::Duration::from_secs(3600));
+    if let Some(b) = body {
+        r = r.header("Content-Type", "application/json").body(b);
+    }
+    let resp = r.send().await.map_err(|e| e.to_string())?;
+    let status = resp.status().as_u16();
+    let bytes = resp.bytes().await.map_err(|e| e.to_string())?;
+    Ok(ProxyAnswer { status, body: base64::engine::general_purpose::STANDARD.encode(bytes) })
+}

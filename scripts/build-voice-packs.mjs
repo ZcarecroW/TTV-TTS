@@ -1,19 +1,23 @@
 // Builds the ready-made voice packs from a proxy's library and publishes
 // them with their catalog on the GitHub release "voice-packs".
 //   TTV_PROXY=192.168.178.25:8110 TTV_TOKEN=<key or device token> node scripts/build-voice-packs.mjs [--dry]
+//   TTV_VIA_APP=1 node scripts/build-voice-packs.mjs [--dry]
 // One pack per built-in preset, language and complete slice of 30 voices
 // (1–30, 31–60, …). Needs TTV-TTS Proxy 2.0.0-alpha.10+ (pack export) and gh.
 // The proxy's certificate is self-signed: run with NODE_TLS_REJECT_UNAUTHORIZED=0
-// on the LAN, or pin it.
+// on the LAN, or pin it. TTV_VIA_APP=1 goes through a running development
+// build of the app instead (remote debugging on :9333, `debug_proxy_fetch`),
+// with its pairing – no key or token needed here.
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const root = new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
+const viaApp = process.env.TTV_VIA_APP === "1";
 const proxy = process.env.TTV_PROXY;
 const token = process.env.TTV_TOKEN;
-if (!proxy || !token) throw new Error("set TTV_PROXY and TTV_TOKEN");
+if (!viaApp && (!proxy || !token)) throw new Error("set TTV_PROXY and TTV_TOKEN, or TTV_VIA_APP=1");
 const dry = process.argv.includes("--dry");
 const repo = "ZcarecroW/TTV-TTS";
 const TAG = "voice-packs";
@@ -23,7 +27,19 @@ mkdirSync(out, { recursive: true });
 
 const ORDER = ["cinematic", "everyday-neighbors", "fantasy-tavern", "starship-crew", "noir-city", "saturday-cartoons", "high-seas", "royal-court", "midnight-horror", "arena-casters", "on-air", "wild-planet", "storytime", "frontier-west", "neon-streets", "olympus", "capes-and-masks", "grand-stage", "quest-givers", "calm-and-cozy"];
 const H = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
-const api = (path, init) => fetch(`https://${proxy}/ttv/v1${path}`, { headers: H, ...init });
+let api = (path, init) => fetch(`https://${proxy}/ttv/v1${path}`, { headers: H, ...init });
+if (viaApp) {
+  const { chromium } = await import("playwright-core");
+  const browser = await chromium.connectOverCDP("http://127.0.0.1:9333");
+  const page = browser.contexts().flatMap((c) => c.pages()).find((p) => /localhost:1440|tauri\.localhost/.test(p.url()));
+  process.on("exit", () => browser.close().catch(() => {}));
+  // a Response-like answer from the app's passthrough
+  api = async (path, init = {}) => {
+    const a = await page.evaluate(([m, p, b]) => window.__TAURI_INTERNALS__.invoke("debug_proxy_fetch", { method: m, path: p, body: b }), [init.method ?? "GET", `/ttv/v1${path}`, init.body ?? null]);
+    const bytes = Buffer.from(a.body, "base64");
+    return { ok: a.status >= 200 && a.status < 300, status: a.status, json: async () => JSON.parse(bytes.toString("utf8")), text: async () => bytes.toString("utf8"), arrayBuffer: async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.length) };
+  };
+}
 
 /** VoiceDef::hash: sha256(gender, 0, age, description) → "v" + 12 hex. */
 const defHash = (d) => "v" + createHash("sha256").update(Buffer.concat([Buffer.from(d.gender), Buffer.from([0, d.age]), Buffer.from(d.description.trim())])).digest("hex").slice(0, 12);

@@ -192,6 +192,7 @@ pub fn run() {
             preset_cmds::listen,
             preset_cmds::redo_voice,
             preset_cmds::debug_sample,
+            pack_cmds::debug_proxy_fetch,
             preset_cmds::list_takes,
             preset_cmds::play_take,
             preset_cmds::choose_take,
