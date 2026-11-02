@@ -282,7 +282,7 @@ export interface Profile {
     os_fallback: boolean;
   };
   translate: { enabled: boolean; into: string; mine: string[]; read: "translation" | "both" | "show"; provider: "mymemory" | "deepl" | "vcp" };
-  events: { enabled: boolean; subs: boolean; gifts: boolean; raids: boolean; bits: boolean; min_bits: number; min_raid: number; voice: string; texts: Record<string, string> };
+  events: { enabled: boolean; subs: boolean; gifts: boolean; raids: boolean; bits: boolean; follows: boolean; redemptions: boolean; min_bits: number; min_raid: number; voice: string; texts: Record<string, string> };
   muted: string[];
 }
 
@@ -624,7 +624,7 @@ export const DESIGN_LANGS = ["en", "de", "ru", "fr", "es", "it", "pt", "ja", "zh
 export const TIERS = [30, 60, 120, 240] as const;
 
 /** Event announcements and their built-in sentences (as in announce.rs). */
-export const EVENT_KINDS = ["sub", "resub", "subgift", "submysterygift", "raid", "bits"] as const;
+export const EVENT_KINDS = ["sub", "resub", "subgift", "submysterygift", "raid", "bits", "follow", "redeem"] as const;
 export const EVENT_TEXTS: Record<string, [string, string]> = {
   sub: ["{user} just subscribed!", "{user} hat gerade abonniert!"],
   resub: ["{user} subscribed for {months} months!", "{user} ist seit {months} Monaten dabei!"],
@@ -632,7 +632,37 @@ export const EVENT_TEXTS: Record<string, [string, string]> = {
   submysterygift: ["{user} gifted {count} subs to the community!", "{user} verschenkt {count} Abos an die Community!"],
   raid: ["{user} is raiding with {viewers} viewers!", "{user} raidet mit {viewers} Zuschauern!"],
   bits: ["{user} cheered {bits} bits!", "{user} hat {bits} Bits gespendet!"],
+  follow: ["{user} is now following!", "{user} folgt jetzt!"],
+  redeem: ["{user} redeemed {reward}!", "{user} hat {reward} eingelöst!"],
 };
+
+// ── Twitch login (optional) ─────────────────────────────────────────────
+
+export interface TwitchStatus {
+  /** a client ID is built in or entered */
+  available: boolean;
+  own_client_id: boolean;
+  login: string | null;
+  connected: boolean;
+  subscribed: string[];
+  error: string | null;
+  pending: { user_code: string; verification_uri: string; expires_at: number } | null;
+}
+
+export const twitch = {
+  status: () => invoke<TwitchStatus>("twitch_status"),
+  login: () => invoke<TwitchStatus>("twitch_login"),
+  cancel: () => invoke<TwitchStatus>("twitch_cancel_login"),
+  logout: () => invoke<TwitchStatus>("twitch_logout"),
+  setClientId: (id: string) => invoke<TwitchStatus>("set_twitch_client_id", { id }),
+};
+
+/** Opens a web page in the browser. */
+export async function openUrl(url: string) {
+  if (!isTauri) return void window.open(url, "_blank");
+  const { openUrl } = await import("@tauri-apps/plugin-opener");
+  await openUrl(url);
+}
 
 /** Whole sentences against streaming, measured on this voice host. */
 export interface Measured {

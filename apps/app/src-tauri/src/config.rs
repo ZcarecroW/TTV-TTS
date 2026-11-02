@@ -87,6 +87,8 @@ pub struct Config {
     pub remote: RemoteConfig,
     /// Audio plugins (VST3, CLAP) on all speech, in this order.
     pub plugins: Vec<PluginSlot>,
+    /// Client ID of the streamer's own Twitch application ("" = built in).
+    pub twitch_client_id: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -132,6 +134,7 @@ impl Default for Config {
             hotkeys: Default::default(),
             remote: RemoteConfig::default(),
             plugins: Vec::new(),
+            twitch_client_id: String::new(),
         }
     }
 }

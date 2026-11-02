@@ -41,6 +41,8 @@ const vcp = {
   exe: "C:\\Games\\Voice Creator Pro\\VoiceCreatorPro.exe",
 };
 
+const demoTwitch = { available: true, own_client_id: false, login: null as string | null, connected: false, subscribed: [] as string[], error: null as string | null, pending: null as { user_code: string; verification_uri: string; expires_at: number } | null };
+
 const demoFound = [
   { format: "vst3" as const, path: "C:/Program Files/Common Files/VST3/Clean EQ.vst3", id: "1", name: "Clean EQ", vendor: "Example Audio" },
   { format: "clap" as const, path: "C:/Program Files/Common Files/CLAP/Room Verb.clap", id: "room.verb", name: "Room Verb", vendor: "Example Audio" },
@@ -203,6 +205,25 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
       const hit = Object.entries(known).find(([k]) => text.toLowerCase().includes(k));
       return r({ text: hit ? hit[1] + "!" : "(Übersetzung) " + text, ms: 480 });
     }
+    case "twitch_status":
+      return r(structuredClone(demoTwitch));
+    case "twitch_login":
+      demoTwitch.pending = { user_code: "QBQLNSHC", verification_uri: "https://www.twitch.tv/activate?device-code=QBQLNSHC", expires_at: now() + 1800 };
+      setTimeout(() => {
+        if (!demoTwitch.pending) return;
+        Object.assign(demoTwitch, { pending: null, login: "zcarecrow", connected: true, subscribed: ["channel.follow", "channel.channel_points_custom_reward_redemption.add"] });
+        emit("app://twitch", structuredClone(demoTwitch));
+      }, 1500);
+      return r(structuredClone(demoTwitch));
+    case "twitch_cancel_login":
+      demoTwitch.pending = null;
+      return r(structuredClone(demoTwitch));
+    case "twitch_logout":
+      Object.assign(demoTwitch, { login: null, connected: false, subscribed: [] });
+      return r(structuredClone(demoTwitch));
+    case "set_twitch_client_id":
+      demoTwitch.own_client_id = !!String(args.id).trim();
+      return r(structuredClone(demoTwitch));
     case "plugins_list":
       return r(structuredClone(demoPlugins));
     case "plugins_scan":

@@ -8,7 +8,7 @@ import UiTags from "@ttv-tts/ui/components/UiTags.vue";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
 import { Devices, Gear, Globe, Lock, Play, Plus, Sparkle, Trash, Waveform } from "@ttv-tts/ui/icons";
-import { api, EVENT_KINDS, EVENT_TEXTS, reader, TIERS, type Profile, type Role, type Voice } from "../api";
+import { api, EVENT_KINDS, EVENT_TEXTS, reader, TIERS, type Profile, type Role, type Voice, twitch } from "../api";
 import { run, store, toast } from "../store";
 
 const { t } = useI18n();
@@ -18,6 +18,9 @@ const p = ref<Profile | null>(null);
 const voices = ref<Voice[]>([]);
 const replLang = ref("all");
 
+// follows and rewards need the Twitch login (settings)
+const twitchLogin = ref<string | null>(null);
+void twitch.status().then((s) => (twitchLogin.value = s.login)).catch(() => {});
 const eventText = (kind: string) => EVENT_TEXTS[kind]![p.value?.language.default === "de" ? 1 : 0];
 async function tryEvent(kind: string) {
   if (!p.value) return;
@@ -321,7 +324,10 @@ const defaultVoice = computed({
                 <UiToggle v-model="p.events.gifts" :label="t('profiles.eventsGifts')" />
                 <UiToggle v-model="p.events.raids" :label="t('profiles.eventsRaids')" />
                 <UiToggle v-model="p.events.bits" :label="t('profiles.eventsBits')" />
+                <UiToggle v-model="p.events.follows" :label="t('profiles.eventsFollows')" :tip="t('tips.eventsFollows')" />
+                <UiToggle v-model="p.events.redemptions" :label="t('profiles.eventsRedemptions')" />
               </div>
+              <p v-if="(p.events.follows || p.events.redemptions) && !twitchLogin" class="hint" data-events-login>{{ t("profiles.eventsNeedLogin") }}</p>
               <div class="grid grid-cols-2 gap-3">
                 <UiField :label="t('profiles.eventsMinBits')"><input v-model.number="p.events.min_bits" type="number" min="1" class="input" /></UiField>
                 <UiField :label="t('profiles.eventsMinRaid')"><input v-model.number="p.events.min_raid" type="number" min="1" class="input" /></UiField>

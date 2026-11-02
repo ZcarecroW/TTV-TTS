@@ -66,6 +66,20 @@ check(await page.locator("#ttv-tip").isVisible(), "tooltip appears on hover");
   check(!/demoToken123/.test(await rc.locator("code").first().innerText()), "a new token replaces the old one");
 }
 {
+  const tw = page.locator("main [data-twitch]");
+  const login = /^(Log in with Twitch|Mit Twitch anmelden)$/;
+  check((await tw.getByRole("button", { name: login }).count()) === 1, "the optional Twitch login is offered");
+  await tw.getByRole("button", { name: login }).click();
+  await page.waitForTimeout(300);
+  check(/QBQLNSHC/.test(await tw.locator("[data-twitch-pending]").innerText().catch(() => "")), "the login shows the code to confirm on Twitch");
+  await page.waitForTimeout(1700);
+  const acc = await tw.locator("[data-twitch-account]").innerText().catch(() => "");
+  check(/zcarecrow/.test(acc) && /follows|Follows/.test(acc) && /(channel-point rewards|Kanalpunkte-Belohnungen)/.test(acc), "after the confirmation the account and its events show", acc);
+  await tw.getByRole("button", { name: /^(Log out|Abmelden)$/ }).click();
+  await page.waitForTimeout(300);
+  check((await tw.getByRole("button", { name: login }).count()) === 1, "logging out offers the login again");
+}
+{
   const pc = page.locator("main [data-plugins]");
   check((await pc.locator("[data-plugin]").count()) === 1 && /Clean EQ/.test(await pc.innerText()) && /VST3/.test(await pc.innerText()), "the plugin chain is listed", await pc.innerText());
   await pc.getByRole("button", { name: /^(Add plugin|Plugin hinzufügen)/ }).click();
@@ -175,7 +189,12 @@ check(/(Computed|Berechnet): de 41 · en 30/.test(prof), "profile shows how much
 {
   const ev = page.locator("main [data-events]");
   check(/Announcements|Ansagen/.test(await ev.innerText()) && /Gifted subs|Verschenkte Abos/.test(await ev.innerText()), "announcements can be set per profile");
+  check((await ev.locator("[data-events-login]").count()) === 1, "rewards without text say they need the Twitch login");
+  await ev.getByRole("switch", { name: /^Follows/ }).click();
+  await page.waitForTimeout(150);
+  check((await ev.locator("[data-events-login]").count()) === 1, "follows can be switched on");
   await ev.locator("summary").click();
+  check((await ev.locator("[data-try-event=follow]").count()) === 1 && (await ev.locator("[data-try-event=redeem]").count()) === 1, "follows and rewards have own sentences too");
   await ev.locator("[data-try-event=raid]").click();
   await page.waitForTimeout(300);
   check(/The example is in the queue|Das Beispiel ist in der Warteschlange/.test(await page.locator("body").innerText()), "an example announcement can be heard");

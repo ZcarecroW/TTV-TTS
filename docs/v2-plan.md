@@ -57,7 +57,7 @@ Decisions come from the interview of 2026-11-01 (see the project notes); this fi
 - ✅ Global hotkeys (skip, pause, clear, play again, approve, drop), approval queue, play again from memory, system-voice fallback (Windows WinRT, macOS say, Linux espeak-ng)
 - ✅ Event announcements (optional, off by default): subs, resubs, gifted subs (community gifts once), raids, cheers over anonymous IRC; announcer voice, own sentences, examples
 - ✅ Remote control API (Stream Deck, Streamer.bot): local HTTP, token, GET+POST, say
-- ⏳ Optional Twitch login (EventSub: follows, redemptions without text) – needs a Twitch client ID
+- ✅ Twitch login (optional, device code) + EventSub: follows (off by default, at most one per 10 s) and channel-point rewards without text become announcements; client ID built in by CI (TTV_TWITCH_CLIENT_ID) or the streamer's own
 
 ## M7 – Docs & release ⏳
 - ⏳ Docs site EN + DE at zcarecrow.github.io/TTV-TTS with screenshots and voice samples

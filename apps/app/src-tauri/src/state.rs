@@ -53,6 +53,8 @@ pub struct AppState {
     pub watch_system: AtomicBool,
     /// "Translate for me" (MyMemory, DeepL or VCP), with a small cache.
     pub translator: crate::translate::Translator,
+    /// Optional Twitch login (follows, rewards without text).
+    pub twitch: crate::twitch::account::Account,
     /// Audio plugins on all speech (their own thread).
     pub rack: Arc<ttv_plugins::Rack>,
     /// Plugins that couldn't be loaded, and why.
@@ -76,6 +78,7 @@ impl AppState {
             rack,
             plugin_errors: parking_lot::Mutex::new(Default::default()),
             plugin_states: parking_lot::Mutex::new(Some(state_rx)),
+            twitch: crate::twitch::account::Account::new(web.clone()),
             translator: crate::translate::Translator::new(web),
             reader: ReaderData::load(&data_dir),
             presets: PresetStore::load(&data_dir),

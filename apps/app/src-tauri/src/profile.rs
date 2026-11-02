@@ -385,6 +385,10 @@ pub struct Announcements {
     pub gifts: bool,
     pub raids: bool,
     pub bits: bool,
+    /// Needs the Twitch login (off by default: follow bots).
+    pub follows: bool,
+    /// Channel-point rewards without text (needs the Twitch login).
+    pub redemptions: bool,
     /// Cheers with fewer bits aren't announced.
     pub min_bits: u32,
     /// Raids with fewer viewers aren't announced.
@@ -392,13 +396,14 @@ pub struct Announcements {
     /// VCP voice (name or id) of the announcer; "" = the profile's fallback voice.
     pub voice: String,
     /// Own sentences per event kind (sub, resub, subgift, submysterygift,
-    /// raid, bits) with {user}, {months}, {recipient}, {count}, {viewers}, {bits}.
+    /// raid, bits, follow, redeem) with {user}, {months}, {recipient}, {count},
+    /// {viewers}, {bits}, {reward}.
     pub texts: BTreeMap<String, String>,
 }
 
 impl Default for Announcements {
     fn default() -> Self {
-        Self { enabled: false, subs: true, gifts: true, raids: true, bits: true, min_bits: 100, min_raid: 1, voice: String::new(), texts: BTreeMap::new() }
+        Self { enabled: false, subs: true, gifts: true, raids: true, bits: true, follows: false, redemptions: true, min_bits: 100, min_raid: 1, voice: String::new(), texts: BTreeMap::new() }
     }
 }
 

@@ -1,7 +1,8 @@
 //! Event announcements (optional, off by default – chat bots often do this
 //! already): subs, resubs, gifted subs, raids and cheers arrive over the
-//! anonymous chat connection and are read in the profile's language by an
-//! announcer voice.
+//! anonymous chat connection, follows and rewards without text over EventSub
+//! (Twitch login), and are read in the profile's language by an announcer
+//! voice.
 
 use crate::profile::Announcements;
 use crate::twitch::irc::ChatMessage;
@@ -14,9 +15,11 @@ const TEXTS: &[[&str; 3]] = &[
     ["submysterygift", "{user} gifted {count} subs to the community!", "{user} verschenkt {count} Abos an die Community!"],
     ["raid", "{user} is raiding with {viewers} viewers!", "{user} raidet mit {viewers} Zuschauern!"],
     ["bits", "{user} cheered {bits} bits!", "{user} hat {bits} Bits gespendet!"],
+    ["follow", "{user} is now following!", "{user} folgt jetzt!"],
+    ["redeem", "{user} redeemed {reward}!", "{user} hat {reward} eingelöst!"],
 ];
 
-pub const KINDS: [&str; 6] = ["sub", "resub", "subgift", "submysterygift", "raid", "bits"];
+pub const KINDS: [&str; 8] = ["sub", "resub", "subgift", "submysterygift", "raid", "bits", "follow", "redeem"];
 
 /// The built-in sentence for `kind` in `lang` (English for other languages).
 pub fn builtin(kind: &str, lang: &str) -> &'static str {
@@ -37,6 +40,8 @@ pub fn for_message(a: &Announcements, m: &ChatMessage, lang: &str) -> Option<(&'
         Some("subgift" | "anonsubgift") if a.gifts && !m.notice_params.contains_key("community-gift-id") => "subgift",
         Some("submysterygift" | "anonsubmysterygift") if a.gifts => "submysterygift",
         Some("raid") if a.raids && p("viewerCount").parse::<u32>().unwrap_or(0) >= a.min_raid => "raid",
+        Some("follow") if a.follows => "follow",
+        Some("redeem") if a.redemptions => "redeem",
         None if a.bits && m.bits > 0 && m.bits >= a.min_bits => "bits",
         _ => return None,
     };
@@ -56,7 +61,8 @@ pub fn for_message(a: &Announcements, m: &ChatMessage, lang: &str) -> Option<(&'
         .replace("{recipient}", &p("recipient-display-name"))
         .replace("{count}", &p("mass-gift-count"))
         .replace("{viewers}", &p("viewerCount"))
-        .replace("{bits}", &m.bits.to_string());
+        .replace("{bits}", &m.bits.to_string())
+        .replace("{reward}", &p("reward"));
     Some((kind, text))
 }
 
@@ -108,6 +114,12 @@ mod tests {
         cheer.notice_type = None;
         cheer.bits = 500;
         assert_eq!(for_message(&a, &cheer, "en").unwrap(), ("bits", "Alice cheered 500 bits!".into()));
+        // over EventSub (Twitch login): follows only when switched on
+        assert!(for_message(&a, &notice("follow", &[]), "en").is_none(), "follows are off by default");
+        let mut f = on();
+        f.follows = true;
+        assert_eq!(for_message(&f, &notice("follow", &[]), "de").unwrap().1, "Alice folgt jetzt!");
+        assert_eq!(for_message(&a, &notice("redeem", &[("reward", "Hydrate!")]), "en").unwrap().1, "Alice redeemed Hydrate!!");
     }
 
     #[test]

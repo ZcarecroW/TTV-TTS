@@ -40,7 +40,7 @@ export const baseProfile: Profile = {
   mod_commands: { enabled: true, roles: ["broadcaster", "moderator"], skip: "!skip", clear: "!ttsclear", pause: "!ttspause", resume: "!ttsresume", volume: "!ttsvol", mute: "!ttsmute", unmute: "!ttsunmute", skip_on_timeout: true },
   voices: { mode: "preset", preset: "cinematic", preset_voices: 30, prefix: "TTS-{lang} ", fallback_language: "en", exclude: [], default_voice: null, per_language: {}, users: {}, emotions: true, emotion_strength: "normal", effects: true, os_fallback: false },
   translate: { enabled: true, into: "", mine: ["en"], read: "both", provider: "mymemory" },
-  events: { enabled: true, subs: true, gifts: true, raids: true, bits: true, min_bits: 100, min_raid: 1, voice: "", texts: {} },
+  events: { enabled: true, subs: true, gifts: true, raids: true, bits: true, follows: false, redemptions: true, min_bits: 100, min_raid: 1, voice: "", texts: {} },
   muted: [],
 };
 

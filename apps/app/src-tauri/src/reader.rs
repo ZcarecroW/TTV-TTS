@@ -209,6 +209,8 @@ pub struct ReaderData {
     /// Items being generated or played.
     inflight: Mutex<Vec<Inflight>>,
     seq: AtomicU64,
+    /// Where chat (and EventSub) events arrive.
+    inbox: std::sync::OnceLock<mpsc::Sender<ChatEvent>>,
 }
 
 impl ReaderData {
@@ -241,7 +243,13 @@ impl ReaderData {
             voices: RwLock::new(VoiceCache::default()),
             inflight: Mutex::new(Vec::new()),
             seq: AtomicU64::new(1),
+            inbox: std::sync::OnceLock::new(),
         }
+    }
+
+    /// For other sources of chat events (EventSub).
+    pub fn inbox(&self) -> Option<mpsc::Sender<ChatEvent>> {
+        self.inbox.get().cloned()
     }
 
     pub fn save_store(&self) {
@@ -277,7 +285,9 @@ impl ReaderData {
 
 pub fn start(state: Arc<AppState>) {
     let (tx, mut rx) = mpsc::channel::<ChatEvent>(512);
+    let _ = state.reader.inbox.set(tx.clone());
     *state.reader.chat.lock() = Some(Chat::start(tx));
+    crate::twitch_cmds::start(&state);
     apply_channels(&state);
     let st = state.clone();
     tokio::spawn(async move {
@@ -485,7 +495,10 @@ fn on_message(state: &Arc<AppState>, m: ChatMessage) {
     if m.kind == Kind::Chat && mod_command(state, &p, &m) {
         return;
     }
-    if let Some((kind, text)) = crate::announce::for_message(&p.events, &m, langs::intern(&p.language.default)) {
+    if let Some((kind, text)) = crate::announce::for_message(&p.events, &m, langs::intern(&p.language.default))
+        // the reward that triggers TTS isn't announced on top
+        && !(kind == "redeem" && !p.reading.reward_id.is_empty() && m.notice_params.get("reward-id") == Some(&p.reading.reward_id))
+    {
         queue_event(state, &p, &m, kind, text);
     }
     let r = &p.reading;
@@ -756,6 +769,7 @@ pub fn test_event(state: &Arc<AppState>, profile: &str, kind: &str) -> Result<()
         "subgift" => &[("recipient-display-name", "TestViewer")],
         "submysterygift" => &[("mass-gift-count", "5")],
         "raid" => &[("displayName", "TestRaider"), ("viewerCount", "42")],
+        "redeem" => &[("reward", "Hydrate!")],
         _ => &[],
     };
     let m = ChatMessage {
@@ -779,7 +793,7 @@ pub fn test_event(state: &Arc<AppState>, profile: &str, kind: &str) -> Result<()
         notice_params: params.iter().map(|(k, v)| (k.to_string(), v.to_string())).collect(),
     };
     // the example is read even while announcements are off
-    let events = crate::profile::Announcements { enabled: true, subs: true, gifts: true, raids: true, bits: true, min_bits: 1, min_raid: 1, ..p.events.clone() };
+    let events = crate::profile::Announcements { enabled: true, subs: true, gifts: true, raids: true, bits: true, follows: true, redemptions: true, min_bits: 1, min_raid: 1, ..p.events.clone() };
     let (k, text) = crate::announce::for_message(&events, &m, langs::intern(&p.language.default)).ok_or("unknown event")?;
     queue_event(state, &p, &m, k, text);
     Ok(())

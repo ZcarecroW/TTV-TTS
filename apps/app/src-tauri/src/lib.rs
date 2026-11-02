@@ -18,6 +18,7 @@ pub mod fx;
 mod hotkeys;
 mod os_voice;
 mod plugin_cmds;
+mod twitch_cmds;
 mod remote;
 mod translate;
 mod pack_cmds;
@@ -144,6 +145,11 @@ pub fn run() {
             commands::reader_replay,
             commands::set_hotkey,
             commands::set_remote,
+            twitch_cmds::twitch_status,
+            twitch_cmds::twitch_login,
+            twitch_cmds::twitch_cancel_login,
+            twitch_cmds::twitch_logout,
+            twitch_cmds::set_twitch_client_id,
             plugin_cmds::plugins_list,
             plugin_cmds::plugins_scan,
             plugin_cmds::plugins_pick,
