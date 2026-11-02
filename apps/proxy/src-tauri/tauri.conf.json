@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "TTV-TTS Proxy",
-  "version": "2.0.0",
+  "version": "2.1.0-alpha.1",
   "identifier": "io.github.zcarecrow.ttvtts.proxy",
   "build": {
     "beforeDevCommand": "npm run dev",
