@@ -158,9 +158,32 @@ impl Emotes {
     }
 }
 
+/// An emote list is a few hundred KB (7TV's biggest sets a few MB); a
+/// third-party server never gets to fill the memory.
+const MAX_LIST: usize = 32 << 20;
+/// One live event (a 7TV dispatch is a few KB).
+const MAX_EVENT: usize = 1 << 20;
+
+/// The body, or None beyond `max` bytes.
+async fn read_limited(r: reqwest::Response, max: usize) -> Option<Vec<u8>> {
+    if r.content_length().is_some_and(|n| n > max as u64) {
+        return None;
+    }
+    let mut stream = r.bytes_stream();
+    let mut out = Vec::new();
+    while let Some(c) = stream.next().await {
+        let c = c.ok()?;
+        if out.len() + c.len() > max {
+            return None;
+        }
+        out.extend_from_slice(&c);
+    }
+    Some(out)
+}
+
 async fn get<T: for<'de> Deserialize<'de> + Default>(http: &reqwest::Client, url: &str) -> T {
     match http.get(url).timeout(Duration::from_secs(15)).send().await {
-        Ok(r) if r.status().is_success() => r.json().await.unwrap_or_default(),
+        Ok(r) if r.status().is_success() => read_limited(r, MAX_LIST).await.and_then(|b| serde_json::from_slice(&b).ok()).unwrap_or_default(),
         // 404 = the channel doesn't use that service.
         Ok(r) if r.status().as_u16() == 404 => T::default(),
         Ok(r) => {
@@ -236,7 +259,8 @@ async fn follow(http: &reqwest::Client, url: &str, map: &LiveMap, room: &str) ->
         return Err(format!("HTTP {}", r.status()));
     }
     let mut stream = r.bytes_stream();
-    let mut buf = String::new();
+    // bytes, not text: a character split across two chunks stays whole
+    let mut buf: Vec<u8> = Vec::new();
     // no data for three heartbeats (~47 s each) = a dead connection
     let mut heartbeat = Duration::from_secs(50);
     loop {
@@ -246,9 +270,13 @@ async fn follow(http: &reqwest::Client, url: &str, map: &LiveMap, room: &str) ->
             Ok(None) => return Ok(Follow::Ended),
             Err(_) => return Err("no heartbeat".into()),
         };
-        buf.push_str(&String::from_utf8_lossy(&chunk));
-        while let Some(end) = buf.find("\n\n") {
-            let event: String = buf.drain(..end + 2).collect();
+        buf.extend_from_slice(&chunk);
+        if buf.len() > MAX_EVENT {
+            return Err("an event too large".into());
+        }
+        while let Some(end) = buf.windows(2).position(|w| w == b"\n\n") {
+            let raw: Vec<u8> = buf.drain(..end + 2).collect();
+            let event = String::from_utf8_lossy(&raw);
             let (mut kind, mut data) = ("", String::new());
             for line in event.lines() {
                 if let Some(v) = line.strip_prefix("event:") {
@@ -260,7 +288,8 @@ async fn follow(http: &reqwest::Client, url: &str, map: &LiveMap, room: &str) ->
             match kind {
                 "hello" => {
                     if let Some(ms) = serde_json::from_str::<serde_json::Value>(&data).ok().and_then(|v| v["heartbeat_interval"].as_u64()) {
-                        heartbeat = Duration::from_millis(ms.max(5_000));
+                        // within reason: a huge value would overflow `heartbeat * 3`
+                        heartbeat = Duration::from_millis(ms.clamp(5_000, 300_000));
                     }
                 }
                 "dispatch" => {
