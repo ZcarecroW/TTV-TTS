@@ -99,7 +99,17 @@ try {
 if (!exists) {
   gh("release", "create", TAG, "-R", repo, "--prerelease", "--title", "Ready-made voices", "--notes", "Voice packs for the built-in presets, made with Voice Creator Pro and checked by TTV-TTS's quality check. TTV-TTS downloads them from here (Presets → Get); you can also import a .ttvpack by hand.");
 }
-// packs first, catalog last: the app never sees a catalog entry without its file
-for (const p of packs) gh("release", "upload", TAG, "-R", repo, "--clobber", join(out, p.file));
+// packs first, catalog last: the app never sees a catalog entry without its file.
+// A pack GitHub already has with the same sha256 isn't uploaded again.
+const online = new Map(JSON.parse(gh("api", `repos/${repo}/releases/tags/${TAG}`, "--jq", "[.assets[] | [.name, .digest]]")).map(([n, d]) => [n, d]));
+let skipped = 0;
+for (const p of packs) {
+  if (online.get(p.file) === `sha256:${p.sha256}`) {
+    skipped++;
+    continue;
+  }
+  gh("release", "upload", TAG, "-R", repo, "--clobber", join(out, p.file));
+}
+console.log(`${packs.length - skipped} packs uploaded, ${skipped} unchanged`);
 gh("release", "upload", TAG, "-R", repo, "--clobber", join(out, "catalog.json"));
 console.log("published", statSync(join(out, "catalog.json")).size, "byte catalog");
