@@ -373,6 +373,32 @@ pub struct Profile {
     pub events: Announcements,
     /// Viewers muted with !ttsmute or in the app.
     pub muted: Vec<String>,
+    /// Where the voices play.
+    pub output: OutputRules,
+}
+
+/// Where a profile's voices play.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum OutputMode {
+    /// The audio device chosen in the app's settings.
+    #[default]
+    Device,
+    /// An OBS browser source that the app serves on this PC.
+    Obs,
+    /// An OBS browser source served by the voice host PC (TTV-TTS Proxy),
+    /// which then reads this profile's chat itself.
+    HostObs,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
+pub struct OutputRules {
+    pub mode: OutputMode,
+    /// The secret part of the OBS link.
+    pub token: String,
+    /// The OBS link also works from the internet (else only in this network).
+    pub online: bool,
 }
 
 /// Event announcements, read by an announcer voice (off by default – chat
@@ -446,6 +472,7 @@ impl Default for Profile {
             translate: TranslateRules::default(),
             events: Announcements::default(),
             muted: Vec::new(),
+            output: OutputRules::default(),
         }
     }
 }
@@ -467,5 +494,8 @@ impl Profile {
         self.reading.max_queue = self.reading.max_queue.clamp(1, 200);
         self.reading.max_seconds = self.reading.max_seconds.clamp(5, 300);
         self.muted.iter_mut().for_each(|m| *m = m.to_ascii_lowercase());
+        if self.output.token.len() < 12 {
+            self.output.token = crate::obs::new_token();
+        }
     }
 }

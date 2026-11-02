@@ -41,6 +41,8 @@ pub struct AppState {
     pub secrets: Secrets,
     pub audio: Arc<Audio>,
     pub reader: Arc<crate::reader::Reader>,
+    /// The audio of profiles that play in OBS on this PC.
+    pub obs: crate::obs::Sinks,
     pub presets: PresetStore,
     /// Computed preset voices (engine on the proxy or in this app).
     pub library: VoiceLibrary,
@@ -77,6 +79,7 @@ impl AppState {
             plugin_states: parking_lot::Mutex::new(Some(state_rx)),
             twitch: crate::twitch::account::Account::new(web.clone()),
             reader: Arc::new(crate::reader::Reader::new(crate::reader::AppHost::new(web), &data_dir)),
+            obs: Default::default(),
             presets: PresetStore::load(&data_dir),
             library: VoiceLibrary::new(&data_dir),
             cfg: RwLock::new(cfg),

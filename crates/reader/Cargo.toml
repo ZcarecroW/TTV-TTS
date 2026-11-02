@@ -24,6 +24,9 @@ chrono = { workspace = true }
 rand = { workspace = true }
 regex = { workspace = true }
 unicode-segmentation = { workspace = true }
+# OBS links (served by the app and the proxy)
+axum = { workspace = true }
+bytes = { workspace = true }
 # FFT for the whisper effect (already in the tree through rubato)
 realfft = { workspace = true }
 

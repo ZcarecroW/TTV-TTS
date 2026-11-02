@@ -8,7 +8,7 @@ use std::time::Duration;
 use tauri::Emitter;
 pub use ttv_reader::reader::{ItemView, ProfileStore, ReaderStatus, Settings, ViewerView};
 use ttv_reader::output::Output;
-use ttv_reader::profile::Profile;
+use ttv_reader::profile::{OutputMode, Profile};
 use ttv_reader::reader::Host;
 use ttv_reader::translate::Translator;
 
@@ -54,11 +54,17 @@ impl Host for AppHost {
         self.state()?.presets.with(id, |p| f(&p.defs))
     }
 
-    fn output(&self, _profile: &Profile) -> Arc<dyn Output> {
-        match self.state() {
-            Some(s) => s.audio.clone(),
-            None => Arc::new(Silent),
+    fn output(&self, profile: &Profile) -> Arc<dyn Output> {
+        match (self.state(), profile.output.mode) {
+            (Some(s), OutputMode::Obs) => s.obs.get(&profile.id),
+            (Some(s), _) => s.audio.clone(),
+            (None, _) => Arc::new(Silent),
         }
+    }
+
+    fn reads(&self, profile: &Profile) -> bool {
+        // the voice host PC reads these itself
+        profile.output.mode != OutputMode::HostObs
     }
 
     fn status_changed(&self, status: &ReaderStatus) {

@@ -7,9 +7,11 @@ mod commands;
 mod config;
 mod error;
 mod host;
+mod hosted_cmds;
 mod library;
 mod logbuf;
 mod monitor;
+mod obs;
 mod friends_cmds;
 mod bench;
 #[cfg(desktop)]
@@ -84,6 +86,8 @@ pub fn run() {
             tauri::async_runtime::spawn(updater::run(app.handle().clone(), state.clone()));
             let st = state.clone();
             tauri::async_runtime::spawn(async move { remote::apply(&st).await });
+            let st = state.clone();
+            tauri::async_runtime::spawn(async move { obs::apply(&st).await });
             // audio plugins: load the chain once the output device runs, keep
             // the settings the plugin thread hands over
             let st = state.clone();
@@ -143,6 +147,15 @@ pub fn run() {
             commands::reader_replay,
             commands::set_hotkey,
             commands::set_remote,
+            commands::obs_status,
+            commands::set_obs,
+            commands::obs_new_link,
+            hosted_cmds::hosted_list,
+            hosted_cmds::hosted_history,
+            hosted_cmds::hosted_control,
+            hosted_cmds::hosted_test,
+            hosted_cmds::hosted_viewers,
+            hosted_cmds::hosted_viewer,
             twitch_cmds::twitch_status,
             twitch_cmds::twitch_login,
             twitch_cmds::twitch_cancel_login,

@@ -8,6 +8,7 @@ pub mod output;
 pub mod reader;
 pub mod storage;
 pub mod fx;
+pub mod obs;
 pub mod profile;
 pub mod speech;
 pub mod text;

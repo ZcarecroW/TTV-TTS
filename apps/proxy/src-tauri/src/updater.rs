@@ -91,6 +91,8 @@ pub async fn install(app: &AppHandle, state: &Arc<AppState>) {
         }
     };
     log::info!("installing update {}", update.version);
+    // viewers' voices of the OBS links are written now: the installer ends this process
+    state.hosted.flush();
     set(state, |u| {
         u.phase = "downloading".into();
         u.progress = Some(0.0);

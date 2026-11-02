@@ -337,6 +337,8 @@ pub fn get_reader(state: St) -> ReaderView {
 pub fn save_profile(state: St, profile: crate::profile::Profile) -> ReaderView {
     let mut p = profile;
     p.normalize();
+    let id = p.id.clone();
+    let was = state.reader.store.read().profiles.iter().find(|x| x.id == p.id).map(|x| x.output.mode);
     {
         let mut s = state.reader.store.write();
         match s.profiles.iter_mut().find(|x| x.id == p.id) {
@@ -346,11 +348,20 @@ pub fn save_profile(state: St, profile: crate::profile::Profile) -> ReaderView {
     }
     state.reader.save_store();
     state.reader.apply_channels();
+    links_changed(&state);
+    crate::hosted_cmds::profile_saved(&state, &id, was);
     reader_view(&state)
+}
+
+/// The OBS links may have changed: start or stop the server.
+fn links_changed(state: &Arc<AppState>) {
+    let st = state.clone();
+    tauri::async_runtime::spawn(async move { crate::obs::apply(&st).await });
 }
 
 #[tauri::command]
 pub fn delete_profile(state: St, id: String) -> ReaderView {
+    let was = state.reader.store.read().profiles.iter().find(|x| x.id == id).map(|x| x.output.mode);
     {
         let mut s = state.reader.store.write();
         if s.profiles.len() > 1 {
@@ -360,6 +371,8 @@ pub fn delete_profile(state: St, id: String) -> ReaderView {
     }
     state.reader.save_store();
     state.reader.apply_channels();
+    links_changed(&state);
+    crate::hosted_cmds::profile_saved(&state, &id, was);
     reader_view(&state)
 }
 
@@ -436,6 +449,43 @@ pub async fn set_remote(state: St<'_>, enabled: bool, port: u16, lan: bool, new_
     state.save_config().map_err(|e| e.to_string())?;
     crate::remote::apply(&state).await;
     Ok(view(&state))
+}
+
+#[tauri::command]
+pub fn obs_status(state: St) -> crate::obs::ObsStatus {
+    crate::obs::status(&state)
+}
+
+/// OBS links on this PC: for other PCs too (LAN, internet), port, and the
+/// address friends use from the internet.
+#[tauri::command]
+pub async fn set_obs(state: St<'_>, lan: bool, port: u16, public_host: String) -> Result<crate::obs::ObsStatus, String> {
+    {
+        let mut c = state.cfg.write();
+        c.obs.lan = lan;
+        c.obs.port = port;
+        c.obs.public_host = public_host;
+        c.normalize();
+    }
+    state.save_config().map_err(|e| e.to_string())?;
+    crate::obs::apply(&state).await;
+    Ok(crate::obs::status(&state))
+}
+
+/// A new OBS link for a profile; the old one stops working.
+#[tauri::command]
+pub async fn obs_new_link(state: St<'_>, profile: String) -> Result<ReaderView, String> {
+    {
+        let mut s = state.reader.store.write();
+        let p = s.profiles.iter_mut().find(|p| p.id == profile).ok_or("unknown profile")?;
+        p.output.token = ttv_reader::obs::new_token();
+    }
+    state.reader.save_store();
+    let mode = state.reader.store.read().profiles.iter().find(|p| p.id == profile).map(|p| p.output.mode);
+    if mode == Some(ttv_reader::profile::OutputMode::HostObs) {
+        crate::hosted_cmds::push(&state, &profile).await?;
+    }
+    Ok(reader_view(&state))
 }
 
 #[tauri::command]

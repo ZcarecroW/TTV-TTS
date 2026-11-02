@@ -48,6 +48,12 @@ pub struct AppState {
     pub internet: RwLock<crate::internet::Live>,
     /// Restarts the internet port (switched on/off, port changed).
     pub internet_rebind: Notify,
+    /// Profiles read here for OBS links.
+    pub hosted: crate::hosted::Hosted,
+    /// A hosted profile came or went, or the OBS port changed.
+    pub hosted_changed: Notify,
+    /// Why the OBS port can't be used.
+    pub obs_error: RwLock<Option<String>>,
     app: OnceLock<AppHandle>,
 }
 
@@ -68,6 +74,9 @@ impl AppState {
             guests: crate::internet::Guests::load(&data_dir),
             internet: RwLock::new(Default::default()),
             internet_rebind: Notify::new(),
+            hosted: crate::hosted::Hosted::new(&data_dir),
+            hosted_changed: Notify::new(),
+            obs_error: RwLock::new(None),
             vcp_state: RwLock::new(VcpState { url: cfg.vcp_url.clone(), exe: cfg.vcp_exe.clone(), ..Default::default() }),
             cfg: RwLock::new(cfg),
             cfg_path,

@@ -89,6 +89,26 @@ pub struct Config {
     pub plugins: Vec<PluginSlot>,
     /// Client ID of the streamer's own Twitch application ("" = built in).
     pub twitch_client_id: String,
+    /// OBS links served by this app (profiles that play in OBS on this PC).
+    pub obs: ObsConfig,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(default)]
+pub struct ObsConfig {
+    pub port: u16,
+    /// Also for other PCs (a streaming PC, or the internet with port
+    /// forwarding); else only OBS on this PC.
+    pub lan: bool,
+    /// How friends reach this PC from the internet (a DuckDNS name or the
+    /// public IP) – only for the link shown.
+    pub public_host: String,
+}
+
+impl Default for ObsConfig {
+    fn default() -> Self {
+        Self { port: 8131, lan: false, public_host: String::new() }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -136,6 +156,7 @@ impl Default for Config {
             remote: RemoteConfig::default(),
             plugins: Vec::new(),
             twitch_client_id: String::new(),
+            obs: ObsConfig::default(),
         }
     }
 }
@@ -148,6 +169,10 @@ impl Config {
         if self.remote.port < 1024 {
             self.remote.port = 8130;
         }
+        if self.obs.port < 1024 || self.obs.port == self.remote.port {
+            self.obs.port = 8131;
+        }
+        self.obs.public_host = self.obs.public_host.trim().trim_start_matches("http://").trim_start_matches("https://").trim_end_matches('/').to_string();
         if self.device_id.is_empty() {
             self.device_id = crate::secrets::random_key()[..16].to_ascii_lowercase();
         }

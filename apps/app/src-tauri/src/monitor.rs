@@ -71,6 +71,7 @@ async fn proxy_session(state: &Arc<AppState>, address: &str, fingerprint: &str, 
                                     Ok(()) => crate::preset_cmds::migrate_classic(&st).await,
                                     Err(e) => log::warn!("library: {e}"),
                                 }
+                                crate::hosted_cmds::sync_all(&st).await;
                             });
                         }
                         let vcp = s.vcp.clone();

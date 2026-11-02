@@ -13,6 +13,7 @@ mod firewall;
 mod forward;
 #[cfg(windows)]
 mod gpu_procs;
+mod hosted;
 mod internet;
 mod logbuf;
 mod secrets;
@@ -141,6 +142,9 @@ pub fn run() {
             sysmon::spawn(state.clone());
             tauri::async_runtime::spawn(state.engine.worker());
             tauri::async_runtime::spawn(engine_events(state.clone()));
+            state.hosted.load(&state);
+            tauri::async_runtime::spawn(hosted::serve(state.clone()));
+            tauri::async_runtime::spawn(hosted::Hosted::supervise(state.clone()));
 
             shell::setup_tray(app.handle(), &state)?;
             let minimized = std::env::args().any(|a| a == "--minimized");
@@ -191,11 +195,15 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while building TTV-TTS Proxy")
-        .run(|_app, event| {
+        .run(|app, event| match event {
             // Keep running in the tray when no window is open.
-            if let RunEvent::ExitRequested { code: None, api, .. } = event {
-                api.prevent_exit();
+            RunEvent::ExitRequested { code: None, api, .. } => api.prevent_exit(),
+            RunEvent::Exit => {
+                if let Some(s) = app.try_state::<Arc<AppState>>() {
+                    s.hosted.flush();
+                }
             }
+            _ => {}
         });
 }
 

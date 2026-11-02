@@ -208,6 +208,123 @@ pub fn engine_routes() -> Router<Arc<AppState>> {
         .route("/packs/import", post(pack_import))
         .route("/jobs", post(job_submit))
         .route("/jobs/{id}/{action}", post(job_control))
+        .route("/hosted", get(hosted_list))
+        .route("/hosted/{id}", get(hosted_one).put(hosted_put).delete(hosted_delete))
+        .route("/hosted/{id}/history", get(hosted_history))
+        .route("/hosted/{id}/test", post(hosted_test))
+        .route("/hosted/{id}/viewers", get(hosted_viewers))
+        .route("/hosted/{id}/viewers/{user}", post(hosted_viewer))
+        .route("/hosted/{id}/do/{action}", post(hosted_control))
+}
+
+// ── OBS links read here (profiles handed over by the app) ───────────────
+
+type IdPath = axum::extract::Path<String>;
+
+async fn hosted_list(State(state): S) -> Json<Vec<crate::hosted::HostedView>> {
+    Json(state.hosted.list(&state))
+}
+
+async fn hosted_one(State(state): S, axum::extract::Path(id): IdPath) -> Response {
+    match state.hosted.one(&state, &id) {
+        Some(v) => Json(v).into_response(),
+        None => api_error(StatusCode::NOT_FOUND, "not_found", "unknown OBS link"),
+    }
+}
+
+async fn hosted_put(State(state): S, axum::extract::Path(id): IdPath, Json(req): Json<crate::hosted::HostedRequest>) -> Response {
+    let r = state.hosted.put(&state, &id, req);
+    state.hosted_changed.notify_waiters();
+    match r {
+        Ok(v) => Json(v).into_response(),
+        Err(e) => api_error(StatusCode::BAD_REQUEST, "bad_request", e),
+    }
+}
+
+async fn hosted_delete(State(state): S, axum::extract::Path(id): IdPath) -> Json<Ack> {
+    let ok = state.hosted.remove(&id);
+    state.hosted_changed.notify_waiters();
+    Json(Ack { ok, message: None })
+}
+
+async fn hosted_history(State(state): S, axum::extract::Path(id): IdPath) -> Response {
+    match state.hosted.history(&id) {
+        Some(h) => Json(h).into_response(),
+        None => api_error(StatusCode::NOT_FOUND, "not_found", "unknown OBS link"),
+    }
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default)]
+struct TestMessage {
+    user: String,
+    text: String,
+}
+
+async fn hosted_test(State(state): S, axum::extract::Path(id): IdPath, Json(m): Json<TestMessage>) -> Response {
+    let user = if m.user.trim().is_empty() { "TestUser" } else { m.user.trim() };
+    match state.hosted.test(&id, user, &m.text) {
+        Ok(()) => Json(Ack { ok: true, message: None }).into_response(),
+        Err(e) => api_error(StatusCode::CONFLICT, "bad_request", e),
+    }
+}
+
+async fn hosted_control(State(state): S, axum::extract::Path((id, action)): axum::extract::Path<(String, String)>) -> Response {
+    match state.hosted.control(&id, &action) {
+        Ok(()) => Json(Ack { ok: true, message: None }).into_response(),
+        Err(e) => api_error(StatusCode::BAD_REQUEST, "bad_request", e),
+    }
+}
+
+#[derive(Deserialize, Default)]
+#[serde(default)]
+struct ViewersQuery {
+    q: String,
+    limit: Option<usize>,
+}
+
+#[derive(serde::Serialize)]
+struct ViewersPage {
+    viewers: Vec<ttv_reader::reader::ViewerView>,
+    total: usize,
+}
+
+async fn hosted_viewers(State(state): S, axum::extract::Path(id): IdPath, Query(q): Query<ViewersQuery>) -> Response {
+    match state.hosted.viewers(&id, &q.q, q.limit.unwrap_or(300).min(1000)) {
+        Some((viewers, total)) => Json(ViewersPage { viewers, total }).into_response(),
+        None => api_error(StatusCode::NOT_FOUND, "not_found", "unknown OBS link"),
+    }
+}
+
+/// One change of a viewer: `{"role": 3}` (null = a new random voice),
+/// `{"fx": "radio"}`, `{"forget": true}`, `{"mute": "login", "on": true}`.
+#[derive(Deserialize, Default)]
+#[serde(default)]
+struct ViewerPatch {
+    role: Option<Option<u32>>,
+    fx: Option<Option<String>>,
+    forget: bool,
+    mute: Option<String>,
+    on: bool,
+}
+
+async fn hosted_viewer(State(state): S, axum::extract::Path((id, user)): axum::extract::Path<(String, String)>, Json(p): Json<ViewerPatch>) -> Response {
+    use crate::hosted::ViewerChange;
+    let change = if p.forget {
+        ViewerChange::Forget
+    } else if let Some(login) = p.mute {
+        ViewerChange::Mute(login, p.on)
+    } else if let Some(role) = p.role {
+        ViewerChange::Role(role)
+    } else if let Some(fx) = p.fx {
+        ViewerChange::Fx(fx)
+    } else {
+        return api_error(StatusCode::BAD_REQUEST, "bad_request", "nothing to change");
+    };
+    match state.hosted.set_viewer(&id, &user, change) {
+        Ok(()) => Json(Ack { ok: true, message: None }).into_response(),
+        Err(e) => api_error(StatusCode::NOT_FOUND, "not_found", e),
+    }
 }
 
 // ── internet access (LAN only: these routes don't exist on the internet port)

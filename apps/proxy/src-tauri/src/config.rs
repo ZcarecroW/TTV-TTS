@@ -63,6 +63,8 @@ pub struct Config {
     pub internet_port: u16,
     /// DuckDNS name ("mystream" for mystream.duckdns.org); its token is a secret.
     pub duckdns_domain: String,
+    /// Plain-HTTP port of the OBS links (OBS can't use the proxy's own certificate).
+    pub obs_port: u16,
 }
 
 impl Default for Config {
@@ -92,6 +94,7 @@ impl Default for Config {
             internet: false,
             internet_port: 8111,
             duckdns_domain: String::new(),
+            obs_port: 8112,
         }
     }
 }
@@ -104,6 +107,9 @@ impl Config {
         }
         if self.port == 0 {
             self.port = ttv_link::DEFAULT_PORT;
+        }
+        if self.obs_port < 1024 || self.obs_port == self.port || self.obs_port == self.internet_port {
+            self.obs_port = 8112;
         }
         if self.vcp_url.trim().is_empty() {
             self.vcp_url = Config::default().vcp_url;

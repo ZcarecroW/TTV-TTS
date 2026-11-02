@@ -57,6 +57,11 @@ pub trait Host: Send + Sync + 'static {
     fn with_preset<R>(&self, id: &str, f: impl FnOnce(&[ttv_link::VoiceDef]) -> R) -> Option<R>;
     /// Where a profile's voices play.
     fn output(&self, profile: &Profile) -> Arc<dyn Output>;
+    /// This host reads the profile's chat (the app leaves profiles that the
+    /// voice host PC reads for OBS to it).
+    fn reads(&self, _profile: &Profile) -> bool {
+        true
+    }
     /// The reader's status changed (queue, current message, connection).
     fn status_changed(&self, status: &ReaderStatus);
     /// A message was added to the history or changed there.
@@ -268,6 +273,8 @@ pub struct Reader<H: Host> {
     seq: AtomicU64,
     /// Where chat (and EventSub) events arrive.
     inbox: std::sync::OnceLock<mpsc::Sender<ChatEvent>>,
+    /// Shut down for good (a removed OBS link).
+    stopped: AtomicBool,
 }
 
 impl<H: Host> Reader<H> {
@@ -304,6 +311,7 @@ impl<H: Host> Reader<H> {
             inflight: Mutex::new(Vec::new()),
             seq: AtomicU64::new(1),
             inbox: std::sync::OnceLock::new(),
+            stopped: AtomicBool::new(false),
         }
     }
 
@@ -345,6 +353,45 @@ impl<H: Host> Reader<H> {
         self.queue.lock().len()
     }
 
+    /// Stops reading for good: leaves the chat, ends the generator and the
+    /// housekeeping, drops what's queued.
+    pub fn shutdown(&self) {
+        self.stopped.store(true, Ordering::Relaxed);
+        *self.chat.lock() = None;
+        self.queue.lock().clear();
+        self.pending.lock().clear();
+        for (_, _, _, _, cancel) in self.inflight.lock().iter() {
+            cancel.store(true, Ordering::Relaxed);
+        }
+        self.wake.notify_waiters();
+    }
+
+    /// Takes over viewers' voices and effects from elsewhere (a profile that
+    /// moves from the app to the voice host PC); viewers known here keep theirs.
+    pub fn adopt_viewers(&self, profile: &str, roles: &HashMap<String, u32>, fx: &HashMap<String, String>) {
+        if roles.is_empty() && fx.is_empty() {
+            return;
+        }
+        let mut a = self.assign.lock();
+        let r = a.roles.entry(profile.to_string()).or_default();
+        for (user, role) in roles {
+            r.entry(user.clone()).or_insert(*role);
+        }
+        let f = a.fx.entry(profile.to_string()).or_default();
+        for (user, effect) in fx {
+            f.entry(user.clone()).or_insert_with(|| effect.clone());
+        }
+        drop(a);
+        self.assign_dirty.store(true, Ordering::Relaxed);
+        self.save_assignments();
+    }
+
+    /// The viewers' voices and effects of a profile (to hand them over).
+    pub fn viewer_roles(&self, profile: &str) -> (HashMap<String, u32>, HashMap<String, String>) {
+        let a = self.assign.lock();
+        (a.roles.get(profile).cloned().unwrap_or_default(), a.fx.get(profile).cloned().unwrap_or_default())
+    }
+
     // ── start & events ──────────────────────────────────────────────────────
 
     /// Connects to Twitch chat and starts reading.
@@ -372,7 +419,7 @@ impl<H: Host> Reader<H> {
     pub fn apply_channels(self: &Arc<Self>) {
         let channels: BTreeSet<String> = {
             let s = self.store.read();
-            s.profiles.iter().filter(|p| s.active.contains(&p.id)).flat_map(|p| p.channels.iter().cloned()).collect()
+            s.profiles.iter().filter(|p| s.active.contains(&p.id) && self.host.reads(p)).flat_map(|p| p.channels.iter().cloned()).collect()
         };
         {
             let mut st = self.status.write();
@@ -417,7 +464,7 @@ impl<H: Host> Reader<H> {
 
     fn profile_for(&self, channel: &str) -> Option<crate::profile::Profile> {
         let s = self.store.read();
-        s.profiles.iter().find(|p| s.active.contains(&p.id) && p.channels.iter().any(|c| c == channel)).cloned()
+        s.profiles.iter().find(|p| s.active.contains(&p.id) && self.host.reads(p) && p.channels.iter().any(|c| c == channel)).cloned()
     }
 
     fn handle_event(self: &Arc<Self>, ev: ChatEvent) {
@@ -1156,6 +1203,9 @@ impl<H: Host> Reader<H> {
         let (tx, rx) = mpsc::channel::<Prepared>(1);
         tokio::spawn(self.clone().play_loop(rx));
         loop {
+            if self.stopped.load(Ordering::Relaxed) {
+                return;
+            }
             let next = {
                 let paused = self.paused.load(Ordering::Relaxed);
                 if paused { None } else { self.queue.lock().pop_front() }
@@ -1486,6 +1536,9 @@ impl<H: Host> Reader<H> {
         let mut was_connected = false;
         let mut round = 0u32;
         loop {
+            if self.stopped.load(Ordering::Relaxed) {
+                return;
+            }
             tick.tick().await;
             round += 1;
             let connected = self.host.connected();

@@ -207,6 +207,16 @@ pub enum Event {
     Job(crate::voices::JobView),
     /// The library of computed voices changed.
     Library(crate::voices::LibraryChange),
+    /// An OBS link read by the proxy: its reader's status or a message in
+    /// its history changed (shapes of the reader crate's ReaderStatus and
+    /// ItemView). Older apps ignore it.
+    Hosted {
+        id: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        status: Option<serde_json::Value>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        item: Option<serde_json::Value>,
+    },
 }
 
 /// `POST /ttv/v1/vcp/{start|stop|restart}` answer and other simple results.

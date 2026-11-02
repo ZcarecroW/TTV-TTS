@@ -188,6 +188,11 @@ impl Engine {
         self.inner.library.snapshot()
     }
 
+    /// One computed voice (not archived) by key.
+    pub fn entry(&self, key: &str) -> Option<LibraryEntry> {
+        self.inner.library.get(key)
+    }
+
     /// Queues a job: computing what isn't computed yet, improving or
     /// checking computed voices.
     pub fn submit(&self, req: JobRequest) -> Result<JobView, String> {

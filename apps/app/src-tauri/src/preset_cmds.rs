@@ -26,6 +26,9 @@ pub fn get_preset(state: St, id: String) -> Result<PresetDetail, String> {
 #[tauri::command]
 pub fn save_preset(state: St, preset: Preset) -> Result<PresetView, String> {
     let p = state.presets.put(preset)?;
+    // profiles that the voice host PC reads get the new voices too
+    let st = state.inner().clone();
+    tauri::async_runtime::spawn(async move { crate::hosted_cmds::sync_all(&st).await });
     Ok(state.library.counts(|c| PresetView::new(&p, &c)))
 }
 
