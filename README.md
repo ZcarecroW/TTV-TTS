@@ -25,11 +25,11 @@
 - 🎭 **Every viewer has their own voice** – and keeps it, in every language.
 - 🎬 **20 presets with 240 voices each** (Fantasy Tavern, Starship Crew, Noir City …), computed once by Voice Creator Pro – or download them ready-made, or let an AI write your own.
 - 🌍 **Every language**: each message is read in its own language, or translated for you.
-- 😂 **Feelings and effects**: emotes and emojis make voices laugh or cry; radio, robot, cave – plus your own **VST3 and CLAP** plugins.
+- 😂 **Feelings and effects**: emotes and emojis make voices laugh or cry; radio, robot, cave – plus your own **VST3 and CLAP** plugins, also as random effects per viewer, and run on the voice host PC.
 - 🛡️ **You stay in control**: filters, an approval queue, skip and replay, global hotkeys, mod commands, a system voice when the GPU PC is down.
 - 🖥️ **Two PCs**: the proxy runs next to Voice Creator Pro, pairs with a six-digit code, encrypted, with a firewall check – and restarts Voice Creator Pro when it gets slow.
 - 🎛️ **Stream Deck & Streamer.bot** through a small local API.
-- 🤝 **Friends over the internet**: lend your computed voices to friends, with invites and daily limits.
+- 🤝 **Friends over the internet**: lend your computed voices to friends, with invites and daily limits – or as an OBS link they paste into OBS, encrypted with a free HTTPS certificate and the router ports opened automatically (DuckDNS, Let’s Encrypt, UPnP).
 - 📦 **Voice packs** to share computed voices; **announcements** of subs, raids, cheers (and follows with the optional Twitch login).
 
 ## Get started
