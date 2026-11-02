@@ -9,6 +9,7 @@ const de: typeof en = {
   },
   common: {
     moreInfo: "Mehr dazu",
+    learnMore: "Ausführlich in der Anleitung",
     show: "Anzeigen",
     hide: "Verbergen",
     copy: "Kopieren",

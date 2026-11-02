@@ -7,16 +7,20 @@ import { ArrowRight, Check, Clock, Play, Refresh, Stop, Trash, Waveform, Warning
 import { reader, type ItemView } from "../api";
 import { reasonText } from "../reasons";
 import { host, run, store, toast } from "../store";
+import HostedCard from "../components/HostedCard.vue";
 
 const { t } = useI18n();
 const r = computed(() => store.reader!);
 const status = computed(() => r.value.status);
 const profiles = computed(() => r.value.store.profiles);
+/** Profiles read on this PC (the voice host PC reads the others for OBS). */
+const local = computed(() => profiles.value.filter((p) => p.output.mode !== "host_obs"));
+const anyHosted = computed(() => profiles.value.some((p) => p.output.mode === "host_obs"));
 const active = computed(() => r.value.store.active);
 
 const testUser = ref("TestUser");
 const testText = ref("");
-const testProfile = ref(active.value[0] ?? profiles.value[0]?.id ?? "");
+const testProfile = ref(active.value.find((a) => local.value.some((p) => p.id === a)) ?? local.value[0]?.id ?? "");
 
 async function toggle(id: string, on: boolean) {
   const ids = on ? [...active.value, id] : active.value.filter((a) => a !== id);
@@ -78,7 +82,7 @@ async function sendTest() {
       </div>
       <p class="muted mb-3 text-sm">{{ t("live.readingHint") }}</p>
       <div class="flex flex-wrap gap-3">
-        <div v-for="p in profiles" :key="p.id" class="flex items-center gap-3 rounded-xl border border-line bg-panel-2 px-3.5 py-2.5" :class="active.includes(p.id) && 'border-accent'">
+        <div v-for="p in local" :key="p.id" class="flex items-center gap-3 rounded-xl border border-line bg-panel-2 px-3.5 py-2.5" :class="active.includes(p.id) && 'border-accent'">
           <UiToggle :model-value="active.includes(p.id)" @update:model-value="(on: boolean) => toggle(p.id, on)" />
           <div class="min-w-0">
             <div class="text-sm font-semibold">{{ p.name }}</div>
@@ -90,9 +94,12 @@ async function sendTest() {
           </div>
         </div>
       </div>
-      <p v-if="!active.length" class="mt-3 text-sm text-muted">{{ t("live.off") }}</p>
+      <p v-if="!local.length" class="text-sm text-muted">{{ t("hosted.allThere") }}</p>
+      <p v-else-if="!active.length" class="mt-3 text-sm text-muted">{{ t("live.off") }}</p>
       <p v-if="status.error" class="notice notice-err mt-3 text-sm">{{ status.error }}</p>
     </section>
+
+    <HostedCard v-if="anyHosted" />
 
     <div class="grid gap-5 lg:grid-cols-[3fr_2fr]">
       <!-- now speaking -->
@@ -150,7 +157,7 @@ async function sendTest() {
           <div class="grid grid-cols-[1fr_2fr] gap-2">
             <input v-model="testUser" class="input" :placeholder="t('live.testUser')" />
             <select v-model="testProfile" class="input">
-              <option v-for="p in profiles" :key="p.id" :value="p.id">{{ p.name }}</option>
+              <option v-for="p in local" :key="p.id" :value="p.id">{{ p.name }}</option>
             </select>
           </div>
           <textarea v-model="testText" rows="3" class="input h-auto py-2" :placeholder="t('live.testTextPlaceholder')" @keydown.enter.exact.prevent="sendTest" />

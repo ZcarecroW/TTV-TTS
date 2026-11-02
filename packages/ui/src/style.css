@@ -391,6 +391,18 @@
     box-shadow: 0 8px 24px oklch(0 0 0 / 0.3);
     pointer-events: none;
   }
+  .docs-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.8125rem;
+    color: var(--accent-text);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .docs-link:hover {
+    text-decoration: underline;
+  }
   .tip-btn {
     display: inline-flex;
     align-items: center;

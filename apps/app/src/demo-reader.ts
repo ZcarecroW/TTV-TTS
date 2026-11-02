@@ -42,6 +42,7 @@ export const baseProfile: Profile = {
   translate: { enabled: true, into: "", mine: ["en"], read: "both", provider: "mymemory" },
   events: { enabled: true, subs: true, gifts: true, raids: true, bits: true, follows: false, redemptions: true, min_bits: 100, min_raid: 1, voice: "", texts: {} },
   muted: [],
+  output: { mode: "device", token: "Xk3vQ9pLm2RtW7aZ", online: false },
 };
 
 let nextId = 100;

@@ -96,6 +96,8 @@ export interface Config {
   translate_email: string;
   hotkeys: Record<string, string>;
   remote: { enabled: boolean; port: number; lan: boolean; token: string };
+  /** OBS links served by this app. */
+  obs: { port: number; lan: boolean; public_host: string };
 }
 
 export interface OutputDevice {
@@ -284,7 +286,11 @@ export interface Profile {
   translate: { enabled: boolean; into: string; mine: string[]; read: "translation" | "both" | "show"; provider: "mymemory" | "deepl" | "vcp" };
   events: { enabled: boolean; subs: boolean; gifts: boolean; raids: boolean; bits: boolean; follows: boolean; redemptions: boolean; min_bits: number; min_raid: number; voice: string; texts: Record<string, string> };
   muted: string[];
+  /** Where the voices play: this PC's audio device, OBS on this PC, or OBS through the voice host PC. */
+  output: { mode: OutputMode; token: string; online: boolean };
 }
+
+export type OutputMode = "device" | "obs" | "host_obs";
 
 export type ItemState = "queued" | "speaking" | "spoken" | "skipped" | "removed" | "failed" | "filtered" | "pending";
 
@@ -327,6 +333,49 @@ export interface ReaderView {
   status: ReaderStatus;
   history: ItemView[];
 }
+
+/** An OBS link served by this app. */
+export interface LinkView {
+  profile: string;
+  local: string;
+  lan: string[];
+  online: string | null;
+  listeners: number;
+}
+
+export interface ObsStatus {
+  listening: string | null;
+  error: string | null;
+  links: LinkView[];
+}
+
+/** A profile the voice host PC reads for OBS. */
+export interface HostedView {
+  id: string;
+  name: string;
+  channels: string[];
+  online: boolean;
+  listeners: number;
+  reading: boolean;
+  status: ReaderStatus;
+  lan: string[];
+  internet: string | null;
+}
+
+export const obs = {
+  status: () => invoke<ObsStatus>("obs_status"),
+  set: (lan: boolean, port: number, publicHost: string) => invoke<ObsStatus>("set_obs", { lan, port, publicHost }),
+  newLink: (profile: string) => invoke<ReaderView>("obs_new_link", { profile }),
+};
+
+export const hosted = {
+  list: () => invoke<HostedView[]>("hosted_list"),
+  history: (id: string) => invoke<ItemView[]>("hosted_history", { id }),
+  control: (id: string, action: "skip" | "clear" | "pause" | "resume" | "replay") => invoke<void>("hosted_control", { id, action }),
+  test: (id: string, user: string, text: string) => invoke<void>("hosted_test", { id, user, text }),
+  viewers: (id: string, query: string) => invoke<{ viewers: ViewerView[]; total: number }>("hosted_viewers", { id, query }),
+  viewer: (id: string, userId: string, patch: Record<string, unknown>) => invoke<void>("hosted_viewer", { id, userId, patch }),
+};
 
 export const reader = {
   get: () => invoke<ReaderView>("get_reader"),

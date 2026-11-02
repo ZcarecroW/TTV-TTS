@@ -32,7 +32,7 @@ for (let i = 0; i < navItems.length; i++) {
   await page.waitForTimeout(250);
   const text = await page.locator("main").innerText();
   // vue-i18n shows the key itself when a message is missing.
-  const raw = text.match(/\b(common|nav|host|voices|live|profiles|settings|tips|app|presets|jobs|compute|editor|lang|viewers|quality|emotions|fx|friends|packs|downloads)\.[a-zA-Z.]+\b/g);
+  const raw = text.match(/\b(common|nav|host|voices|live|profiles|settings|tips|app|presets|jobs|compute|editor|lang|viewers|quality|emotions|fx|friends|packs|downloads|output|reasons|hosted)\.[a-zA-Z.]+\b/g);
   check(!raw, `page "${navItems[i].trim()}" renders without raw i18n keys`, raw?.slice(0, 3).join(", ") ?? `${text.length} chars`);
 }
 

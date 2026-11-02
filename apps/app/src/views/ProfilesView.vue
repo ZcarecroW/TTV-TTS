@@ -10,6 +10,7 @@ import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
 import { Devices, Gear, Globe, Lock, Play, Plus, Sparkle, Trash, Waveform } from "@ttv-tts/ui/icons";
 import { api, EVENT_KINDS, EVENT_TEXTS, reader, TIERS, type Profile, type Role, type Voice, twitch } from "../api";
 import { run, store, toast } from "../store";
+import OutputCard from "../components/OutputCard.vue";
 
 const { t } = useI18n();
 const profiles = computed(() => store.reader!.store.profiles);
@@ -153,6 +154,8 @@ const defaultVoice = computed({
           </UiField>
         </div>
       </section>
+
+      <OutputCard :key="p.id" v-model="p" />
 
       <div class="grid gap-5 lg:grid-cols-2">
         <section class="card p-5">

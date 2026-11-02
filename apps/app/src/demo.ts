@@ -2,9 +2,9 @@
 // `?setup` shows the first-start assistant, `?nohost` an app without voice host,
 // `?guest` an app that uses a friend's voice host over the internet.
 import { demoFriends, type InternetPatch } from "@ttv-tts/ui/friends";
-import type { AppView, Found, Probe, SystemStats, Voice } from "./api";
+import type { AppView, Found, Probe, Profile, SystemStats, Voice } from "./api";
 import { presetCommand } from "./demo-presets";
-import { readerCommand, updateCommand } from "./demo-reader";
+import { readerCommand, readerState, updateCommand } from "./demo-reader";
 
 const params = new URLSearchParams(location.search);
 const listeners = new Map<string, Set<(p: unknown) => void>>();
@@ -73,6 +73,7 @@ const state: AppView = {
     translate_email: "",
     hotkeys: { skip: "Ctrl+Alt+KeyS" },
     remote: { enabled: false, port: 8130, lan: false, token: "demoToken123" },
+    obs: { port: 8131, lan: false, public_host: "" },
   },
   host: params.has("nohost")
     ? { kind: "none", connected: false, error: null, proxy: null, vcp: null }
@@ -259,6 +260,56 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
       Object.assign(state.config.remote, { enabled: !!args.enabled, port: Number(args.port), lan: !!args.lan });
       if (args.newToken) state.config.remote.token = "newToken" + Date.now().toString(36);
       return r(structuredClone(state));
+    case "obs_status": {
+      const profiles = (readerState.store.profiles as Profile[]).filter((p) => p.output.mode === "obs");
+      const c = state.config.obs;
+      const lan = c.lan || profiles.some((p) => p.output.online);
+      return r({
+        listening: profiles.length ? `${lan ? "0.0.0.0" : "127.0.0.1"}:${c.port}` : null,
+        error: null,
+        links: profiles.map((p) => ({
+          profile: p.id,
+          local: `http://127.0.0.1:${c.port}/o/${p.output.token}`,
+          lan: lan ? [`http://192.168.178.40:${c.port}/o/${p.output.token}`] : [],
+          online: p.output.online && c.public_host ? `http://${c.public_host}:${c.port}/o/${p.output.token}` : null,
+          listeners: params.has("obs") ? 1 : 0,
+        })),
+      });
+    }
+    case "set_obs":
+      Object.assign(state.config.obs, { lan: !!args.lan, port: Number(args.port), public_host: String(args.publicHost ?? "") });
+      return demoInvoke("obs_status");
+    case "obs_new_link": {
+      const p = (readerState.store.profiles as Profile[]).find((x) => x.id === args.profile);
+      if (p) p.output.token = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 10);
+      return r(structuredClone(readerState));
+    }
+    case "hosted_list": {
+      const profiles = (readerState.store.profiles as Profile[]).filter((p) => p.output.mode === "host_obs");
+      return r(
+        profiles.map((p) => ({
+          id: p.id,
+          name: p.name,
+          channels: p.channels,
+          online: p.output.online,
+          listeners: params.has("obs") ? 1 : 0,
+          reading: params.has("obs"),
+          status: { ...readerState.status, current: params.has("obs") ? readerState.history[0] : null, queue: [] },
+          lan: [`http://192.168.178.25:8112/o/${p.output.token}`],
+          internet: p.output.online ? `http://mystream.duckdns.org:8112/o/${p.output.token}` : null,
+        })),
+      );
+    }
+    case "hosted_history":
+      return r(readerState.history);
+    case "hosted_control":
+    case "hosted_viewer":
+      return r(null);
+    case "hosted_test":
+      if (!params.has("obs")) throw "Nobody listens: open the link in OBS first.";
+      return r(null);
+    case "hosted_viewers":
+      return r(readerCommand("list_viewers", args, () => {})?.value);
     case "remote_status":
       return r(state.config.remote.enabled ? { listening: `127.0.0.1:${state.config.remote.port}`, error: null } : { listening: null, error: null });
     case "set_hotkey": {

@@ -7,6 +7,7 @@ export default {
   },
   common: {
     moreInfo: "More info",
+    learnMore: "Learn more",
     show: "Show",
     hide: "Hide",
     copy: "Copy",

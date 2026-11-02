@@ -84,6 +84,11 @@ async fn proxy_session(state: &Arc<AppState>, address: &str, fingerprint: &str, 
                     }
                     Ok(Event::Job(j)) => crate::library::VoiceLibrary::on_job(state, &j),
                     Ok(Event::Library(c)) => state.library.on_change(state, c),
+                    Ok(Event::Hosted { id, status, item }) => {
+                        if let Some(app) = state.app() {
+                            let _ = app.emit("app://hosted", serde_json::json!({ "id": id, "status": status, "item": item }));
+                        }
+                    }
                     _ => {}
                 },
                 Some(Ok(Message::Ping(_) | Message::Pong(_) | Message::Binary(_) | Message::Frame(_))) => {}
