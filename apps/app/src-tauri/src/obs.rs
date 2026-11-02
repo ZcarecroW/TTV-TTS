@@ -77,6 +77,8 @@ pub struct ObsStatus {
     pub duckdns_update: Option<DuckDnsView>,
     /// The HTTPS certificate.
     pub https: ttv_net::CertStatus,
+    pub upnp: bool,
+    pub upnp_status: ttv_net::upnp::UpnpStatus,
 }
 
 struct AppLinks(Weak<AppState>);
@@ -121,6 +123,17 @@ fn duckdns_login(state: &AppState) -> Option<ttv_net::Want> {
     any_online(state).then_some(ttv_net::Want { domain, token })
 }
 
+/// DuckDNS is in use (the router's address is needed for it).
+pub fn wants_duckdns(state: &AppState) -> bool {
+    duckdns_login(state).is_some()
+}
+
+/// The port to open in the router: while an OBS link is shared on the internet.
+pub fn upnp_want(state: &AppState) -> Vec<(u16, &'static str)> {
+    let c = state.cfg.read().obs.clone();
+    if c.upnp && any_online(state) { vec![(c.port, "OBS")] } else { Vec::new() }
+}
+
 /// What the certificate is needed for (HTTPS switched on).
 pub fn https_want(state: &AppState) -> Option<ttv_net::Want> {
     state.cfg.read().obs.https.then(|| duckdns_login(state)).flatten()
@@ -162,7 +175,7 @@ fn online_base(state: &AppState) -> Option<(String, bool)> {
 pub async fn duckdns(state: Arc<AppState>) {
     loop {
         if let Some(ttv_net::Want { domain, token }) = duckdns_login(&state) {
-            let r = ttv_net::duckdns::update_ip(&domain, &token).await;
+            let r = ttv_net::duckdns::update_ip(&domain, &token, state.upnp.public_ip().as_deref()).await;
             let at = chrono::Utc::now().timestamp();
             *DUCKDNS.lock() = Some(match r {
                 Ok(ip) => DuckDnsView { at, error: None, ip },
@@ -186,6 +199,7 @@ pub async fn apply(state: &Arc<AppState>) {
     let c = state.cfg.read().obs.clone();
     // the certificate and the DuckDNS name follow the profiles and settings
     state.certs.wake();
+    state.upnp.wake();
     DUCKDNS_NOW.notify_one();
     let host = if c.lan || online { "0.0.0.0" } else { "127.0.0.1" };
     let https = c.https && online;
@@ -278,5 +292,7 @@ pub fn status(state: &AppState) -> ObsStatus {
         duckdns_token: state.secrets.get(crate::secrets::DUCKDNS_TOKEN).is_some(),
         duckdns_update: DUCKDNS.lock().clone(),
         https: state.certs.status(),
+        upnp: c.upnp,
+        upnp_status: state.upnp.status(),
     }
 }

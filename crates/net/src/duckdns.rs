@@ -71,10 +71,12 @@ fn url_escape(s: &str) -> String {
     out
 }
 
-/// Points the name at the address DuckDNS sees this request coming from.
-/// Returns that public IPv4 address.
-pub async fn update_ip(domain: &str, token: &str) -> Result<Option<String>, String> {
-    let lines = call(&format!("domains={}&token={}&verbose=true", url_escape(domain), url_escape(token))).await?;
+/// Points the name at `ip`, or (None) at the address DuckDNS sees this
+/// request coming from – wrong behind a VPN, so callers pass the router's
+/// address when they know it (UPnP). Returns the address DuckDNS set.
+pub async fn update_ip(domain: &str, token: &str, ip: Option<&str>) -> Result<Option<String>, String> {
+    let ip = ip.map(|i| format!("&ip={}", url_escape(i))).unwrap_or_default();
+    let lines = call(&format!("domains={}&token={}{ip}&verbose=true", url_escape(domain), url_escape(token))).await?;
     Ok(lines.first().filter(|s| !s.is_empty()).cloned())
 }
 

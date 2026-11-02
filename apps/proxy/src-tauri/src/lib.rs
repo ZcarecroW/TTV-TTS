@@ -148,6 +148,18 @@ pub fn run() {
             tauri::async_runtime::spawn(hosted::serve(state.clone()));
             tauri::async_runtime::spawn(plugins::run(state.clone()));
             {
+                let (a, b, c) = (Arc::downgrade(&state), Arc::downgrade(&state), Arc::downgrade(&state));
+                tauri::async_runtime::spawn(state.upnp.clone().run(
+                    move || a.upgrade().map(|s| internet::upnp_want(&s)).unwrap_or_default(),
+                    move || c.upgrade().is_some_and(|s| internet::duckdns_login(&s).is_some()),
+                    move || {
+                        if let Some(s) = b.upgrade() {
+                            s.publish_internet();
+                        }
+                    },
+                ));
+            }
+            {
                 let s = Arc::downgrade(&state);
                 tauri::async_runtime::spawn(state.certs.clone().run(move || s.upgrade().and_then(|s| internet::https_want(&s))));
             }
@@ -213,6 +225,9 @@ pub fn run() {
             RunEvent::Exit => {
                 if let Some(s) = app.try_state::<Arc<AppState>>() {
                     s.hosted.flush();
+                    // the router's ports close with the proxy
+                    let u = s.upnp.clone();
+                    tauri::async_runtime::block_on(async { tokio::time::timeout(std::time::Duration::from_secs(3), u.close()).await.ok() });
                 }
             }
             _ => {}

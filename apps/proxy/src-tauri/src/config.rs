@@ -69,6 +69,8 @@ pub struct Config {
     pub obs_port: u16,
     /// Links from the internet use HTTPS (a Let's Encrypt certificate for the DuckDNS name).
     pub obs_https: bool,
+    /// Opens the ports for the internet in the router itself (UPnP).
+    pub upnp: bool,
 }
 
 impl Default for Config {
@@ -100,6 +102,7 @@ impl Default for Config {
             duckdns_domain: String::new(),
             obs_port: 8112,
             obs_https: true,
+            upnp: true,
         }
     }
 }

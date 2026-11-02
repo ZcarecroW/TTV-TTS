@@ -25,6 +25,8 @@ log = { workspace = true }
 parking_lot = { workspace = true }
 rand = { workspace = true }
 time = { workspace = true }
+igd-next = { workspace = true }
+if-addrs = { workspace = true }
 
 [dev-dependencies]
 rcgen = { workspace = true }

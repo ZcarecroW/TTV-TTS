@@ -173,6 +173,7 @@ check(/Mia/.test(await fr.innerText()), "the host sees friends with access", (aw
 await fr.getByRole("switch", { name: /Allow friends|Freunde über das Internet zulassen/ }).click();
 await page.waitForTimeout(500);
 check(/port 8111 open|Port 8111 offen/.test(await fr.innerText()), "internet access can be switched on");
+check(/(Ports 8111, 8112 are open in the router|Ports 8111, 8112 sind im Router)/.test(await fr.locator("[data-upnp]").innerText()), "the router opens the ports itself (UPnP)", await fr.locator("[data-upnp]").innerText());
 await fr.getByPlaceholder(/my-stream|mein-stream/).fill("my-stream");
 await fr.getByPlaceholder(/DuckDNS/).fill("1a2b3c4d-1a2b-1a2b-1a2b-1a2b3c4d5e6f");
 await fr.getByRole("button", { name: /^(save|speichern)$/i }).click();
@@ -221,6 +222,7 @@ check(/(Computed|Berechnet): de 41 · en 30/.test(prof), "profile shows how much
   check(/https:\/\/mystream\.duckdns\.org:8131\/o\//.test(oct) && /\bHTTPS\b/.test(oct), "an OBS link from the internet uses HTTPS with a DuckDNS name", oct.match(/https:[^\s]*/)?.[0] ?? oct.slice(0, 120));
   check(/HTTPS certificate for mystream\.duckdns\.org|HTTPS-Zertifikat für mystream\.duckdns\.org/.test(oct), "the profile shows the certificate");
   check(/DuckDNS token|DuckDNS-Token/.test(oct), "the DuckDNS token can be entered in the profile");
+  check(/(Ports 8131 are open in the router|Ports 8131 sind im Router)/.test(oct), "the OBS port is opened in the router (UPnP)", oct.match(/Ports[^\n]*/)?.[0] ?? "");
   await oc.getByRole("switch", { name: /use HTTPS|nutzen HTTPS/ }).click();
   await page.waitForTimeout(3500);
   const off = (await oc.innerText()) + " " + (await links());

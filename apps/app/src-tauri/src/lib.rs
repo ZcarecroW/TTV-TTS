@@ -90,6 +90,10 @@ pub fn run() {
             tauri::async_runtime::spawn(async move { obs::apply(&st).await });
             tauri::async_runtime::spawn(obs::duckdns(state.clone()));
             {
+                let (s, s2) = (std::sync::Arc::downgrade(&state), std::sync::Arc::downgrade(&state));
+                tauri::async_runtime::spawn(state.upnp.clone().run(move || s.upgrade().map(|s| obs::upnp_want(&s)).unwrap_or_default(), move || s2.upgrade().is_some_and(|s| obs::wants_duckdns(&s)), || {}));
+            }
+            {
                 let s = std::sync::Arc::downgrade(&state);
                 tauri::async_runtime::spawn(state.certs.clone().run(move || s.upgrade().and_then(|s| obs::https_want(&s))));
             }
@@ -251,6 +255,9 @@ pub fn run() {
                 // the plugins' latest settings (an open editor may have changed them)
                 tauri::async_runtime::block_on(async { tokio::time::timeout(std::time::Duration::from_secs(2), plugin_cmds::save_all(&st)).await.ok() });
                 st.reader.flush();
+                // the router's port closes with the app
+                let u = st.upnp.clone();
+                tauri::async_runtime::block_on(async { tokio::time::timeout(std::time::Duration::from_secs(3), u.close()).await.ok() });
             }
         });
 }

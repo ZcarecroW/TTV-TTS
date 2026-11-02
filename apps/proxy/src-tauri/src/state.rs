@@ -58,6 +58,8 @@ pub struct AppState {
     pub certs: Arc<ttv_net::Certs>,
     /// Audio plugins the app's chains use, run here.
     pub plugins: Arc<crate::plugins::ProxyPlugins>,
+    /// Ports for the internet, opened in the router (UPnP).
+    pub upnp: Arc<ttv_net::upnp::Upnp>,
     app: OnceLock<AppHandle>,
 }
 
@@ -83,6 +85,7 @@ impl AppState {
         Self {
             certs,
             plugins: Arc::new(crate::plugins::ProxyPlugins::new(&data_dir)),
+            upnp: ttv_net::upnp::Upnp::new("TTV-TTS Proxy"),
             engine,
             guests: crate::internet::Guests::load(&data_dir),
             internet: RwLock::new(Default::default()),

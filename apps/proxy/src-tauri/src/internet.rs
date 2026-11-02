@@ -325,6 +325,10 @@ pub struct InternetStatus {
     pub https: ttv_net::CertStatus,
     /// Some OBS link is shared on the internet (the certificate is needed).
     pub obs_online: bool,
+    /// Opens the ports in the router itself.
+    pub upnp: bool,
+    pub upnp_status: ttv_net::upnp::UpnpStatus,
+    pub obs_port: u16,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -361,7 +365,27 @@ pub fn status(state: &AppState) -> InternetStatus {
         obs_https: c.obs_https,
         https: state.certs.status(),
         obs_online: state.hosted.any_online(),
+        upnp: c.upnp,
+        upnp_status: state.upnp.status(),
+        obs_port: c.obs_port,
     }
+}
+
+/// The ports to open in the router: friends' port while friends may use
+/// this proxy, the OBS port while an OBS link is shared on the internet.
+pub fn upnp_want(state: &AppState) -> Vec<(u16, &'static str)> {
+    let c = state.cfg.read().clone();
+    if !c.upnp {
+        return Vec::new();
+    }
+    let mut v = Vec::new();
+    if c.internet {
+        v.push((c.internet_port, "friends"));
+    }
+    if state.hosted.any_online() {
+        v.push((c.obs_port, "OBS"));
+    }
+    v
 }
 
 /// The DuckDNS name and token, when both are set.
@@ -816,7 +840,7 @@ pub async fn duckdns(state: Arc<AppState>) {
         let recent = last.is_some_and(|(t, needed_then)| needed_then == needed && t.elapsed() < Duration::from_secs(60));
         if needed && !recent && let Some(ttv_net::Want { domain, token }) = duckdns_login(&state) {
             last = Some((std::time::Instant::now(), needed));
-            let r = ttv_net::duckdns::update_ip(&domain, &token).await;
+            let r = ttv_net::duckdns::update_ip(&domain, &token, state.upnp.public_ip().as_deref()).await;
             set_live(&state, |l| {
                 l.duckdns_at = Some(chrono::Utc::now().timestamp());
                 match r {

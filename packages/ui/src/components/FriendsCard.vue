@@ -5,6 +5,7 @@ import UiTip from "./UiTip.vue";
 import UiDocs from "./UiDocs.vue";
 import UiToggle from "./UiToggle.vue";
 import HttpsStatus from "./HttpsStatus.vue";
+import RouterStatus from "./RouterStatus.vue";
 import { copyText } from "../clipboard";
 import { ago } from "../format";
 import { Copy, Globe, Lock, Plus, ShieldCheck, Spinner, Trash, Users, X } from "../icons";
@@ -69,6 +70,11 @@ async function saveName() {
     if (r.https?.step) quick = window.setTimeout(load, 2000);
     toast(r.duckdns_result === "OK" ? "ok" : "err", r.duckdns_result === "OK" ? t("friends.duckOk", { name: `${r.domain}.duckdns.org` }) : (r.duckdns_result ?? t("friends.duckSaved")));
   }
+}
+
+async function setUpnp(on: boolean) {
+  const r = await run("upnp", () => friends.set({ upnp: on }));
+  if (r) s.value = r;
 }
 
 async function setHttps(on: boolean) {
@@ -137,6 +143,11 @@ const duckLine = computed(() => {
           <button class="btn" :disabled="busy === 'duckdns' || !domain.trim()" @click="saveName"><Spinner v-if="busy === 'duckdns'" :size="14" class="spin" />{{ t("common.save") }}</button>
         </div>
         <p class="hint mt-1.5">{{ duckLine || t("friends.duckHint") }}</p>
+        <!-- the router opens the ports itself -->
+        <div v-if="s.upnp_status" class="mt-3 space-y-2 rounded-xl border border-line p-3.5">
+          <UiToggle :model-value="s.upnp ?? true" :disabled="busy === 'upnp'" :label="t('friends.upnpToggle')" :hint="t('friends.upnpHint')" @update:model-value="setUpnp" />
+          <RouterStatus :status="s.upnp_status" :on="s.upnp ?? true" />
+        </div>
         <!-- HTTPS for OBS links from the internet -->
         <div v-if="s.https" class="mt-3 space-y-2 rounded-xl border border-line p-3.5">
           <UiToggle :model-value="s.obs_https ?? true" :disabled="busy === 'https'" :label="t('friends.httpsToggle')" :hint="t('friends.httpsHint')" @update:model-value="setHttps" />

@@ -45,6 +45,8 @@ pub struct AppState {
     pub obs: crate::obs::Sinks,
     /// HTTPS certificate of OBS links from the internet (Let's Encrypt, DuckDNS name).
     pub certs: Arc<ttv_net::Certs>,
+    /// The OBS port opened in the router (UPnP).
+    pub upnp: Arc<ttv_net::upnp::Upnp>,
     pub presets: PresetStore,
     /// Computed preset voices (engine on the proxy or in this app).
     pub library: VoiceLibrary,
@@ -79,6 +81,7 @@ impl AppState {
         }));
         let state = Arc::new(Self {
             certs: ttv_net::Certs::new(&data_dir.join("acme"), || {}),
+            upnp: ttv_net::upnp::Upnp::new("TTV-TTS"),
             rack,
             plugin_errors: parking_lot::Mutex::new(Default::default()),
             plugin_states: parking_lot::Mutex::new(Some(state_rx)),

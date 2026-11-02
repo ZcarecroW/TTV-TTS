@@ -112,11 +112,13 @@ pub struct ObsConfig {
     pub public_host: String,
     /// Links from the internet use HTTPS (needs a DuckDNS name and token).
     pub https: bool,
+    /// Opens the port in the router itself (UPnP).
+    pub upnp: bool,
 }
 
 impl Default for ObsConfig {
     fn default() -> Self {
-        Self { port: 8131, lan: false, public_host: String::new(), https: true }
+        Self { port: 8131, lan: false, public_host: String::new(), https: true, upnp: true }
     }
 }
 

@@ -36,6 +36,18 @@ export interface CertStatus {
   staging: boolean;
 }
 
+/** Ports opened in the router (UPnP). */
+export interface UpnpStatus {
+  router: string | null;
+  external_ip: string | null;
+  /** DS-Lite or carrier NAT: unreachable from the internet */
+  no_public_ip: boolean;
+  mapped: number[];
+  wanted: number[];
+  error: string | null;
+  at: number | null;
+}
+
 /** Internet access of a proxy. */
 export interface InternetStatus {
   enabled: boolean;
@@ -58,6 +70,10 @@ export interface InternetStatus {
   https?: CertStatus;
   /** some OBS link is shared on the internet */
   obs_online?: boolean;
+  /** opens the ports in the router itself */
+  upnp?: boolean;
+  upnp_status?: UpnpStatus;
+  obs_port?: number;
 }
 
 export interface InternetPatch {
@@ -67,6 +83,7 @@ export interface InternetPatch {
   /** "" removes the stored token */
   token?: string;
   obs_https?: boolean;
+  upnp?: boolean;
 }
 
 export interface NewInvite {
@@ -105,6 +122,9 @@ export function demoFriends(): FriendsApi {
     guests: [{ id: "g1", name: "Mia", chars_today: 12400, chars_per_day: 30000, joined: now() - 3 * 86400, last_seen: now() - 40, last_address: "198.51.100.7", total_chars: 88000 }],
     connections: 1,
     obs_https: true,
+    upnp: true,
+    upnp_status: { router: "192.168.178.1", external_ip: "203.0.113.42", no_public_ip: false, mapped: [8112], wanted: [8112], error: null, at: now() - 60 },
+    obs_port: 8112,
     https: { domain: null, valid_from: null, valid_until: null, renew_at: null, step: null, error: null, error_at: null, next_try: null, staging: false },
     obs_online: true,
   };
@@ -114,6 +134,11 @@ export function demoFriends(): FriendsApi {
     set: async (p) => {
       if (p.enabled !== undefined) Object.assign(internet, { enabled: p.enabled, listening: p.enabled });
       if (p.obs_https !== undefined) internet.obs_https = p.obs_https;
+      if (p.upnp !== undefined) internet.upnp = p.upnp;
+      if (p.enabled !== undefined || p.upnp !== undefined) {
+        const wanted = [...(internet.enabled ? [internet.port] : []), 8112];
+        internet.upnp_status = { ...internet.upnp_status!, wanted, mapped: internet.upnp ? wanted : [] };
+      }
       if (p.domain !== undefined) {
         internet.domain = p.domain.replace(/\.duckdns\.org$/, "");
         if (p.token) internet.duckdns_token = true;

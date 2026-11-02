@@ -154,6 +154,7 @@ pub fn update_settings(app: AppHandle, state: St, patch: SettingsPatch) -> AppRe
             }
             c.obs_port = v;
             state.hosted_changed.notify_waiters();
+            state.upnp.wake();
         }
         c.normalize();
         (
@@ -397,6 +398,8 @@ pub struct InternetPatch {
     pub token: Option<String>,
     /// OBS links from the internet use HTTPS.
     pub obs_https: Option<bool>,
+    /// Open the ports in the router itself (UPnP).
+    pub upnp: Option<bool>,
 }
 
 /// Switches internet access, sets its port and the DuckDNS name and token.
@@ -425,6 +428,9 @@ pub async fn apply_internet(state: &AppState, patch: InternetPatch) -> Result<cr
         if let Some(on) = patch.obs_https {
             c.obs_https = on;
         }
+        if let Some(on) = patch.upnp {
+            c.upnp = on;
+        }
         c.normalize();
     }
     state.save_config().map_err(|e| e.to_string())?;
@@ -432,7 +438,7 @@ pub async fn apply_internet(state: &AppState, patch: InternetPatch) -> Result<cr
     if patch.domain.is_some() || patch.token.is_some() {
         let (domain, token) = (state.cfg.read().duckdns_domain.clone(), state.secrets.get(crate::internet::DUCKDNS_TOKEN));
         if let (false, Some(token)) = (domain.is_empty(), token) {
-            let r = ttv_net::duckdns::update_ip(&domain, &token).await;
+            let r = ttv_net::duckdns::update_ip(&domain, &token, state.upnp.public_ip().as_deref()).await;
             let mut l = state.internet.write();
             l.duckdns_at = Some(chrono::Utc::now().timestamp());
             match r {
@@ -449,6 +455,7 @@ pub async fn apply_internet(state: &AppState, patch: InternetPatch) -> Result<cr
     state.internet_rebind.notify_waiters();
     // the certificate and the OBS port follow name, token and the HTTPS switch
     state.certs.wake();
+    state.upnp.wake();
     state.hosted_changed.notify_waiters();
     state.publish_internet();
     Ok(crate::internet::status(state))

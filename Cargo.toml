@@ -40,6 +40,8 @@ tokio-rustls = { version = "0.26.6", default-features = false, features = ["aws_
 rcgen = { version = "0.14.10", default-features = false, features = ["crypto", "pem", "aws_lc_rs"] }
 # ACME (Let's Encrypt) for HTTPS on online OBS links
 instant-acme = { version = "0.8.5", features = ["rcgen", "time"] }
+# UPnP: the router opens the ports itself
+igd-next = { version = "0.18.0", default-features = false, features = ["aio_tokio"] }
 axum = { version = "0.8.9", default-features = false, features = ["tokio", "http1", "http2", "json", "query", "ws"] }
 hyper = { version = "1.12.0", features = ["server", "http1", "http2"] }
 hyper-util = { version = "0.1.21", features = ["server-auto", "tokio", "service"] }

@@ -83,7 +83,7 @@ const state: AppView = {
     translate_email: "",
     hotkeys: { skip: "Ctrl+Alt+KeyS" },
     remote: { enabled: false, port: 8130, lan: false, token: "demoToken123" },
-    obs: { port: 8131, lan: false, public_host: "", https: true },
+    obs: { port: 8131, lan: false, public_host: "", https: true, upnp: true },
     effects_on_host: true,
   },
   host: params.has("nohost")
@@ -307,13 +307,15 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
         duckdns: duck,
         duckdns_token: duck,
         duckdns_update: duck ? { at: Math.floor(Date.now() / 1000) - 120, error: null, ip: "203.0.113.42" } : null,
+        upnp: c.upnp,
+        upnp_status: { router: "192.168.178.1", external_ip: "203.0.113.42", no_public_ip: false, mapped: c.upnp && profiles.some((p) => p.output.online) ? [c.port] : [], wanted: profiles.some((p) => p.output.online) ? [c.port] : [], error: null, at: Math.floor(Date.now() / 1000) - 30 },
         https: duck
           ? { domain: c.public_host, valid_from: Math.floor(Date.now() / 1000) - 86400, valid_until: Math.floor(Date.now() / 1000) + 89 * 86400, renew_at: Math.floor(Date.now() / 1000) + 59 * 86400, step: null, error: null, error_at: null, next_try: null, staging: false }
           : { domain: null, valid_from: null, valid_until: null, renew_at: null, step: null, error: null, error_at: null, next_try: null, staging: false },
       });
     }
     case "set_obs":
-      Object.assign(state.config.obs, { lan: !!args.lan, port: Number(args.port), public_host: String(args.publicHost ?? ""), https: args.https !== false });
+      Object.assign(state.config.obs, { lan: !!args.lan, port: Number(args.port), public_host: String(args.publicHost ?? ""), https: args.https !== false, upnp: args.upnp !== false });
       return demoInvoke("obs_status");
     case "obs_new_link": {
       const p = (readerState.store.profiles as Profile[]).find((x) => x.id === args.profile);

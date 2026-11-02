@@ -8,6 +8,7 @@ import UiSegmented from "@ttv-tts/ui/components/UiSegmented.vue";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
 import HttpsStatus from "@ttv-tts/ui/components/HttpsStatus.vue";
+import RouterStatus from "@ttv-tts/ui/components/RouterStatus.vue";
 import { ago } from "@ttv-tts/ui/format";
 import { Refresh, Tv } from "@ttv-tts/ui/icons";
 import { hosted, obs, type HostedView, type ObsStatus, type OutputMode, type Profile } from "../api";
@@ -66,15 +67,16 @@ const lan = ref(config.value?.obs.lan ?? false);
 const port = ref(config.value?.obs.port ?? 8131);
 const publicHost = ref(config.value?.obs.public_host ?? "");
 const https = ref(config.value?.obs.https ?? true);
+const upnp = ref(config.value?.obs.upnp ?? true);
 const duckToken = ref("");
 const isDuck = computed(() => /\.duckdns\.org(:\d+)?$/i.test(publicHost.value.trim()));
 async function saveServer() {
   const token = duckToken.value.trim() || undefined;
-  const s = await run("obs", () => obs.set(lan.value, Number(port.value) || 8131, publicHost.value, https.value, token));
+  const s = await run("obs", () => obs.set(lan.value, Number(port.value) || 8131, publicHost.value, https.value, token, upnp.value));
   if (s) {
     local.value = s;
     duckToken.value = "";
-    if (store.app) store.app.config.obs = { lan: lan.value, port: Number(port.value) || 8131, public_host: publicHost.value, https: https.value };
+    if (store.app) store.app.config.obs = { lan: lan.value, port: Number(port.value) || 8131, public_host: publicHost.value, https: https.value, upnp: upnp.value };
   }
 }
 
@@ -132,6 +134,10 @@ async function newLink() {
             <input v-model="duckToken" type="password" autocomplete="off" class="input mono" :placeholder="local?.duckdns_token ? t('output.duckTokenStored') : '1a2b3c4d-…'" @change="saveServer" />
           </UiField>
         </div>
+        <template v-if="p.output.online">
+          <UiToggle v-model="upnp" :label="t('friends.upnpToggle')" :hint="t('friends.upnpHint')" @update:model-value="saveServer" />
+          <RouterStatus v-if="local" :status="local.upnp_status" :on="upnp" />
+        </template>
         <template v-if="p.output.online && isDuck">
           <p v-if="local && !local.duckdns_token" class="text-xs text-warn">{{ t("output.duckNeedsToken") }}</p>
           <p v-else-if="local?.duckdns_update" class="text-xs" :class="local.duckdns_update.error ? 'text-warn' : 'text-muted'">{{ local.duckdns_update.error ?? t("output.duckUpdated", { ago: ago(local.duckdns_update.at, locale), ip: local.duckdns_update.ip ?? "?" }) }}</p>

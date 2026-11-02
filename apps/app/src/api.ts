@@ -1,8 +1,8 @@
 // Bridge to the Rust side. Outside Tauri (plain browser) a demo backend
 // answers, for UI development, tests and the docs screenshots.
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
-import type { CertStatus } from "@ttv-tts/ui/friends";
-export type { CertStatus };
+import type { CertStatus, UpnpStatus } from "@ttv-tts/ui/friends";
+export type { CertStatus, UpnpStatus };
 import { listen as tauriListen, type UnlistenFn } from "@tauri-apps/api/event";
 
 export interface VcpState {
@@ -99,7 +99,7 @@ export interface Config {
   hotkeys: Record<string, string>;
   remote: { enabled: boolean; port: number; lan: boolean; token: string };
   /** OBS links served by this app. */
-  obs: { port: number; lan: boolean; public_host: string; https: boolean };
+  obs: { port: number; lan: boolean; public_host: string; https: boolean; upnp: boolean };
   /** Voice effects on the voice host PC (proxy) instead of here. */
   effects_on_host: boolean;
 }
@@ -363,6 +363,8 @@ export interface ObsStatus {
   duckdns_token: boolean;
   duckdns_update: { at: number; error: string | null; ip: string | null } | null;
   https: CertStatus;
+  upnp: boolean;
+  upnp_status: UpnpStatus;
 }
 
 /** A profile the voice host PC reads for OBS. */
@@ -383,7 +385,7 @@ export interface HostedView {
 export const obs = {
   status: () => invoke<ObsStatus>("obs_status"),
   /** `duckdnsToken`: "" removes it, undefined keeps it */
-  set: (lan: boolean, port: number, publicHost: string, https: boolean, duckdnsToken?: string) => invoke<ObsStatus>("set_obs", { lan, port, publicHost, https, duckdnsToken }),
+  set: (lan: boolean, port: number, publicHost: string, https: boolean, duckdnsToken?: string, upnp?: boolean) => invoke<ObsStatus>("set_obs", { lan, port, publicHost, https, duckdnsToken, upnp }),
   newLink: (profile: string) => invoke<ReaderView>("obs_new_link", { profile }),
 };
 

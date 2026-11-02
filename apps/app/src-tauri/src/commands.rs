@@ -467,7 +467,8 @@ pub fn obs_status(state: St) -> crate::obs::ObsStatus {
 /// OBS links on this PC: for other PCs too (LAN, internet), port, and the
 /// address friends use from the internet.
 #[tauri::command]
-pub async fn set_obs(state: St<'_>, lan: bool, port: u16, public_host: String, https: Option<bool>, duckdns_token: Option<String>) -> Result<crate::obs::ObsStatus, String> {
+#[allow(clippy::too_many_arguments)]
+pub async fn set_obs(state: St<'_>, lan: bool, port: u16, public_host: String, https: Option<bool>, duckdns_token: Option<String>, upnp: Option<bool>) -> Result<crate::obs::ObsStatus, String> {
     if let Some(t) = &duckdns_token {
         let t = t.trim();
         if !t.is_empty() && (t.len() < 30 || !t.chars().all(|c| c.is_ascii_hexdigit() || c == '-')) {
@@ -482,6 +483,9 @@ pub async fn set_obs(state: St<'_>, lan: bool, port: u16, public_host: String, h
         c.obs.public_host = public_host;
         if let Some(h) = https {
             c.obs.https = h;
+        }
+        if let Some(u) = upnp {
+            c.obs.upnp = u;
         }
         c.normalize();
     }

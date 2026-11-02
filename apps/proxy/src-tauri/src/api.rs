@@ -241,6 +241,7 @@ async fn hosted_put(State(state): S, axum::extract::Path(id): IdPath, Json(req):
     let r = state.hosted.put(&state, &id, req);
     state.hosted_changed.notify_waiters();
     state.certs.wake();
+    state.upnp.wake();
     match r {
         Ok(v) => Json(v).into_response(),
         Err(e) => api_error(StatusCode::BAD_REQUEST, "bad_request", e),
@@ -281,6 +282,7 @@ async fn hosted_delete(State(state): S, axum::extract::Path(id): IdPath) -> Json
     let ok = state.hosted.remove(&id);
     state.hosted_changed.notify_waiters();
     state.certs.wake();
+    state.upnp.wake();
     Json(Ack { ok, message: None })
 }
 
