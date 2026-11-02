@@ -6,7 +6,10 @@
 //! OBS"), so it has a fader and filters like any other.
 //!
 //! Wire format, per clip: a binary frame `[1, 0, 0, 0, rate u32 LE, PCM16 LE …]`
-//! (mono). Text frames: `{"t":"stop"}` stops everything that's queued (skip).
+//! (mono). Text frames: `{"t":"stop"}` stops everything that's queued (skip);
+//! `{"t":"gone"}`: the link was replaced or isn't shared any more – the page
+//! stops and doesn't reconnect. A listener checks its link again before every
+//! clip, so a replaced link stops getting audio at once.
 //! A link is `/o/<token>`; the token is the only secret. Addresses outside the
 //! local network are refused unless the link is meant for the internet, and
 //! an address that guesses wrong tokens is locked out for a while.
@@ -32,9 +35,9 @@ use ttv_net::Secure;
 
 /// The browser source: no markup to render, no requests but the socket.
 pub const PAGE: &str = r#"<!doctype html><meta charset="utf-8"><title>TTV-TTS</title><style>html,body{margin:0;background:transparent}</style><script>
-(()=>{let x,t=0,w=500;const n=new Set,u=location.href.split(/[?#]/)[0].replace(/\/$/,"").replace(/^http/,"ws")+"/ws",
-go=()=>{const s=new WebSocket(u);s.binaryType="arraybuffer";s.onopen=()=>w=500;s.onclose=()=>{setTimeout(go,w);w=Math.min(w*2,15e3)};
-s.onmessage=e=>{if(typeof e.data=="string"){if(JSON.parse(e.data).t=="stop"){n.forEach(a=>{try{a.stop()}catch{}});n.clear();t=0}return}
+(()=>{let x,t=0,w=500,g;const n=new Set,u=location.href.split(/[?#]/)[0].replace(/\/$/,"").replace(/^http/,"ws")+"/ws",
+go=()=>{const s=new WebSocket(u);s.binaryType="arraybuffer";s.onopen=()=>w=500;s.onclose=()=>{g||setTimeout(go,w);w=Math.min(w*2,15e3)};
+s.onmessage=e=>{if(typeof e.data=="string"){const m=JSON.parse(e.data).t;if(m=="gone")g=1;if(m=="stop"||g){n.forEach(a=>{try{a.stop()}catch{}});n.clear();t=0}return}
 x??=new AudioContext;x.state=="suspended"&&x.resume();const d=new DataView(e.data),p=new Int16Array(e.data,8),b=x.createBuffer(1,p.length,d.getUint32(4,1)),c=b.getChannelData(0);
 for(let i=0;i<p.length;i++)c[i]=p[i]/32768;const a=x.createBufferSource();a.buffer=b;a.connect(x.destination);const at=Math.max(x.currentTime+.05,t);
 a.start(at);t=at+b.duration;n.add(a);a.onended=()=>n.delete(a)}};onclick=()=>x?.resume();go()})()
@@ -148,6 +151,14 @@ pub enum Refusal {
 pub trait Links: Send + Sync + 'static {
     /// `secure`: the request came over HTTPS.
     fn sink(&self, token: &str, from: IpAddr, secure: bool) -> Result<Arc<ObsSink>, Refusal>;
+
+    /// Whether wrong links from `from` count towards a lock-out: guessing is
+    /// what strangers on the internet do. This PC and the local network
+    /// don't count – an OBS that still has an old link would otherwise lock
+    /// itself out of the new one.
+    fn strikes(&self, from: IpAddr) -> bool {
+        !is_local(from)
+    }
 }
 
 /// An address in the local network (or this PC, or a VPN like Tailscale).
@@ -196,13 +207,16 @@ fn refuse(status: StatusCode, text: &'static str) -> Response {
 
 fn check<L: Links>(s: &Served<L>, token: &str, from: IpAddr, secure: bool) -> Result<Arc<ObsSink>, (StatusCode, &'static str)> {
     let from = from.to_canonical();
-    if s.guesses.blocked(from) {
+    let counts = s.links.strikes(from);
+    if counts && s.guesses.blocked(from) {
         return Err((StatusCode::TOO_MANY_REQUESTS, "Too many wrong links from this address. Try again later."));
     }
     match s.links.sink(token, from, secure) {
         Ok(sink) => Ok(sink),
         Err(Refusal::Unknown) => {
-            s.guesses.wrong(from);
+            if counts {
+                s.guesses.wrong(from);
+            }
             Err((StatusCode::NOT_FOUND, "This TTV-TTS link doesn't exist (any more)."))
         }
         Err(Refusal::NotOnline) => Err((StatusCode::FORBIDDEN, "This TTV-TTS link only works in the local network.")),
@@ -225,7 +239,8 @@ async fn page<L: Links>(State(s): S<L>, Path(token): Path<String>, ConnectInfo(a
 }
 
 async fn socket<L: Links>(State(s): S<L>, Path(token): Path<String>, ConnectInfo(addr): ConnectInfo<SocketAddr>, secure: Option<Extension<Secure>>, ws: WebSocketUpgrade) -> Response {
-    let sink = match check(&s, &token, addr.ip(), secure.is_some_and(|Extension(Secure(x))| x)) {
+    let (from, secure) = (addr.ip().to_canonical(), secure.is_some_and(|Extension(Secure(x))| x));
+    let sink = match check(&s, &token, from, secure) {
         Ok(sink) => sink,
         Err((code, why)) => return refuse(code, why),
     };
@@ -233,7 +248,12 @@ async fn socket<L: Links>(State(s): S<L>, Path(token): Path<String>, ConnectInfo
         return refuse(StatusCode::TOO_MANY_REQUESTS, "Too many listeners on this link.");
     }
     // a listener only answers pings: tiny messages are plenty
-    ws.max_message_size(4096).max_frame_size(4096).on_upgrade(move |socket| listen(sink, socket))
+    // the link is checked again before every clip: a new link, or one no
+    // longer shared on the internet, ends this listener right away
+    let links = s.links.clone();
+    let mine = sink.clone();
+    let still = move || links.sink(&token, from, secure).is_ok_and(|now| Arc::ptr_eq(&now, &mine));
+    ws.max_message_size(4096).max_frame_size(4096).on_upgrade(move |socket| listen(sink, socket, still))
 }
 
 /// Counts a listener while it's connected.
@@ -245,7 +265,7 @@ impl Drop for Listener {
     }
 }
 
-async fn listen(sink: Arc<ObsSink>, mut socket: WebSocket) {
+async fn listen(sink: Arc<ObsSink>, mut socket: WebSocket, still: impl Fn() -> bool + Send + 'static) {
     let mut rx = sink.tx.subscribe();
     sink.listeners.fetch_add(1, Ordering::Relaxed);
     let _count = Listener(sink.clone());
@@ -255,6 +275,7 @@ async fn listen(sink: Arc<ObsSink>, mut socket: WebSocket) {
         tokio::select! {
             f = rx.recv() => {
                 let msg = match f {
+                    Ok(Frame::Clip(_)) if !still() => break gone(&mut socket).await,
                     Ok(Frame::Clip(b)) => Message::Binary(b),
                     Ok(Frame::Stop) => Message::Text(r#"{"t":"stop"}"#.into()),
                     // too slow to keep up: drop what it missed
@@ -270,12 +291,21 @@ async fn listen(sink: Arc<ObsSink>, mut socket: WebSocket) {
                 _ => {}
             },
             _ = ping.tick() => {
+                if !still() {
+                    break gone(&mut socket).await;
+                }
                 if socket.send(Message::Ping(Bytes::new())).await.is_err() {
                     break;
                 }
             }
         }
     }
+}
+
+/// Tells the page its link is gone (it stops and doesn't reconnect).
+async fn gone(socket: &mut WebSocket) {
+    let _ = socket.send(Message::Text(r#"{"t":"gone"}"#.into())).await;
+    let _ = socket.send(Message::Close(None)).await;
 }
 
 #[cfg(test)]

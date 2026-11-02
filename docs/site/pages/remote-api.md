@@ -10,7 +10,7 @@ icon: Keyboard
 
 ## Authentication {#token}
 
-Every call needs the token shown in the settings – either in the URL (`?token=…`) or as a header (`Authorization: Bearer …`). Treat the URLs like a password. **New token** replaces it; old URLs stop working.
+Every call needs the token shown in the settings – either in the URL (`?token=…`) or as a header (`Authorization: Bearer …`). Treat the URLs like a password. **New token** replaces it; old URLs stop working. Another PC that sends a wrong token 20 times is locked out for 15 minutes.
 
 By default the API only answers on this PC (`127.0.0.1`). **Also from other PCs** opens it to your network (for a Stream Deck on another computer).
 

@@ -97,11 +97,15 @@ fn same(a: &str, b: &str) -> bool {
     a.len() == b.len() && a.bytes().zip(b.bytes()).fold(0u8, |acc, (x, y)| acc | (x ^ y)) == 0
 }
 
-/// Addresses that sent wrong tokens: locked out for 15 minutes after 20.
+/// Other PCs that sent wrong tokens: locked out for 15 minutes after 20.
+/// This PC doesn't count: every tool on it shares 127.0.0.1, so one button
+/// with an old token would lock out all of them (and code on this PC could
+/// read the token anyway).
 static STRIKES: std::sync::LazyLock<ttv_net::limits::Strikes> = std::sync::LazyLock::new(|| ttv_net::limits::Strikes::new(20, std::time::Duration::from_secs(900)));
 
 async fn auth(State(state): S, ConnectInfo(addr): ConnectInfo<std::net::SocketAddr>, req: Request, next: Next) -> Response {
-    if STRIKES.blocked(addr.ip()) {
+    let counts = !addr.ip().to_canonical().is_loopback();
+    if counts && STRIKES.blocked(addr.ip()) {
         return (StatusCode::TOO_MANY_REQUESTS, Json(Answer { ok: false, message: Some("too many wrong tokens - try again later".into()) })).into_response();
     }
     let want = state.cfg.read().remote.token.clone();
@@ -110,7 +114,7 @@ async fn auth(State(state): S, ConnectInfo(addr): ConnectInfo<std::net::SocketAd
     let given = from_query.or(from_header);
     let ok = !want.is_empty() && given.as_deref().is_some_and(|t| same(t.trim(), &want));
     if !ok {
-        if given.is_some() {
+        if counts && given.is_some() {
             STRIKES.strike(addr.ip());
         }
         return (StatusCode::UNAUTHORIZED, Json(Answer { ok: false, message: Some("wrong or missing token".into()) })).into_response();

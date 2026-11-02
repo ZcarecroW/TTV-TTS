@@ -10,7 +10,7 @@ icon: Keyboard
 
 ## Anmeldung {#token}
 
-Jeder Aufruf braucht den Token aus den Einstellungen – entweder in der URL (`?token=…`) oder als Header (`Authorization: Bearer …`). Behandle die URLs wie ein Passwort. **Neuer Token** ersetzt ihn; alte URLs gehen dann nicht mehr.
+Jeder Aufruf braucht den Token aus den Einstellungen – entweder in der URL (`?token=…`) oder als Header (`Authorization: Bearer …`). Behandle die URLs wie ein Passwort. **Neuer Token** ersetzt ihn; alte URLs gehen dann nicht mehr. Ein anderer PC, der 20-mal einen falschen Token schickt, wird für 15 Minuten gesperrt.
 
 Standardmäßig antwortet die API nur auf diesem PC (`127.0.0.1`). **Auch von anderen PCs** öffnet sie für dein Netzwerk (für ein Stream Deck an einem anderen Computer).
 

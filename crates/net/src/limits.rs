@@ -200,6 +200,64 @@ pub fn http2() -> hyper::server::conn::http2::Builder<TokioExecutor> {
     b
 }
 
+/// A connection that must send its first byte within [`HEADER_TIMEOUT`]:
+/// HTTP/2 waits for the client's preface without a deadline of its own, so
+/// a client that agreed on HTTP/2 and then stayed silent kept its place.
+pub struct FirstByte<I> {
+    io: I,
+    deadline: Option<std::pin::Pin<Box<tokio::time::Sleep>>>,
+}
+
+impl<I> FirstByte<I> {
+    pub fn new(io: I) -> Self {
+        Self::within(io, HEADER_TIMEOUT)
+    }
+
+    pub fn within(io: I, limit: Duration) -> Self {
+        Self { io, deadline: Some(Box::pin(tokio::time::sleep(limit))) }
+    }
+}
+
+impl<I: tokio::io::AsyncRead + Unpin> tokio::io::AsyncRead for FirstByte<I> {
+    fn poll_read(self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>, buf: &mut tokio::io::ReadBuf<'_>) -> std::task::Poll<std::io::Result<()>> {
+        use std::future::Future;
+        use std::task::Poll;
+        let this = self.get_mut();
+        let before = buf.filled().len();
+        match std::pin::Pin::new(&mut this.io).poll_read(cx, buf) {
+            Poll::Ready(Ok(())) => {
+                if buf.filled().len() > before {
+                    this.deadline = None;
+                }
+                Poll::Ready(Ok(()))
+            }
+            Poll::Pending => {
+                let expired = this.deadline.as_mut().is_some_and(|d| d.as_mut().poll(cx).is_ready());
+                if expired { Poll::Ready(Err(std::io::Error::new(std::io::ErrorKind::TimedOut, "the client sent nothing"))) } else { Poll::Pending }
+            }
+            r => r,
+        }
+    }
+}
+
+impl<I: tokio::io::AsyncWrite + Unpin> tokio::io::AsyncWrite for FirstByte<I> {
+    fn poll_write(self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>, buf: &[u8]) -> std::task::Poll<std::io::Result<usize>> {
+        std::pin::Pin::new(&mut self.get_mut().io).poll_write(cx, buf)
+    }
+    fn poll_write_vectored(self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>, bufs: &[std::io::IoSlice<'_>]) -> std::task::Poll<std::io::Result<usize>> {
+        std::pin::Pin::new(&mut self.get_mut().io).poll_write_vectored(cx, bufs)
+    }
+    fn is_write_vectored(&self) -> bool {
+        self.io.is_write_vectored()
+    }
+    fn poll_flush(self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> std::task::Poll<std::io::Result<()>> {
+        std::pin::Pin::new(&mut self.get_mut().io).poll_flush(cx)
+    }
+    fn poll_shutdown(self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> std::task::Poll<std::io::Result<()>> {
+        std::pin::Pin::new(&mut self.get_mut().io).poll_shutdown(cx)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -265,6 +323,58 @@ mod tests {
 
     /// The deadline really closes connections: a request that never ends its
     /// headers, and a keep-alive connection that stays idle after a request.
+    #[tokio::test]
+    async fn silent_http2_connections_are_closed() {
+        use tokio::io::AsyncReadExt;
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let router = axum::Router::new().route("/", axum::routing::get(|| async { "hi" }));
+        tokio::spawn(async move {
+            let (stream, _) = listener.accept().await.unwrap();
+            let svc = hyper_util::service::TowerToHyperService::new(router);
+            let io = hyper_util::rt::TokioIo::new(FirstByte::within(stream, Duration::from_millis(300)));
+            let _ = http2().serve_connection(io, svc).await;
+        });
+        let mut s = tokio::net::TcpStream::connect(addr).await.unwrap();
+        let mut buf = [0u8; 256];
+        let t = Instant::now();
+        let closed = loop {
+            match tokio::time::timeout(Duration::from_secs(3), s.read(&mut buf)).await {
+                Ok(Ok(0)) | Ok(Err(_)) => break true,
+                Ok(Ok(_)) => continue, // the server's SETTINGS
+                Err(_) => break false,
+            }
+        };
+        assert!(closed && t.elapsed() < Duration::from_secs(2), "silent HTTP/2 client: {:?}", t.elapsed());
+    }
+
+    /// Normal HTTP/2 traffic passes, also long after the first-byte deadline.
+    #[tokio::test]
+    async fn http2_requests_pass_the_first_byte_deadline() {
+        let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let addr = listener.local_addr().unwrap();
+        let router = axum::Router::new().route("/", axum::routing::get(|| async { "hi" }));
+        tokio::spawn(async move {
+            loop {
+                let (stream, _) = listener.accept().await.unwrap();
+                let svc = hyper_util::service::TowerToHyperService::new(router.clone());
+                tokio::spawn(async move {
+                    let io = hyper_util::rt::TokioIo::new(FirstByte::within(stream, Duration::from_millis(200)));
+                    let _ = http2().serve_connection(io, svc).await;
+                });
+            }
+        });
+        let client = reqwest::Client::builder().http2_prior_knowledge().build().unwrap();
+        let url = format!("http://{addr}/");
+        for round in 0..3 {
+            let r = client.get(&url).send().await.unwrap();
+            assert_eq!(r.version(), reqwest::Version::HTTP_2);
+            assert_eq!(r.text().await.unwrap(), "hi", "round {round}");
+            // the same connection, idle past the deadline
+            tokio::time::sleep(Duration::from_millis(350)).await;
+        }
+    }
+
     #[tokio::test]
     async fn slow_and_idle_connections_are_closed() {
         use tokio::io::{AsyncReadExt, AsyncWriteExt};

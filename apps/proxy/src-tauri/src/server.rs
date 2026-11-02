@@ -130,7 +130,7 @@ async fn accept_loop(listener: TcpListener, tls: Option<TlsAcceptor>, router: Ro
                 Some(acceptor) => match tokio::time::timeout(Duration::from_secs(10), acceptor.accept(stream)).await {
                     Ok(Ok(tls_stream)) => {
                         if tls_stream.get_ref().1.alpn_protocol() == Some(b"h2".as_slice()) {
-                            ttv_net::limits::http2().serve_connection(TokioIo::new(tls_stream), svc).await
+                            ttv_net::limits::http2().serve_connection(TokioIo::new(ttv_net::limits::FirstByte::new(tls_stream)), svc).await
                         } else {
                             ttv_net::limits::http1().serve_connection(TokioIo::new(tls_stream), svc).with_upgrades().await
                         }
