@@ -36,28 +36,32 @@ let missing = 0;
 for (const a of APPS) {
   const p = a.product;
   const v = version;
-  // [built file name, asset name, updater platforms]
+  // [built file name, asset name, updater platforms, required]. A .deb or
+  // .rpm install looks for its own key (linux-x86_64-deb/-rpm) before the
+  // AppImage's; those are added when their signature exists.
   const parts = [
-    [`${p}_${v}_x64-setup.exe`, `${a.asset}_${v}_x64-setup.exe`, ["windows-x86_64"]],
-    [`${p}.app.tar.gz`, `${a.asset}_${v}_universal.app.tar.gz`, ["darwin-x86_64", "darwin-aarch64"]],
-    [`${p}_${v}_universal.dmg`, `${a.asset}_${v}_universal.dmg`, []],
-    [`${p}_${v}_amd64.AppImage`, `${a.asset}_${v}_amd64.AppImage`, ["linux-x86_64"]],
-    [`${p}_${v}_amd64.deb`, `${a.asset}_${v}_amd64.deb`, []],
-    [`${p}-${v}-1.x86_64.rpm`, `${a.asset}-${v}-1.x86_64.rpm`, []],
+    [`${p}_${v}_x64-setup.exe`, `${a.asset}_${v}_x64-setup.exe`, ["windows-x86_64"], true],
+    [`${p}.app.tar.gz`, `${a.asset}_${v}_universal.app.tar.gz`, ["darwin-x86_64", "darwin-aarch64"], true],
+    [`${p}_${v}_universal.dmg`, `${a.asset}_${v}_universal.dmg`, [], false],
+    [`${p}_${v}_amd64.AppImage`, `${a.asset}_${v}_amd64.AppImage`, ["linux-x86_64"], true],
+    [`${p}_${v}_amd64.deb`, `${a.asset}_${v}_amd64.deb`, ["linux-x86_64-deb"], false],
+    [`${p}-${v}-1.x86_64.rpm`, `${a.asset}-${v}-1.x86_64.rpm`, ["linux-x86_64-rpm"], false],
   ];
   const platforms = {};
-  for (const [built, asset, keys] of parts) {
+  for (const [built, asset, keys, required] of parts) {
     const f = find(built);
     if (!f) {
       console.log(`::warning::${p}: ${built} wasn't built`);
-      if (keys.length) missing++;
+      if (required) missing++;
       continue;
     }
     copyFileSync(f, join(to, asset));
     if (!keys.length) continue;
     if (!existsSync(`${f}.sig`)) {
-      console.log(`::error::${p}: ${built}.sig is missing (signing key not set?)`);
-      missing++;
+      if (required) {
+        console.log(`::error::${p}: ${built}.sig is missing (signing key not set?)`);
+        missing++;
+      }
       continue;
     }
     const signature = readFileSync(`${f}.sig`, "utf8").trim();
