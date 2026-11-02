@@ -18,6 +18,8 @@ You choose it per profile: **Profiles → Where the voices play**.
 
 The page behind a link shows nothing and loads nothing but the voices: about 1 KB of script and one connection that only carries audio while somebody speaks. In OBS it plays right away. A normal browser plays it only after you click the page, because browsers block sound until then.
 
+![Where the voices play: OBS on this PC](profile-output.webp)
+
 ## Add the link in OBS {#add}
 
 1. In TTV-TTS: **Profiles** → the profile → **Where the voices play** → **OBS on this PC** (or **OBS through the voice host PC**).
@@ -35,12 +37,20 @@ The card in TTV-TTS shows **OBS connected** as soon as OBS has the link open. Th
 
 ## Through the voice host PC {#host}
 
-With **OBS through the voice host PC**, TTV-TTS hands the profile over to TTV-TTS Proxy, together with its preset's voices and the voices your viewers already have. From then on:
+With **OBS through the voice host PC**, TTV-TTS hands the profile over to TTV-TTS Proxy, together with its preset's voices and the voices your viewers already have.
+
+![Where the voices play: OBS through the voice host PC, with the link from the voice host PC](profile-output-host.webp)
+
+From then on:
 
 - **The voice host PC reads the chat itself**, generates the voices, applies their effects and sends them straight to OBS. The gaming PC isn't involved; TTV-TTS may even be closed.
 - It reads only **while OBS has the link open**, and stops a minute after OBS closes it. A friend's link costs nothing while they're offline.
 - Changes you make to the profile in TTV-TTS are sent along. The [Live](live) page shows what the voice host PC is saying, with pause, skip, clear and test messages.
 - The proxy window lists these profiles on its **OBS links** page.
+
+![A profile played by the voice host PC, on the Live page](live-hosted.webp)
+
+![The OBS links page of the proxy](proxy-obs.webp)
 
 What stays on the gaming PC and doesn't apply to these profiles: [audio plugins](effects#plugins), the [Twitch login](settings#twitch) (follows and channel-point rewards without text), DeepL translation, the system voice as a fallback, hotkeys and the [remote control](remote-api). Subs, raids and cheers are announced as usual: they arrive with the chat.
 

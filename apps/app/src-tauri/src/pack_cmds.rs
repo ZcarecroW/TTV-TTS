@@ -180,13 +180,19 @@ pub async fn export_pack(app: AppHandle, state: St<'_>, preset_id: String, langu
 
 /// Where the ready-made packs live. Only files listed in its catalog, with
 /// their SHA-256, are downloaded.
-const CATALOG: &str = "https://github.com/ZcarecroW/TTV-TTS/releases/download/voice-packs/catalog.json";
-const DOWNLOADS: &str = "https://github.com/ZcarecroW/TTV-TTS/releases/download/voice-packs/";
+/// All ready-made packs, with the release each one is on (a release holds
+/// at most 1000 files: one per language). `catalog.json` next to it lists
+/// only the packs on this release, for TTV-TTS 2.0.
+const CATALOG: &str = "https://github.com/ZcarecroW/TTV-TTS/releases/download/voice-packs/catalog-v2.json";
+const RELEASES: &str = "https://github.com/ZcarecroW/TTV-TTS/releases/download/";
 
 /// One ready-made pack: voices `from`–`to` (1-based) of a built-in preset in one language.
 #[derive(Debug, Clone, Serialize, serde::Deserialize)]
 pub struct CatalogPack {
     pub file: String,
+    /// The release the file is on ("voice-packs" when not given).
+    #[serde(default)]
+    pub tag: Option<String>,
     pub preset: String,
     pub lang: String,
     pub from: u32,
@@ -250,11 +256,12 @@ pub async fn download_packs(app: AppHandle, state: St<'_>, files: Vec<String>) -
     let mut jobs = Vec::new();
     for name in &files {
         let pack = catalog.packs.iter().find(|p| &p.file == name).ok_or_else(|| format!("{name} isn't in the list of ready-made voices."))?;
-        if pack.file.contains(['/', '\\']) || pack.file.contains("..") {
+        let tag = pack.tag.as_deref().unwrap_or("voice-packs");
+        if pack.file.contains(['/', '\\']) || pack.file.contains("..") || !tag.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '.') {
             return Err("The list of ready-made voices is broken.".into());
         }
         let path = dir.join(&pack.file);
-        let mut r = http.get(format!("{DOWNLOADS}{}", pack.file)).timeout(std::time::Duration::from_secs(3600)).send().await.map_err(|e| e.to_string())?.error_for_status().map_err(|e| e.to_string())?;
+        let mut r = http.get(format!("{RELEASES}{tag}/{}", pack.file)).timeout(std::time::Duration::from_secs(3600)).send().await.map_err(|e| e.to_string())?.error_for_status().map_err(|e| e.to_string())?;
         let mut f = tokio::fs::File::create(&path).await.map_err(|e| e.to_string())?;
         let mut hash = sha2::Sha256::new();
         let mut done = 0u64;

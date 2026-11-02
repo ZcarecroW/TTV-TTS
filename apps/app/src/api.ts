@@ -549,6 +549,8 @@ export interface PackInfo {
 
 /** A ready-made pack: voices from–to of a built-in preset in one language. */
 export interface CatalogPack {
+  /** The release the file is on (default "voice-packs"). */
+  tag?: string | null;
   file: string;
   preset: string;
   lang: string;

@@ -18,6 +18,8 @@ Das wählst du pro Profil: **Profile → Wo die Stimmen spielen**.
 
 Die Seite hinter einem Link zeigt nichts an und lädt nichts außer den Stimmen: etwa 1 KB Skript und eine Verbindung, die nur Ton überträgt, während jemand spricht. In OBS spielt sie sofort. Ein normaler Browser spielt sie erst nach einem Klick auf die Seite, weil Browser Ton bis dahin blockieren.
 
+![Wo die Stimmen spielen: OBS auf diesem PC](profile-output.webp)
+
 ## Den Link in OBS einfügen {#add}
 
 1. In TTV-TTS: **Profile** → das Profil → **Wo die Stimmen spielen** → **OBS auf diesem PC** (oder **OBS über den Stimmen-PC**).
@@ -35,12 +37,20 @@ Die Karte in TTV-TTS zeigt **OBS verbunden**, sobald OBS den Link geöffnet hat.
 
 ## Über den Stimmen-PC {#host}
 
-Mit **OBS über den Stimmen-PC** übergibt TTV-TTS das Profil an TTV-TTS Proxy, zusammen mit den Stimmen seines Presets und den Stimmen, die deine Zuschauer schon haben. Ab dann:
+Mit **OBS über den Stimmen-PC** übergibt TTV-TTS das Profil an TTV-TTS Proxy, zusammen mit den Stimmen seines Presets und den Stimmen, die deine Zuschauer schon haben.
+
+![Wo die Stimmen spielen: OBS über den Stimmen-PC, mit dem Link vom Stimmen-PC](profile-output-host.webp)
+
+Ab dann:
 
 - **Der Stimmen-PC liest den Chat selbst**, erzeugt die Stimmen, wendet ihre Effekte an und schickt sie direkt an OBS. Der Gaming-PC ist nicht beteiligt; TTV-TTS darf sogar geschlossen sein.
 - Er liest nur, **solange OBS den Link geöffnet hat**, und hört eine Minute nach dem Schließen auf. Der Link eines Freundes kostet nichts, solange er offline ist.
 - Änderungen am Profil in TTV-TTS werden mitgeschickt. Die Seite [Live](live) zeigt, was der Stimmen-PC gerade sagt, mit Pause, Überspringen, Leeren und Testnachrichten.
 - Das Proxy-Fenster listet diese Profile auf seiner Seite **OBS-Links**.
+
+![Ein Profil, das der Stimmen-PC abspielt, auf der Seite Live](live-hosted.webp)
+
+![Die Seite OBS-Links des Proxys](proxy-obs.webp)
 
 Was auf dem Gaming-PC bleibt und für diese Profile nicht gilt: [Audio-Plugins](effects#plugins), die [Twitch-Anmeldung](settings#twitch) (Follows und Kanalpunkte-Belohnungen ohne Text), Übersetzen mit DeepL, die Systemstimme als Ersatz, Hotkeys und die [Fernsteuerung](remote-api). Subs, Raids und Cheers werden wie gewohnt angesagt: Sie kommen mit dem Chat.
 

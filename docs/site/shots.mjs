@@ -25,7 +25,7 @@ const L = Object.fromEntries(
 );
 
 const APP = ["live", "profiles", "viewers", "presets", "voices", "host", "settings"];
-const PROXY = ["overview", "connect", "vcp", "internet", "firewall", "log", "settings"];
+const PROXY = ["overview", "connect", "vcp", "obs", "internet", "firewall", "log", "settings"];
 const nav = (i) => async (p) => {
   await p.locator("nav button").nth(i).click();
   await wait(500);
@@ -51,6 +51,11 @@ const card = (selector, pad = 16) => async (p) => {
   return { x, y, width: Math.min(W - x, b.width + 2 * pad), height: Math.min(H - y, b.height + 2 * pad) };
 };
 const dialog = () => card("[role=dialog]", 2);
+/** Where the voices play: 0 sound device, 1 OBS on this PC, 2 through the voice host PC. */
+const output = (i) => async (p) => {
+  await p.locator("[data-output] .inline-flex button").nth(i).click();
+  await wait(2600); // saved after 600 ms, then the card looks again
+};
 
 // name → app, query, steps, optional crop
 const shots = (t) => ({
@@ -60,6 +65,9 @@ const shots = (t) => ({
   profiles: { app: "app", steps: [nav(1)] },
   "profiles-events": { app: "app", steps: [nav(1)], crop: card("main [data-events]") },
   "profiles-translate": { app: "app", steps: [nav(1)], crop: card("main [data-translate]") },
+  "profile-output": { app: "app", q: "obs", steps: [nav(1), output(1)], crop: card("main [data-output]") },
+  "profile-output-host": { app: "app", q: "obs", steps: [nav(1), output(2)], crop: card("main [data-output]") },
+  "live-hosted": { app: "app", q: "obs", steps: [nav(1), output(2), nav(0)], crop: card("main [data-hosted]") },
   viewers: { app: "app", steps: [nav(2)] },
   presets: { app: "app", steps: [nav(3)] },
   "preset-detail": { app: "app", steps: [nav(3), click(t.details)] },
@@ -77,17 +85,18 @@ const shots = (t) => ({
   "proxy-connect": { app: "proxy", steps: [nav(1)] },
   "proxy-pairing": { app: "proxy", steps: [nav(0), click(t.pair)], crop: dialog() },
   "proxy-vcp": { app: "proxy", steps: [nav(2)] },
-  "proxy-internet": { app: "proxy", steps: [nav(3)] },
-  "proxy-firewall": { app: "proxy", steps: [nav(4)] },
-  "proxy-settings": { app: "proxy", steps: [nav(6)] },
+  "proxy-obs": { app: "proxy", q: "obs", steps: [nav(3)] },
+  "proxy-internet": { app: "proxy", steps: [nav(4)] },
+  "proxy-firewall": { app: "proxy", steps: [nav(5)] },
+  "proxy-settings": { app: "proxy", steps: [nav(7)] },
   "proxy-setup": { app: "proxy", q: "setup" },
 });
-if (APP.length !== 7 || PROXY.length !== 7) throw new Error("navigation changed");
+if (APP.length !== 7 || PROXY.length !== 8) throw new Error("navigation changed");
 
 const args = process.argv.slice(2);
 const langArg = args.indexOf("--lang");
 const langs = langArg >= 0 ? [args[langArg + 1]] : ["en", "de"];
-const only = args.filter((a, i) => i !== langArg && i !== langArg + 1);
+const only = langArg >= 0 ? args.filter((_, i) => i !== langArg && i !== langArg + 1) : args;
 
 const serve = async (dir, port) => {
   const s = await createServer({ root: join(root, dir), configFile: join(root, dir, "vite.config.ts"), logLevel: "error", server: { port, strictPort: false } });

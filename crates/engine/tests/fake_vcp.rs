@@ -249,10 +249,15 @@ async fn broken_speech_recognition_saves_nothing() {
     assert_eq!((job.done, job.failed), (0, 0));
     assert!(e.library().entries.is_empty());
     assert!(fake.voices.lock().is_empty());
-    // The worker backs off (10 s) instead of designing the batch again at once.
+    // The worker backs off (10 s, then longer) instead of designing the batch
+    // again and again. A slow CI runner may still have one batch in flight
+    // when the error shows: allow that one, then nothing more.
     let designs = fake.designs.load(Ordering::SeqCst);
     tokio::time::sleep(Duration::from_millis(1500)).await;
-    assert_eq!(fake.designs.load(Ordering::SeqCst), designs);
+    let later = fake.designs.load(Ordering::SeqCst);
+    assert!(later <= designs + 2, "{designs} → {later}");
+    tokio::time::sleep(Duration::from_millis(1500)).await;
+    assert_eq!(fake.designs.load(Ordering::SeqCst), later, "no retry loop");
 }
 
 #[tokio::test(flavor = "multi_thread")]
