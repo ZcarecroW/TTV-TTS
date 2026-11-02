@@ -66,6 +66,20 @@ jobs:
           # A secret (not a variable) so it stays masked in the public logs.
           TTV_TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
 
+      # Uploaded right away: the next build empties some bundle folders
+      # (appimage, dmg). "TTV-TTS_*" etc. don't match "TTV-TTS Proxy…".
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bundles-${{ matrix.name }}-app
+          if-no-files-found: error
+          path: |
+            target/release/bundle/nsis/TTV-TTS_*-setup.exe*
+            target/release/bundle/appimage/TTV-TTS_*.AppImage*
+            target/release/bundle/deb/TTV-TTS_*.deb*
+            target/release/bundle/rpm/TTV-TTS-*.rpm*
+            target/universal-apple-darwin/release/bundle/macos/TTV-TTS.app.tar.gz*
+            target/universal-apple-darwin/release/bundle/dmg/TTV-TTS_*.dmg
+
       - name: Build TTV-TTS Proxy
         working-directory: apps/proxy
         run: npx tauri build ${{ matrix.args }}
@@ -75,20 +89,15 @@ jobs:
 
       - uses: actions/upload-artifact@v7
         with:
-          name: bundles-${{ matrix.name }}
+          name: bundles-${{ matrix.name }}-proxy
           if-no-files-found: error
           path: |
-            target/release/bundle/nsis/*-setup.exe
-            target/release/bundle/nsis/*-setup.exe.sig
-            target/release/bundle/appimage/*.AppImage
-            target/release/bundle/appimage/*.AppImage.sig
-            target/release/bundle/deb/*.deb
-            target/release/bundle/deb/*.deb.sig
-            target/release/bundle/rpm/*.rpm
-            target/release/bundle/rpm/*.rpm.sig
-            target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
-            target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz.sig
-            target/universal-apple-darwin/release/bundle/dmg/*.dmg
+            target/release/bundle/nsis/TTV-TTS Proxy_*-setup.exe*
+            target/release/bundle/appimage/TTV-TTS Proxy_*.AppImage*
+            target/release/bundle/deb/TTV-TTS Proxy_*.deb*
+            target/release/bundle/rpm/TTV-TTS Proxy-*.rpm*
+            target/universal-apple-darwin/release/bundle/macos/TTV-TTS Proxy.app.tar.gz*
+            target/universal-apple-darwin/release/bundle/dmg/TTV-TTS Proxy_*.dmg
 
   publish:
     needs: build
