@@ -2,6 +2,18 @@
 
 All notable changes to TTV-TTS are listed here. Downloads: [Releases](https://github.com/ZcarecroW/TTV-TTS/releases).
 
+## [2.1.0] – 2026-11-02
+
+- **OBS links**: a profile can play its voices in OBS as a browser source instead of on a sound device – a source of its own with fader and filters. The page shows nothing and loads nothing but the voices (about 1 KB). Messages are only generated while OBS is connected.
+- **OBS through the voice host PC**: TTV-TTS Proxy reads the profile's chat itself and sends the voices straight to OBS; the gaming PC does nothing for it and TTV-TTS may be closed. It reads only while OBS has the link open. The Live page shows it live, with pause, skip, clear and test messages; the proxy window lists the links.
+- **Lend your voices to a friend**: an OBS link that also works from the internet (DuckDNS name, one forwarded port) – your friend pastes it into OBS, nothing to install. Links are 16 random characters; addresses that guess wrong are locked out.
+- **Voice effects on the voice host PC** (default with TTV-TTS Proxy): the proxy applies the effect and loudness correction while generating; the gaming PC only plays.
+- **Ready-made voices for several presets at once**, and all built-in presets are being computed in all ten languages for download.
+- **The built-in Twitch login works out of the box** (the release carries its own Twitch application); using your own Twitch application is explained step by step.
+- **Learn more** links to the documentation next to every complex setting, in the app and the proxy; a list of free VST3 and CLAP plugins with ideas for voices.
+- Quality check: with many languages, a voice is compared with the median of its languages, so one odd version no longer flags the others. A voice whose takes only fail the speech check (whispers) keeps its best take instead of failing.
+- The chat reader is shared by the app and the proxy (one code path); the app's installed frontend is half the size; debug build caches stay small.
+
 ## [2.0.0] – 2026-11-02
 
 TTV-TTS is now a desktop app for Windows, macOS and Linux – plus the TTV-TTS Proxy for a second PC with Voice Creator Pro. The OBS browser source of 1.x keeps working at its old address.

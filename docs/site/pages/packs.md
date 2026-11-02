@@ -10,6 +10,8 @@ Computing a preset takes time on your graphics card. A **voice pack** (`.ttvpack
 
 Many built-in presets can be downloaded ready-made: click **Get** on a preset. TTV-TTS shows how many voices it would add per language and how many you have already. The voices were computed with Voice Creator Pro by TTV-TTS, with the [quality check](presets#quality); they are downloaded from GitHub and saved in your Voice Creator Pro – a few megabytes and about a minute, instead of hours.
 
+**Presets → Ready-made voices …** gets them for several presets at once: choose the presets, the languages and how many voices per preset (the first 30, 60, 120 or all 240). Every built-in preset is being computed in all ten languages and added to the list as it's done. Each voice is saved in Voice Creator Pro, a few seconds per voice in pauses between chat messages, so start with the presets and languages you really use.
+
 ## Share voices {#export}
 
 On a preset's **Voices** dialog, **Share voices** saves a pack with the preset and the lossless samples of its computed voices. **Select** lets you pick single voices in one language to share just those. TTV-TTS shows the size before saving.
