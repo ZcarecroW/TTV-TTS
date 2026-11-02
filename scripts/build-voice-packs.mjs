@@ -168,3 +168,5 @@ for (const p of packs) {
 console.log(`${packs.length - skipped} packs uploaded, ${skipped} unchanged`);
 gh("release", "upload", TAG, "-R", repo, "--clobber", join(out, "catalog.json"), join(out, "catalog-v2.json"));
 console.log("published", statSync(join(out, "catalog-v2.json")).size, "byte catalog");
+// the debugging connection to the app (TTV_VIA_APP) would keep Node running
+process.exit(0);
