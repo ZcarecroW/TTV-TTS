@@ -505,7 +505,7 @@ async fn let_me_pick_keeps_the_takes_until_one_is_chosen() {
     // choosing makes it the voice; the old one is deleted in VCP
     let chosen = e.choose_take(&key, 1).await.unwrap();
     assert_ne!(chosen.voice_id, "voice_old");
-    assert_eq!(e.library().entries.iter().filter(|x| x.key == key).map(|x| x.voice_id.clone()).collect::<Vec<_>>(), [chosen.voice_id.clone()]);
+    assert_eq!(e.library().entries.iter().filter(|x| x.key == key).map(|x| x.voice_id.clone()).collect::<Vec<_>>(), std::slice::from_ref(&chosen.voice_id));
     assert!(!fake.voices.lock().contains_key("voice_old"));
     assert!(e.takes().is_empty() && e.take_wav(&key, 1).is_none());
     // again, but keep the voice: nothing changes
