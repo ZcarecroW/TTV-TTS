@@ -34,7 +34,9 @@ Tipp auf der Seite **Live** unter **Testnachricht** etwas ein und klick auf **Se
 
 ## 4. In OBS {#obs}
 
-TTV-TTS spielt auf dem Ausgabegerät unter **Einstellungen → Ton** (normalerweise der Systemstandard). OBS hört es auf eine von zwei Arten:
+Am einfachsten: ein **[OBS-Link](obs)**. Stell beim Profil **Wo die Stimmen spielen** auf **OBS auf diesem PC** (oder **OBS über den Stimmen-PC**), kopier den Link und füg ihn in OBS als *Browser*-Quelle mit angehaktem **Audio über OBS steuern** hinzu. Die Stimmen sind dann eine eigene Quelle im Mixer von OBS.
+
+Oder TTV-TTS spielt auf dem Ausgabegerät unter **Einstellungen → Ton** (normalerweise der Systemstandard), und OBS hört es auf eine von zwei Arten:
 
 - **Desktop-Audio** – nimmt OBS dein Standard-Ausgabegerät auf, ist TTV-TTS schon im Stream.
 - **Anwendungsaudioaufnahme** (OBS 28+, Windows 10 2004+): Füg eine Quelle *Anwendungsaudioaufnahme* hinzu und wähl TTV-TTS. Dann kannst du die Lautstärke getrennt mischen.

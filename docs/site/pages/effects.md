@@ -4,7 +4,14 @@ description: Radio, robot, cave – built-in voice effects, and your own VST3 an
 icon: Bolt
 ---
 
-TTV-TTS plays effects itself, after Voice Creator Pro has spoken – the voice stays clean, and effects cost no time on the voice host.
+Effects are applied after Voice Creator Pro has spoken, so the voice itself stays clean and every effect works with every voice.
+
+## Where effects are applied {#where}
+
+- **With TTV-TTS Proxy on a second PC**, the voice host PC applies the built-in effects (and each voice's loudness correction) right after generating the voice. Your gaming PC only plays what arrives. That's the default: **Settings → Sound → Voice effects on the voice host PC**. Switch it off to apply them on this PC instead.
+- **With Voice Creator Pro on this PC** (or a friend's voice host), this PC applies them. They cost a few milliseconds per sentence.
+- **Audio plugins** (VST3, CLAP) always run on the PC where TTV-TTS runs, because that's where they're installed.
+- **[OBS links through the voice host PC](obs#host)** do everything on the voice host PC.
 
 ## Built-in voice effects {#builtin}
 

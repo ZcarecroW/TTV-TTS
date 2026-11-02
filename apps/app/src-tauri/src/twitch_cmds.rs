@@ -8,7 +8,7 @@ use tauri::Emitter;
 use tauri_plugin_opener::OpenerExt;
 
 use crate::state::AppState;
-use crate::twitch::account::{self, AppTokens, BUILT_IN_CLIENT_ID, PendingLogin, Poll, TokenSet, TwitchStatus};
+use crate::twitch::account::{self, AppTokens, PendingLogin, Poll, TokenSet, TwitchStatus};
 use crate::twitch::eventsub::{self, Live};
 
 type St<'a> = tauri::State<'a, Arc<AppState>>;
@@ -19,7 +19,7 @@ pub fn client_id(state: &AppState) -> Option<String> {
     if !own.is_empty() {
         return Some(own);
     }
-    BUILT_IN_CLIENT_ID.map(str::trim).filter(|s| !s.is_empty()).map(str::to_string)
+    crate::twitch::account::built_in_client_id()
 }
 
 fn status(state: &AppState) -> TwitchStatus {

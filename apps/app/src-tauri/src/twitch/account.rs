@@ -13,9 +13,21 @@ use serde::{Deserialize, Serialize};
 /// Follows need a moderator scope (the streamer is their own moderator).
 pub const SCOPES: &[&str] = &["moderator:read:followers", "channel:read:redemptions"];
 
-/// Built in by release builds (`TTV_TWITCH_CLIENT_ID`, the CI secret); a
-/// streamer can also enter the client ID of their own Twitch application.
-pub const BUILT_IN_CLIENT_ID: Option<&str> = option_env!("TTV_TWITCH_CLIENT_ID");
+// `SCRAMBLED`: the client ID of release builds, scrambled by build.rs.
+include!(concat!(env!("OUT_DIR"), "/twitch_id.rs"));
+
+/// The client ID built into this release (a streamer can also enter the one
+/// of their own Twitch application). Unscrambled on first use only; never
+/// logged or shown.
+pub fn built_in_client_id() -> Option<String> {
+    static ID: std::sync::OnceLock<Option<String>> = std::sync::OnceLock::new();
+    ID.get_or_init(|| {
+        // black_box: the compiler must not work the ID out at build time
+        let (blob, seed) = std::hint::black_box(SCRAMBLED)?;
+        super::scramble::unscramble(std::hint::black_box(blob), std::hint::black_box(seed)).filter(|s| !s.trim().is_empty())
+    })
+    .clone()
+}
 
 pub const TOKEN_KEY: &str = "twitch-token";
 

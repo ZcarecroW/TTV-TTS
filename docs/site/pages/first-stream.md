@@ -34,7 +34,9 @@ On the **Live** page, type something under **Test message** and click **Send**. 
 
 ## 4. Into OBS {#obs}
 
-TTV-TTS plays on the output device under **Settings → Sound** (normally your system's default). OBS hears it in one of two ways:
+The easiest way: an **[OBS link](obs)**. Set the profile's **Where the voices play** to **OBS on this PC** (or **OBS through the voice host PC**), copy the link and add it in OBS as a *Browser* source with **Control audio via OBS** ticked. The voices are then a source of their own in OBS's mixer.
+
+Or TTV-TTS plays on the output device under **Settings → Sound** (normally your system's default), and OBS hears it in one of two ways:
 
 - **Desktop audio** – if OBS records your default output device, TTV-TTS is in the stream already.
 - **Application Audio Capture** (OBS 28+, Windows 10 2004+): add a source *Application Audio Capture* and choose TTV-TTS. Then you can mix its volume separately.

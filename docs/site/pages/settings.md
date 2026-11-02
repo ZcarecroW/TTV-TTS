@@ -8,9 +8,10 @@ icon: Gear
 
 ## Sound {#sound}
 
-- **Output device** – where TTV-TTS plays. *System default* follows your system; choose a virtual cable to send TTV-TTS only to OBS (see [Into OBS](first-stream#obs)).
+- **Output device** – where TTV-TTS plays. *System default* follows your system. To give the voices their own OBS source, use an [OBS link](obs) instead of a virtual cable.
 - **Volume** – also settable from chat with `!ttsvol` ([mod commands](profiles#mod-commands)).
 - **Pause between messages** – a short breath between two messages.
+- **Voice effects on the voice host PC** (with TTV-TTS Proxy) – the voice host applies the effects, this PC only plays (see [Effects](effects#where)).
 
 ## Speech generation {#generation}
 

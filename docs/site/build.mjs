@@ -38,7 +38,7 @@ const RELEASE = `${REPO}/releases/download/v${VERSION}`;
 // Sidebar: the order of the pages per section; the section titles are in i18n.mjs.
 const NAV = [
   ["introduction", "installation", "voice-host", "first-stream"],
-  ["live", "profiles", "viewers", "presets", "voices", "packs", "effects", "settings"],
+  ["live", "profiles", "obs", "viewers", "presets", "voices", "packs", "effects", "settings"],
   ["proxy", "firewall", "friends"],
   ["remote-api", "troubleshooting", "faq", "privacy", "from-v1", "changelog", "building"],
 ];

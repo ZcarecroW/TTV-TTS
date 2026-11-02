@@ -8,9 +8,10 @@ icon: Gear
 
 ## Ton {#sound}
 
-- **Ausgabegerät** – wo TTV-TTS spielt. *Systemstandard* folgt deinem System; wähl ein virtuelles Kabel, um TTV-TTS nur an OBS zu schicken (siehe [In OBS](first-stream#obs)).
+- **Ausgabegerät** – wo TTV-TTS spielt. *Systemstandard* folgt deinem System. Sollen die Stimmen eine eigene OBS-Quelle sein, nimm statt eines virtuellen Kabels einen [OBS-Link](obs).
 - **Lautstärke** – auch aus dem Chat mit `!ttsvol` ([Mod-Befehle](profiles#mod-commands)).
 - **Pause zwischen Nachrichten** – ein kurzes Durchatmen zwischen zwei Nachrichten.
+- **Stimmeffekte auf dem Stimmen-PC** (mit TTV-TTS Proxy) – der Stimmen-Host wendet die Effekte an, dieser PC spielt nur ab (siehe [Effekte](effects#where)).
 
 ## Spracherzeugung {#generation}
 

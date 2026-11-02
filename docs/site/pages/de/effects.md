@@ -4,7 +4,14 @@ description: Radio, Roboter, Höhle – eingebaute Stimmeffekte und deine eigene
 icon: Bolt
 ---
 
-TTV-TTS spielt Effekte selbst ab, nachdem Voice Creator Pro gesprochen hat – die Stimme bleibt sauber, und Effekte kosten auf dem Stimmen-Host keine Zeit.
+Effekte kommen hinzu, nachdem Voice Creator Pro gesprochen hat. Die Stimme selbst bleibt also sauber, und jeder Effekt passt zu jeder Stimme.
+
+## Wo Effekte angewendet werden {#where}
+
+- **Mit TTV-TTS Proxy auf einem zweiten PC** wendet der Stimmen-PC die eingebauten Effekte (und die Lautstärkeanpassung jeder Stimme) gleich nach dem Erzeugen der Stimme an. Dein Gaming-PC spielt nur ab, was ankommt. Das ist die Voreinstellung: **Einstellungen → Ton → Stimmeffekte auf dem Stimmen-PC**. Schalte es aus, um sie stattdessen auf diesem PC anzuwenden.
+- **Mit Voice Creator Pro auf diesem PC** (oder dem Stimmen-Host eines Freundes) wendet dieser PC sie an. Sie kosten ein paar Millisekunden pro Satz.
+- **Audio-Plugins** (VST3, CLAP) laufen immer auf dem PC, auf dem TTV-TTS läuft, weil sie dort installiert sind.
+- **[OBS-Links über den Stimmen-PC](obs#host)** erledigen alles auf dem Stimmen-PC.
 
 ## Eingebaute Stimmeffekte {#builtin}
 
