@@ -83,7 +83,8 @@ impl Default for Config {
             restart_when_slow: true,
             http_port: 0,
             autostart: true,
-            update_channel: "preview".into(),
+            // preview builds follow the previews, releases the releases
+            update_channel: if env!("CARGO_PKG_VERSION").contains('-') { "preview" } else { "stable" }.into(),
             auto_update: true,
             language: "system".into(),
             theme: "system".into(),

@@ -1,0 +1,139 @@
+name: Release
+
+# A tag v<version> (the version in Cargo.toml, no pre-release suffix) builds
+# TTV-TTS and TTV-TTS Proxy for Windows, macOS and Linux, signs the updates,
+# and publishes them as one release with an update manifest per app.
+# Previews don't come from here: scripts/publish-preview.mjs.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            name: windows
+            args: ""
+          - os: macos-latest
+            name: macos
+            args: "--target universal-apple-darwin"
+          - os: ubuntu-22.04
+            name: linux
+            args: ""
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: The tag matches the version
+        shell: bash
+        run: |
+          want=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)
+          if [ "v$want" != "$GITHUB_REF_NAME" ]; then echo "::error::Tag $GITHUB_REF_NAME, but Cargo.toml says $want."; exit 1; fi
+          case "$want" in *-*) echo "::error::Pre-releases are published with scripts/publish-preview.mjs."; exit 1;; esac
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.name == 'macos' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: swatinem/rust-cache@v2
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev libasound2-dev patchelf
+
+      - run: npm ci
+
+      - name: Build TTV-TTS
+        working-directory: apps/app
+        run: npx tauri build ${{ matrix.args }}
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+          # A secret (not a variable) so it stays masked in the public logs.
+          TTV_TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
+
+      - name: Build TTV-TTS Proxy
+        working-directory: apps/proxy
+        run: npx tauri build ${{ matrix.args }}
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: bundles-${{ matrix.name }}
+          if-no-files-found: error
+          path: |
+            target/release/bundle/nsis/*-setup.exe
+            target/release/bundle/nsis/*-setup.exe.sig
+            target/release/bundle/appimage/*.AppImage
+            target/release/bundle/appimage/*.AppImage.sig
+            target/release/bundle/deb/*.deb
+            target/release/bundle/rpm/*.rpm
+            target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz
+            target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz.sig
+            target/universal-apple-darwin/release/bundle/dmg/*.dmg
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: bundles-*
+          path: dl
+
+      - name: Name the assets, write the update manifests
+        run: node scripts/release-assets.mjs "${GITHUB_REF_NAME#v}" dl out
+
+      # Installed apps only accept updates signed with the key behind the
+      # pubkey in their tauri.conf.json; anything else would break every update.
+      - name: Check the updater signatures
+        run: |
+          key_id() { base64 -d <<< "$1" | sed -n 2p | base64 -d | head -c 10 | tail -c 8 | od -An -tx1 | tr -d ' \n'; }
+          for pair in "apps/app:latest.json" "apps/proxy:latest-proxy.json"; do
+            conf="${pair%%:*}/src-tauri/tauri.conf.json"; manifest="out/${pair##*:}"
+            want=$(key_id "$(jq -r .plugins.updater.pubkey "$conf")")
+            for sig in $(jq -r '.platforms[].signature' "$manifest"); do
+              got=$(key_id "$sig")
+              if [ "$got" != "$want" ]; then echo "::error::$manifest: signed with key $got, but installed apps trust $want."; exit 1; fi
+            done
+            echo "$manifest: $(jq '.platforms | length' "$manifest") updates signed with key $want."
+          done
+
+      - name: Release (installers first, the manifests make it live)
+        run: |
+          notes="docs/release-notes/$GITHUB_REF_NAME.md"
+          [ -f "$notes" ] || { echo "::error::$notes is missing."; exit 1; }
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft --title "TTV-TTS ${GITHUB_REF_NAME#v}" --notes-file "$notes" $(ls out/* | grep -v '\.json$')
+          gh release upload "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" out/latest.json out/latest-proxy.json
+          gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+
+      # Copies on the preview channel get the release too (until the next preview).
+      - name: Point the preview channel at the release
+        run: |
+          if gh release view preview --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release upload preview --repo "$GITHUB_REPOSITORY" --clobber out/latest.json out/latest-proxy.json
+          fi

@@ -128,7 +128,8 @@ impl Default for Config {
             audio: AudioConfig::default(),
             language: "system".into(),
             theme: "system".into(),
-            update_channel: "preview".into(),
+            // preview builds follow the previews, releases the releases
+            update_channel: if env!("CARGO_PKG_VERSION").contains('-') { "preview" } else { "stable" }.into(),
             setup_done: false,
             translate_email: String::new(),
             hotkeys: Default::default(),

@@ -28,7 +28,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis", "app", "dmg"],
+    "targets": ["nsis", "app", "dmg", "appimage", "deb", "rpm"],
     "createUpdaterArtifacts": true,
     "publisher": "ZcarecroW",
     "copyright": "© 2026 ZcarecroW – MIT License",
