@@ -466,5 +466,57 @@
     "file": "grand-stage-de.mp3"
    }
   ]
+ },
+ {
+  "preset": "quest-givers",
+  "name": {
+   "en": "Quest Givers",
+   "de": "Quest Givers"
+  },
+  "desc": {
+   "en": "Village elders, merchants, guild masters, mysterious strangers and every NPC with a task for you",
+   "de": "Händler, Dorfälteste, Wachen und Auftraggeber aus Rollenspielen"
+  },
+  "icon": "Atlas",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Elder Thorvin",
+    "text": "Ah, adventurer! Bring me ten wolf pelts and I shall reward you handsomely.",
+    "file": "quest-givers-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Merchant Saffi",
+    "text": "Ah, Abenteurer! Bring mir zehn Wolfsfelle, und ich werde dich reich belohnen.",
+    "file": "quest-givers-de.mp3"
+   }
+  ]
+ },
+ {
+  "preset": "calm-and-cozy",
+  "name": {
+   "en": "Calm & Cozy",
+   "de": "Calm & Cozy"
+  },
+  "desc": {
+   "en": "Soft, soothing, unhurried voices for chill streams, rainy evenings and late-night chats",
+   "de": "Sanfte, beruhigende Stimmen für entspannte Streams, Regenabende und späte Chats"
+  },
+  "icon": "Mug",
+  "clips": [
+   {
+    "lang": "en",
+    "voice": "Willow Hart",
+    "text": "Take a breath, grab some tea, and enjoy the rain with us tonight.",
+    "file": "calm-and-cozy-en.mp3"
+   },
+   {
+    "lang": "de",
+    "voice": "Elias Brooke",
+    "text": "Atme tief durch, hol dir einen Tee und genieß heute Abend mit uns den Regen.",
+    "file": "calm-and-cozy-de.mp3"
+   }
+  ]
  }
 ]
