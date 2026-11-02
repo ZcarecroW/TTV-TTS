@@ -1,6 +1,7 @@
 // Demo backend for the browser (UI development, tests, docs screenshots).
 // `?setup` shows the first-start assistant, `?nohost` an app without voice host,
 // `?guest` an app that uses a friend's voice host over the internet.
+import { demoFriends, type InternetPatch } from "@ttv-tts/ui/friends";
 import type { AppView, Found, Probe, SystemStats, Voice } from "./api";
 import { presetCommand } from "./demo-presets";
 import { readerCommand, updateCommand } from "./demo-reader";
@@ -92,23 +93,7 @@ const state: AppView = {
 };
 
 // Internet access of the demo proxy (friends).
-const internet = {
-  enabled: false,
-  port: 8111,
-  listening: false,
-  error: null as string | null,
-  domain: "",
-  duckdns_token: false,
-  duckdns_at: null as number | null,
-  duckdns_result: null as string | null,
-  public_ip: "203.0.113.42" as string | null,
-  test_at: null as number | null,
-  reachable: null as boolean | null,
-  address: "203.0.113.42:8111",
-  invites: [] as { id: string; name: string; created: number; expires: number; chars_per_day: number }[],
-  guests: [{ id: "g1", name: "Mia", chars_today: 12400, chars_per_day: 30000, joined: now() - 3 * 86400, last_seen: now() - 40, last_address: "198.51.100.7", total_chars: 88000 }],
-  connections: 1,
-};
+const internet = demoFriends();
 
 const voices: Voice[] = [
   ["TTS-de 01 Konrad (Trailer-Erzähler)", "design"],
@@ -172,32 +157,17 @@ export async function demoInvoke<T>(cmd: string, input: Record<string, unknown> 
     case "probe_proxy":
       return r({ address: String(args.address), info: proxyInfo, fingerprint: proxyInfo.fingerprint, fingerprint_short: "3F9A-0C12-77DE-41B0" } satisfies Probe);
     case "internet_status":
-      return r(structuredClone(internet));
-    case "internet_set": {
-      const p = args.patch as { enabled?: boolean; domain?: string; token?: string };
-      if (p.enabled !== undefined) Object.assign(internet, { enabled: p.enabled, listening: p.enabled });
-      if (p.domain !== undefined) {
-        internet.domain = p.domain.replace(/\.duckdns\.org$/, "");
-        if (p.token) internet.duckdns_token = true;
-        if (internet.duckdns_token) Object.assign(internet, { duckdns_at: now(), duckdns_result: "OK", address: `${internet.domain}.duckdns.org:8111` });
-      }
-      return r(structuredClone(internet));
-    }
+      return r(await internet.status());
+    case "internet_set":
+      return r(await internet.set(args.patch as InternetPatch));
     case "internet_test":
-      await new Promise((res) => setTimeout(res, 500));
-      Object.assign(internet, { test_at: now(), reachable: true });
-      return r({ reachable: true });
-    case "internet_invite": {
-      const inv = { id: `i${internet.invites.length + 1}`, name: String(args.name), created: now(), expires: now() + Number(args.days) * 86400, chars_per_day: Number(args.charsPerDay) };
-      internet.invites.push(inv);
-      return r({ invite: inv, code: "ttv1:eyJhZGRyZXNzIjoibXktc3RyZWFtLmR1Y2tkbnMub3JnOjgxMTEiLCJmaW5nZXJwcmludCI6ImRlbW8ifQ" });
-    }
+      return r(await internet.test());
+    case "internet_invite":
+      return r(await internet.invite(String(args.name), Number(args.days), Number(args.charsPerDay), (args.address as string) ?? null));
     case "internet_withdraw":
-      internet.invites = internet.invites.filter((i) => i.id !== args.id);
-      return r(null);
+      return r(await internet.withdraw(String(args.id)));
     case "internet_revoke":
-      internet.guests = internet.guests.filter((g) => g.id !== args.id);
-      return r(null);
+      return r(await internet.revoke(String(args.id)));
     case "read_invite":
       if (!String(args.code).trim().startsWith("ttv1:") || String(args.code).trim().length < 20) throw "This isn't a TTV-TTS invite code (it starts with ttv1:).";
       return r({ host: "ALEX-PC", address: "alex-stream.duckdns.org:8111" });

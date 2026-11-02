@@ -1,3 +1,5 @@
+import { friendsDe, friendsTipsDe } from "@ttv-tts/ui/i18n/friends";
+
 import type en from "./en";
 
 const de: typeof en = {
@@ -32,6 +34,7 @@ const de: typeof en = {
     recommended: "empfohlen",
   },
   nav: {
+    internet: "Internet",
     overview: "Übersicht",
     connect: "Apps & Koppeln",
     vcp: "Voice Creator Pro",
@@ -304,7 +307,9 @@ const de: typeof en = {
     finish: "Fertig",
     pairNow: "Jetzt Gerät koppeln",
   },
+  friends: friendsDe,
   tips: {
+    ...friendsTipsDe,
     keyMode: "„Schlüssel von VCP“: Apps senden denselben Schlüssel, den Voice Creator Pro nutzt – ein Schlüssel für alles.\n„Eigener Schlüssel“: Der Proxy hat einen separaten Schlüssel, VCPs Schlüssel verlässt diesen PC nie. Gekoppelte Geräte nutzen in beiden Fällen ihr eigenes Token.",
     discovery: "TTV-TTS schickt eine kurze Frage ins Netzwerk (UDP-Port {port}), und der Proxy antwortet mit Name und Adresse. Dabei wird nichts Geheimes übertragen; zum Koppeln braucht es trotzdem den Code.",
     httpPort: "Der Proxy spricht normalerweise nur verschlüsselt (HTTPS). Manche älteren Tools – etwa die Browserquelle von TTV-TTS 1.x – kommen mit dem eigenen Zertifikat des Proxys nicht klar. Dieser optionale zweite Port nimmt unverschlüsselte Verbindungen an; der Schlüssel ist trotzdem nötig. Lass ihn aus, wenn du ihn nicht brauchst.",

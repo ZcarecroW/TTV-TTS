@@ -162,7 +162,8 @@ impl Guests {
         s.invites.retain(|i| i.expires > now);
         s.invites.push(inv);
         self.save(&s);
-        log::info!("invite for \"{}\" created (valid {} days)", v.name, days.clamp(1, 30));
+        let d = days.clamp(1, 30);
+        log::info!("invite for \"{}\" created (valid {d} day{})", v.name, if d == 1 { "" } else { "s" });
         (v, secret)
     }
 
@@ -725,7 +726,10 @@ pub async fn run(state: Arc<AppState>) {
                 tokio::select! {
                     _ = accept(l4, state.clone()) => {}
                     _ = six => {}
-                    _ = state.internet_rebind.notified() => log::info!("internet access: restarting"),
+                    _ = state.internet_rebind.notified() => {
+                        let on = state.cfg.read().internet;
+                        log::info!("internet access {}", if on { "restarts (settings changed)" } else { "off" });
+                    }
                 }
             }
             Err(e) => {

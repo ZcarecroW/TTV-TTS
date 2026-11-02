@@ -10,6 +10,8 @@
     "./theme": "./src/theme.ts",
     "./format": "./src/format.ts",
     "./clipboard": "./src/clipboard.ts",
+    "./friends": "./src/friends.ts",
+    "./i18n/*": "./src/i18n/*.ts",
     "./components/*": "./src/components/*"
   },
   "peerDependencies": {

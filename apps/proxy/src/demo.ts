@@ -1,6 +1,7 @@
 // Demo backend for the browser (UI development, tests, docs screenshots).
 // `?setup` shows the first-start assistant, `?problems` a broken setup.
 // All keys here are made up.
+import { demoFriends, type InternetPatch } from "@ttv-tts/ui/friends";
 import type { Config, FirewallStatus, LogLine, Overview, SystemStats } from "./api";
 
 const params = new URLSearchParams(location.search);
@@ -140,6 +141,8 @@ function system(): SystemStats {
   };
 }
 
+const internet = demoFriends();
+
 export async function demoInvoke<T>(cmd: string, args: Record<string, unknown> = {}): Promise<T> {
   await new Promise((r) => setTimeout(r, 60));
   const r = (v: unknown) => v as T;
@@ -211,6 +214,18 @@ export async function demoInvoke<T>(cmd: string, args: Record<string, unknown> =
       return r(structuredClone(overview));
     case "diagnostics":
       return r({ demo: true });
+    case "internet_status":
+      return r(await internet.status());
+    case "set_internet":
+      return r(await internet.set(args.patch as InternetPatch));
+    case "test_internet":
+      return r((await internet.test()).reachable);
+    case "create_invite":
+      return r(await internet.invite(String(args.name), Number(args.days), Number(args.charsPerDay), (args.address as string) ?? null));
+    case "withdraw_invite":
+      return r(await internet.withdraw(String(args.id)));
+    case "revoke_guest":
+      return r(await internet.revoke(String(args.id)));
   }
   throw new Error(`demo: unknown command ${cmd}`);
 }

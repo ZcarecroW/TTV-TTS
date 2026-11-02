@@ -1,15 +1,23 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import UiTip from "@ttv-tts/ui/components/UiTip.vue";
-import UiToggle from "@ttv-tts/ui/components/UiToggle.vue";
-import { copyText } from "@ttv-tts/ui/clipboard";
-import { ago } from "@ttv-tts/ui/format";
-import { Copy, Globe, Lock, Plus, ShieldCheck, Spinner, Trash, Users, X } from "@ttv-tts/ui/icons";
-import { friends, type InternetStatus } from "../api";
-import { run, store, toast } from "../store";
+import UiTip from "./UiTip.vue";
+import UiToggle from "./UiToggle.vue";
+import { copyText } from "../clipboard";
+import { ago } from "../format";
+import { Copy, Globe, Lock, Plus, ShieldCheck, Spinner, Trash, Users, X } from "../icons";
+import type { FriendsApi, InternetStatus } from "../friends";
 
-// Friends use this proxy's voices over the internet (guest API on its own port).
+// Friends use a proxy's voices over the internet (guest API on its own port).
+// Shown in the app (for the paired proxy) and in the proxy window itself.
+const props = defineProps<{
+  api: FriendsApi;
+  /** the window's busy marker and helpers (toasts, errors) */
+  busy: string;
+  run: <T>(name: string, fn: () => Promise<T>) => Promise<T | undefined>;
+  toast: (kind: "ok" | "err" | "info", text: string) => void;
+}>();
+const { api: friends, run, toast } = props;
 const { t, locale } = useI18n();
 const s = ref<InternetStatus | null>(null);
 const error = ref("");
@@ -104,7 +112,7 @@ const duckLine = computed(() => {
     <p v-if="error" class="text-sm text-muted">{{ error }}</p>
     <template v-else-if="s">
       <p class="muted mb-3 text-sm">{{ t("friends.intro") }}</p>
-      <UiToggle :model-value="s.enabled" :disabled="store.busy === 'internet'" :label="t('friends.enable')" :hint="t('friends.enableHint', { port: s.port })" @update:model-value="toggle" />
+      <UiToggle :model-value="s.enabled" :disabled="busy === 'internet'" :label="t('friends.enable')" :hint="t('friends.enableHint', { port: s.port })" @update:model-value="toggle" />
       <p v-if="s.error" class="mt-2 text-sm text-err">{{ s.error }}</p>
 
       <div v-if="s.enabled" class="mt-5 space-y-5">
@@ -114,7 +122,7 @@ const duckLine = computed(() => {
           <div class="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
             <div class="flex items-center gap-1"><input v-model="domain" class="input mono" :placeholder="t('friends.domainPlaceholder')" /><span class="shrink-0 text-sm text-muted">.duckdns.org</span></div>
             <input v-model="token" type="password" autocomplete="off" class="input mono" :placeholder="s.duckdns_token ? t('friends.tokenStored') : t('friends.tokenPlaceholder')" />
-            <button class="btn" :disabled="store.busy === 'duckdns' || !domain.trim()" @click="saveName"><Spinner v-if="store.busy === 'duckdns'" :size="14" class="spin" />{{ t("common.save") }}</button>
+            <button class="btn" :disabled="busy === 'duckdns' || !domain.trim()" @click="saveName"><Spinner v-if="busy === 'duckdns'" :size="14" class="spin" />{{ t("common.save") }}</button>
           </div>
           <p class="hint mt-1.5">{{ duckLine || t("friends.duckHint") }}</p>
         </div>
@@ -132,7 +140,7 @@ const duckLine = computed(() => {
 
         <!-- 3. check -->
         <div class="flex flex-wrap items-center gap-3">
-          <button class="btn btn-sm" :disabled="store.busy === 'internetTest'" @click="test"><Spinner v-if="store.busy === 'internetTest'" :size="14" class="spin" /><Globe v-else :size="14" />3 · {{ t("friends.test") }}</button>
+          <button class="btn btn-sm" :disabled="busy === 'internetTest'" @click="test"><Spinner v-if="busy === 'internetTest'" :size="14" class="spin" /><Globe v-else :size="14" />3 · {{ t("friends.test") }}</button>
           <span v-if="s.test_at" class="text-sm" :class="s.reachable ? 'text-ok' : 'text-warn'">{{ s.reachable ? t("friends.reachableShort", { address: s.address }) : t("friends.unreachableShort") }} · {{ ago(s.test_at, locale) }}</span>
           <UiTip :text="t('tips.internetTest')" />
         </div>
@@ -152,7 +160,7 @@ const duckLine = computed(() => {
               <option :value="30000">{{ t("friends.perDay", { n: "30k" }) }}</option>
               <option :value="100000">{{ t("friends.perDay", { n: "100k" }) }}</option>
             </select>
-            <button class="btn btn-primary" :disabled="!inviteName.trim() || store.busy === 'invite'" @click="invite"><Plus :size="15" />{{ t("friends.invite") }}</button>
+            <button class="btn btn-primary" :disabled="!inviteName.trim() || busy === 'invite'" @click="invite"><Plus :size="15" />{{ t("friends.invite") }}</button>
           </div>
           <details class="mt-1.5 text-xs text-muted">
             <summary class="cursor-pointer">{{ t("friends.viaTitle") }}</summary>

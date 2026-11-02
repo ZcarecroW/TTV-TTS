@@ -5,9 +5,9 @@ import UiStat from "@ttv-tts/ui/components/UiStat.vue";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { Bolt, Download, Link, Microchip, Play, Power, Ram, Refresh, Server, Temperature, Waveform } from "@ttv-tts/ui/icons";
 import { bytes } from "@ttv-tts/ui/format";
-import { api } from "../api";
+import { api, friends } from "../api";
 import HostSetup from "../components/HostSetup.vue";
-import FriendsCard from "../components/FriendsCard.vue";
+import FriendsCard from "@ttv-tts/ui/components/FriendsCard.vue";
 import { apply, config, guest, host, run, store, toast } from "../store";
 
 const { t, locale } = useI18n();
@@ -126,7 +126,7 @@ async function forget() {
       </div>
 
       <p v-if="guest" class="notice notice-info text-sm">{{ t("host.guestNote", { name: cfg.kind === "proxy" ? cfg.name : "" }) }}</p>
-      <FriendsCard v-if="h.kind === 'proxy' && h.connected && !guest" />
+      <FriendsCard v-if="h.kind === 'proxy' && h.connected && !guest" :api="friends" :busy="store.busy" :run="run" :toast="toast" />
       <section v-if="h.kind === 'proxy' && h.connected && !guest" class="card p-5">
         <div class="card-head"><Microchip />{{ t("host.systemTitle") }}</div>
         <div v-if="store.hostSystem" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">

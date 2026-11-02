@@ -3,7 +3,7 @@ import { api, errText, listen, type Config, type FirewallStatus, type Overview, 
 import { i18n, setLocale } from "./i18n";
 import { setTheme } from "@ttv-tts/ui/theme";
 
-export type View = "overview" | "connect" | "vcp" | "firewall" | "log" | "settings";
+export type View = "overview" | "connect" | "vcp" | "internet" | "firewall" | "log" | "settings";
 
 export const store = reactive({
   ov: null as Overview | null,

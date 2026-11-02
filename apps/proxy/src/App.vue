@@ -2,12 +2,13 @@
 import { computed, type Component } from "vue";
 import { useI18n } from "vue-i18n";
 import TipLayer from "@ttv-tts/ui/components/TipLayer.vue";
-import { CircleCheck, CircleX, Console, Devices, Gauge, Gear, CircleInfo, ShieldCheck, Waveform } from "@ttv-tts/ui/icons";
+import { CircleCheck, CircleX, Console, Devices, Gauge, Gear, CircleInfo, ShieldCheck, Waveform, Globe } from "@ttv-tts/ui/icons";
 import logo from "./assets/logo.svg";
 import { store, problems, status, config, type View } from "./store";
 import OverviewView from "./views/OverviewView.vue";
 import ConnectView from "./views/ConnectView.vue";
 import VcpView from "./views/VcpView.vue";
+import InternetView from "./views/InternetView.vue";
 import FirewallView from "./views/FirewallView.vue";
 import LogView from "./views/LogView.vue";
 import SettingsView from "./views/SettingsView.vue";
@@ -20,6 +21,7 @@ const views: Record<View, Component> = {
   overview: OverviewView,
   connect: ConnectView,
   vcp: VcpView,
+  internet: InternetView,
   firewall: FirewallView,
   log: LogView,
   settings: SettingsView,
@@ -35,6 +37,7 @@ const nav = computed(() => {
     { id: "overview" as View, icon: Gauge, dot: problems.value.some((p) => p.kind !== "info") ? "dot-warn" : "" },
     { id: "connect" as View, icon: Devices, dot: "" },
     { id: "vcp" as View, icon: Waveform, dot: vcpDot },
+    { id: "internet" as View, icon: Globe, dot: "" },
     { id: "firewall" as View, icon: ShieldCheck, dot: fw ? (fwBad ? "dot-warn" : "dot-ok") : "" },
     { id: "log" as View, icon: Console, dot: "" },
     { id: "settings" as View, icon: Gear, dot: status.value?.update?.available ? "dot-warn" : "" },

@@ -3,6 +3,7 @@
 // photographed for the docs without a running proxy.
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
 import { listen as tauriListen, type UnlistenFn } from "@tauri-apps/api/event";
+import type { FriendsApi, InternetStatus, NewInvite } from "@ttv-tts/ui/friends";
 
 export interface ProxyInfo {
   id: string;
@@ -193,6 +194,16 @@ export const api = {
   installUpdate: () => invoke<void>("install_update"),
   resetCertificate: () => invoke<Overview>("reset_certificate"),
   diagnostics: () => invoke<unknown>("diagnostics"),
+};
+
+/** Internet access for friends (the same card as in the app). */
+export const friends: FriendsApi = {
+  status: () => invoke<InternetStatus>("internet_status"),
+  set: (patch) => invoke<InternetStatus>("set_internet", { patch }),
+  test: async () => ({ reachable: await invoke<boolean>("test_internet") }),
+  invite: (name, days, charsPerDay, address) => invoke<NewInvite>("create_invite", { name, days, charsPerDay, address }),
+  withdraw: (id) => invoke<void>("withdraw_invite", { id }),
+  revoke: (id) => invoke<void>("revoke_guest", { id }),
 };
 
 /** Error text of a failed command (Rust errors arrive as strings). */

@@ -24,14 +24,14 @@ const check = (cond, name, extra = "") => {
 await page.goto(base + query);
 await page.waitForSelector("nav button");
 const navItems = await page.locator("nav button").allTextContents();
-check(navItems.length === 6, "six pages in the navigation", navItems.join(" | "));
+check(navItems.length === 7, "seven pages in the navigation", navItems.join(" | "));
 
 for (let i = 0; i < navItems.length; i++) {
   await page.locator("nav button").nth(i).click();
   await page.waitForTimeout(250);
   const text = await page.locator("main").innerText();
   // vue-i18n shows the key itself when a message is missing.
-  const raw = text.match(/\b(common|nav|status|overview|connect|vcp|firewall|log|settings|setup|tips)\.[a-zA-Z.]+\b/g);
+  const raw = text.match(/\b(common|nav|status|overview|connect|vcp|firewall|log|settings|setup|tips|friends)\.[a-zA-Z.]+\b/g);
   check(!raw, `page "${navItems[i].trim()}" renders without raw i18n keys`, raw?.slice(0, 3).join(", ") ?? `${text.length} chars`);
 }
 
@@ -62,6 +62,28 @@ await page.waitForTimeout(300);
 const vcpText = await page.locator("main").innerText();
 check(/0\.55 s (per second of speech|pro Sekunde Sprache)/.test(vcpText) && /(usually|sonst) 0\.50/.test(vcpText), "the VCP page shows its speed", vcpText.match(/0\.55[^\n]*/)?.[0] ?? "");
 check(/Restart VCP when it gets slow|VCP neu starten, wenn es langsam wird/.test(vcpText), "VCP can be restarted when it gets slow");
+// Internet page: the same friends card as in the app, run from the proxy window
+await page.locator("nav button").nth(navItems.findIndex((n) => /Internet/i.test(n))).click();
+await page.waitForTimeout(300);
+{
+  const card = page.locator("main section").first();
+  check(/Friends over the internet|Freunde über das Internet/.test(await card.innerText()) && /Mia/.test(await card.innerText()), "the internet page shows friends with access");
+  await card.getByRole("switch").first().click();
+  await page.waitForTimeout(300);
+  check(/8111/.test(await card.locator(".badge").first().innerText()), "internet access can be switched on in the proxy window", await card.locator(".badge").first().innerText().catch(() => ""));
+  await card.locator("input").first().fill("my-stream");
+  await card.locator("input[type=password]").fill("1a2b3c4d-1a2b-3c4d-5e6f-1a2b3c4d5e6f");
+  await card.getByRole("button", { name: /^(Save|Speichern)$/ }).click();
+  await page.waitForTimeout(300);
+  check(/my-stream\.duckdns\.org/.test(await page.locator("body").innerText()), "a DuckDNS name can be set");
+  await card.getByRole("button", { name: /3 ·/ }).click();
+  await page.waitForTimeout(800);
+  check(/(reachable|erreichbar)/i.test(await card.innerText()), "the reachability test runs");
+  await card.locator("input").nth(2).fill("Alex");
+  await card.getByRole("button", { name: /^(Create code|Code erstellen)$/ }).click();
+  await page.waitForTimeout(300);
+  check(/ttv1:/.test(await card.locator("code").first().innerText().catch(() => "")) && /Alex/.test(await card.innerText()), "an invite code is made for a friend");
+}
 check(errors.length === 0, "no console errors", errors.slice(0, 3).join(" / "));
 await browser.close();
 process.exit(failed ? 1 : 0);

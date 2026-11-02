@@ -1,3 +1,5 @@
+import { friendsEn, friendsTipsEn } from "@ttv-tts/ui/i18n/friends";
+
 export default {
   app: {
     name: "TTV-TTS Proxy",
@@ -30,6 +32,7 @@ export default {
     recommended: "recommended",
   },
   nav: {
+    internet: "Internet",
     overview: "Overview",
     connect: "Apps & pairing",
     vcp: "Voice Creator Pro",
@@ -302,7 +305,9 @@ export default {
     finish: "Finish",
     pairNow: "Pair a device now",
   },
+  friends: friendsEn,
   tips: {
+    ...friendsTipsEn,
     keyMode: "“Use VCP's key”: apps send the same key that Voice Creator Pro uses – one key for everything.\n“Own key”: the proxy has a separate key, so VCP's key never leaves this PC. Paired devices use their own token either way.",
     discovery: "TTV-TTS sends a short question into the network (UDP port {port}) and the proxy answers with its name and address. Nothing secret is sent; pairing still needs the code.",
     httpPort: "The proxy normally talks only encrypted (HTTPS). Some older tools – like the TTV-TTS 1.x browser source – can't handle the proxy's own certificate. This optional second port accepts unencrypted connections; the key is still required. Leave it off if you don't need it.",

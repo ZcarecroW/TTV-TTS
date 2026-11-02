@@ -47,55 +47,19 @@ export interface ProxyStatus {
   guest: GuestInfo | null;
 }
 
-/** A friend who uses a proxy over the internet. */
-export interface GuestInfo {
-  id: string;
-  name: string;
-  chars_today: number;
-  chars_per_day: number;
-  joined: number;
-  last_seen: number | null;
-  last_address: string | null;
-  total_chars: number;
-}
-
-export interface InviteView {
-  id: string;
-  name: string;
-  created: number;
-  expires: number;
-  chars_per_day: number;
-}
-
-/** Internet access of the paired proxy. */
-export interface InternetStatus {
-  enabled: boolean;
-  port: number;
-  listening: boolean;
-  error: string | null;
-  domain: string;
-  duckdns_token: boolean;
-  duckdns_at: number | null;
-  duckdns_result: string | null;
-  public_ip: string | null;
-  test_at: number | null;
-  reachable: boolean | null;
-  address: string;
-  invites: InviteView[];
-  guests: GuestInfo[];
-  connections: number;
-}
+import type { FriendsApi, GuestInfo, InternetPatch, InternetStatus, InviteView, NewInvite } from "@ttv-tts/ui/friends";
+export type { GuestInfo, InternetStatus, InviteView };
 
 export const friends = {
   status: () => invoke<InternetStatus>("internet_status"),
-  set: (patch: { enabled?: boolean; port?: number; domain?: string; token?: string }) => invoke<InternetStatus>("internet_set", { patch }),
-  invite: (name: string, days: number, charsPerDay: number, address: string | null) => invoke<{ invite: InviteView; code: string }>("internet_invite", { name, days, charsPerDay, address }),
+  set: (patch: InternetPatch) => invoke<InternetStatus>("internet_set", { patch }),
+  invite: (name: string, days: number, charsPerDay: number, address: string | null) => invoke<NewInvite>("internet_invite", { name, days, charsPerDay, address }),
   withdraw: (id: string) => invoke<unknown>("internet_withdraw", { id }),
   revoke: (id: string) => invoke<unknown>("internet_revoke", { id }),
   test: () => invoke<{ reachable: boolean }>("internet_test"),
   read: (code: string) => invoke<{ host: string; address: string }>("read_invite", { code }),
   join: (code: string) => invoke<AppView>("join_invite", { code }),
-};
+} satisfies FriendsApi & Record<string, unknown>;
 
 export interface ProxyUpdateState {
   available: string | null;
