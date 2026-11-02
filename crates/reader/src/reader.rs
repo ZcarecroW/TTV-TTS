@@ -1522,10 +1522,8 @@ impl<H: Host> Reader<H> {
             let mut played: Vec<Vec<f32>> = Vec::new();
             let mut played_rate = 0;
             let stage = self.host.stage().await;
-            while let Some(r) = clips.recv().await {
-                if item.cancel.load(Ordering::Relaxed) {
-                    break;
-                }
+            // a skip shows at once, even while the next piece is still being generated
+            while let Some(r) = next_clip(&mut clips, &item.cancel).await {
                 match r {
                     Ok((samples, rate)) => {
                         let dur = samples.len() as f32 / rate.max(1) as f32;
@@ -1677,6 +1675,20 @@ impl<H: Host> Reader<H> {
 }
 
 // ── helpers ─────────────────────────────────────────────────────────────
+
+/// The next clip of a message, or None when it's done or was cancelled
+/// (checked every 100 ms while waiting).
+async fn next_clip(clips: &mut mpsc::Receiver<Result<(Vec<f32>, u32), String>>, cancel: &AtomicBool) -> Option<Result<(Vec<f32>, u32), String>> {
+    loop {
+        if cancel.load(Ordering::Relaxed) {
+            return None;
+        }
+        tokio::select! {
+            r = clips.recv() => return r.filter(|_| !cancel.load(Ordering::Relaxed)),
+            _ = tokio::time::sleep(Duration::from_millis(100)) => {}
+        }
+    }
+}
 
 fn has_role(m: &ChatMessage, roles: &[Role]) -> bool {
     roles.iter().any(|r| match r {
