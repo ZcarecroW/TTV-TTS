@@ -563,15 +563,19 @@ extern "system" fn ExitDll() -> bool {
     true
 }
 
+// The VST3 SDK names them bundleEntry/bundleExit on macOS (the upstream
+// example had them capitalized, which hosts don't find).
 #[cfg(target_os = "macos")]
 #[unsafe(no_mangle)]
-extern "system" fn BundleEntry(_bundle_ref: *mut c_void) -> bool {
+#[allow(non_snake_case)]
+extern "system" fn bundleEntry(_bundle_ref: *mut c_void) -> bool {
     true
 }
 
 #[cfg(target_os = "macos")]
 #[unsafe(no_mangle)]
-extern "system" fn BundleExit() -> bool {
+#[allow(non_snake_case)]
+extern "system" fn bundleExit() -> bool {
     true
 }
 
