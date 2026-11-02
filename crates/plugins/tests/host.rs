@@ -7,7 +7,8 @@ use std::time::Duration;
 use ttv_plugins::{Format, Rack, SlotSpec};
 
 /// target/<profile>/examples/<name>.dll copied to a temp file with the
-/// plugin extension.
+/// plugin extension. On macOS a VST3 has to be a bundle folder
+/// (`X.vst3/Contents/MacOS/X` with an Info.plist), like real ones.
 fn plugin(name: &str, ext: &str) -> PathBuf {
     let exe = std::env::current_exe().unwrap();
     let dir = exe.parent().unwrap().parent().unwrap().join("examples");
@@ -15,8 +16,31 @@ fn plugin(name: &str, ext: &str) -> PathBuf {
     static N: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
     let n = N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let to = std::env::temp_dir().join(format!("ttv-plugin-test-{}-{n}-{name}.{ext}", std::process::id()));
+    if cfg!(target_os = "macos") && ext == "vst3" {
+        let macos = to.join("Contents").join("MacOS");
+        std::fs::create_dir_all(&macos).unwrap();
+        std::fs::copy(dir.join(&lib), macos.join(name)).unwrap_or_else(|e| panic!("{lib}: {e} (build the examples)"));
+        let plist = format!(
+            r#"<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleExecutable</key><string>{name}</string>
+<key>CFBundleIdentifier</key><string>io.github.zcarecrow.ttvtts.{name}</string>
+<key>CFBundlePackageType</key><string>BNDL</string>
+<key>CFBundleName</key><string>{name}</string>
+</dict></plist>
+"#
+        );
+        std::fs::write(to.join("Contents").join("Info.plist"), plist).unwrap();
+        return to;
+    }
     std::fs::copy(dir.join(&lib), &to).unwrap_or_else(|e| panic!("{lib}: {e} (build the examples)"));
     to
+}
+
+/// Removes a test plugin (a file, or a bundle folder on macOS).
+fn remove(path: PathBuf) {
+    let _ = if path.is_dir() { std::fs::remove_dir_all(path) } else { std::fs::remove_file(path) };
 }
 
 fn sine(rate: u32, secs: f32, amp: f32) -> Vec<f32> {
@@ -71,7 +95,7 @@ async fn clap_effect_processes_keeps_settings_and_shows_its_editor() {
         assert_eq!(rack.editor_children("b").await, 0);
     }
     rack.set(48_000, Vec::new()).await;
-    let _ = std::fs::remove_file(path);
+    remove(path);
 }
 
 #[tokio::test(flavor = "multi_thread")]
@@ -98,7 +122,7 @@ async fn vst3_effect_processes_and_keeps_settings() {
     assert!((peak(&out2) - peak(&out)).abs() < 1e-3, "same settings, same sound");
     // both formats in one chain, and the ring-out
     rack.set(48_000, Vec::new()).await;
-    let _ = std::fs::remove_file(path);
+    remove(path);
 }
 
 /// A plugin that was in the chain and left it can be found and loaded again.
@@ -115,7 +139,7 @@ async fn plugins_load_again_after_leaving_the_chain() {
             let again = ttv_plugins::scan_file(&path).unwrap();
             assert_eq!(again.len(), 1, "{ext} round {round}: scan after leaving the chain");
         }
-        let _ = std::fs::remove_file(path);
+        remove(path);
     }
 }
 
@@ -144,6 +168,6 @@ async fn plugins_load_again_after_their_editor_was_open() {
     let (c2, v2) = (clap.clone(), vst3.clone());
     let found = tokio::task::spawn_blocking(move || (ttv_plugins::scan_file(&c2).map(|f| f.len()), ttv_plugins::scan_file(&v2).map(|f| f.len()))).await.unwrap();
     assert_eq!(found, (Ok(1), Ok(1)));
-    let _ = std::fs::remove_file(clap);
-    let _ = std::fs::remove_file(vst3);
+    remove(clap);
+    remove(vst3);
 }
