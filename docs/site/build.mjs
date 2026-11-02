@@ -53,11 +53,13 @@ const slugify = (s) => strip(s).toLowerCase().replace(/ß/g, "ss").normalize("NF
 const hash = (s) => createHash("sha256").update(s).digest("hex").slice(0, 10);
 const linkTo = (link) => link.replace(/^([\w-]+)/, "$1/"); // "faq#x" -> "faq/#x"
 
-/** Inline SVG of an icon (two-tone parts carry class nc-c2). */
+/** Inline SVG of an icon (two-tone parts carry class nc-c2). fill on the
+ * root: shapes without a color of their own (brand logos) take the text
+ * color like the rest, so they follow the light and dark theme. */
 function icon(name, size = 20, cls = "ico") {
   const hit = nucleo[name] ?? docsIcons[name];
   if (!hit) throw new Error(`unknown icon "${name}"`);
-  return `<svg class="${cls}" viewBox="${hit[0]}" width="${size}" height="${size}" aria-hidden="true">${hit[1]}</svg>`;
+  return `<svg class="${cls}" viewBox="${hit[0]}" width="${size}" height="${size}" fill="currentColor" aria-hidden="true">${hit[1]}</svg>`;
 }
 const brand = { windows: icon("Windows"), apple: icon("Apple"), linux: icon("Linux"), github: icon("GitHub") };
 
