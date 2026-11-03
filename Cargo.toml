@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/vcp", "crates/link", "crates/engine", "crates/plugins", "crates/reader", "crates/net", "apps/proxy/src-tauri", "apps/app/src-tauri"]
 
 [workspace.package]
-version = "2.3.3"
+version = "2.3.4"
 edition = "2024"
 rust-version = "1.95"
 license = "MIT"

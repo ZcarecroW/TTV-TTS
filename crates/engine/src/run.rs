@@ -76,12 +76,57 @@ fn select(inner: &Inner, job: &crate::StoredJob) -> Vec<Item> {
     items
 }
 
+/// Voices of this job that are in the library but not in the job: saved just
+/// before the proxy stopped (restart, update, crash) – the library writes a
+/// voice at once, the job its count only after the batch. The rerun skipped
+/// them as "already there": never counted, never quality-checked. Count them
+/// and keep them for the job's check. Only voices from after the job's start
+/// (older ones belong to other jobs). Returns whether it took any.
+fn adopt_saved(inner: &Inner, id: &str, job: &crate::StoredJob) -> bool {
+    let req = &job.request;
+    let only: HashSet<&str> = req.only.iter().map(String::as_str).collect();
+    let known: HashSet<&str> = job.failed.iter().chain(&job.processed).chain(&job.created).map(String::as_str).collect();
+    let mut keys = Vec::new();
+    for d in &req.defs {
+        for code in &req.languages {
+            let key = d.def.key(code);
+            if (!only.is_empty() && !only.contains(key.as_str())) || known.contains(key.as_str()) {
+                continue;
+            }
+            if inner.library.get(&key).is_some_and(|e| e.created >= job.view.created) {
+                keys.push(key);
+            }
+        }
+    }
+    if keys.is_empty() {
+        return false;
+    }
+    log::info!("job {id}: {} voices saved before the proxy stopped – counted, and they get checked", keys.len());
+    if req.options.archive {
+        inner.pending.lock().extend(keys.iter().cloned());
+        inner.save_pending();
+    }
+    let n = keys.len() as u32;
+    inner.update(id, |j| {
+        j.view.done += n;
+        j.created.extend(keys);
+    });
+    inner.save_jobs();
+    true
+}
+
 /// Runs one batch of a job. Ok(()) also when the job was paused/cancelled.
 pub(crate) async fn batch(inner: &Inner, vcp: &ttv_vcp::Client, id: &str) -> Result<(), String> {
     let Some(job) = inner.jobs.lock().iter().find(|j| j.view.id == id).cloned() else { return Ok(()) };
     if job.request.kind == JobKind::Import {
         return import(inner, vcp, id, &job).await;
     }
+    let job = if job.request.kind == JobKind::Compute && adopt_saved(inner, id, &job) {
+        let Some(j) = inner.jobs.lock().iter().find(|j| j.view.id == id).cloned() else { return Ok(()) };
+        j
+    } else {
+        job
+    };
     let items = select(inner, &job);
     if items.is_empty() {
         finish(inner, id, &job);

@@ -593,3 +593,45 @@ async fn existing_voices_can_be_archived_by_hand() {
     assert_eq!((e.library().entries.len(), e.archived().entries.len(), fake.voices.lock().len()), (1, 1, 1));
     assert_eq!(e.status().archived, 1);
 }
+
+/// A voice its job saved just before the proxy stopped (restart, update,
+/// crash – the job's own count wasn't written yet) counts for the job when it
+/// goes on, and gets the job's quality check, instead of being skipped as
+/// "already there" and never checked (seen on the VCP PC: Cinematic ru 179/180).
+#[tokio::test(flavor = "multi_thread")]
+async fn a_voice_saved_just_before_a_restart_counts_for_its_job() {
+    let (fake, base) = serve().await;
+    let dir = std::env::temp_dir().join(format!("ttv-engine-test-{}", rand::random::<u64>()));
+    // no worker yet: the job waits until the "restart"
+    let e = Engine::new(dir, Arc::new(|| None));
+    e.set_vcp(Some(ttv_vcp::Client::new(&base, None)));
+    let mut req = request(3);
+    req.options.quality = true;
+    let entry = |i: usize, created: i64| ttv_link::LibraryEntry {
+        key: req.defs[i].def.key("en"),
+        def_hash: req.defs[i].def.hash(),
+        lang: "en".into(),
+        preset_id: "test".into(),
+        index: i as u32,
+        voice_id: format!("voice_saved_{i}"),
+        gain: 1.0,
+        created,
+        ..Default::default()
+    };
+    // voice 2: made long before this job (another job's)
+    e.adopt(vec![entry(2, chrono::Utc::now().timestamp() - 3600)]);
+    let job = e.submit(req.clone()).unwrap();
+    assert_eq!(job.total, 2);
+    // voice 1: saved by this job, then the proxy stopped
+    e.adopt(vec![entry(1, chrono::Utc::now().timestamp())]);
+    tokio::spawn(e.worker());
+    until("the job and its check", || done(&e)).await;
+    let jobs = e.status().jobs;
+    let j = jobs.iter().find(|j| j.id == job.id).unwrap();
+    assert_eq!((j.done, j.failed), (2, 0), "voice 0 computed, voice 1 counted: {jobs:?}");
+    assert_eq!(fake.voices.lock().len(), 1, "only voice 0 was saved in VCP");
+    let lib = e.library().entries;
+    let quality = |i: usize| lib.iter().find(|x| x.key == req.defs[i].def.key("en")).unwrap().quality.clone();
+    assert!(quality(1).is_some(), "the voice saved before the restart got checked");
+    assert!(quality(2).is_none(), "another job's voice stays as it was");
+}

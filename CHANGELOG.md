@@ -2,6 +2,10 @@
 
 All notable changes to TTV-TTS are listed here. Downloads: [Releases](https://github.com/ZcarecroW/TTV-TTS/releases).
 
+## [2.3.4] – 2026-11-03
+
+- **Voices saved just before TTV-TTS Proxy stopped now count for their job and get checked**: a computing job writes each new voice to the library at once, but its own count only after each batch. When the proxy stopped in between (an update, a restart, a crash – and now the watchdog), the job went on, found those voices "already there" and skipped them: never counted (a language ended at 179 of 180) and never quality-checked, so they couldn't be flagged as odd or improved. The job now takes them over when it goes on.
+
 ## [2.3.3] – 2026-11-03
 
 - **TTV-TTS Proxy starts itself again when its computing stands still**: if a computing job hasn't moved for 20 minutes while Voice Creator Pro has nothing to do (and nobody else used it for 10 minutes), the proxy restarts on its own and computing goes on – at most once every 6 hours. A hanging Voice Creator Pro was already restarted; this covers a wedge in the proxy itself, like the one fixed in 2.3.2.
