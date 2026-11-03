@@ -33,8 +33,10 @@ pub fn decide(enabled: bool, computing: bool, obs: bool, friends: bool, apps: bo
 }
 
 fn reason(state: &AppState) -> Option<&'static str> {
+    // the setting first, on its own: no lock is held while asking the others
+    let enabled = state.cfg.read().keep_awake;
     decide(
-        state.cfg.read().keep_awake,
+        enabled,
         state.engine.working(),
         state.hosted.listening(),
         crate::internet::guests_connected() > 0,
