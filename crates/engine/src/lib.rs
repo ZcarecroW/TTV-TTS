@@ -158,6 +158,11 @@ impl Engine {
         self.inner.events.subscribe()
     }
 
+    /// Some job is waiting to run or running (paused ones don't count).
+    pub fn working(&self) -> bool {
+        self.inner.jobs.lock().iter().any(|j| matches!(j.view.state, JobState::Queued | JobState::Running | JobState::Waiting))
+    }
+
     pub fn status(&self) -> EngineStatus {
         EngineStatus {
             jobs: self.inner.jobs.lock().iter().map(|j| j.view.clone()).collect(),

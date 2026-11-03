@@ -108,6 +108,20 @@ await page.waitForTimeout(300);
   await page.waitForTimeout(300);
   check(/ttv1:/.test(await card.locator("code").first().innerText().catch(() => "")) && /Alex/.test(await card.innerText()), "an invite code is made for a friend");
 }
+// Settings: start at sign-in (offered), keep the PC awake (on, with the reason)
+await page.locator("nav button").nth(navItems.findIndex((n) => /Settings|Einstellungen/i.test(n))).click();
+await page.waitForTimeout(250);
+{
+  const now = page.locator("[data-awake-now]");
+  check(/(computing voices|Stimmen werden berechnet)/.test(await now.innerText().catch(() => "")), "the settings say why the PC is kept awake", await now.innerText().catch(() => "missing"));
+  const sw = page.locator("[data-keep-awake] [role=switch]");
+  check((await sw.getAttribute("aria-checked")) === "true", "keeping the PC awake is on by default");
+  await sw.click();
+  await page.waitForTimeout(200);
+  check((await now.count()) === 0 && (await sw.getAttribute("aria-checked")) === "false", "keeping the PC awake can be switched off");
+  await sw.click();
+  check(/(Start when I sign in|Bei der Anmeldung starten)/.test(await page.locator("body").innerText()), "starting at sign-in is offered");
+}
 check(errors.length === 0, "no console errors", errors.slice(0, 3).join(" / "));
 await browser.close();
 process.exit(failed ? 1 : 0);

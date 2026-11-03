@@ -169,6 +169,9 @@ pub struct ProxyStatus {
     /// Set when a guest (a friend over the internet) asks: who they are and
     /// what they used today. Guests get no addresses, devices or paths.
     pub guest: Option<GuestInfo>,
+    /// Why the proxy keeps its PC awake right now ("computing", "obs",
+    /// "friends", "app"); None: it may sleep (or keeping awake is off).
+    pub awake: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]

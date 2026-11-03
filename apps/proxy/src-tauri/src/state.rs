@@ -60,6 +60,8 @@ pub struct AppState {
     pub plugins: Arc<crate::plugins::ProxyPlugins>,
     /// Ports for the internet, opened in the router (UPnP).
     pub upnp: Arc<ttv_net::upnp::Upnp>,
+    /// Why this PC is kept awake right now (`awake`), if it is.
+    pub awake: RwLock<Option<String>>,
     app: OnceLock<AppHandle>,
 }
 
@@ -86,6 +88,7 @@ impl AppState {
             certs,
             plugins: Arc::new(crate::plugins::ProxyPlugins::new(&data_dir)),
             upnp: ttv_net::upnp::Upnp::new("TTV-TTS Proxy"),
+            awake: RwLock::new(None),
             engine,
             guests: crate::internet::Guests::load(&data_dir),
             internet: RwLock::new(Default::default()),
@@ -185,6 +188,7 @@ impl AppState {
             uptime_secs: self.started.elapsed().as_secs(),
             update: Some(self.update.read().clone()),
             guest: None,
+            awake: self.awake.read().clone(),
         }
     }
 

@@ -362,6 +362,11 @@ impl Hosted {
         }
     }
 
+    /// Some OBS link is playing right now (a browser source is connected).
+    pub fn listening(&self) -> bool {
+        self.entries.read().values().any(|e| e.shared.sink.listening())
+    }
+
     /// Some hosted profile's link is shared on the internet.
     pub fn any_online(&self) -> bool {
         self.entries.read().values().any(|e| e.profile().output.online)

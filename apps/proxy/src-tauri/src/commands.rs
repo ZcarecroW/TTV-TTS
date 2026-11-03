@@ -64,6 +64,7 @@ pub struct SettingsPatch {
     restart_when_slow: Option<bool>,
     http_port: Option<u16>,
     autostart: Option<bool>,
+    keep_awake: Option<bool>,
     update_channel: Option<String>,
     auto_update: Option<bool>,
     language: Option<String>,
@@ -132,6 +133,9 @@ pub fn update_settings(app: AppHandle, state: St, patch: SettingsPatch) -> AppRe
         }
         if let Some(v) = patch.autostart {
             c.autostart = v;
+        }
+        if let Some(v) = patch.keep_awake {
+            c.keep_awake = v;
         }
         if let Some(v) = patch.update_channel {
             c.update_channel = v;

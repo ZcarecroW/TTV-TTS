@@ -19,7 +19,7 @@ Both are free downloads from the [releases page](https://github.com/ZcarecroW/TT
 2. Windows may show **“Windows protected your PC”** (SmartScreen): TTV-TTS isn't signed with a paid certificate yet. Click **More info → Run anyway**.
 3. TTV-TTS starts. On the first start it walks you through connecting to Voice Creator Pro.
 
-The proxy installs the same way (`TTV-TTS-Proxy_<version>_x64-setup.exe`) on the other PC. It lives in the tray (next to the clock) and can start with Windows.
+The proxy installs the same way (`TTV-TTS-Proxy_<version>_x64-setup.exe`) on the other PC. It lives in the tray (next to the clock) and can start when you sign in.
 
 ## macOS {#macos}
 

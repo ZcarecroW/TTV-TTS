@@ -71,6 +71,8 @@ export interface ProxyStatus {
   connections: number;
   uptime_secs: number;
   update: UpdateState | null;
+  /** Why the PC is kept awake right now ("computing", "obs", "friends", "app"). */
+  awake?: string | null;
 }
 
 export type KeyMode = "vcp" | "own";
@@ -91,6 +93,7 @@ export interface Config {
   http_port: number;
   obs_port: number;
   autostart: boolean;
+  keep_awake: boolean;
   update_channel: string;
   auto_update: boolean;
   language: string;

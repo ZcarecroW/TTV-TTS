@@ -33,7 +33,7 @@ pub struct Config {
     pub key_mode: KeyMode,
     /// VCP's program file (found automatically or set by the user).
     pub vcp_exe: Option<String>,
-    /// Start VCP when the proxy starts (if it isn't running).
+    /// Start VCP when the proxy starts (if it isn't running). Off by default.
     pub start_vcp: bool,
     /// Start VCP again whenever it is not running.
     pub keep_vcp_running: bool,
@@ -46,8 +46,11 @@ pub struct Config {
     /// Also accept plain-HTTP connections on this port (0 = off). For older
     /// tools that can't use the proxy's certificate; the key still applies.
     pub http_port: u16,
-    /// Start with the operating system.
+    /// Start when the user signs in. Off by default.
     pub autostart: bool,
+    /// Keep this PC from sleeping while the proxy works (computing voices,
+    /// a TTV-TTS connected, an OBS link playing, a friend connected).
+    pub keep_awake: bool,
     /// "stable" or "preview".
     pub update_channel: String,
     /// Install updates automatically when the proxy is idle.
@@ -84,13 +87,14 @@ impl Default for Config {
             vcp_url: "http://127.0.0.1:8100".into(),
             key_mode: KeyMode::Vcp,
             vcp_exe: None,
-            start_vcp: true,
+            start_vcp: false,
             keep_vcp_running: false,
             restart_on_hang: false,
             hang_restart_secs: 180,
             restart_when_slow: true,
             http_port: 0,
-            autostart: true,
+            autostart: false,
+            keep_awake: true,
             // preview builds follow the previews, releases the releases
             update_channel: if env!("CARGO_PKG_VERSION").contains('-') { "preview" } else { "stable" }.into(),
             auto_update: true,

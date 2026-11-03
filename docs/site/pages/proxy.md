@@ -33,7 +33,7 @@ At a glance: whether Voice Creator Pro runs and its HTTP API answers, the loaded
 - **VCP's API key** – if Voice Creator Pro has a key (its *Settings → HTTP API*), the proxy needs it. **Find automatically** reads it from Voice Creator Pro's settings; **Give VCP a key** sets a strong random key if it has none. Apps never see this key unless you choose *Use VCP's key* as the access key.
 - **Address of VCP's HTTP API** – normally `http://127.0.0.1:8100`.
 - **Start & watchdog**:
-  - **Start VCP together with the proxy**, **Keep VCP running** (starts it again if it closes).
+  - **Start VCP together with the proxy** (off by default), **Keep VCP running** (starts it again if it closes).
   - **Restart VCP when it hangs** – after the time you choose without an answer.
   - **Restart VCP when it gets slow** – see [When Voice Creator Pro gets slow](voice-host#slow). The current and the usual **speed** are shown here.
 
@@ -53,7 +53,8 @@ What the proxy did: connections, pairing, restarts of Voice Creator Pro, jobs, w
 
 ![The proxy's settings](proxy-settings.webp)
 
-- **Start with Windows** (or *at login* on macOS).
+- **Start when I sign in** – the proxy starts minimized in the tray. Off by default; switch it on for a PC that should always be ready.
+- **Keep this PC awake while the proxy works** (on by default) – while it computes voices, a TTV-TTS is connected, an OBS link plays or a friend is connected, the PC doesn't go to sleep; the screen still turns off as set. Below the switch it says why it is awake right now. With nothing to do, the energy settings decide again. {#awake}
 - **Updates** – channel *Stable* or *Preview*, **Install updates automatically** (once the proxy has been idle for ten minutes).
 - Look & language, as in TTV-TTS.
 

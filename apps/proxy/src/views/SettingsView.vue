@@ -17,6 +17,8 @@ const isMac = computed(() => status.value!.info.os === "macos");
 const language = computed({ get: () => config.value!.language, set: (v: string) => void save({ language: v }, true) });
 const theme = computed({ get: () => config.value!.theme, set: (v: string) => void save({ theme: v }, true) });
 const autostart = computed({ get: () => config.value!.autostart, set: (v: boolean) => void save({ autostart: v }) });
+const keepAwake = computed({ get: () => config.value!.keep_awake, set: (v: boolean) => void save({ keep_awake: v }) });
+const awake = computed(() => status.value!.awake ?? null);
 const channel = computed({ get: () => config.value!.update_channel, set: (v: string) => void save({ update_channel: v }, true) });
 const autoUpdate = computed({ get: () => config.value!.auto_update, set: (v: boolean) => void save({ auto_update: v }) });
 
@@ -78,7 +80,13 @@ const docsUrl = computed(() => `https://zcarecrow.github.io/TTV-TTS/${locale.val
 
     <section class="card p-5">
       <div class="card-head"><Power />{{ t("settings.startTitle") }}<UiDocs class="ml-auto" page="proxy" anchor="settings" /></div>
-      <UiToggle v-model="autostart" :label="isMac ? t('settings.autostartMac') : t('settings.autostart')" :tip="t('tips.autostart')" />
+      <div class="space-y-4">
+        <UiToggle v-model="autostart" :label="isMac ? t('settings.autostartMac') : t('settings.autostart')" :tip="t('tips.autostart')" />
+        <div>
+          <UiToggle v-model="keepAwake" :label="t('settings.keepAwake')" :tip="t('tips.keepAwake')" data-keep-awake />
+          <p v-if="keepAwake" class="muted mt-1.5 text-sm" data-awake-now>{{ awake ? t("settings.awakeNow", { why: t(`settings.awakeWhy.${awake}`) }) : t("settings.awakeIdle") }}</p>
+        </div>
+      </div>
     </section>
 
     <section class="card p-5">

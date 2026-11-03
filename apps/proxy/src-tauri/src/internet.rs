@@ -703,6 +703,11 @@ async fn read_through(State(state): S, req: Request) -> Response {
 /// Open connections from the internet, in total and per address.
 static OPEN: std::sync::LazyLock<ttv_net::limits::Connections> = std::sync::LazyLock::new(|| ttv_net::limits::Connections::new(MAX_CONNECTIONS, MAX_PER_ADDRESS));
 
+/// Friends connected over the internet right now.
+pub fn guests_connected() -> usize {
+    OPEN.open()
+}
+
 /// The proxy's certificate for guests, HTTP/1.1 only: every connection then
 /// falls under the header deadline (an idle HTTP/2 connection never would).
 fn guest_tls(state: &AppState) -> Arc<rustls::ServerConfig> {

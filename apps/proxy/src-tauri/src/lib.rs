@@ -5,6 +5,7 @@
 
 mod access;
 mod api;
+mod awake;
 mod commands;
 mod config;
 mod discovery;
@@ -140,6 +141,7 @@ pub fn run() {
             tauri::async_runtime::spawn(internet::duckdns(state.clone()));
             tauri::async_runtime::spawn(discovery::run(state.clone()));
             tauri::async_runtime::spawn(vcp_watch::run(state.clone()));
+            tauri::async_runtime::spawn(awake::run(state.clone()));
             tauri::async_runtime::spawn(updater::run(app.handle().clone(), state.clone()));
             sysmon::spawn(state.clone());
             tauri::async_runtime::spawn(state.engine.worker());

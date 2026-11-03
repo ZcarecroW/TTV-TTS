@@ -2,6 +2,11 @@
 
 All notable changes to TTV-TTS are listed here. Downloads: [Releases](https://github.com/ZcarecroW/TTV-TTS/releases).
 
+## [2.3.0] – 2026-11-03
+
+- **The voice host PC stays awake while it works**: TTV-TTS Proxy keeps its PC from going to sleep while it computes voices, a TTV-TTS is connected, an OBS link plays or a friend is connected (Windows: a system-required request, macOS: caffeinate, Linux: systemd-inhibit) – the screen still turns off as set. On by default, switchable in the proxy's settings, which also say why the PC is awake right now. With nothing to do, the energy settings decide again.
+- **Start when I sign in** and **Start VCP together with the proxy** are off for new installations; existing installations keep their settings.
+
 ## [2.2.0] – 2026-11-02
 
 - **Security review of everything that faces the internet**: a chat message could end TTV-TTS (and OBS links read on the voice host PC) – a “…” past the length limit, or a command written with look-alike letters. Fixed, and tests now throw hostile chat at every text path. Every server limits connections in total and per address, gives a request 20 seconds, closes idle connections and caps message sizes (before, a stranger could hold connections open for free); wrong remote-control tokens lock another PC out too. **New link** now also ends browser sources still connected with the old link (they kept getting the audio), and an OBS with an old link no longer locks its own PC out of the new one: only addresses from the internet are locked out for guessing. Invite codes, sound from the voice host PC and data from 7TV are checked strictly; the proxy loads plugins only from the plugin folders; LAN discovery answers only the local network. DuckDNS names work in any case and as sub-names (obs.name.duckdns.org).
