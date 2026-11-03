@@ -126,6 +126,10 @@ pub async fn install(app: &AppHandle, state: &Arc<AppState>) {
 }
 
 pub async fn run(app: AppHandle, state: Arc<AppState>) {
+    if crate::DEV_BUILD.is_some() {
+        log::info!("dev build: no automatic updates");
+        return;
+    }
     tokio::time::sleep(Duration::from_secs(30)).await;
     loop {
         check(&app, &state).await;

@@ -84,6 +84,14 @@ opt-level = 3
 panic = "abort"
 strip = true
 
+# Test builds for the voice host PC (.work/vcp): behave like release builds
+# (no console window, panic = abort, optimized) but rebuild in seconds.
+[profile.devrel]
+inherits = "release"
+lto = false
+codegen-units = 16
+incremental = true
+
 # Debug builds keep line numbers for backtraces but no full debug info: the
 # target folder stays a fraction of the size (it once grew past 130 GB) and
 # links are faster.

@@ -29,6 +29,7 @@ mod tls;
 mod updater;
 mod vcp_key;
 mod vcp_watch;
+mod watchdog;
 
 use std::sync::Arc;
 
@@ -36,6 +37,10 @@ use tauri::{Manager, RunEvent, WindowEvent};
 
 use crate::config::Config;
 use crate::state::AppState;
+
+/// Set when building for the test loop on the voice host PC
+/// (`TTV_DEV_BUILD=<commit>`): such a build says so and never updates itself.
+pub const DEV_BUILD: Option<&str> = option_env!("TTV_DEV_BUILD");
 
 /// Forwards the engine's job and library events to apps and the window.
 async fn engine_events(state: Arc<AppState>) {
@@ -89,6 +94,8 @@ pub fn set_autostart(app: &tauri::AppHandle, on: bool) {
 }
 
 pub fn run() {
+    // started again by the watchdog: the old process must be gone first
+    watchdog::wait_for_predecessor();
     let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
 
     let mut builder = tauri::Builder::default();
@@ -110,7 +117,10 @@ pub fn run() {
             let config_dir = paths.app_config_dir()?;
             let data_dir = paths.app_data_dir()?;
             logbuf::init(paths.app_log_dir().ok());
-            log::info!("TTV-TTS Proxy {} starting", env!("CARGO_PKG_VERSION"));
+            match DEV_BUILD {
+                Some(b) => log::info!("TTV-TTS Proxy {} (dev build {b}) starting", env!("CARGO_PKG_VERSION")),
+                None => log::info!("TTV-TTS Proxy {} starting", env!("CARGO_PKG_VERSION")),
+            }
 
             let cfg_path = config_dir.join("config.json");
             let first_run = !cfg_path.exists();
@@ -142,6 +152,7 @@ pub fn run() {
             tauri::async_runtime::spawn(discovery::run(state.clone()));
             tauri::async_runtime::spawn(vcp_watch::run(state.clone()));
             tauri::async_runtime::spawn(awake::run(state.clone()));
+            tauri::async_runtime::spawn(watchdog::run(app.handle().clone(), state.clone()));
             tauri::async_runtime::spawn(updater::run(app.handle().clone(), state.clone()));
             sysmon::spawn(state.clone());
             tauri::async_runtime::spawn(state.engine.worker());
