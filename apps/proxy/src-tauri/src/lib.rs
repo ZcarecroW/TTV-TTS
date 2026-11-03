@@ -146,7 +146,13 @@ pub fn run() {
             sysmon::spawn(state.clone());
             tauri::async_runtime::spawn(state.engine.worker());
             tauri::async_runtime::spawn(engine_events(state.clone()));
-            state.hosted.load(&state);
+            // The stored OBS links start their chat readers, which start async
+            // tasks: load them inside the async runtime. The setup hook runs
+            // outside it, and a stored link ended every start with a panic.
+            {
+                let st = state.clone();
+                tauri::async_runtime::block_on(async move { st.hosted.load(&st) });
+            }
             tauri::async_runtime::spawn(hosted::serve(state.clone()));
             tauri::async_runtime::spawn(plugins::run(state.clone()));
             {

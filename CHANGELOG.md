@@ -2,6 +2,11 @@
 
 All notable changes to TTV-TTS are listed here. Downloads: [Releases](https://github.com/ZcarecroW/TTV-TTS/releases).
 
+## [2.3.1] – 2026-11-03
+
+- **TTV-TTS Proxy no longer closes right after starting when it has an OBS link**: a stored OBS link (“play in OBS through the voice host PC”) started its chat reader outside the async runtime and ended every start (since 2.1.0; it only showed after a restart). If your proxy closes at once: install this version.
+- The keep-awake check holds no lock while it asks the others.
+
 ## [2.3.0] – 2026-11-03
 
 - **The voice host PC stays awake while it works**: TTV-TTS Proxy keeps its PC from going to sleep while it computes voices, a TTV-TTS is connected, an OBS link plays or a friend is connected (Windows: a system-required request, macOS: caffeinate, Linux: systemd-inhibit) – the screen still turns off as set. On by default, switchable in the proxy's settings, which also say why the PC is awake right now. With nothing to do, the energy settings decide again.
