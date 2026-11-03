@@ -2,6 +2,11 @@
 
 All notable changes to TTV-TTS are listed here. Downloads: [Releases](https://github.com/ZcarecroW/TTV-TTS/releases).
 
+## [2.3.2] – 2026-11-03
+
+- **Computing voices no longer stands still after a chat request gave up**: when a sentence for chat, a preview or a friend waited for Voice Creator Pro while a voice was being computed, and its request ended before its turn came (a timeout, a closed connection), computing kept waiting for it for good – VCP sat idle and the queue didn't move until TTV-TTS Proxy (or TTV-TTS, with VCP on the same PC) was restarted. The update restarts it; computing goes on where it stopped.
+- Computing now also keeps its short pause after the first chat message of a run (it went straight back to work).
+
 ## [2.3.1] – 2026-11-03
 
 - **TTV-TTS Proxy no longer closes right after starting when it has an OBS link**: a stored OBS link (“play in OBS through the voice host PC”) started its chat reader outside the async runtime and ended every start (since 2.1.0; it only showed after a restart). If your proxy closes at once: install this version.

@@ -16,9 +16,14 @@ static TURN: LazyLock<Arc<tokio::sync::Mutex<()>>> = LazyLock::new(|| Arc::new(t
 
 /// Chat requests waiting for their turn; background work lets them first.
 static CHAT_WAITING: AtomicUsize = AtomicUsize::new(0);
-/// When a chat request last gave its turn back (ms since START).
+/// When a chat request last gave its turn back (`now_ms`; 0: never).
 static CHAT_DONE: AtomicU64 = AtomicU64::new(0);
 static START: LazyLock<Instant> = LazyLock::new(Instant::now);
+/// Milliseconds since START, from 1 (0 means "never" in CHAT_DONE: the
+/// first chat of a run, right at START, used to look like no chat at all).
+fn now_ms() -> u64 {
+    START.elapsed().as_millis() as u64 + 1
+}
 /// Background work also waits this long after chat: the app sends a
 /// message's next sentence right after the previous one came back.
 const CHAT_PAUSE: Duration = Duration::from_millis(1500);
@@ -59,7 +64,7 @@ impl Drop for Turn {
     fn drop(&mut self) {
         LAST_KIND.store(self.kind, Ordering::Relaxed);
         if self.chat {
-            CHAT_DONE.store(START.elapsed().as_millis() as u64, Ordering::Relaxed);
+            CHAT_DONE.store(now_ms(), Ordering::Relaxed);
         }
     }
 }
@@ -71,9 +76,20 @@ fn granted(guard: tokio::sync::OwnedMutexGuard<()>, chat: bool, path: &str) -> T
 /// Waits for this process's turn at VCP to do `path`. Chat (speech,
 /// previews, guests) goes in order of arrival and before background work.
 pub async fn turn(path: &str) -> Turn {
+    /// Counts this request as waiting until it has its turn or gives up: a
+    /// request dropped while it waited (its client timed out, the connection
+    /// closed) used to leave the count up for good, and computing waited
+    /// for that chat forever.
+    struct Waiting;
+    impl Drop for Waiting {
+        fn drop(&mut self) {
+            CHAT_WAITING.fetch_sub(1, Ordering::SeqCst);
+        }
+    }
     CHAT_WAITING.fetch_add(1, Ordering::SeqCst);
+    let waiting = Waiting;
     let guard = TURN.clone().lock_owned().await;
-    CHAT_WAITING.fetch_sub(1, Ordering::SeqCst);
+    drop(waiting);
     granted(guard, true, path)
 }
 
@@ -83,7 +99,7 @@ pub async fn turn(path: &str) -> Turn {
 pub async fn background_turn(path: &str) -> Turn {
     loop {
         let guard = TURN.clone().lock_owned().await;
-        let since_chat = (START.elapsed().as_millis() as u64).saturating_sub(CHAT_DONE.load(Ordering::Relaxed));
+        let since_chat = now_ms().saturating_sub(CHAT_DONE.load(Ordering::Relaxed));
         let chat_done = CHAT_DONE.load(Ordering::Relaxed);
         if CHAT_WAITING.load(Ordering::SeqCst) == 0 && (chat_done == 0 || since_chat >= CHAT_PAUSE.as_millis() as u64) {
             return granted(guard, false, path);
