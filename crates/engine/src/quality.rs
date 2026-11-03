@@ -329,15 +329,18 @@ pub fn relate(def: Option<&VoiceDef>, group: &mut [(String, Quality)]) -> bool {
         q.issues.retain(|i| i.code != "languages_differ");
         let compared = q.f0.and_then(|f0| match median {
             // the language closest to the median stands for the group
+            // ties (pitches are whole Hz; with an even count the two middle
+            // ones are equally close to the median) go to the first language
+            // code, so the result doesn't depend on the order of the group
             Some(m) => pitches
                 .iter()
                 .filter(|(l, _)| l != lang)
-                .min_by(|a, b| (a.1 / m).log2().abs().total_cmp(&(b.1 / m).log2().abs()))
+                .min_by(|a, b| (a.1 / m).log2().abs().total_cmp(&(b.1 / m).log2().abs()).then_with(|| a.0.cmp(&b.0)).then_with(|| a.1.total_cmp(&b.1)))
                 .map(|(l, p)| (f0, m, l.clone(), *p, false)),
             None => pitches
                 .iter()
                 .filter(|(l, _)| l != lang)
-                .max_by(|a, b| (a.1 / f0).log2().abs().total_cmp(&(b.1 / f0).log2().abs()))
+                .max_by(|a, b| (a.1 / f0).log2().abs().total_cmp(&(b.1 / f0).log2().abs()).then_with(|| b.0.cmp(&a.0)).then_with(|| b.1.total_cmp(&a.1)))
                 .map(|(l, p)| (f0, *p, l.clone(), *p, def.is_some_and(|d| outside(d, f0) <= 1.0 && outside(d, *p) > 1.0))),
         });
         if let Some((f0, reference, other_lang, other, only_other_odd)) = compared {
@@ -374,6 +377,37 @@ mod tests {
                 (1..6).map(|h| (t * hz * h as f32 * std::f32::consts::TAU).sin() / h as f32).sum::<f32>() * amp * 0.5
             })
             .collect()
+    }
+
+    /// Equal distances to the median (whole-Hz pitches, an even count)
+    /// used to name whichever language came first: every start of the proxy
+    /// rewrote 15-27 voices. Any order of the group gives the same result.
+    #[test]
+    fn relating_languages_ignores_the_order() {
+        let q = |f0: f32| Quality { score: 1.0, f0: Some(f0), ..Default::default() };
+        // en/fr and de/es tie around the median; ja is the odd one out
+        let base = vec![("de".to_string(), q(110.0)), ("en".to_string(), q(120.0)), ("es".to_string(), q(110.0)), ("fr".to_string(), q(120.0)), ("ja".to_string(), q(240.0)), ("it".to_string(), q(130.0))];
+        let mut first: Option<Vec<(String, Quality)>> = None;
+        // all rotations and their reversals
+        for r in 0..base.len() {
+            for rev in [false, true] {
+                let mut g = base.clone();
+                g.rotate_left(r);
+                if rev {
+                    g.reverse();
+                }
+                relate(None, &mut g);
+                g.sort_by(|a, b| a.0.cmp(&b.0));
+                match &first {
+                    None => first = Some(g),
+                    Some(f) => assert_eq!(f, &g, "rotation {r}, reversed {rev}"),
+                }
+            }
+        }
+        let f = first.unwrap();
+        let ja = &f.iter().find(|(l, _)| l == "ja").unwrap().1;
+        assert!(ja.issues.iter().any(|i| i.code == "languages_differ"), "ja is noted");
+        assert!(f.iter().filter(|(l, _)| l != "ja").all(|(_, q)| q.issues.is_empty()), "the others agree");
     }
 
     #[test]

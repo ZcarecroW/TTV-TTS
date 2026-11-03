@@ -2,6 +2,11 @@
 
 All notable changes to TTV-TTS are listed here. Downloads: [Releases](https://github.com/ZcarecroW/TTV-TTS/releases).
 
+## [2.3.3] – 2026-11-03
+
+- **TTV-TTS Proxy starts itself again when its computing stands still**: if a computing job hasn't moved for 20 minutes while Voice Creator Pro has nothing to do (and nobody else used it for 10 minutes), the proxy restarts on its own and computing goes on – at most once every 6 hours. A hanging Voice Creator Pro was already restarted; this covers a wedge in the proxy itself, like the one fixed in 2.3.2.
+- **Comparing a voice's languages gives the same result every time**: when two languages were equally close to the group's middle pitch (pitches are whole Hz, so that's common), the note "languages differ" named whichever came first – every start of the proxy rewrote 15–27 voices and sent them to the connected apps again. The odd-voice flags themselves were right. The first start after the update settles them once.
+
 ## [2.3.2] – 2026-11-03
 
 - **Computing voices no longer stands still after a chat request gave up**: when a sentence for chat, a preview or a friend waited for Voice Creator Pro while a voice was being computed, and its request ended before its turn came (a timeout, a closed connection), computing kept waiting for it for good – VCP sat idle and the queue didn't move until TTV-TTS Proxy (or TTV-TTS, with VCP on the same PC) was restarted. The update restarts it; computing goes on where it stopped.

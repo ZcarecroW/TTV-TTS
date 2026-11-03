@@ -139,7 +139,7 @@ impl Engine {
             wake: Notify::new(),
             wakes: Default::default(),
         });
-        inner.relate_all();
+        let _ = inner.relate_all();
         Self { inner }
     }
 
@@ -854,3 +854,41 @@ mod tests {
     }
 }
 
+
+/// Real data: `TTV_REAL_ENGINE=<folder with library.jsonl and archive.jsonl>
+/// cargo test -p ttv-engine relate_all_settles -- --ignored --nocapture`.
+#[cfg(test)]
+mod real_data {
+    #[test]
+    #[ignore]
+    fn relate_all_settles_on_real_data() {
+        let Ok(src) = std::env::var("TTV_REAL_ENGINE") else { return };
+        let dir = std::env::temp_dir().join(format!("ttv-relate-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(&dir).unwrap();
+        for f in ["library.jsonl", "archive.jsonl"] {
+            std::fs::copy(std::path::Path::new(&src).join(f), dir.join(f)).unwrap();
+        }
+        let lines = || ["library.jsonl", "archive.jsonl"].map(|f| std::fs::read_to_string(dir.join(f)).unwrap_or_default().lines().count());
+        let before = lines();
+        let activity: crate::Activity = std::sync::Arc::new(|| None);
+        let first = crate::Engine::new(dir.clone(), activity.clone());
+        let after = lines();
+        println!("first run appended {} library + {} archive lines", after[0] - before[0], after[1] - before[1]);
+        let again = first.inner.relate_all();
+        drop(first);
+        let mut reloads = Vec::new();
+        for _ in 0..10 {
+            let e = crate::Engine::new(dir.clone(), activity.clone());
+            let after = lines();
+            reloads.push(after[0] + after[1]);
+            drop(e);
+        }
+        println!("lines after each reload: {reloads:?}");
+        assert!(reloads.windows(2).all(|w| w[0] == w[1]), "a reload changed voices again: {reloads:?}");
+        let reloaded = crate::Engine::new(dir.clone(), activity).inner.relate_all();
+        let _ = std::fs::remove_dir_all(&dir);
+        println!("second run changed {again}, after reloading {reloaded}");
+        assert_eq!((again, reloaded), (0, 0), "comparing the languages again must change nothing");
+    }
+}

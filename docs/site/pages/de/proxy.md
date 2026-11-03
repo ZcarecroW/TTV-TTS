@@ -4,7 +4,7 @@ description: Die kleine App auf dem Voice-Creator-Pro-PC – was sie macht und j
 icon: Network
 ---
 
-Voice Creator Pro hört nur auf seinem eigenen PC (`127.0.0.1:8100`). Der **TTV-TTS Proxy** läuft daneben und lässt TTV-TTS von deinem Streaming-PC herein – verschlüsselt, nur nach dem Koppeln und nur für das, was TTV-TTS braucht. Außerdem passt er auf Voice Creator Pro auf, startet es neu, wenn es hängt oder langsam wird, und übernimmt das Berechnen von Presets – du kannst TTV-TTS dabei sogar schließen.
+Voice Creator Pro hört nur auf seinem eigenen PC (`127.0.0.1:8100`). Der **TTV-TTS Proxy** läuft daneben und lässt TTV-TTS von deinem Streaming-PC herein – verschlüsselt, nur nach dem Koppeln und nur für das, was TTV-TTS braucht. Außerdem passt er auf Voice Creator Pro auf, startet es neu, wenn es hängt oder langsam wird, und übernimmt das Berechnen von Presets – du kannst TTV-TTS dabei sogar schließen. Sollte sein eigenes Berechnen einmal stehen bleiben, während Voice Creator Pro nichts zu tun hat, startet er sich nach 20 Minuten selbst neu – tagelanges Berechnen läuft unbeaufsichtigt weiter.
 
 Er sitzt im Infobereich (neben der Uhr); ein Klick auf das Symbol öffnet sein Fenster. Beim ersten Start verbindet ihn ein kurzer Assistent mit Voice Creator Pro, legt fest, wie sich Apps anmelden, und prüft die Firewall.
 

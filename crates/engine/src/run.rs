@@ -801,7 +801,7 @@ impl Inner {
     /// Compares the languages of every definition with three or more of them
     /// again (on start: voices checked by an older version were compared
     /// pairwise, which notes languages that agree with most of the others).
-    pub(crate) fn relate_all(&self) {
+    pub(crate) fn relate_all(&self) -> usize {
         let mut groups: std::collections::HashMap<String, Vec<(LibraryEntry, bool)>> = std::collections::HashMap::new();
         for e in self.library.entries() {
             groups.entry(e.def_hash.clone()).or_default().push((e, false));
@@ -825,8 +825,9 @@ impl Inner {
                 }
             }
         }
-        if !live.is_empty() || !old.is_empty() {
-            log::info!("quality: compared the languages again, {} voices changed", live.len() + old.len());
+        let n = live.len() + old.len();
+        if n > 0 {
+            log::info!("quality: compared the languages again, {n} voices changed");
         }
         if !live.is_empty() {
             self.change(live, &[]);
@@ -834,6 +835,7 @@ impl Inner {
         if !old.is_empty() {
             self.archive.apply(old, &[]);
         }
+        n
     }
 
     /// Attempts used up for `key` in job `id`.
