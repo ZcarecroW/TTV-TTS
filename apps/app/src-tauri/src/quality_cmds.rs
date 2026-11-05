@@ -148,6 +148,7 @@ fn jobs_for(state: &AppState, keys: &[String], kind: JobKind, options: JobOption
             defs: defs.into_iter().map(|(index, def)| JobDef { index, def }).collect(),
             languages: langs.into_iter().collect(),
             options: options.clone(),
+            plan: false,
             kind,
             only,
             rounds: 2,

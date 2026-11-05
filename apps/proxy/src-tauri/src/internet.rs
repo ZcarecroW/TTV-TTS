@@ -651,6 +651,9 @@ async fn clone(State(state): S, axum::Extension(Guest(g)): axum::Extension<Guest
         };
         return api_error(StatusCode::TOO_MANY_REQUESTS, code, msg);
     }
+    if ttv_vcp::exclusive() {
+        return api_error(StatusCode::SERVICE_UNAVAILABLE, "benchmark", "The voice host is being measured right now. Try again in a few minutes.");
+    }
     // the host's own chat first, then guests one by one
     let _turn = GUEST_TURN.acquire().await;
     let deadline = Instant::now() + HOST_FIRST;

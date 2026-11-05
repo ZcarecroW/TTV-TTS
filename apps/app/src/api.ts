@@ -500,6 +500,8 @@ export interface JobOptions {
   quality?: boolean;
   /** design odd voices again automatically, keep the better one */
   improve?: boolean;
+  /** ready-made packs: finished voices leave VCP, the job runs last */
+  archive?: boolean;
 }
 
 export type JobKind = "compute" | "improve" | "review" | "import";
@@ -637,10 +639,127 @@ export interface Verified {
   measured: number;
 }
 
+export type BenchLevel = "quick" | "standard" | "thorough";
+
+export interface BenchProgress {
+  running: boolean;
+  level: BenchLevel;
+  stage: string;
+  step: number;
+  steps: number;
+  started: number;
+  error: string | null;
+}
+
+export interface BenchSeries {
+  kind: string;
+  runs: number;
+  failed: number;
+  first_secs: number | null;
+  median_secs: number;
+  p90_secs: number;
+  worst_secs: number;
+  rtf: number;
+  overhead_secs: number | null;
+  vram_mb: number | null;
+}
+
+export interface BenchSwitch {
+  from: string;
+  to: string;
+  secs: number;
+}
+
+export interface BenchDrift {
+  kind: string;
+  first_secs: number;
+  last_secs: number;
+  percent: number;
+}
+
+export interface BenchVariant {
+  low_vram: boolean;
+  asr_model: string | null;
+  series: BenchSeries[];
+  switches: BenchSwitch[];
+  voice_secs: number;
+  listen_wer: number | null;
+  vram_free_mb: number | null;
+  error: string | null;
+}
+
+export interface BenchAdvice {
+  batch_voices: number;
+  voice_secs: number;
+  switch_secs: number;
+  switch_percent: number;
+  low_vram: boolean | null;
+  asr_model: string | null;
+  design_limit: number;
+  speak_limit: number;
+  listen_limit: number;
+}
+
+export interface BenchReport {
+  at: number;
+  level: BenchLevel;
+  secs: number;
+  restarted: boolean;
+  restart_secs: number | null;
+  vcp_version: string | null;
+  hardware: string | null;
+  low_vram: boolean | null;
+  asr_model: string | null;
+  listen_wer: number | null;
+  before: BenchSeries[];
+  series: BenchSeries[];
+  switches: BenchSwitch[];
+  drift: BenchDrift[];
+  variants: BenchVariant[];
+  vram_total_mb: number | null;
+  vram_free_mb: number | null;
+  advice: BenchAdvice;
+}
+
+export interface PlanCell {
+  done: number;
+  odd: number;
+  gave_up: number;
+}
+
+export interface PlanRow {
+  id: string;
+  name: string;
+  total: number;
+  cells: PlanCell[];
+}
+
+/** All presets in all languages, computed without anybody's help. */
+export interface PlanView {
+  state: "running" | "paused" | "done";
+  languages: string[];
+  rows: PlanRow[];
+  voices_total: number;
+  voices_done: number;
+  voices_odd: number;
+  gave_up: number;
+  started: number;
+  finished: number | null;
+  eta_secs: number | null;
+}
+
+export interface VcpSettings {
+  restart_when_slow: boolean;
+}
+
 export interface EngineStatus {
   jobs: JobView[];
+  bench?: BenchProgress | null;
+  plan?: PlanView | null;
   secs_per_voice: number | null;
   library_size: number;
+  /** Voices kept only in the engine's archive (for ready-made packs). */
+  archived?: number;
   library_rev: number;
 }
 
@@ -675,6 +794,13 @@ export const presets = {
   engine: () => invoke<EngineStatus>("engine_status"),
   estimate: (voices: number, takes: number, check: boolean) => invoke<number | null>("estimate", { voices, takes, check }),
   benchmark: () => invoke<number>("benchmark"),
+  benchStart: (request: { level: BenchLevel; restart: boolean }) => invoke<void>("bench_start", { request }),
+  benchStop: () => invoke<void>("bench_stop"),
+  benchHistory: () => invoke<{ reports: BenchReport[] }>("bench_history"),
+  planStart: (languages: string[]) => invoke<PlanView>("plan_start", { languages }),
+  planControl: (action: "pause" | "resume" | "stop") => invoke<void>("plan_control", { action }),
+  vcpSettings: () => invoke<VcpSettings | null>("vcp_settings"),
+  setVcpSettings: (settings: VcpSettings) => invoke<void>("set_vcp_settings", { settings }),
   compute: (request: { preset_id: string; count: number; languages: string[]; options: JobOptions }) => invoke<JobView>("compute", { request }),
   job: (id: string, action: "pause" | "resume" | "cancel" | "remove") => invoke<void>("job_control", { id, action }),
   deleteVoices: (keys: string[]) => invoke<number>("delete_voices", { keys }),

@@ -45,8 +45,8 @@ export const guest = computed(() => {
   const h = store.app?.config.host;
   return !!(h && h.kind === "proxy" && h.guest);
 });
-/** Jobs that still work or wait. */
-export const activeJobs = computed(() => store.engine?.jobs.filter((j) => !["done", "cancelled", "failed"].includes(j.state)) ?? []);
+/** Jobs that work or wait for their turn (paused ones don't). */
+export const activeJobs = computed(() => store.engine?.jobs.filter((j) => ["running", "waiting", "queued"].includes(j.state)) ?? []);
 
 let toastTimer = 0;
 export function toast(kind: "ok" | "err" | "info", text: string, action?: { label: string; run: () => void }) {

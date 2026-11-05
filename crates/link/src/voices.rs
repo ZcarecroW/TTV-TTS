@@ -117,6 +117,8 @@ pub enum JobKind {
     Review,
     /// Save the voices of a pack in VCP (no new designs).
     Import,
+    /// Bring archived voices back into VCP from their samples (to improve them).
+    Restore,
 }
 
 /// `POST /ttv/v1/jobs`
@@ -136,6 +138,9 @@ pub struct JobRequest {
     pub rounds: u8,
     /// Import: the pack file on the engine's PC.
     pub pack: String,
+    /// Part of the automatic plan: the plan decides what happens next, the
+    /// job queues no follow-ups of its own.
+    pub plan: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
@@ -248,6 +253,10 @@ pub struct LibraryChange {
 #[serde(default)]
 pub struct EngineStatus {
     pub jobs: Vec<JobView>,
+    /// The benchmark, while it runs (and how the last run ended).
+    pub bench: Option<BenchProgress>,
+    /// The automatic plan (all presets in all languages), if there is one.
+    pub plan: Option<PlanView>,
     /// Measured seconds per voice from earlier jobs (None = never measured).
     pub secs_per_voice: Option<f32>,
     pub library_size: u32,
@@ -255,6 +264,238 @@ pub struct EngineStatus {
     pub library_rev: u64,
     /// Voices kept only in the engine's archive (for ready-made packs).
     pub archived: u32,
+}
+
+// ── benchmark ───────────────────────────────────────────────────────────
+
+/// How thoroughly the benchmark measures.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum BenchLevel {
+    /// A few minutes: is VCP as fast as it should be?
+    Quick,
+    /// The default: enough repetitions for reliable numbers.
+    #[default]
+    Standard,
+    /// Also how VCP holds up over time, and low-VRAM mode on against off.
+    Thorough,
+}
+
+/// `POST /ttv/v1/engine/bench`
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BenchRequest {
+    pub level: BenchLevel,
+    /// Measure how VCP runs right now, restart it, measure it fresh.
+    pub restart: bool,
+}
+
+impl Default for BenchRequest {
+    fn default() -> Self {
+        Self { level: BenchLevel::Standard, restart: true }
+    }
+}
+
+/// The benchmark while it runs, and how it ended.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BenchProgress {
+    pub running: bool,
+    pub level: BenchLevel,
+    /// before, restart, load, design, speak, listen, switch, drift, variant, done
+    pub stage: String,
+    pub step: u32,
+    pub steps: u32,
+    pub started: i64,
+    pub error: Option<String>,
+}
+
+/// One kind of work measured over a series of calls.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BenchSeries {
+    /// design, speak or listen
+    pub kind: String,
+    pub runs: u32,
+    pub failed: u32,
+    /// The first call of a fresh VCP (it loads the model).
+    pub first_secs: Option<f32>,
+    pub median_secs: f32,
+    pub p90_secs: f32,
+    pub worst_secs: f32,
+    /// Seconds of work per second of audio (median; lower is faster).
+    pub rtf: f32,
+    /// Speaking: what a sentence costs before its first second of audio.
+    pub overhead_secs: Option<f32>,
+    /// Video memory in use while this model was loaded.
+    pub vram_mb: Option<u32>,
+}
+
+/// What the first call costs after another model was at work.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BenchSwitch {
+    pub from: String,
+    pub to: String,
+    pub secs: f32,
+}
+
+/// Does VCP get slower as it works?
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BenchDrift {
+    pub kind: String,
+    pub first_secs: f32,
+    pub last_secs: f32,
+    /// +30 = the last calls took 30 % longer than the first ones.
+    pub percent: f32,
+}
+
+/// The same measurements with another VCP setting: low-VRAM mode switched,
+/// or a lighter speech recognition model.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BenchVariant {
+    pub low_vram: bool,
+    pub asr_model: Option<String>,
+    pub series: Vec<BenchSeries>,
+    pub switches: Vec<BenchSwitch>,
+    pub voice_secs: f32,
+    /// Share of the words misheard on real voices in all languages.
+    pub listen_wer: Option<f32>,
+    /// The least free video memory seen with this setting.
+    pub vram_free_mb: Option<u32>,
+    pub error: Option<String>,
+}
+
+/// What the numbers mean for this setup. The engine works with these.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BenchAdvice {
+    /// Voices per batch: long enough that switching models costs little.
+    pub batch_voices: u32,
+    /// Expected seconds per voice with that batch (2 takes, speech check, quality check).
+    pub voice_secs: f32,
+    /// Switching models through one batch.
+    pub switch_secs: f32,
+    /// Share of the time that goes into switching models.
+    pub switch_percent: f32,
+    /// The better low-VRAM setting, if both were measured.
+    pub low_vram: Option<bool>,
+    /// The better speech recognition model, if more than one was measured.
+    pub asr_model: Option<String>,
+    /// Slower than this counts as a drop in speed (seconds per call).
+    pub design_limit: f32,
+    pub speak_limit: f32,
+    pub listen_limit: f32,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BenchReport {
+    pub at: i64,
+    pub level: BenchLevel,
+    /// How long the benchmark took.
+    pub secs: u32,
+    pub restarted: bool,
+    pub restart_secs: Option<f32>,
+    pub vcp_version: Option<String>,
+    pub hardware: Option<String>,
+    pub low_vram: Option<bool>,
+    pub asr_model: Option<String>,
+    /// Share of the words misheard on real voices in all languages.
+    pub listen_wer: Option<f32>,
+    /// As VCP ran when the benchmark started (empty without a restart).
+    pub before: Vec<BenchSeries>,
+    pub series: Vec<BenchSeries>,
+    pub switches: Vec<BenchSwitch>,
+    pub drift: Vec<BenchDrift>,
+    pub variants: Vec<BenchVariant>,
+    pub vram_total_mb: Option<u32>,
+    /// The least free video memory seen.
+    pub vram_free_mb: Option<u32>,
+    pub advice: BenchAdvice,
+}
+
+/// `GET /ttv/v1/engine/bench`: the last runs, newest first.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BenchHistory {
+    pub reports: Vec<BenchReport>,
+}
+
+// ── automatic plan ──────────────────────────────────────────────────────
+
+/// `POST /ttv/v1/plan`: compute these presets in these languages, check
+/// them and repair what needs it, without anybody's help.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PlanRequest {
+    pub presets: Vec<PlanPreset>,
+    /// In working order.
+    pub languages: Vec<String>,
+    pub options: JobOptions,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PlanPreset {
+    pub id: String,
+    pub name: String,
+    pub defs: Vec<JobDef>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum PlanState {
+    #[default]
+    Running,
+    Paused,
+    Done,
+}
+
+/// One preset in one language.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PlanCell {
+    pub done: u32,
+    /// Finished voices that may sound odd.
+    pub odd: u32,
+    /// Voices that failed every try.
+    pub gave_up: u32,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PlanRow {
+    pub id: String,
+    pub name: String,
+    pub total: u32,
+    /// In the order of `PlanView::languages`.
+    pub cells: Vec<PlanCell>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PlanView {
+    pub state: PlanState,
+    pub languages: Vec<String>,
+    pub rows: Vec<PlanRow>,
+    pub voices_total: u32,
+    pub voices_done: u32,
+    pub voices_odd: u32,
+    pub gave_up: u32,
+    pub started: i64,
+    pub finished: Option<i64>,
+    pub eta_secs: Option<u64>,
+}
+
+/// Settings of TTV-TTS Proxy that the app changes (`/ttv/v1/vcp/settings`).
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct VcpSettings {
+    /// Restart VCP when its speed drops significantly.
+    pub restart_when_slow: bool,
 }
 
 #[cfg(test)]

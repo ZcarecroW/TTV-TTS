@@ -2,6 +2,42 @@
 
 All notable changes to TTV-TTS are listed here. Downloads: [Releases](https://github.com/ZcarecroW/TTV-TTS/releases).
 
+## [2.4.0] – 2026-11-05
+
+**Benchmark**
+
+- **A benchmark for Voice Creator Pro** on the **Voice host** page, in three levels (about 5, 12 or 45 minutes; Standard by default). It measures how VCP runs right now, restarts it, and measures it fresh: the first start of every model, each model at work with short and long audio, what each switch between two models costs, and whether it gets slower as it works. Nothing else uses VCP meanwhile: chat waits, computing continues afterwards where it stopped.
+- **Thorough** also compares low VRAM on and off and a lighter speech recognition model, and how well each hears real voices in all languages. The best setting stays.
+- Computing uses the result: batch size and the limits for a drop in speed.
+
+**Staying fast**
+
+- **Found the reason VCP sometimes loses speed**: speech recognition (4 GB) and a voice model (4.6 GB) don't fit on an 8 GB card together. When VCP doesn't unload one in time, both spill into system memory and everything gets about ten times slower until the next restart.
+- **One model in memory at a time**: with low VRAM off, TTV-TTS now makes sure the previous model is really gone before the next one loads. Speech recognition stays loaded for its whole phase, 0.6 s per clip instead of 5 s. A chat message during that phase frees it first. See the [guide](https://zcarecrow.github.io/TTV-TTS/presets#compute).
+- **Restart VCP when it gets much slower** can now be set in the app and watches computing too, not just chat. It's off by default (it used to be on without anybody choosing it). Nothing that's computed gets lost: a batch keeps its work when VCP restarts.
+
+**Computing everything, by itself**
+
+- **Compute all presets**: every built-in preset in the languages you pick, without doing anything. Language by language, each voice checked, odd ones designed again, failed ones tried again with more takes; odd voices that already left VCP come back from their samples. A grid shows every preset in every language and when it'll be done.
+- **Each model does all its work in one go**: batches of up to a whole preset instead of 16–48 voices, so VCP switches models a fifth as often. Improvements run in one go per language.
+- **What you start no longer waits behind ready-made packs**: imports go first, then checks and improvements, then what you start yourself; long archive jobs go last.
+- **Computing no longer pauses 1½ minutes every 11 minutes** while an OBS link is stored on TTV-TTS Proxy: its reader only fetched the voice list, but that counted as chat. This cost up to 13 % of the time.
+
+**A more reliable quality check, fewer voices computed twice**
+
+Measured on 10,000 real voices, 695 of them listed:
+
+- 68 % of the listed voices were odd in their sample right after designing. **A take that shows a defect now gets up to three successors while the design model is loaded**, instead of a whole improvement round later.
+- 16 % were listed only for how they spoke the one test sentence. **They now get a second opinion**: the voice says what its sample says. If that's fine, nothing is computed again.
+- 16 % were listed only because another language sounds different. **That's a note now**, not a defect.
+- **A voice without a measurable pitch is listed** unless it should sound like that. Two such voices had scored full marks.
+- The most promising take is checked first; once it's clean, the others need no listening.
+
+**A job list you can read**
+
+- On top how many voices are left and until when, then the job at work and the next three; the rest is folded by language. Paused and finished jobs have their own sections with **Remove all**. Before, every job had its own card, and paused jobs came first.
+- Long durations are shown in days and hours ("14 d 2 h").
+
 ## [2.3.4] – 2026-11-03
 
 - **Voices saved just before TTV-TTS Proxy stopped now count for their job and get checked**: a computing job writes each new voice to the library at once, but its own count only after each batch. When the proxy stopped in between (an update, a restart, a crash – and now the watchdog), the job went on, found those voices "already there" and skipped them: never counted (a language ended at 179 of 180) and never quality-checked, so they couldn't be flagged as odd or improved. The job now takes them over when it goes on.

@@ -3,7 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 
-pub const CONFIG_VERSION: u32 = 1;
+pub const CONFIG_VERSION: u32 = 2;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 #[serde(rename_all = "snake_case")]
@@ -40,8 +40,8 @@ pub struct Config {
     /// Restart VCP when its API stops answering for `hang_restart_secs`.
     pub restart_on_hang: bool,
     pub hang_restart_secs: u32,
-    /// Restart VCP at a quiet moment when it has become clearly slower than
-    /// usual (it slows down the longer it runs).
+    /// Restart VCP at a quiet moment when its speed has dropped significantly
+    /// (it slows down the longer it runs). Off unless switched on.
     pub restart_when_slow: bool,
     /// Also accept plain-HTTP connections on this port (0 = off). For older
     /// tools that can't use the proxy's certificate; the key still applies.
@@ -91,7 +91,7 @@ impl Default for Config {
             keep_vcp_running: false,
             restart_on_hang: false,
             hang_restart_secs: 180,
-            restart_when_slow: true,
+            restart_when_slow: false,
             http_port: 0,
             autostart: false,
             keep_awake: true,
@@ -134,6 +134,10 @@ impl Config {
         self.duckdns_domain = ttv_net::duckdns::clean_domain(&self.duckdns_domain);
         if !matches!(self.update_channel.as_str(), "stable" | "preview") {
             self.update_channel = "stable".into();
+        }
+        // "restart when slow" used to be on without anybody choosing it
+        if self.version < 2 {
+            self.restart_when_slow = false;
         }
         self.version = CONFIG_VERSION;
     }

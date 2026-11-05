@@ -31,7 +31,7 @@ Voice Creator Pro hält ein Modell im Speicher. Stimmen entwerfen, Spracherkennu
 
 ## Alles ist langsam geworden {#slow}
 
-Voice Creator Pro kann langsamer werden, je länger es läuft. Das **Tempo** auf der Seite [Stimmen-Host](voice-host#slow) zeigt es: um 0,5 ist auf einer RTX 3070 normal; 2 oder mehr heißt, etwas stimmt nicht. **VCP neu starten** behebt es – und mit **VCP neu starten, wenn es langsam wird** macht der Proxy das selbst in einem ruhigen Moment.
+Voice Creator Pro kann langsamer werden, je länger es läuft. Das **Tempo** auf der Seite [Stimmen-Host](voice-host#slow) zeigt es: um 0,5 ist auf einer RTX 3070 normal; 2 oder mehr heißt, etwas stimmt nicht. **VCP neu starten** behebt es – und mit **Voice Creator Pro neu starten, wenn es deutlich langsamer wird** macht der Proxy das selbst in einem ruhigen Moment.
 
 ## Eine Stimme klingt falsch {#odd-voice}
 

@@ -49,6 +49,15 @@ pub struct Settings {
 pub trait Host: Send + Sync + 'static {
     /// Speech generation (VCP directly or through the proxy); None = no host.
     fn vcp(&self) -> Option<ttv_vcp::Client>;
+    /// Only reading lists (voices, languages, settings): that isn't chat, and
+    /// computing jobs don't step aside for it.
+    fn vcp_quiet(&self) -> Option<ttv_vcp::Client> {
+        self.vcp()
+    }
+    /// VCP is taken (the benchmark): messages wait in the queue.
+    fn busy(&self) -> bool {
+        false
+    }
     /// The voice host answers (voices are loaded again when it comes back).
     fn connected(&self) -> bool;
     /// A computed preset voice by `VoiceDef::key` (definition hash + language).
@@ -1015,7 +1024,7 @@ impl<H: Host> Reader<H> {
     // ── voices ──────────────────────────────────────────────────────────────
 
     async fn refresh_voices(self: &Arc<Self>) {
-        let Some(vcp) = self.host.vcp() else { return };
+        let Some(vcp) = self.host.vcp_quiet() else { return };
         let Ok(mut all) = vcp.voices().await else { return };
         all.sort_by(|a, b| natural_cmp(&a.name, &b.name));
         let languages = vcp.languages().await.ok().map(|l| l.into_iter().flat_map(|x| [x.id.to_lowercase(), x.name.to_lowercase()]).collect());
@@ -1331,7 +1340,7 @@ impl<H: Host> Reader<H> {
                 return;
             }
             let next = {
-                let paused = self.paused.load(Ordering::Relaxed);
+                let paused = self.paused.load(Ordering::Relaxed) || self.host.busy();
                 if paused { None } else { self.queue.lock().pop_front() }
             };
             let Some(mut item) = next else {

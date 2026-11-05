@@ -1,6 +1,6 @@
 // Demo backend: presets, computing jobs and the library. Used by demo.ts.
 // Reads the real built-in preset files; jobs progress on a timer.
-import type { CatalogPack, EngineStatus, Issue, JobKind, JobView, Parsed, Preset, PresetDetail, PresetView, Quality, ReviewItem, VoiceDef } from "./api";
+import type { BenchLevel, BenchReport, BenchSeries, CatalogPack, EngineStatus, Issue, JobKind, JobView, Parsed, PlanView, Preset, PresetDetail, PresetView, Quality, ReviewItem, VoiceDef } from "./api";
 
 const files = import.meta.glob("../src-tauri/presets/*.txt", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
 
@@ -103,6 +103,38 @@ function place(key: string): [Preset, number] | null {
 function job(kind: JobKind, p: Preset, languages: string[], total: number, options: JobView["options"]): JobView {
   return { id: `job-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, preset_id: p.id, preset_name: p.name, languages, options, kind, total, done: 0, failed: 0, flagged: 0, improved: 0, state: "queued", phase: "", current: null, batch: 0, step: 0, steps: 0, created: Math.floor(Date.now() / 1000), finished: null, secs_per_voice: 10.8, eta_secs: Math.round(total * 10.8), error: null };
 }
+const benchReports: BenchReport[] = [];
+let restartWhenSlow = false;
+const series = (kind: string, median: number, first: number): BenchSeries => ({ kind, runs: 16, failed: 0, first_secs: first, median_secs: median, p90_secs: median * 1.1, worst_secs: median * 1.3, rtf: median / 5, overhead_secs: null, vram_mb: 5200 });
+function demoReport(level: BenchLevel): BenchReport {
+  const sw = (from: string, to: string, secs: number) => ({ from, to, secs });
+  return {
+    at: Math.floor(Date.now() / 1000),
+    level,
+    secs: 720,
+    restarted: true,
+    restart_secs: 12,
+    vcp_version: "2.4.12",
+    hardware: "GPU: RTX 3070 (8GB)",
+    low_vram: false,
+    asr_model: "higher_quality",
+    listen_wer: level === "thorough" ? 0.01 : null,
+    before: [series("design", 3.5, 6), series("speak", 3.4, 6), series("listen", 0.7, 3)],
+    series: [series("design", 3.3, 23), series("speak", 1.6, 18), series("listen", 0.6, 9)],
+    switches: [sw("design", "listen", 4), sw("listen", "speak", 11), sw("speak", "listen", 6), sw("listen", "design", 12), sw("design", "speak", 14), sw("speak", "design", 13)],
+    drift: [{ kind: "design", first_secs: 3.3, last_secs: 3.4, percent: 3 }],
+    variants: level === "thorough" ? [{ low_vram: true, asr_model: null, series: [], switches: [], voice_secs: 26.4, listen_wer: null, vram_free_mb: null, error: null }, { low_vram: false, asr_model: "standard", series: [], switches: [], voice_secs: 11.1, listen_wer: 0.012, vram_free_mb: 500, error: null }] : [],
+    vram_total_mb: 8192,
+    vram_free_mb: 2294,
+    advice: { batch_voices: 240, voice_secs: 11.4, switch_secs: 33, switch_percent: 1.2, low_vram: level === "thorough" ? false : null, asr_model: level === "thorough" ? "standard" : null, design_limit: 8.3, speak_limit: 4, listen_limit: 1.5 },
+  };
+}
+function demoPlan(languages: string[]): PlanView {
+  const rows = all.filter((p) => p.builtin).map((p, i) => ({ id: p.id, name: p.name, total: 240, cells: languages.map((_, l) => ({ done: l === 0 ? 240 : l === 1 ? Math.max(0, 240 - i * 40) : 0, odd: l === 0 ? 3 : 0, gave_up: 0 })) }));
+  const done = rows.reduce((n, r) => n + r.cells.reduce((m, c) => m + c.done, 0), 0);
+  return { state: "running", languages, rows, voices_total: rows.length * languages.length * 240, voices_done: done, voices_odd: rows.length * 3, gave_up: 0, started: Math.floor(Date.now() / 1000), finished: null, eta_secs: 460_000 };
+}
+
 /** Keys an improve or review job still has to do. */
 const pending = new Map<string, string[]>();
 
@@ -241,6 +273,38 @@ export function presetCommand(cmd: string, args: Record<string, unknown>, emit: 
       return { value: Math.round(Number(args.voices) * (6 + 2.4 * Number(args.takes)) * (args.check ? 1 : 0.85)) };
     case "benchmark":
       return { value: 4.1 };
+    case "bench_history":
+      return { value: { reports: structuredClone(benchReports) } };
+    case "bench_start": {
+      engine.bench = { running: true, level: (args.request as { level: BenchLevel }).level, stage: "before", step: 0, steps: 4, started: 0, error: null };
+      const step = () => {
+        const b = engine.bench!;
+        if (!b.running) return;
+        b.step++;
+        b.stage = ["before", "restart", "design", "switch", "done"][b.step] ?? "done";
+        if (b.step >= b.steps) {
+          b.running = false;
+          benchReports.unshift(demoReport(b.level));
+        } else setTimeout(step, 250);
+      };
+      setTimeout(step, 250);
+      return { value: null };
+    }
+    case "bench_stop":
+      if (engine.bench) Object.assign(engine.bench, { running: false, error: "stopped" });
+      return { value: null };
+    case "vcp_settings":
+      return { value: { restart_when_slow: restartWhenSlow } };
+    case "set_vcp_settings":
+      restartWhenSlow = (args.settings as { restart_when_slow: boolean }).restart_when_slow;
+      return { value: null };
+    case "plan_start":
+      engine.plan = demoPlan(args.languages as string[]);
+      return { value: structuredClone(engine.plan) };
+    case "plan_control":
+      if (args.action === "stop") engine.plan = null;
+      else if (engine.plan) engine.plan.state = args.action === "pause" ? "paused" : "running";
+      return { value: null };
     case "compute": {
       const r = args.request as { preset_id: string; count: number; languages: string[]; options: JobView["options"] };
       const p = find(r.preset_id);

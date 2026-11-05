@@ -80,6 +80,9 @@ pub async fn handler(State(state): State<Arc<AppState>>, req: Request) -> Respon
     }
     let vcp = state.vcp();
     let (parts, body) = req.into_parts();
+    if ttv_vcp::exclusive() && ttv_vcp::is_work(&parts.method, parts.uri.path()) {
+        return api_error(StatusCode::SERVICE_UNAVAILABLE, "benchmark", "Voice Creator Pro is being measured. It's free again when the benchmark ends.");
+    }
     let url = format!("{}{}", vcp.base(), target_path(&parts.uri));
     // One job at a time at VCP, shared with the computing jobs; held until
     // the answer has been passed on.

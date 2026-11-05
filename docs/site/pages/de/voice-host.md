@@ -50,7 +50,7 @@ Ein Freund kann dir seine berechneten Stimmen über das Internet leihen. Er schi
 
 ### Wenn Voice Creator Pro langsam wird {#slow}
 
-Voice Creator Pro kann langsamer werden, je länger es läuft; ein Neustart bringt das Tempo zurück. TTV-TTS misst das Tempo bei jeder Nachricht. Wird es deutlich langsamer als sonst, startet der Proxy Voice Creator Pro im nächsten ruhigen Moment im Chat von selbst neu (höchstens alle 30 Minuten) und vermerkt das in seinem Protokoll. Abschalten kannst du das im Proxy unter **Voice Creator Pro**.
+Voice Creator Pro kann langsamer werden, je länger es läuft; ein Neustart bringt das Tempo zurück. TTV-TTS misst das Tempo bei jeder Nachricht und beim Berechnen. Schalte **Voice Creator Pro neu starten, wenn es deutlich langsamer wird** ein (auf der Seite **Stimmen-Host**, standardmäßig aus): Wird es deutlich langsamer, als der [Benchmark](presets#benchmark) gemessen hat, startet der Proxy es im nächsten ruhigen Moment von selbst neu (höchstens alle 30 Minuten) und vermerkt das in seinem Protokoll. Berechnetes geht dabei nicht verloren.
 
 ### Wenn der Stimmen-Host ausfällt {#down}
 

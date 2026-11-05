@@ -35,7 +35,7 @@ At a glance: whether Voice Creator Pro runs and its HTTP API answers, the loaded
 - **Start & watchdog**:
   - **Start VCP together with the proxy** (off by default), **Keep VCP running** (starts it again if it closes).
   - **Restart VCP when it hangs** – after the time you choose without an answer.
-  - **Restart VCP when it gets slow** – see [When Voice Creator Pro gets slow](voice-host#slow). The current and the usual **speed** are shown here.
+  - **Restart VCP when it gets much slower** (off by default) – see [When Voice Creator Pro gets slow](voice-host#slow). The current and the usual **speed** are shown here.
 
 ## Internet {#internet}
 

@@ -32,3 +32,18 @@ async fn a_chat_request_that_gives_up_doesnt_block_jobs() {
     drop(job);
     tokio::time::timeout(Duration::from_secs(2), chat).await.expect("chat got its turn").unwrap();
 }
+
+/// Chat first frees what computing has loaded, once, before it reaches VCP.
+#[tokio::test]
+async fn chat_runs_what_has_to_happen_first() {
+    use std::sync::Arc;
+    use std::sync::atomic::{AtomicU32, Ordering};
+    let n = Arc::new(AtomicU32::new(0));
+    let m = n.clone();
+    ttv_vcp::before_next_chat(Some(Box::pin(async move {
+        m.fetch_add(1, Ordering::SeqCst);
+    })));
+    drop(ttv_vcp::turn("/api/v1/generation/clone").await);
+    drop(ttv_vcp::turn("/api/v1/generation/clone").await);
+    assert_eq!(n.load(Ordering::SeqCst), 1);
+}

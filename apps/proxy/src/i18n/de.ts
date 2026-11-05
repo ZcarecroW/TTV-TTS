@@ -206,7 +206,7 @@ const de: typeof en = {
     startWith: "VCP zusammen mit dem Proxy starten",
     keepRunning: "VCP am Laufen halten",
     restartHang: "VCP neu starten, wenn es hängt",
-    restartSlow: "VCP neu starten, wenn es langsam wird",
+    restartSlow: "VCP neu starten, wenn es deutlich langsamer wird",
     speed: "Tempo",
     speedValue: "{s} s pro Sekunde Sprache",
     speedUsual: "sonst {s}",

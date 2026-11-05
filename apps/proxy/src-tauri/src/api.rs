@@ -31,6 +31,7 @@ pub fn routes() -> Router<Arc<AppState>> {
         .route("/vcp/start", post(vcp_start))
         .route("/vcp/stop", post(vcp_stop))
         .route("/vcp/restart", post(vcp_restart))
+        .route("/vcp/settings", get(vcp_settings).put(vcp_settings_put))
         .route("/update/check", post(update_check))
         .route("/update/install", post(update_install))
         .route("/diagnostics", get(diagnostics))
@@ -150,6 +151,20 @@ async fn vcp_restart(State(state): S) -> Response {
     ack(crate::vcp_watch::restart(&state).await)
 }
 
+async fn vcp_settings(State(state): S) -> Json<ttv_link::VcpSettings> {
+    Json(ttv_link::VcpSettings { restart_when_slow: state.cfg.read().restart_when_slow })
+}
+
+async fn vcp_settings_put(State(state): S, Json(s): Json<ttv_link::VcpSettings>) -> Json<ttv_link::VcpSettings> {
+    state.cfg.write().restart_when_slow = s.restart_when_slow;
+    if let Err(e) = state.save_config() {
+        log::warn!("saving the settings failed: {e}");
+    }
+    log::info!("restart VCP when it gets much slower: {}", s.restart_when_slow);
+    state.publish();
+    Json(s)
+}
+
 async fn update_check(State(state): S) -> Response {
     let Some(app) = state.app().cloned() else { return api_error(StatusCode::SERVICE_UNAVAILABLE, "internal", "not ready") };
     crate::updater::check(&app, &state).await;
@@ -186,6 +201,10 @@ pub fn engine_routes() -> Router<Arc<AppState>> {
     Router::new()
         .route("/engine", get(engine_status))
         .route("/engine/benchmark", post(engine_benchmark))
+        .route("/engine/bench", get(bench_history).post(bench_start))
+        .route("/engine/bench/stop", post(bench_stop))
+        .route("/plan", post(plan_start))
+        .route("/plan/{action}", post(plan_control))
         .route("/engine/estimate", get(engine_estimate))
         .route("/library", get(library))
         .route("/library/delete", post(library_delete))
@@ -505,6 +524,60 @@ async fn pack_import(State(state): S, body: axum::body::Body) -> Response {
 
 async fn engine_status(State(state): S) -> Json<ttv_link::EngineStatus> {
     Json(state.engine.status())
+}
+
+/// What the benchmark may use on this PC.
+fn bench_tools(state: &Arc<AppState>) -> ttv_engine::BenchTools {
+    const MB: u64 = 1 << 20;
+    let st = state.clone();
+    let restart: ttv_engine::Restart = Arc::new(move || {
+        let st = st.clone();
+        Box::pin(async move {
+            let r = crate::vcp_watch::restart(&st).await;
+            ttv_vcp::perf::clear_recent();
+            r
+        })
+    });
+    let vram: ttv_engine::Vram = Arc::new(|| {
+        Box::pin(async {
+            let s = crate::sysmon::sample_once().await;
+            let g = s.gpus.iter().find(|g| g.vram_total.is_some())?;
+            Some(((g.vram_used? / MB) as u32, (g.vram_total? / MB) as u32))
+        })
+    });
+    // it can't be restarted without knowing where it's installed
+    let can_restart = state.cfg.read().vcp_exe.as_deref().is_some_and(|e| std::path::Path::new(e).exists());
+    ttv_engine::BenchTools { restart: can_restart.then_some(restart), vram: Some(vram) }
+}
+
+async fn bench_start(State(state): S, Json(req): Json<ttv_link::BenchRequest>) -> Response {
+    match state.engine.bench_start(req, bench_tools(&state)) {
+        Ok(()) => Json(serde_json::json!({ "ok": true })).into_response(),
+        Err(e) => api_error(StatusCode::CONFLICT, "benchmark", e),
+    }
+}
+
+async fn bench_stop(State(state): S) -> Json<serde_json::Value> {
+    state.engine.bench_stop();
+    Json(serde_json::json!({ "ok": true }))
+}
+
+async fn bench_history(State(state): S) -> Json<ttv_link::BenchHistory> {
+    Json(state.engine.bench_history())
+}
+
+async fn plan_start(State(state): S, Json(req): Json<ttv_link::PlanRequest>) -> Response {
+    match state.engine.plan_start(req) {
+        Ok(v) => Json(v).into_response(),
+        Err(e) => api_error(StatusCode::BAD_REQUEST, "plan", e),
+    }
+}
+
+async fn plan_control(State(state): S, axum::extract::Path(action): axum::extract::Path<String>) -> Response {
+    match state.engine.plan_control(&action) {
+        Ok(()) => Json(serde_json::json!({ "ok": true })).into_response(),
+        Err(e) => api_error(StatusCode::BAD_REQUEST, "plan", e),
+    }
 }
 
 async fn engine_benchmark(State(state): S) -> Response {

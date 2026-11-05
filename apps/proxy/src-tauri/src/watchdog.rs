@@ -77,6 +77,10 @@ pub async fn run(app: AppHandle, state: Arc<AppState>) {
             restart(&app);
             return;
         }
+        // the benchmark has VCP to itself: jobs wait on purpose
+        if ttv_vcp::exclusive() {
+            continue;
+        }
         let still = watch.look(progress(&state.engine.status()), Instant::now());
         let vcp_idle = {
             let v = state.vcp_state.read();

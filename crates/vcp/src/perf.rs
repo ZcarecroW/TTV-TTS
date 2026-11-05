@@ -114,6 +114,16 @@ pub fn set_usual(map: HashMap<String, f32>) {
     }
 }
 
+/// The benchmark measured a fresh VCP: this is the usual speed now.
+pub fn set_usual_now(rtf: f32) {
+    let mut s = lock();
+    if !s.model.is_empty() && rtf.is_finite() && rtf > 0.0 {
+        let model = s.model.clone();
+        s.best.insert(model, rtf);
+    }
+    s.recent.clear();
+}
+
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Speed {
     /// Median of the recent clips (None until there are any).

@@ -3,10 +3,12 @@ import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { duration } from "@ttv-tts/ui/format";
-import { Bolt, CircleCheck, ClockRotate, Download, Gauge, iconByName, Plus, Sparkle, Spinner, Warning } from "@ttv-tts/ui/icons";
+import { Bolt, CircleCheck, ClockRotate, Download, Gauge, iconByName, Layers, Plus, Sparkle, Spinner, Warning } from "@ttv-tts/ui/icons";
 import { api, packs, presets, type CatalogPack, type ClassicFound, type PresetView } from "../api";
 import ComputeDialog from "../components/ComputeDialog.vue";
 import JobList from "../components/JobList.vue";
+import PlanCard from "../components/PlanCard.vue";
+import PlanDialog from "../components/PlanDialog.vue";
 import PresetDetailDialog from "../components/PresetDetailDialog.vue";
 import PresetEditorDialog from "../components/PresetEditorDialog.vue";
 import ReviewDialog from "../components/ReviewDialog.vue";
@@ -26,6 +28,7 @@ const review = ref<string | null>(null);
 /** A pack file to import (picked). */
 const importing = ref<string | null>(null);
 const exporting = ref<{ id: string; keys: string[] } | null>(null);
+const planning = ref(false);
 /** Ready-made packs (GitHub); empty while unknown or offline. */
 const catalog = ref<CatalogPack[]>([]);
 /** A preset id, "" for all presets at once. */
@@ -123,6 +126,8 @@ function openEditor(id?: string) {
       <button class="btn btn-primary btn-sm" @click="review = ''">{{ t("quality.open") }}</button>
     </div>
 
+    <PlanCard v-if="!guest" />
+
     <section v-if="store.engine?.jobs.length && !guest" class="card p-5">
       <div class="card-head"><Sparkle />{{ t("jobs.title") }}<span v-if="activeJobs.length" class="badge badge-accent ml-1">{{ activeJobs.length }}</span><UiDocs class="ml-auto" page="presets" anchor="compute" /></div>
       <p class="muted mb-3 text-sm">{{ host?.kind === "direct" ? t("jobs.hintDirect") : t("jobs.hintProxy") }}</p>
@@ -146,6 +151,7 @@ function openEditor(id?: string) {
       <UiTip v-if="connected && librarySize" :text="t('tips.verify')" />
       <button v-if="catalog.length" class="btn ml-auto" :disabled="!connected" :data-tip="t('downloads.allTip')" @click="downloading = ''"><Download :size="16" />{{ t("downloads.allButton") }}</button>
       <button class="btn" :class="!catalog.length && 'ml-auto'" :disabled="!connected" :data-tip="t('packs.importTip')" @click="pickPack"><Download :size="16" />{{ t("packs.import") }}</button>
+      <button v-if="connected && !store.engine?.plan" class="btn" @click="planning = true"><Layers :size="16" />{{ t("plan.start") }}</button>
       <button class="btn btn-primary" @click="openEditor()"><Plus :size="16" />{{ t("presets.new") }}</button>
     </div>
 
@@ -183,6 +189,7 @@ function openEditor(id?: string) {
     <PresetDetailDialog v-if="detail" :preset-id="detail" @close="detail = null" @compute="openCompute" @edit="openEditor" @export="(id, keys) => (exporting = { id, keys })" />
     <ExportDialog v-if="exporting" :preset-id="exporting.id" :keys="exporting.keys.length ? exporting.keys : undefined" @close="exporting = null" />
     <ComputeDialog v-if="computeFor" :preset-id="computeFor" @close="computeFor = null" />
+    <PlanDialog v-if="planning" @close="planning = false" />
     <DownloadDialog v-if="downloading !== null" :preset-id="downloading || undefined" :catalog="catalog" @close="downloading = null" />
     <ImportDialog v-if="importing" :path="importing" @close="importing = null" />
     <ReviewDialog v-if="review !== null" :preset-id="review || null" @close="review = null" />

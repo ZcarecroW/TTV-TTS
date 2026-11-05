@@ -50,7 +50,7 @@ A friend can lend you their computed voices over the internet. They send you an 
 
 ### When Voice Creator Pro gets slow {#slow}
 
-Voice Creator Pro can become slower the longer it runs; a restart brings it back. TTV-TTS measures the speed on every message. If it becomes clearly slower than usual, the proxy restarts Voice Creator Pro by itself at the next quiet moment in chat (at most every 30 minutes) and says so in its log. You can switch this off in the proxy under **Voice Creator Pro**.
+Voice Creator Pro can become slower the longer it runs; a restart brings it back. TTV-TTS measures the speed on every message and while it computes. Switch on **Restart Voice Creator Pro when it gets much slower** (on the **Voice host** page, off by default): if it becomes clearly slower than the [benchmark](presets#benchmark) measured, the proxy restarts it by itself at the next quiet moment (at most every 30 minutes) and says so in its log. Nothing that's computed gets lost.
 
 ### When the voice host is down {#down}
 

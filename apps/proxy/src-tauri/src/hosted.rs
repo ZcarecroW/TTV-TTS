@@ -120,6 +120,14 @@ impl Host for ProxyHost {
         Some(st.vcp())
     }
 
+    fn vcp_quiet(&self) -> Option<ttv_vcp::Client> {
+        Some(self.state.upgrade()?.vcp())
+    }
+
+    fn busy(&self) -> bool {
+        ttv_vcp::exclusive()
+    }
+
     fn connected(&self) -> bool {
         self.state.upgrade().is_some_and(|s| s.vcp_state.read().reachable)
     }

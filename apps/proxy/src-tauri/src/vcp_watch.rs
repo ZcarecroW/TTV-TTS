@@ -17,6 +17,7 @@ const TICK: Duration = Duration::from_secs(3);
 const DETAIL_EVERY: Duration = Duration::from_secs(15);
 const SCAN_EVERY: Duration = Duration::from_secs(15);
 const START_TIMEOUT: Duration = Duration::from_secs(240);
+const READY_AFTER_START: Duration = Duration::from_secs(8);
 
 /// Set while the user stopped VCP on purpose (no automatic restart).
 static STOPPED_ON_PURPOSE: AtomicBool = AtomicBool::new(false);
@@ -175,6 +176,8 @@ async fn tick(state: &Arc<AppState>, sys: &mut Option<System>, last_detail: &mut
     s.speed = round(sp.now);
     s.usual_speed = round(sp.usual);
 
+    s.benchmark = ttv_vcp::exclusive();
+
     let changed = s != before;
     *state.vcp_state.write() = s;
     changed
@@ -296,7 +299,7 @@ pub async fn run(state: Arc<AppState>) {
             }
             saved_usual = usual;
         }
-        if when_slow && reachable && !starting && !SLOW_GAVE_UP.load(Ordering::Relaxed) && ttv_vcp::perf::speed().slow() && !SLOW_RESTART.swap(true, Ordering::Relaxed) {
+        if when_slow && reachable && !starting && !ttv_vcp::exclusive() && !SLOW_GAVE_UP.load(Ordering::Relaxed) && ttv_vcp::perf::speed().slow() && !SLOW_RESTART.swap(true, Ordering::Relaxed) {
             let st = state.clone();
             tokio::spawn(async move {
                 restart_slow(st).await;
@@ -327,7 +330,7 @@ pub async fn run(state: Arc<AppState>) {
                 tokio::spawn(async move {
                     let _ = start(&st).await;
                 });
-            } else if hang && running && !purposely && since.elapsed() > Duration::from_secs(hang_secs as u64) {
+            } else if hang && running && !purposely && !ttv_vcp::exclusive() && since.elapsed() > Duration::from_secs(hang_secs as u64) {
                 log::warn!("Voice Creator Pro runs but has not answered for {hang_secs} s - restarting it");
                 down_since = None;
                 let st = state.clone();
@@ -445,7 +448,11 @@ pub async fn stop(state: &Arc<AppState>) -> Result<String, String> {
 pub async fn restart(state: &Arc<AppState>) -> Result<String, String> {
     stop(state).await?;
     tokio::time::sleep(Duration::from_secs(2)).await;
-    start(state).await
+    let m = start(state).await?;
+    // its API answers seconds before it can work (HTTP 500 until then), and
+    // whoever restarted it goes straight back to work
+    tokio::time::sleep(READY_AFTER_START).await;
+    Ok(m)
 }
 
 // ── diagnostics ─────────────────────────────────────────────────────────

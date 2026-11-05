@@ -6,6 +6,7 @@ import UiTip from "@ttv-tts/ui/components/UiTip.vue";
 import { Bolt, Download, Link, Microchip, Play, Power, Ram, Refresh, Server, Temperature, Waveform } from "@ttv-tts/ui/icons";
 import { bytes } from "@ttv-tts/ui/format";
 import { api, friends } from "../api";
+import BenchCard from "../components/BenchCard.vue";
 import HostSetup from "../components/HostSetup.vue";
 import FriendsCard from "@ttv-tts/ui/components/FriendsCard.vue";
 import { apply, config, guest, host, run, store, toast } from "../store";
@@ -128,6 +129,7 @@ async function forget() {
       </div>
 
       <p v-if="guest" class="notice notice-info text-sm">{{ t("host.guestNote", { name: cfg.kind === "proxy" ? cfg.name : "" }) }}</p>
+      <BenchCard v-if="h.connected && !guest" />
       <FriendsCard v-if="h.kind === 'proxy' && h.connected && !guest" :api="friends" :busy="store.busy" :run="run" :toast="toast" />
       <section v-if="h.kind === 'proxy' && h.connected && !guest" class="card p-5">
         <div class="card-head"><Microchip />{{ t("host.systemTitle") }}</div>

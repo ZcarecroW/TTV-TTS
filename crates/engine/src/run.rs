@@ -10,7 +10,8 @@ use base64::Engine as _;
 use ttv_link::{JobKind, JobRequest, JobState, LibraryEntry, Quality, VoiceDef};
 
 use crate::quality::{self, Analysis, FLAG};
-use crate::{ATTEMPTS, BATCH, BATCH_ARCHIVE, Inner, MAX_WER, MAX_WER_CJK, Spoken, Trouble, audio, design, instruct, langs, mix_levels, save_voice, transcribe};
+use crate::models::Listening;
+use crate::{ATTEMPTS, BATCH, DESIGNING, Inner, LISTENING, MAX_WER, MAX_WER_CJK, Spoken, Trouble, audio, design, instruct, langs, mix_levels, save_voice, transcribe};
 
 pub(crate) struct Take {
     pub wav: Vec<u8>,
@@ -19,7 +20,7 @@ pub(crate) struct Take {
     pub analysis: Analysis,
 }
 
-struct Item {
+pub(crate) struct Item {
     index: u32,
     def: VoiceDef,
     lang: &'static langs::DesignLang,
@@ -38,6 +39,17 @@ struct Fresh {
     spoken: Spoken,
 }
 
+/// Takes per voice at most: a take that shows a defect right after designing
+/// gets a successor while the design model is loaded. 68 % of all recomputed
+/// voices were odd in their sample already, and were only redone a job later.
+const MAX_TAKES: usize = 5;
+/// A take this clean needs no comparison with the other takes.
+const CLEAN_WER: f32 = 0.02;
+
+fn max_wer(lang: &langs::DesignLang) -> f32 {
+    if matches!(lang.code, "ja" | "zh" | "ko") { MAX_WER_CJK } else { MAX_WER }
+}
+
 /// Reference samples must be 3–10.5 s long (VCP clones best from that).
 fn plausible(t: &Take) -> bool {
     (3.0..=10.5).contains(&t.duration)
@@ -51,7 +63,7 @@ fn label(it: &Item) -> String {
 fn select(inner: &Inner, job: &crate::StoredJob) -> Vec<Item> {
     let req = &job.request;
     let only: HashSet<&str> = req.only.iter().map(String::as_str).collect();
-    let size = if req.options.archive { BATCH_ARCHIVE } else { BATCH };
+    let size = inner.batch_size(req.options.archive);
     let mut items = Vec::new();
     for d in &req.defs {
         for code in &req.languages {
@@ -74,6 +86,22 @@ fn select(inner: &Inner, job: &crate::StoredJob) -> Vec<Item> {
         }
     }
     items
+}
+
+/// What's left of a batch that stopped halfway.
+fn resume(inner: &Inner, job: &crate::StoredJob, items: Vec<Item>) -> Vec<Item> {
+    let kind = job.request.kind;
+    items
+        .into_iter()
+        .filter(|it| !job.failed.contains(&it.key) && !job.processed.contains(&it.key))
+        .filter(|it| kind != JobKind::Compute || !(inner.library.contains(&it.key) || inner.archive.contains(&it.key)))
+        .filter_map(|mut it| {
+            if kind == JobKind::Improve {
+                it.old = Some(inner.library.get(&it.key)?);
+            }
+            Some(it)
+        })
+        .collect()
 }
 
 /// Voices of this job that are in the library but not in the job: saved just
@@ -121,13 +149,17 @@ pub(crate) async fn batch(inner: &Inner, vcp: &ttv_vcp::Client, id: &str) -> Res
     if job.request.kind == JobKind::Import {
         return import(inner, vcp, id, &job).await;
     }
+    if job.request.kind == JobKind::Restore {
+        return restore(inner, vcp, id, &job).await;
+    }
     let job = if job.request.kind == JobKind::Compute && adopt_saved(inner, id, &job) {
         let Some(j) = inner.jobs.lock().iter().find(|j| j.view.id == id).cloned() else { return Ok(()) };
         j
     } else {
         job
     };
-    let items = select(inner, &job);
+    let parked = inner.parked.lock().remove(id);
+    let mut items = parked.map(|p| resume(inner, &job, p)).filter(|p| !p.is_empty()).unwrap_or_else(|| select(inner, &job));
     if items.is_empty() {
         finish(inner, id, &job);
         return Ok(());
@@ -141,7 +173,14 @@ pub(crate) async fn batch(inner: &Inner, vcp: &ttv_vcp::Client, id: &str) -> Res
     let t0 = Instant::now();
     let result = match job.request.kind {
         JobKind::Review => review(inner, vcp, id, items).await,
-        _ => compute(inner, vcp, id, &job.request, items).await,
+        _ => {
+            let r = compute(inner, vcp, id, &job.request, &mut items).await;
+            // VCP restarted or the job was paused: what's designed stays
+            if r.is_err() || inner.state_of(id) == Some(JobState::Paused) {
+                inner.parked.lock().insert(id.to_string(), items);
+            }
+            r
+        }
     };
     let finished = result?;
     if finished > 0 {
@@ -164,6 +203,19 @@ fn finish(inner: &Inner, id: &str, job: &crate::StoredJob) {
     });
     log::info!("job {id} finished");
     let req = &job.request;
+    // the plan decides what comes next; a finished job needs no voice list
+    if req.plan {
+        crate::plan::job_finished(inner, req.kind, &job.failed, &req.only);
+        inner.update(id, |j| {
+            j.request.defs = Vec::new();
+            j.request.only = Vec::new();
+            j.created = Vec::new();
+            j.processed = Vec::new();
+            j.attempts = Default::default();
+        });
+        inner.save_jobs();
+        return;
+    }
     if !req.options.quality || job.followed || !matches!(req.kind, JobKind::Compute | JobKind::Review) {
         inner.save_jobs();
         return;
@@ -195,24 +247,86 @@ fn finish(inner: &Inner, id: &str, job: &crate::StoredJob) {
     inner.save_jobs();
 }
 
+/// The speech check of a batch. False if the job was paused or cancelled.
+async fn listen_to_takes(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobRequest, items: &mut [Item], listening: &Listening, todo: usize) -> Result<bool, String> {
+    let (mut heard_any, mut last_failure) = (false, None);
+    for it in items.iter_mut() {
+        if !it.lang.asr {
+            continue;
+        }
+        let (name, lang) = (label(it), it.lang);
+        // The most promising take first: once one is clean, the others
+        // need no listening (when the streamer picks, all do).
+        let mut order: Vec<(usize, f32)> = it.takes.iter().enumerate().filter(|(_, t)| plausible(t) && t.wer.is_none()).map(|(i, t)| (i, quality::take_score(&it.def, lang, &t.analysis, None))).collect();
+        order.sort_by(|a, b| b.1.total_cmp(&a.1));
+        let mut clean = false;
+        for (i, _) in order {
+            if clean {
+                inner.update(id, |j| j.view.step += 1);
+                continue;
+            }
+            if !inner.gap_for(id, crate::SWITCH_GAP).await {
+                return Ok(false);
+            }
+            let l = name.clone();
+            inner.update(id, |j| j.view.current = Some(l));
+            listening.keep_ready();
+            let take = &mut it.takes[i];
+            let t = Instant::now();
+            match transcribe_retry(vcp, &take.wav, lang).await {
+                Ok(heard) => {
+                    inner.speed_sample(LISTENING, t.elapsed().as_secs_f32());
+                    heard_any = true;
+                    let wer = langs::error_rate(lang.text, &heard, lang.code);
+                    take.wer = Some(wer);
+                    clean = !req.options.pick && wer <= CLEAN_WER;
+                }
+                Err(Trouble::Down(e)) => return Err(format!("speech check: {e}")),
+                Err(Trouble::Failed(e)) => {
+                    log::warn!("speech check {name}: {e}");
+                    take.wer = Some(1.0);
+                    last_failure = Some(e);
+                }
+            }
+            inner.update(id, |j| j.view.step += 1);
+        }
+    }
+    // Speech recognition failed for every take: it's broken, not the voices.
+    if todo > 0 && !heard_any {
+        return Err(format!("VCP's speech recognition doesn't work: {}", last_failure.unwrap_or_default()));
+    }
+    Ok(true)
+}
+
 /// Computes new voices (Compute) or candidates for odd ones (Improve).
 /// Returns how many voices were finished.
-async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobRequest, mut items: Vec<Item>) -> Result<u32, String> {
+async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobRequest, items: &mut [Item]) -> Result<u32, String> {
     let improving = req.kind == JobKind::Improve;
     let takes = if improving { req.options.takes.clamp(2, 3) } else { req.options.takes.clamp(1, 3) };
 
-    // 1. design all takes (design checkpoint)
-    inner.phase(id, "design", items.len() * takes as usize);
+    // 1. design all takes (design checkpoint); a batch that goes on keeps
+    // the takes it has
+    inner.phase(id, "design", items.iter().map(|it| (takes as usize).saturating_sub(it.takes.len())).sum());
     let mut last_error = None;
+    let spare = req.options.quality && !req.options.pick;
     for it in items.iter_mut() {
-        for _ in 0..takes {
+        for n in it.takes.len()..MAX_TAKES {
+            if n >= takes as usize {
+                let best = it.takes.iter().filter(|t| plausible(t)).map(|t| quality::take_score(&it.def, it.lang, &t.analysis, None)).fold(f32::MIN, f32::max);
+                if !spare || best >= FLAG {
+                    break;
+                }
+                inner.update(id, |j| j.view.steps += 1);
+            }
             if !inner.gap_for(id, crate::SWITCH_GAP).await {
                 return Ok(0);
             }
             let l = label(it);
             inner.update(id, |j| j.view.current = Some(l));
+            let t = Instant::now();
             match design(vcp, &instruct(&it.def), it.lang).await {
                 Ok(wav) => {
+                    inner.speed_sample(DESIGNING, t.elapsed().as_secs_f32());
                     let duration = ttv_vcp::wav::duration_secs(&wav).unwrap_or(0.0);
                     let analysis = audio::decode(&wav).map(|(s, r)| quality::analyze(&s, r)).unwrap_or_default();
                     it.takes.push(Take { wav, duration, wer: None, analysis });
@@ -238,46 +352,24 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
     // 2. speech check (speech recognition model). A take only counts as
     // checked when VCP heard it; one VCP couldn't transcribe is not accepted.
     if req.options.speech_check {
-        let todo: usize = items.iter().filter(|it| it.lang.asr).map(|it| it.takes.iter().filter(|t| plausible(t)).count()).sum();
+        let todo: usize = items.iter().filter(|it| it.lang.asr).map(|it| it.takes.iter().filter(|t| plausible(t) && t.wer.is_none()).count()).sum();
         inner.phase(id, "check", todo);
-        let (mut heard_any, mut last_failure) = (false, None);
-        for it in items.iter_mut() {
-            if !it.lang.asr {
-                continue;
+        if todo > 0 {
+            let first = items.iter().filter(|it| it.lang.asr).find_map(|it| it.takes.iter().find(|t| plausible(t)).map(|t| (t.wav.clone(), it.lang)));
+            let listening = Listening::begin(vcp, first.as_ref().map(|f| f.0.as_slice()), first.as_ref().map_or(items[0].lang, |f| f.1)).await;
+            let heard = listen_to_takes(inner, vcp, id, req, items, &listening, todo).await;
+            listening.end().await;
+            if !heard? {
+                return Ok(0);
             }
-            let (name, lang) = (label(it), it.lang);
-            for take in it.takes.iter_mut().filter(|t| plausible(t)) {
-                if !inner.gap_for(id, crate::SWITCH_GAP).await {
-                    return Ok(0);
-                }
-                let l = name.clone();
-                inner.update(id, |j| j.view.current = Some(l));
-                match transcribe_retry(vcp, &take.wav, lang).await {
-                    Ok(heard) => {
-                        heard_any = true;
-                        take.wer = Some(langs::error_rate(lang.text, &heard, lang.code));
-                    }
-                    Err(Trouble::Down(e)) => return Err(format!("speech check: {e}")),
-                    Err(Trouble::Failed(e)) => {
-                        log::warn!("speech check {name}: {e}");
-                        take.wer = Some(1.0);
-                        last_failure = Some(e);
-                    }
-                }
-                inner.update(id, |j| j.view.step += 1);
-            }
-        }
-        // Speech recognition failed for every take: it's broken, not the voices.
-        if todo > 0 && !heard_any {
-            return Err(format!("VCP's speech recognition doesn't work: {}", last_failure.unwrap_or_default()));
         }
     }
 
     // "let me pick": every usable take waits for the streamer's choice
     if req.options.pick {
         let mut stored = 0;
-        for it in &items {
-            let max_wer = if matches!(it.lang.code, "ja" | "zh" | "ko") { MAX_WER_CJK } else { MAX_WER };
+        for it in items.iter() {
+            let max_wer = max_wer(it.lang);
             let checked = req.options.speech_check && it.lang.asr;
             let usable: Vec<(usize, f32)> = it
                 .takes
@@ -326,7 +418,7 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
     inner.phase(id, "save", items.len());
     let mut fresh: Vec<Fresh> = Vec::new();
     for (i, it) in items.iter_mut().enumerate() {
-        let max_wer = if matches!(it.lang.code, "ja" | "zh" | "ko") { MAX_WER_CJK } else { MAX_WER };
+        let max_wer = max_wer(it.lang);
         // The last attempt of a new voice whose takes all failed only the
         // speech check (whispers, accents the recognizer doesn't like): keep
         // the best one anyway; the quality check flags it if it sounds odd.
@@ -368,7 +460,9 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
             j.view.current = Some(l);
             j.view.phase = "prime".into();
         });
-        let voice_name = format!("TTV {} {} {:03} {}", req.preset_id, it.lang.code, it.index + 1, it.def.name);
+        // an improve job can hold voices of several presets
+        let preset_id = it.old.as_ref().map_or(req.preset_id.as_str(), |o| o.preset_id.as_str()).to_string();
+        let voice_name = format!("TTV {} {} {:03} {}", preset_id, it.lang.code, it.index + 1, it.def.name);
         let save = serde_json::json!({
             "name": voice_name,
             "audio_base64": base64::engine::general_purpose::STANDARD.encode(&take.wav),
@@ -399,7 +493,7 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
             key: it.key.clone(),
             def_hash: it.def.hash(),
             lang: it.lang.code.to_string(),
-            preset_id: req.preset_id.clone(),
+            preset_id,
             index: it.index,
             name: it.def.name.clone(),
             voice_id: voice.id.clone(),
@@ -438,14 +532,19 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
     // 4. review: how does each voice speak a new sentence? (speech recognition)
     if req.options.quality || improving {
         inner.phase(id, "review", fresh.len());
+        let first = fresh.iter().find(|f| items[f.item].lang.asr).map(|f| (f.spoken.wav.clone(), items[f.item].lang));
+        let listening = Listening::begin(vcp, first.as_ref().map(|f| f.0.as_slice()), first.as_ref().map_or(&langs::LANGS[0], |f| f.1)).await;
+        let items = &*items;
+        let outcome: Result<bool, String> = async {
         for k in 0..fresh.len() {
             if !inner.gap_for(id, crate::SWITCH_GAP).await {
                 delete_candidates(vcp, &fresh[k..], improving).await;
-                return Ok(0);
+                return Ok(false);
             }
             let it = &items[fresh[k].item];
             let l = label(it);
             inner.update(id, |j| j.view.current = Some(l));
+            listening.keep_ready();
             let new_wer = if it.lang.asr {
                 match transcribe_retry(vcp, &fresh[k].spoken.wav, it.lang).await {
                     Ok(heard) => Some(langs::error_rate(it.lang.verify, &heard, it.lang.code)),
@@ -495,10 +594,92 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
             }
             inner.update(id, |j| j.view.step += 1);
         }
+        Ok(true)
+        }
+        .await;
+        listening.end().await;
+        if !outcome? {
+            return Ok(0);
+        }
+        if !improving {
+            let suspects: Vec<Suspect> = fresh.iter().map(|f| Suspect { key: f.entry.key.clone(), voice_id: f.entry.voice_id.clone(), lang: items[f.item].lang, label: label(&items[f.item]), reference: f.take.analysis.clone() }).collect();
+            double_check(inner, vcp, id, suspects).await?;
+        }
         inner.relate(items.iter().map(|it| &it.def));
         inner.recount(id);
     }
     Ok(saved)
+}
+
+/// A voice that may need a second opinion.
+struct Suspect {
+    key: String,
+    voice_id: String,
+    lang: &'static langs::DesignLang,
+    label: String,
+    reference: Analysis,
+}
+
+/// Voices listed only for how they spoke the one test sentence say what
+/// their sample says. Most of them are fine: computing them again would be
+/// wasted. Each model does its part in one go.
+async fn double_check(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, voices: Vec<Suspect>) -> Result<(), String> {
+    let voices: Vec<Suspect> = voices.into_iter().filter(|v| inner.library.get(&v.key).and_then(|e| e.quality).is_some_and(|q| quality::only_new_sentence(&q))).collect();
+    if voices.is_empty() {
+        return Ok(());
+    }
+    inner.phase(id, "confirm", voices.len() * 2);
+    let mut spoken = Vec::with_capacity(voices.len());
+    for v in &voices {
+        if !inner.gap(id).await {
+            return Ok(());
+        }
+        let l = v.label.clone();
+        inner.update(id, |j| j.view.current = Some(l));
+        spoken.push(match crate::speak(vcp, &v.voice_id, v.lang.text, v.lang).await {
+            Ok(s) => Some(s),
+            Err(Trouble::Down(e)) => return Err(e),
+            Err(Trouble::Failed(e)) => {
+                log::warn!("second opinion {}: {e}", v.label);
+                None
+            }
+        });
+        inner.update(id, |j| j.view.step += 1);
+    }
+    let first = voices.iter().zip(&spoken).find_map(|(v, s)| s.as_ref().filter(|_| v.lang.asr).map(|s| (s.wav.clone(), v.lang)));
+    let listening = Listening::begin(vcp, first.as_ref().map(|f| f.0.as_slice()), first.as_ref().map_or(voices[0].lang, |f| f.1)).await;
+    let outcome: Result<(), String> = async {
+    for (v, s) in voices.iter().zip(spoken) {
+        if !inner.gap_for(id, crate::SWITCH_GAP).await {
+            return Ok(());
+        }
+        let Some(s) = s else { continue };
+        let l = v.label.clone();
+        inner.update(id, |j| j.view.current = Some(l));
+        listening.keep_ready();
+        let wer = if v.lang.asr {
+            match transcribe_retry(vcp, &s.wav, v.lang).await {
+                Ok(heard) => Some(langs::error_rate(v.lang.text, &heard, v.lang.code)),
+                Err(Trouble::Down(e)) => return Err(e),
+                Err(Trouble::Failed(_)) => None,
+            }
+        } else {
+            None
+        };
+        if let Some(e) = inner.library.get(&v.key)
+            && let Some(mut q) = e.quality.clone()
+            && quality::second_opinion(&mut q, &v.reference, &s.analysis, wer, max_wer(v.lang))
+        {
+            log::info!("{}: the test sentence was a fluke", v.label);
+            inner.change(vec![LibraryEntry { quality: Some(q), ..e }], &[]);
+        }
+        inner.update(id, |j| j.view.step += 1);
+    }
+    Ok(())
+    }
+    .await;
+    listening.end().await;
+    outcome
 }
 
 /// When a batch stops halfway, candidates that never made it into the
@@ -572,12 +753,17 @@ async fn review(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, items: Vec<Item>
     // 2. listen to both (speech recognition), assess
     inner.phase(id, "review", items.len());
     let mut checked = 0;
+    let mut suspects = Vec::new();
+    let first = items.iter().zip(&heard).find_map(|(it, h)| h.as_ref().and_then(|h| h.spoken.as_ref()).filter(|_| it.lang.asr).map(|s| (s.wav.clone(), it.lang)));
+    let listening = Listening::begin(vcp, first.as_ref().map(|f| f.0.as_slice()), first.as_ref().map_or(items[0].lang, |f| f.1)).await;
+    let outcome: Result<bool, String> = async {
     for (it, h) in items.iter().zip(heard) {
         if !inner.gap_for(id, crate::SWITCH_GAP).await {
-            return Ok(checked);
+            return Ok(false);
         }
         let l = label(it);
         inner.update(id, |j| j.view.current = Some(l));
+        listening.keep_ready();
         let old = it.old.clone().expect("review items exist");
         let Some(Heard { analysis, text, wav, spoken, failure }) = h else {
             inner.update(id, |j| {
@@ -625,6 +811,7 @@ async fn review(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, items: Vec<Item>
         q.kept = old.quality.as_ref().is_some_and(|o| o.kept) && q.score >= old.quality.as_ref().map_or(0.0, |o| o.score) - 0.05;
         let level = analysis.level.or(old.level);
         let gain = mix_levels(level, spoken.as_ref().and_then(|s| s.analysis.level)).map_or(old.gain, audio::gain_from_db);
+        suspects.push(Suspect { key: it.key.clone(), voice_id: old.voice_id.clone(), lang: it.lang, label: label(it), reference: analysis.clone() });
         inner.change(vec![LibraryEntry { quality: Some(q), level, gain, wer: reference_wer.or(old.wer), ..old }], &[]);
         checked += 1;
         inner.update(id, |j| {
@@ -633,6 +820,14 @@ async fn review(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, items: Vec<Item>
             j.view.step += 1;
         });
     }
+    Ok(true)
+    }
+    .await;
+    listening.end().await;
+    if !outcome? {
+        return Ok(checked);
+    }
+    double_check(inner, vcp, id, suspects).await?;
     inner.relate(items.iter().map(|it| &it.def));
     inner.recount(id);
     Ok(checked)
@@ -739,6 +934,78 @@ async fn import(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, job: &crate::Sto
         inner.update(id, |j| {
             let left = j.view.total.saturating_sub(j.view.done + j.view.failed);
             j.view.eta_secs = Some((left as f32 * per).round() as u64);
+        });
+    }
+    inner.save_jobs();
+    Ok(())
+}
+
+/// Brings archived voices back into VCP from their samples, so they can be
+/// designed again. Their entries stay as they are.
+async fn restore(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, job: &crate::StoredJob) -> Result<(), String> {
+    let todo: Vec<String> = job.request.only.iter().filter(|k| !job.processed.contains(k) && !job.failed.contains(k)).take(BATCH).cloned().collect();
+    if todo.is_empty() {
+        finish(inner, id, job);
+        return Ok(());
+    }
+    inner.update(id, |j| {
+        j.view.state = JobState::Running;
+        j.view.error = None;
+        j.view.batch = todo.len() as u32;
+    });
+    inner.phase(id, "import", todo.len());
+    for key in todo {
+        if !inner.gap(id).await {
+            return Ok(());
+        }
+        let Some(e) = inner.archive.get(&key) else {
+            inner.update(id, |j| {
+                j.processed.push(key.clone());
+                j.view.done += 1;
+                j.view.step += 1;
+            });
+            continue;
+        };
+        let name = format!("{} · {}", e.name, e.lang);
+        let l = name.clone();
+        inner.update(id, |j| j.view.current = Some(l));
+        let Some(lang) = langs::get(&e.lang) else {
+            inner.import_failed(id, &key, format!("{name}: unknown language"));
+            continue;
+        };
+        let decoded = std::fs::read(inner.sample_path(&key)).map_err(|e| e.to_string()).and_then(|flac| crate::pack::decode_flac(&flac));
+        let (samples, rate) = match decoded {
+            Ok(s) => s,
+            Err(e) => {
+                inner.import_failed(id, &key, format!("{name}: {e}"));
+                continue;
+            }
+        };
+        let description = job.request.defs.iter().find(|d| d.def.key(&e.lang) == key).map(|d| d.def.description.clone()).unwrap_or_default();
+        let save = serde_json::json!({
+            "name": e.voice_name,
+            "audio_base64": base64::engine::general_purpose::STANDARD.encode(audio::wav_pcm16(&samples, rate)),
+            "transcript": description,
+            "ref_text": e.ref_text.clone().unwrap_or_else(|| lang.text.to_string()),
+            "voice_type": "design",
+            "transcript_manual": true,
+        });
+        let voice = match save_voice(vcp, &save, lang).await {
+            Ok((v, _)) => v,
+            Err(Trouble::Down(e)) => return Err(e),
+            Err(Trouble::Failed(e)) => {
+                inner.import_failed(id, &key, format!("{name}: {e}"));
+                continue;
+            }
+        };
+        inner.change(vec![LibraryEntry { voice_id: voice.id, ref_text: None, ..e }], &[]);
+        inner.archive.apply(vec![], std::slice::from_ref(&key));
+        inner.pending.lock().insert(key.clone());
+        inner.save_pending();
+        inner.update(id, |j| {
+            j.processed.push(key.clone());
+            j.view.done += 1;
+            j.view.step += 1;
         });
     }
     inner.save_jobs();
@@ -911,7 +1178,7 @@ impl Inner {
                 })
                 .collect()
         };
-        let ready: Vec<String> = pending.into_iter().filter(|k| !busy.contains(k)).collect();
+        let ready: Vec<String> = pending.into_iter().filter(|k| !busy.contains(k) && !crate::plan::keeps(self, k)).collect();
         if ready.is_empty() {
             return;
         }

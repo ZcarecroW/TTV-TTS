@@ -8,6 +8,8 @@ use ttv_link::{Quality, QualityIssue, VoiceDef};
 
 /// Below this score a voice is listed for review.
 pub const FLAG: f32 = 0.75;
+/// Issues from how a voice spoke the one test sentence.
+const NEW_SENTENCE: [&str; 4] = ["new_pitch", "new_level", "new_length", "new_misheard"];
 
 /// What a clip sounds like, measurably.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -233,6 +235,13 @@ pub fn assess(x: &Input) -> Quality {
         }
     }
 
+    // Speech without a measurable pitch: whispers have none, a voice that
+    // should sound normal is broken. Nothing else notices (2 of 9,790 voices
+    // scored 1.0 without any pitch).
+    if r.f0.is_none() && r.level.is_some() && !quiet_ok && !has(d, &["hoarse", "rasp", "breathy", "hiss"]) && pitch_range(x.def).is_some() {
+        add("no_pitch", 0.0, 0.3, None);
+    }
+
     // pauses and pace
     // A pause between two sentences is natural (p99 of 420 voices: 1.4 s).
     let pause_ok = has(d, &["pause", "hesitant", "stammer", "halting", "deliberate"]);
@@ -294,6 +303,27 @@ pub fn assess(x: &Input) -> Quality {
     q
 }
 
+/// Flagged only for how it spoke the one test sentence (an exclamation):
+/// that alone decided 16 % of all recomputed voices. Worth a second opinion.
+pub fn only_new_sentence(q: &Quality) -> bool {
+    let rest = q.issues.iter().filter(|i| !NEW_SENTENCE.contains(&i.code.as_str())).fold(1.0, |s, i| s * (1.0 - i.weight));
+    q.score < FLAG && !q.kept && rest >= FLAG
+}
+
+/// The second opinion: the voice spoke what its reference sample says. It has
+/// no reason to sound different there. If it comes out right, the test
+/// sentence was a fluke and its issues go; returns whether they went.
+pub fn second_opinion(q: &mut Quality, reference: &Analysis, again: &Analysis, wer: Option<f32>, max_wer: f32) -> bool {
+    let pitch = matches!((reference.f0, again.f0), (Some(a), Some(b)) if (12.0 * (b / a).log2()).abs() <= 4.0);
+    let level = matches!((reference.level, again.level), (Some(a), Some(b)) if (b - a).abs() <= 6.0);
+    if !pitch || !level || wer.is_some_and(|w| w > max_wer) {
+        return false;
+    }
+    q.issues.retain(|i| !NEW_SENTENCE.contains(&i.code.as_str()));
+    rescore(q);
+    true
+}
+
 fn rescore(q: &mut Quality) {
     let score = q.issues.iter().fold(1.0, |s, i| s * (1.0 - i.weight));
     q.score = (score * 1000.0).round() / 1000.0;
@@ -310,7 +340,9 @@ fn outside(def: &VoiceDef, f0: f32) -> f32 {
 
 /// The same character should sound alike in every language: compares the
 /// pitch of all languages of one definition and (re)sets their
-/// "languages_differ" issue. With three or more languages, each one is
+/// "languages_differ" issue. It's a note, not a defect: alone it never lists
+/// a voice (it used to send 16 % of all recomputed voices back, though each
+/// sounded fine by itself). With three or more languages, each one is
 /// compared with the group's median – only the odd one out is noted, not the
 /// many that agree. With two, each is compared with the other; if only the
 /// other version is out of range for the description (`def`), that one is the
@@ -346,7 +378,7 @@ pub fn relate(def: Option<&VoiceDef>, group: &mut [(String, Quality)]) -> bool {
         if let Some((f0, reference, other_lang, other, only_other_odd)) = compared {
             let st = 12.0 * (f0 / reference).log2().abs();
             if st > 6.0 && !only_other_odd {
-                let weight = ((st - 6.0) * 0.04 + 0.1).min(0.35);
+                let weight = ((st - 6.0) * 0.04 + 0.1).min(0.2);
                 q.issues.push(QualityIssue { code: "languages_differ".into(), value: other.round(), weight: (weight * 100.0).round() / 100.0, extra: Some(other_lang.clone()) });
             }
         }
@@ -377,6 +409,77 @@ mod tests {
                 (1..6).map(|h| (t * hz * h as f32 * std::f32::consts::TAU).sin() / h as f32).sum::<f32>() * amp * 0.5
             })
             .collect()
+    }
+
+    fn voice(gender: &str, description: &str) -> VoiceDef {
+        VoiceDef { name: "X".into(), gender: gender.into(), age: 35, description: description.into(), fx: None }
+    }
+
+    fn sample(f0: Option<f32>) -> Analysis {
+        Analysis { duration: 7.0, level: Some(-20.0), f0, span: 6.0, talk: 5.5, ..Default::default() }
+    }
+
+    fn report(def: &VoiceDef, a: &Analysis) -> Quality {
+        let lang = crate::langs::get("en").unwrap();
+        assess(&Input { def, lang, reference: a, reference_text: lang.text, reference_wer: Some(0.0), new: None, new_wer: None })
+    }
+
+    #[test]
+    fn speech_without_a_pitch_is_listed_unless_it_should_be_like_that() {
+        let code = |d: &VoiceDef| report(d, &sample(None)).issues.iter().any(|i| i.code == "no_pitch");
+        assert!(code(&voice("m", "A warm radio host.")));
+        assert!(report(&voice("m", "A warm radio host."), &sample(None)).score < FLAG);
+        assert!(!code(&voice("f", "She only ever whispers.")));
+        assert!(!code(&voice("m", "A hoarse old sailor.")));
+        assert!(!code(&voice("n", "A humming machine.")), "creatures have no expected pitch");
+        assert!(report(&voice("m", "A warm radio host."), &sample(Some(120.0))).issues.is_empty());
+    }
+
+    #[test]
+    fn another_language_alone_never_lists_a_voice() {
+        let q = |f0: f32| Quality { score: 1.0, f0: Some(f0), ..Default::default() };
+        let mut g = vec![("de".to_string(), q(100.0)), ("en".to_string(), q(110.0)), ("fr".to_string(), q(105.0)), ("ja".to_string(), q(400.0))];
+        assert!(relate(None, &mut g));
+        let ja = &g[3].1;
+        assert_eq!(ja.issues[0].code, "languages_differ");
+        assert!(ja.score >= FLAG, "{ja:?}");
+    }
+
+    #[test]
+    fn only_the_test_sentence_counts_for_a_second_opinion() {
+        let issue = |code: &str, weight: f32| QualityIssue { code: code.into(), value: 0.0, weight, extra: None };
+        let q = |issues: Vec<QualityIssue>| {
+            let mut q = Quality { issues, ..Default::default() };
+            rescore(&mut q);
+            q
+        };
+        assert!(only_new_sentence(&q(vec![issue("new_pitch", 0.5)])));
+        assert!(!only_new_sentence(&q(vec![issue("new_pitch", 0.1)])), "not listed at all");
+        assert!(!only_new_sentence(&q(vec![issue("pitch_high", 0.5)])));
+        assert!(!only_new_sentence(&q(vec![issue("pitch_high", 0.3), issue("new_pitch", 0.5)])), "listed anyway");
+        assert!(!only_new_sentence(&Quality { kept: true, ..q(vec![issue("new_pitch", 0.5)]) }));
+    }
+
+    #[test]
+    fn the_second_opinion_decides_on_pitch_loudness_and_words() {
+        let reference = sample(Some(120.0));
+        let flagged = || {
+            let mut q = Quality { issues: vec![QualityIssue { code: "new_pitch".into(), value: 9.0, weight: 0.5, extra: None }], ..Default::default() };
+            rescore(&mut q);
+            q
+        };
+        let check = |again: &Analysis, wer| {
+            let mut q = flagged();
+            let cleared = second_opinion(&mut q, &reference, again, wer, 0.15);
+            assert_eq!(cleared, q.issues.is_empty());
+            cleared
+        };
+        assert!(check(&sample(Some(125.0)), Some(0.0)));
+        assert!(check(&sample(Some(125.0)), None), "no speech recognition for this language");
+        assert!(!check(&sample(Some(180.0)), Some(0.0)), "still much higher");
+        assert!(!check(&sample(None), Some(0.0)));
+        assert!(!check(&sample(Some(125.0)), Some(0.4)), "misheard");
+        assert!(!check(&Analysis { level: Some(-30.0), ..sample(Some(125.0)) }, Some(0.0)), "much quieter");
     }
 
     /// Equal distances to the median (whole-Hz pitches, an even count)

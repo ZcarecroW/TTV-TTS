@@ -21,7 +21,7 @@ const config: Config = {
   start_vcp: false,
   keep_vcp_running: false,
   restart_on_hang: false,
-  restart_when_slow: true,
+  restart_when_slow: false,
   hang_restart_secs: 180,
   http_port: 0,
   obs_port: 8112,

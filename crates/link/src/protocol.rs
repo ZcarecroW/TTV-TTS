@@ -99,6 +99,8 @@ pub struct VcpState {
     pub hardware: Option<String>,
     /// The proxy is starting or restarting VCP right now.
     pub starting: bool,
+    /// The benchmark has VCP to itself: nothing else uses it until it ends.
+    pub benchmark: bool,
     /// Seconds of work per second of speech (median of the recent clips;
     /// lower is faster).
     pub speed: Option<f32>,

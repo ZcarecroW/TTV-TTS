@@ -14,7 +14,8 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicI32, AtomicU32, Ordering};
 use std::time::{Duration, Instant};
 
-use axum::extract::{Path, State};
+use axum::extract::{Path, Query, State};
+use axum::response::IntoResponse;
 use axum::routing::{get, post};
 use axum::{Json, Router};
 use base64::Engine as _;
@@ -41,6 +42,22 @@ struct Fake {
     designs: AtomicU32,
     /// How many more "WEIRD" designs come out odd (negative: always).
     weird: AtomicI32,
+    /// How many more transcriptions are refused as if VCP had gone away.
+    asr_down: AtomicU32,
+    low_vram: AtomicBool,
+    /// The lighter speech recognition model is selected.
+    light_asr: AtomicBool,
+    /// How much the lighter model mishears: words it gets wrong per 10.
+    light_asr_errors: AtomicU32,
+    transcriptions: AtomicU32,
+    /// What's in the video memory, and how often two models were at once.
+    voice_loaded: AtomicBool,
+    asr_loaded: AtomicBool,
+    collisions: AtomicU32,
+    /// New sentences come out much higher, but not what the sample says.
+    flaky_new: AtomicBool,
+    /// Everything a saved voice says comes out much higher.
+    off_pitch: AtomicBool,
 }
 
 type S = State<Arc<Fake>>;
@@ -88,8 +105,17 @@ fn lang_of(b: &Value) -> &'static ttv_engine::langs::DesignLang {
 }
 
 // Handlers read the body like VCP does (an unread upload resets the connection).
+/// A voice model comes into memory, where speech recognition may still be.
+fn load_voice_model(f: &Fake) {
+    f.voice_loaded.store(true, Ordering::SeqCst);
+    if f.asr_loaded.load(Ordering::SeqCst) {
+        f.collisions.fetch_add(1, Ordering::SeqCst);
+    }
+}
+
 async fn design(State(f): S, Json(b): Json<Value>) -> Json<Value> {
     f.designs.fetch_add(1, Ordering::SeqCst);
+    load_voice_model(&f);
     let instruct = b["instruct_text"].as_str().unwrap_or_default();
     let weird = instruct.contains("WEIRD") && f.weird.try_update(Ordering::SeqCst, Ordering::SeqCst, |w| if w == 0 { None } else { Some(if w > 0 { w - 1 } else { w }) }).is_ok();
     let hz = if weird {
@@ -108,7 +134,55 @@ async fn design(State(f): S, Json(b): Json<Value>) -> Json<Value> {
     Json(json!({ "success": true, "status": "completed", "audio_base64": audio }))
 }
 
-async fn transcribe(State(f): S, Json(b): Json<Value>) -> Json<Value> {
+async fn low_vram(State(f): S) -> Json<Value> {
+    Json(json!({ "enabled": f.low_vram.load(Ordering::SeqCst) }))
+}
+
+async fn set_low_vram(State(f): S, Query(q): Query<HashMap<String, String>>) -> Json<Value> {
+    f.low_vram.store(q.get("enabled").is_some_and(|v| v == "true"), Ordering::SeqCst);
+    // "Toggle low VRAM mode. Unloads the current TTS model if one is loaded."
+    f.voice_loaded.store(false, Ordering::SeqCst);
+    Json(json!({ "success": true, "changed": true, "needs_reload": true }))
+}
+
+async fn asr_models(State(f): S) -> Json<Value> {
+    let langs: Vec<&str> = ttv_engine::langs::LANGS.iter().map(|l| l.vcp).collect();
+    Json(json!({
+        "current": if f.light_asr.load(Ordering::SeqCst) { "standard" } else { "higher_quality" },
+        "options": [
+            { "id": "standard", "family": "Qwen3-ASR", "vram_mb": 1700, "languages": langs },
+            { "id": "higher_quality", "family": "Qwen3-ASR", "vram_mb": 4000, "languages": langs },
+            { "id": "parakeet_v3", "family": "Parakeet v3", "vram_mb": 5000, "languages": ["English"] },
+        ],
+    }))
+}
+
+async fn set_asr_model(State(f): S, Query(q): Query<HashMap<String, String>>) -> Json<Value> {
+    f.light_asr.store(q.get("model_id").is_some_and(|v| v == "standard"), Ordering::SeqCst);
+    Json(json!({ "success": true, "changed": true }))
+}
+
+async fn transcribe(State(f): S, Json(b): Json<Value>) -> axum::response::Response {
+    // like the real thing: low VRAM mode reloads speech recognition every time
+    if f.low_vram.load(Ordering::SeqCst) {
+        tokio::time::sleep(Duration::from_millis(60)).await;
+    }
+    if f.asr_down.try_update(Ordering::SeqCst, Ordering::SeqCst, |n| n.checked_sub(1)).is_ok() {
+        return axum::http::StatusCode::UNAUTHORIZED.into_response();
+    }
+    transcribed(f, b).await.into_response()
+}
+
+async fn transcribed(f: Arc<Fake>, b: Value) -> Json<Value> {
+    // with low VRAM on, speech recognition is released right after a clip
+    let low = f.low_vram.load(Ordering::SeqCst);
+    if !low {
+        f.transcriptions.fetch_add(1, Ordering::SeqCst);
+    }
+    if f.voice_loaded.load(Ordering::SeqCst) {
+        f.collisions.fetch_add(1, Ordering::SeqCst);
+    }
+    f.asr_loaded.store(!low, Ordering::SeqCst);
     if f.asr_broken.load(Ordering::SeqCst) {
         return Json(json!({ "success": false, "text": null, "error": "ASR model failed to load" }));
     }
@@ -120,6 +194,9 @@ async fn transcribe(State(f): S, Json(b): Json<Value>) -> Json<Value> {
     let bytes = base64::engine::general_purpose::STANDARD.decode(audio).unwrap_or_default();
     let secs = bytes.len().saturating_sub(44) as f32 / 48_000.0;
     let l = lang_of(&b);
+    if f.light_asr.load(Ordering::SeqCst) && f.light_asr_errors.load(Ordering::SeqCst) > 0 {
+        return Json(json!({ "success": true, "text": "something completely different" }));
+    }
     Json(json!({ "success": true, "text": if secs > 5.0 { l.text } else { l.verify } }))
 }
 
@@ -133,11 +210,15 @@ async fn save(State(f): S, Json(b): Json<Value>) -> Json<Value> {
 
 async fn clone(State(f): S, Json(b): Json<Value>) -> Json<Value> {
     f.clones.fetch_add(1, Ordering::SeqCst);
+    load_voice_model(&f);
     if f.clone_broken.load(Ordering::SeqCst) {
         return Json(json!({ "success": false, "status": "failed", "error_detail": "Generation failed" }));
     }
     let hz = f.voices.lock().get(b["voice_id"].as_str().unwrap_or_default()).map_or(150.0, |v| v.hz);
-    Json(json!({ "success": true, "status": "completed", "audio_base64": wav(2.5, hz) }))
+    // what the sample says: as long as the sample
+    let again = b["target_text"].as_str() == Some(lang_of(&b).text);
+    let off = f.off_pitch.load(Ordering::SeqCst) || (f.flaky_new.load(Ordering::SeqCst) && !again);
+    Json(json!({ "success": true, "status": "completed", "audio_base64": wav(if again { 7.0 } else { 2.5 }, if off { hz * 2.2 } else { hz }) }))
 }
 
 async fn list(State(f): S) -> Json<Value> {
@@ -164,6 +245,8 @@ async fn serve() -> (Arc<Fake>, String) {
         .route("/api/v1/voices", post(save).get(list))
         .route("/api/v1/voices/{id}", get(one).delete(remove))
         .route("/api/v1/generation/clone", post(clone))
+        .route("/api/v1/settings/low-vram", get(low_vram).put(set_low_vram))
+        .route("/api/v1/settings/asr-model", get(asr_models).put(set_asr_model))
         .with_state(fake.clone());
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
     let base = format!("http://{}", listener.local_addr().unwrap());
@@ -206,7 +289,7 @@ fn odd_request(quality: bool, improve: bool) -> JobRequest {
 async fn until(what: &str, mut f: impl FnMut() -> bool) {
     let t = Instant::now();
     while !f() {
-        assert!(t.elapsed() < Duration::from_secs(30), "timed out waiting for {what}");
+        assert!(t.elapsed() < Duration::from_secs(120), "timed out waiting for {what}");
         tokio::time::sleep(Duration::from_millis(30)).await;
     }
 }
@@ -334,7 +417,7 @@ async fn the_quality_check_lists_odd_voices() {
 async fn odd_voices_are_improved_automatically() {
     let (fake, base) = serve().await;
     // only the first design of the odd voice comes out odd
-    fake.weird.store(1, Ordering::SeqCst);
+    fake.weird.store(5, Ordering::SeqCst);
     let e = engine(&base);
     e.submit(odd_request(true, true)).unwrap();
     until("both jobs", || e.status().jobs.len() == 2 && done(&e)).await;
@@ -552,7 +635,7 @@ async fn a_voice_that_only_fails_the_speech_check_keeps_its_best_take_at_last() 
 async fn archive_jobs_move_finished_voices_out_of_vcp() {
     let (fake, base) = serve().await;
     // the odd voice's first design comes out odd: it's improved first
-    fake.weird.store(1, Ordering::SeqCst);
+    fake.weird.store(5, Ordering::SeqCst);
     let e = engine(&base);
     let mut req = odd_request(true, true);
     req.options.backup = true;
@@ -634,4 +717,466 @@ async fn a_voice_saved_just_before_a_restart_counts_for_its_job() {
     let quality = |i: usize| lib.iter().find(|x| x.key == req.defs[i].def.key("en")).unwrap().quality.clone();
     assert!(quality(1).is_some(), "the voice saved before the restart got checked");
     assert!(quality(2).is_none(), "another job's voice stays as it was");
+}
+
+fn job(e: &Engine, id: &str) -> ttv_link::JobView {
+    e.status().jobs.into_iter().find(|j| j.id == id).unwrap()
+}
+
+fn archived(mut req: JobRequest) -> JobRequest {
+    req.options.archive = true;
+    req.options.backup = true;
+    req
+}
+
+/// A queue of ready-made packs runs for weeks: what the streamer starts now
+/// must not wait behind it.
+#[tokio::test(flavor = "multi_thread")]
+async fn long_archive_jobs_go_last() {
+    let (_fake, base) = serve().await;
+    let e = engine(&base);
+    e.set_vcp(None);
+    let packs = e.submit(archived(request(3))).unwrap().id;
+    let mine = e.submit(odd_request(false, false)).unwrap().id;
+    e.set_vcp(Some(ttv_vcp::Client::new(&base, None)));
+    until("the streamer's job", || job(&e, &mine).state == JobState::Done).await;
+    assert_eq!(job(&e, &packs).done, 0, "the archive job ran first");
+    until("the archive job", || done(&e)).await;
+}
+
+/// Odd voices used to be improved after every compute job of the queue
+/// (weeks later): a preset is finished before the next one starts.
+#[tokio::test(flavor = "multi_thread")]
+async fn odd_voices_are_improved_before_the_next_archive_job() {
+    let (fake, base) = serve().await;
+    fake.weird.store(5, Ordering::SeqCst);
+    let e = engine(&base);
+    e.set_vcp(None);
+    e.submit(archived(odd_request(true, true))).unwrap();
+    let next = e.submit(archived(request(2))).unwrap().id;
+    e.set_vcp(Some(ttv_vcp::Client::new(&base, None)));
+    until("the improve job", || e.status().jobs.iter().any(|j| j.kind == JobKind::Improve && j.state == JobState::Done)).await;
+    assert_eq!(job(&e, &next).done, 0, "the next job ran before the improve job");
+    until("the rest", || done(&e)).await;
+}
+
+fn plan_preset(id: &str, defs: Vec<JobDef>) -> ttv_link::PlanPreset {
+    ttv_link::PlanPreset { id: id.into(), name: id.to_uppercase(), defs }
+}
+
+fn plan_options() -> JobOptions {
+    JobOptions { speech_check: true, takes: 2, backup: true, quality: true, improve: true, archive: true, ..Default::default() }
+}
+
+fn plan_state(e: &Engine) -> ttv_link::PlanState {
+    e.status().plan.unwrap().state
+}
+
+/// Everything from one request: all voices of all presets in all languages,
+/// odd ones designed again, finished ones out of VCP, nobody helping.
+#[tokio::test(flavor = "multi_thread")]
+async fn the_plan_finishes_everything_by_itself() {
+    let (fake, base) = serve().await;
+    // both takes of the odd voice
+    fake.weird.store(5, Ordering::SeqCst);
+    let e = engine(&base);
+    let odd = odd_request(false, false).defs;
+    let req = ttv_link::PlanRequest {
+        presets: vec![plan_preset("a", odd), plan_preset("b", vec![def(7, "f", "A bright and cheerful announcer.")])],
+        languages: vec!["en".into(), "de".into()],
+        options: plan_options(),
+    };
+    assert_eq!(e.plan_start(req.clone()).unwrap().voices_total, 6);
+    until("the plan", || plan_state(&e) == ttv_link::PlanState::Done).await;
+
+    let st = e.status();
+    let plan = st.plan.clone().unwrap();
+    assert_eq!((plan.voices_done, plan.voices_odd, plan.gave_up), (6, 0, 0), "{plan:?}");
+    assert!(plan.finished.is_some() && plan.eta_secs.is_none(), "{plan:?}");
+    assert_eq!(plan.rows.len(), 2);
+    assert_eq!(plan.rows[0].cells.iter().map(|c| c.done).collect::<Vec<_>>(), [2, 2]);
+    // language by language: both presets, then what needed improving
+    let order: Vec<(JobKind, String)> = st.jobs.iter().map(|j| (j.kind, j.languages.join(","))).collect();
+    assert_eq!(&order[..3], [(JobKind::Compute, "en".to_string()), (JobKind::Compute, "en".to_string()), (JobKind::Improve, "en".to_string())], "{order:?}");
+    assert!(order[3..].iter().all(|(_, l)| l == "de"), "{order:?}");
+    // all in the archive, none left in VCP
+    until("the archive", || e.status().archived == 6).await;
+    assert!(fake.voices.lock().is_empty());
+    assert!(e.library().entries.is_empty());
+    // a plan that's done stays done, and starting again finds nothing to do
+    assert!(!e.working());
+    e.plan_start(req).unwrap();
+    until("the second plan", || plan_state(&e) == ttv_link::PlanState::Done).await;
+    assert_eq!(e.status().jobs.len(), st.jobs.len(), "nothing was computed twice");
+}
+
+/// A voice that fails gets more tries, with more takes, until it works.
+#[tokio::test(flavor = "multi_thread")]
+async fn the_plan_tries_failed_voices_again() {
+    let (fake, base) = serve().await;
+    fake.clone_broken.store(true, Ordering::SeqCst);
+    let e = engine(&base);
+    let req = ttv_link::PlanRequest { presets: vec![plan_preset("a", request(1).defs)], languages: vec!["en".into()], options: JobOptions { quality: false, improve: false, ..plan_options() } };
+    e.plan_start(req).unwrap();
+    until("the first job to fail", || e.status().jobs.iter().any(|j| j.state == JobState::Done && j.failed == 1)).await;
+    fake.clone_broken.store(false, Ordering::SeqCst);
+    until("the plan", || plan_state(&e) == ttv_link::PlanState::Done).await;
+    let plan = e.status().plan.unwrap();
+    assert_eq!((plan.voices_done, plan.gave_up), (1, 0), "{plan:?}");
+}
+
+/// Some voices just don't work: the plan ends anyway and says so.
+#[tokio::test(flavor = "multi_thread")]
+async fn the_plan_gives_up_on_a_voice_after_three_jobs() {
+    let (fake, base) = serve().await;
+    fake.clone_broken.store(true, Ordering::SeqCst);
+    let e = engine(&base);
+    let req = ttv_link::PlanRequest { presets: vec![plan_preset("a", request(1).defs)], languages: vec!["en".into()], options: JobOptions { quality: false, improve: false, ..plan_options() } };
+    e.plan_start(req).unwrap();
+    until("the plan", || plan_state(&e) == ttv_link::PlanState::Done).await;
+    let st = e.status();
+    assert_eq!(st.plan.unwrap().gave_up, 1);
+    assert_eq!(st.jobs.len(), 3, "{:?}", st.jobs);
+}
+
+/// A queue from before the plan goes; what started stays.
+#[tokio::test(flavor = "multi_thread")]
+async fn the_plan_replaces_jobs_that_have_not_started() {
+    let (_fake, base) = serve().await;
+    let e = engine(&base);
+    e.set_vcp(None);
+    let queued = e.submit(archived(request(2))).unwrap().id;
+    let mine = e.submit(odd_request(false, false)).unwrap().id;
+    let paused = e.submit(archived(odd_request(false, false))).unwrap().id;
+    e.control(&paused, "pause").unwrap();
+    e.plan_start(ttv_link::PlanRequest { presets: vec![plan_preset("a", request(1).defs)], languages: vec!["en".into()], options: JobOptions { quality: false, improve: false, ..plan_options() } }).unwrap();
+    let ids: Vec<String> = e.status().jobs.into_iter().map(|j| j.id).collect();
+    assert!(!ids.contains(&queued) && !ids.contains(&paused), "{ids:?}");
+    assert!(ids.contains(&mine), "the streamer's own job stays");
+}
+
+/// Voices that left VCP odd come back from their samples and get improved.
+#[tokio::test(flavor = "multi_thread")]
+async fn the_plan_improves_odd_voices_from_the_archive() {
+    let (fake, base) = serve().await;
+    fake.weird.store(5, Ordering::SeqCst);
+    let e = engine(&base);
+    // computed and archived without improving
+    e.submit(archived(odd_request(true, false))).unwrap();
+    until("the first job", || done(&e) && e.status().archived == 2).await;
+    assert!(e.archived().entries.iter().any(|v| v.quality.as_ref().is_some_and(|q| q.score < FLAG)));
+
+    let req = ttv_link::PlanRequest { presets: vec![plan_preset("a", odd_request(false, false).defs)], languages: vec!["en".into()], options: plan_options() };
+    e.plan_start(req).unwrap();
+    until("the plan", || plan_state(&e) == ttv_link::PlanState::Done).await;
+    until("the archive", || e.status().archived == 2).await;
+    let st = e.status();
+    assert!(st.jobs.iter().any(|j| j.kind == JobKind::Restore), "{:?}", st.jobs);
+    assert!(e.archived().entries.iter().all(|v| v.quality.as_ref().is_some_and(|q| q.score >= FLAG)), "{:?}", e.archived().entries);
+    assert!(fake.voices.lock().is_empty());
+    assert_eq!(st.plan.unwrap().voices_odd, 0);
+}
+
+/// VCP going away in the middle of a long batch costs no finished designs.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_batch_keeps_its_designs_when_vcp_goes_away() {
+    let (fake, base) = serve().await;
+    // twice: the speech check tries once more by itself
+    fake.asr_down.store(2, Ordering::SeqCst);
+    let e = engine(&base);
+    let mut req = archived(request(3));
+    req.options.takes = 2;
+    e.submit(req).unwrap();
+    until("the job", || done(&e)).await;
+    assert_eq!(fake.designs.load(Ordering::SeqCst), 6, "designed again");
+    assert_eq!(e.status().jobs[0].done, 3);
+}
+
+/// A saved voice for the benchmark to speak with.
+async fn with_a_voice(base: &str) -> Engine {
+    let e = engine(base);
+    e.submit(request(1)).unwrap();
+    until("the voice", || done(&e)).await;
+    e
+}
+
+fn counting_restart(n: Arc<AtomicU32>) -> ttv_engine::Restart {
+    Arc::new(move || {
+        n.fetch_add(1, Ordering::SeqCst);
+        Box::pin(async { Ok("restarted".to_string()) })
+    })
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_benchmark_measures_everything_and_sets_the_batch_size() {
+    let (fake, base) = serve().await;
+    let e = with_a_voice(&base).await;
+    let restarts = Arc::new(AtomicU32::new(0));
+    let vram: ttv_engine::Vram = Arc::new(|| Box::pin(async { Some((5000, 8192)) }));
+    let tools = ttv_engine::BenchTools { restart: Some(counting_restart(restarts.clone())), vram: Some(vram) };
+    e.bench_start(ttv_link::BenchRequest { level: ttv_link::BenchLevel::Quick, restart: true }, tools.clone()).unwrap();
+    assert!(e.bench_start(Default::default(), tools).is_err(), "only one at a time");
+    assert!(e.working());
+    // a job waits until the benchmark is over
+    let waiting = e.submit(odd_request(false, false)).unwrap().id;
+    assert_eq!(job(&e, &waiting).state, JobState::Queued);
+    until("the benchmark", || e.status().bench.is_some_and(|b| !b.running)).await;
+    let b = e.status().bench.unwrap();
+    assert_eq!((b.error.as_deref(), b.step), (None, b.steps), "{b:?}");
+
+    let h = e.bench_history();
+    let r = &h.reports[0];
+    assert_eq!(restarts.load(Ordering::SeqCst), 1);
+    assert!(r.restarted && r.restart_secs.is_some());
+    let kinds = |v: &[ttv_link::BenchSeries]| v.iter().map(|s| s.kind.clone()).collect::<Vec<_>>();
+    assert_eq!(kinds(&r.series), ["design", "speak", "listen"], "{r:?}");
+    assert_eq!(r.before.len(), 3);
+    assert_eq!(r.switches.len(), 6);
+    assert_eq!(r.drift.len(), 3);
+    assert!(r.series.iter().all(|s| s.runs > 0 && s.failed == 0 && s.first_secs.is_some() && s.median_secs > 0.0 && s.vram_mb == Some(5000)), "{r:?}");
+    assert!(r.series[0].rtf > 0.0 && r.series[1].rtf > 0.0);
+    assert_eq!((r.vram_total_mb, r.vram_free_mb), (Some(8192), Some(3192)));
+    assert!(r.advice.batch_voices >= 48 && r.advice.voice_secs > 0.0 && r.advice.design_limit > 0.0, "{:?}", r.advice);
+    assert!(!ttv_vcp::exclusive() || !fake.low_vram.load(Ordering::SeqCst));
+    // now the job runs, in batches of the measured size
+    until("the waiting job", || job(&e, &waiting).state == JobState::Done).await;
+    assert_eq!(fake.voices.lock().len(), 3);
+}
+
+/// Thorough: low VRAM on against off, each from a fresh start; the setting
+/// only ever changes right before a restart, and ends up where it's better.
+#[tokio::test(flavor = "multi_thread")]
+async fn the_thorough_benchmark_compares_low_vram() {
+    let (fake, base) = serve().await;
+    fake.low_vram.store(false, Ordering::SeqCst);
+    let e = with_a_voice(&base).await;
+    let restarts = Arc::new(AtomicU32::new(0));
+    let tools = ttv_engine::BenchTools { restart: Some(counting_restart(restarts.clone())), vram: None };
+    e.bench_start(ttv_link::BenchRequest { level: ttv_link::BenchLevel::Thorough, restart: true }, tools).unwrap();
+    until("the benchmark", || e.status().bench.is_some_and(|b| !b.running)).await;
+    assert_eq!(e.status().bench.unwrap().error, None);
+    let h = e.bench_history();
+    let r = &h.reports[0];
+    assert_eq!(r.variants.len(), 2, "{r:?}");
+    assert!(r.variants[0].low_vram && r.variants[0].error.is_none() && !r.variants[0].series.is_empty(), "{:?}", r.variants);
+    assert_eq!(r.variants[1].asr_model.as_deref(), Some("standard"), "the lighter model of the same family");
+    assert_eq!(restarts.load(Ordering::SeqCst), 4, "before, for each variant, and back");
+    assert_eq!(e.status().bench.unwrap().step, e.status().bench.unwrap().steps, "progress reaches its end");
+    // both equally fast here: the settings stay
+    assert_eq!(r.advice.low_vram, Some(false));
+    assert!(!fake.low_vram.load(Ordering::SeqCst));
+    assert_eq!(r.report_asr(), ("higher_quality", "higher_quality"));
+    assert!(!fake.light_asr.load(Ordering::SeqCst));
+}
+
+trait AsrResult {
+    fn report_asr(&self) -> (&str, &str);
+}
+
+impl AsrResult for ttv_link::BenchReport {
+    fn report_asr(&self) -> (&str, &str) {
+        (self.asr_model.as_deref().unwrap_or(""), self.advice.asr_model.as_deref().unwrap_or(""))
+    }
+}
+
+/// Crowded video memory, and the lighter model hears as well: it stays.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_lighter_speech_recognition_stays_when_the_models_do_not_fit_otherwise() {
+    let (fake, base) = serve().await;
+    let e = with_a_voice(&base).await;
+    // voices with lossless samples to listen to
+    let mut req = request(3);
+    req.options.backup = true;
+    req.options.quality = true;
+    req.defs.iter_mut().for_each(|d| d.def.gender = "f".into());
+    e.submit(req).unwrap();
+    until("the voices", || done(&e)).await;
+    // full with the big model, room to spare with the light one
+    let f = fake.clone();
+    let vram: ttv_engine::Vram = Arc::new(move || {
+        let light = f.light_asr.load(Ordering::SeqCst);
+        Box::pin(async move { Some((if light { 6300 } else { 8192 }, 8192)) })
+    });
+    let tools = ttv_engine::BenchTools { restart: Some(counting_restart(Default::default())), vram: Some(vram) };
+    e.bench_start(ttv_link::BenchRequest { level: ttv_link::BenchLevel::Thorough, restart: true }, tools).unwrap();
+    until("the benchmark", || e.status().bench.is_some_and(|b| !b.running)).await;
+    assert_eq!(e.status().bench.unwrap().error, None);
+    let h = e.bench_history();
+    assert_eq!(h.reports[0].report_asr(), ("higher_quality", "standard"), "{:?}", h.reports[0].advice);
+    assert!(fake.light_asr.load(Ordering::SeqCst));
+}
+
+/// However tight the memory: a model that mishears isn't worth it.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_speech_recognition_that_mishears_does_not_stay() {
+    let (fake, base) = serve().await;
+    fake.light_asr_errors.store(1, Ordering::SeqCst);
+    let e = with_a_voice(&base).await;
+    let mut req = request(3);
+    req.options.backup = true;
+    req.options.quality = true;
+    req.defs.iter_mut().for_each(|d| d.def.gender = "f".into());
+    e.submit(req).unwrap();
+    until("the voices", || done(&e)).await;
+    let f = fake.clone();
+    let vram: ttv_engine::Vram = Arc::new(move || {
+        let light = f.light_asr.load(Ordering::SeqCst);
+        Box::pin(async move { Some((if light { 6300 } else { 8192 }, 8192)) })
+    });
+    let tools = ttv_engine::BenchTools { restart: Some(counting_restart(Default::default())), vram: Some(vram) };
+    e.bench_start(ttv_link::BenchRequest { level: ttv_link::BenchLevel::Thorough, restart: true }, tools).unwrap();
+    until("the benchmark", || e.status().bench.is_some_and(|b| !b.running)).await;
+    let h = e.bench_history();
+    assert_eq!(h.reports[0].report_asr(), ("higher_quality", "higher_quality"), "{:?}", h.reports[0].variants);
+    assert!(!fake.light_asr.load(Ordering::SeqCst));
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_benchmark_can_be_stopped_and_needs_no_restart() {
+    let (_fake, base) = serve().await;
+    let e = with_a_voice(&base).await;
+    e.bench_start(ttv_link::BenchRequest { level: ttv_link::BenchLevel::Thorough, restart: true }, ttv_engine::BenchTools::default()).unwrap();
+    e.bench_stop();
+    until("the benchmark", || e.status().bench.is_some_and(|b| !b.running)).await;
+    assert_eq!(e.status().bench.unwrap().error.as_deref(), Some("stopped"));
+    assert!(e.bench_history().reports.is_empty());
+    assert!(!e.working());
+}
+
+/// A take that shows a defect is replaced while the design model is loaded:
+/// no second job, no model switches for it.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_bad_take_is_replaced_while_designing() {
+    let (fake, base) = serve().await;
+    fake.weird.store(2, Ordering::SeqCst);
+    let e = engine(&base);
+    e.submit(odd_request(true, true)).unwrap();
+    until("the job", || done(&e)).await;
+    // the normal voice once, the odd one three times
+    assert_eq!(fake.designs.load(Ordering::SeqCst), 4);
+    let st = e.status();
+    assert_eq!(st.jobs.len(), 1, "no improve job: {:?}", st.jobs);
+    assert_eq!(st.jobs[0].flagged, 0);
+}
+
+/// It gives up on a hopeless voice after a few takes.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_voice_gets_a_limited_number_of_takes() {
+    let (fake, base) = serve().await;
+    fake.weird.store(-1, Ordering::SeqCst);
+    let e = engine(&base);
+    e.submit(odd_request(true, false)).unwrap();
+    until("the job", || done(&e)).await;
+    assert_eq!(fake.designs.load(Ordering::SeqCst), 1 + 5);
+    assert_eq!(e.status().jobs[0].flagged, 1);
+}
+
+/// Once a take is clean, the other takes need no listening.
+#[tokio::test(flavor = "multi_thread")]
+async fn the_most_promising_take_is_checked_first() {
+    let (fake, base) = serve().await;
+    let e = engine(&base);
+    let mut req = request(4);
+    req.options.takes = 2;
+    e.submit(req).unwrap();
+    until("the job", || done(&e)).await;
+    assert_eq!(fake.designs.load(Ordering::SeqCst), 8);
+    assert_eq!(fake.transcriptions.load(Ordering::SeqCst), 4);
+    assert_eq!(e.status().jobs[0].done, 4);
+}
+
+/// The streamer picks: every take must be checked.
+#[tokio::test(flavor = "multi_thread")]
+async fn takes_for_the_streamer_are_all_checked() {
+    let (fake, base) = serve().await;
+    let e = engine(&base);
+    let mut req = request(2);
+    req.options.takes = 2;
+    req.options.pick = true;
+    e.submit(req).unwrap();
+    until("the job", || done(&e)).await;
+    assert_eq!(fake.transcriptions.load(Ordering::SeqCst), 4);
+}
+
+/// Listed only for the one test sentence: the voice says what its sample
+/// says, and if that's fine nothing is computed again.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_fluke_with_the_test_sentence_gets_a_second_opinion() {
+    let (fake, base) = serve().await;
+    fake.flaky_new.store(true, Ordering::SeqCst);
+    let e = engine(&base);
+    e.submit(odd_request(true, true)).unwrap();
+    until("the job", || done(&e)).await;
+    let st = e.status();
+    assert_eq!(st.jobs.len(), 1, "nothing is computed again: {:?}", st.jobs);
+    assert_eq!(st.jobs[0].flagged, 0);
+    assert!(e.library().entries.iter().all(|v| v.quality.as_ref().is_some_and(|q| q.score >= FLAG)), "{:?}", e.library().entries);
+    // one sentence each, and a second one each
+    assert_eq!(fake.clones.load(Ordering::SeqCst), 4);
+}
+
+/// A voice that really is off stays listed.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_real_problem_survives_the_second_opinion() {
+    let (fake, base) = serve().await;
+    fake.off_pitch.store(true, Ordering::SeqCst);
+    let e = engine(&base);
+    e.submit(odd_request(true, false)).unwrap();
+    until("the job", || done(&e)).await;
+    assert_eq!(e.status().jobs[0].flagged, 2);
+    assert!(e.library().entries.iter().all(|v| v.quality.as_ref().is_some_and(|q| q.issues.iter().any(|i| i.code == "new_pitch"))), "{:?}", e.library().entries);
+}
+
+/// The whole point of the order: a voice model and speech recognition are
+/// never in VCP's memory together, whatever the job does.
+#[tokio::test(flavor = "multi_thread")]
+async fn only_one_model_is_in_memory_at_a_time() {
+    let (fake, base) = serve().await;
+    fake.weird.store(5, Ordering::SeqCst);
+    fake.flaky_new.store(false, Ordering::SeqCst);
+    let e = engine(&base);
+    let mut req = odd_request(true, true);
+    req.options.takes = 2;
+    e.submit(req).unwrap();
+    until("compute and improve", || e.status().jobs.len() == 2 && done(&e)).await;
+    assert_eq!(fake.collisions.load(Ordering::SeqCst), 0);
+    assert!(fake.designs.load(Ordering::SeqCst) > 4 && fake.transcriptions.load(Ordering::SeqCst) >= 4);
+    // and the stored setting is what it was
+    assert!(!fake.low_vram.load(Ordering::SeqCst));
+    assert!(!fake.asr_loaded.load(Ordering::SeqCst), "nothing stays behind");
+}
+
+/// A second opinion and a check job keep the order too.
+#[tokio::test(flavor = "multi_thread")]
+async fn second_opinions_and_checks_keep_the_order() {
+    let (fake, base) = serve().await;
+    fake.flaky_new.store(true, Ordering::SeqCst);
+    let e = engine(&base);
+    e.submit(odd_request(true, false)).unwrap();
+    until("the job", || done(&e)).await;
+    assert_eq!(fake.collisions.load(Ordering::SeqCst), 0);
+    assert!(!fake.asr_loaded.load(Ordering::SeqCst));
+}
+
+/// With low VRAM on, VCP looks after it: nothing is switched behind its back.
+#[tokio::test(flavor = "multi_thread")]
+async fn low_vram_on_is_left_alone() {
+    let (fake, base) = serve().await;
+    fake.low_vram.store(true, Ordering::SeqCst);
+    let e = engine(&base);
+    e.submit(request(2)).unwrap();
+    until("the job", || done(&e)).await;
+    assert!(fake.low_vram.load(Ordering::SeqCst));
+}
+
+/// A paused job doesn't leave speech recognition in memory.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_batch_that_stops_while_listening_releases_speech_recognition() {
+    let (fake, base) = serve().await;
+    fake.asr_down.store(2, Ordering::SeqCst);
+    let e = engine(&base);
+    e.submit(request(2)).unwrap();
+    until("the job", || done(&e)).await;
+    assert!(!fake.asr_loaded.load(Ordering::SeqCst));
+    assert_eq!(fake.collisions.load(Ordering::SeqCst), 0);
 }

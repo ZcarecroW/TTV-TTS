@@ -24,6 +24,9 @@ static CHAINS: Mutex<Option<HashMap<String, (Chain, Instant)>>> = Mutex::new(Non
 const FORGET: Duration = Duration::from_secs(120);
 
 pub async fn speak(State(state): State<Arc<AppState>>, Json(req): Json<SpeakRequest>) -> Response {
+    if ttv_vcp::exclusive() {
+        return api_error(StatusCode::SERVICE_UNAVAILABLE, "benchmark", "Voice Creator Pro is being measured. It's free again when the benchmark ends.");
+    }
     // chat goes first: computing jobs wait, the proxy doesn't update now
     crate::forward::touch_work();
     crate::updater::touch();

@@ -167,6 +167,30 @@ await page.waitForTimeout(600);
 check((await page.locator("main").innerText()).includes("VoiceCreatorPro.exe"), "host page shows GPU processes of the VCP PC");
 check(/0\.52 s (per s of speech|pro s Sprache)/.test(await page.locator("main [data-speed]").innerText()), "host page shows how fast VCP speaks", await page.locator("main [data-speed]").innerText());
 
+// Benchmark: pick how thorough, run it, read the result, switch auto-restart.
+{
+  const main = page.locator("main");
+  check(/Not measured yet|Noch nicht gemessen/.test(await main.innerText()), "the benchmark says when nothing was measured");
+  await main.getByRole("button", { name: /^(thorough|gründlich)$/i }).click();
+  await page.waitForTimeout(100);
+  check(/45 (minutes|Minuten)/.test(await main.innerText()), "the intensity says how long it takes");
+  await main.getByRole("button", { name: /^(start benchmark|benchmark starten)$/i }).click();
+  await page.waitForTimeout(700);
+  const during = await main.innerText();
+  check(/%/.test(during) && /(chat waits|Chat wartet)/.test(during), "the running benchmark shows its progress and that nothing else runs");
+  await page.waitForTimeout(3500);
+  const report = await main.innerText();
+  check(/11\.40 s|11,40 s|11\.4/.test(report.replace(",", ".")) && /240/.test(report), "the result shows seconds per voice and the batch size");
+  check(/Before the restart|Vor dem Neustart/.test(report) && /First start|Erster Start/.test(report), "the result compares before and after the restart");
+  check(/low VRAM off|Low VRAM aus/.test(report), "the thorough result names the better low-VRAM setting");
+  const sw = main.getByRole("switch", { name: /much slower|deutlich langsamer/i });
+  const toggle = (await sw.count()) ? sw : main.getByRole("switch").last();
+  check((await toggle.getAttribute("aria-checked")) === "false", "restarting when slow is off by default");
+  await toggle.click();
+  await page.waitForTimeout(150);
+  check((await toggle.getAttribute("aria-checked")) === "true", "restarting when slow can be switched on");
+}
+
 // Live: current message, queue and history with reasons; test message appears.
 await nav("live");
 await page.waitForTimeout(300);
@@ -447,6 +471,25 @@ check(/Computing|Berechnung/.test(pre) && progress && Number(progress[1]) > 0, "
 await page.locator("main").getByRole("button", { name: /^(pause|pausieren)$/i }).first().click();
 await page.waitForTimeout(300);
 check(/paused|pausiert/.test(await page.locator("main").innerText()), "a job can be paused");
+
+// All presets, automatically: start, grid of presets and languages, pause.
+await page.locator("main").getByRole("button", { name: /compute all presets|alle presets berechnen/i }).click();
+await page.waitForTimeout(300);
+{
+  const pd = page.locator("[role=dialog]");
+  const pt = await pd.innerText();
+  check(/Korean|Koreanisch/.test(pt) && /48[.,]000/.test(pt), "the plan dialog offers all languages and says how many voices", pt.match(/[\d.,]+ (voices|Stimmen)/)?.[0] ?? "");
+  await pd.getByRole("button", { name: /^(start|starten)$/i }).click();
+  await page.waitForTimeout(500);
+  const main = page.locator("main");
+  const text = await main.innerText();
+  check(/All presets, automatically|Alle Presets, automatisch/.test(text) && /of 48[.,]000 voices|von 48[.,]000 Stimmen/.test(text), "the plan shows its progress");
+  check((await main.locator(".plan-cell").count()) === 200, "the plan shows every preset in every language", String(await main.locator(".plan-cell").count()));
+  check(!(await main.getByRole("button", { name: /compute all presets|alle presets berechnen/i }).count()), "a running plan isn't offered twice");
+  await main.getByRole("button", { name: /^(pause|pausieren)$/i }).first().click();
+  await page.waitForTimeout(300);
+  check(/paused|pausiert/.test(await main.locator("section", { hasText: /All presets, automatically|Alle Presets, automatisch/ }).first().innerText()), "the plan can be paused");
+}
 
 await page.locator("main").getByRole("button", { name: /new preset|neues preset/i }).click();
 await page.waitForTimeout(300);

@@ -4,13 +4,18 @@
 //!
 //! Work happens in batches and phases – design all takes of a batch, then
 //! check them, then save and prime the winners – because Qwen3 swaps
-//! checkpoints between designing and speaking (~20 s each time). Chat goes
-//! first: before every VCP call the engine waits until nobody else used VCP
-//! for a few seconds. Jobs and the library survive restarts.
+//! checkpoints between designing and speaking (~20 s each time): each model
+//! does all of its work in one go. The benchmark measures what that costs
+//! here and sets the batch size. Chat goes first: before every VCP call the
+//! engine waits until nobody else used VCP for a few seconds. Jobs and the
+//! library survive restarts.
 
-mod audio;
+pub(crate) mod audio;
+mod bench;
 pub mod langs;
+mod models;
 pub mod pack;
+mod plan;
 pub mod quality;
 mod run;
 mod store;
@@ -25,16 +30,18 @@ use base64::Engine as _;
 use parking_lot::{Mutex, RwLock};
 use serde::{Deserialize, Serialize};
 use tokio::sync::{Notify, broadcast};
-use ttv_link::{EngineStatus, ExportRequest, JobKind, JobRequest, JobState, JobView, LibraryChange, LibraryEntry, LibrarySnapshot, PackVoice, Verified};
+use ttv_link::{BenchHistory, BenchProgress, BenchRequest, EngineStatus, ExportRequest, JobKind, JobRequest, JobState, JobView, LibraryChange, LibraryEntry, LibrarySnapshot, PackVoice, PlanRequest, PlanView, Verified};
 use ttv_vcp::GenerationResult;
 
+pub use bench::{BenchTools, Restart, Vram};
 pub use store::Library;
 
-/// Voices per batch (between two checkpoint swaps).
+/// Voices per batch (between two checkpoint swaps), until the benchmark has
+/// measured what suits this PC.
 pub(crate) const BATCH: usize = 16;
-/// Ready-made packs (archive jobs) run in the background for days: bigger
-/// batches swap VCP's checkpoints a third as often (~4 s less per voice).
-pub(crate) const BATCH_ARCHIVE: usize = 48;
+/// Ready-made packs (archive jobs) run in the background for days: a whole
+/// preset in one go switches models a fifth as often.
+pub(crate) const BATCH_ARCHIVE: usize = 240;
 /// The engine only calls VCP after this much quiet (chat goes first).
 const GAP: Duration = Duration::from_secs(6);
 /// Designing needs VCP's design checkpoint and speech recognition pushes the
@@ -63,6 +70,9 @@ pub enum EngineEvent {
     /// VCP's API answers, but its work requests time out: it hangs. The
     /// proxy restarts it (at most every 30 minutes).
     Stuck(String),
+    /// VCP works, but much slower than it should. The proxy restarts it if
+    /// that's switched on.
+    Slow(String),
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -91,7 +101,30 @@ struct Stats {
     design_secs: Option<f32>,
     /// Measured seconds per voice of quality checks of computed voices.
     review_secs: Option<f32>,
+    /// Voices per batch that suit this PC (benchmark).
+    batch_voices: Option<u32>,
+    /// Slower than this counts as a drop in speed: design, listen (benchmark).
+    limits: Option<[f32; 2]>,
 }
+
+/// The engine's own work tells when VCP has slowed down (chat speed alone
+/// doesn't: nobody chats at night while computing crawls along).
+pub(crate) const DESIGNING: usize = 0;
+pub(crate) const LISTENING: usize = 1;
+/// Median of this many calls, against the limit.
+const WATCH: usize = 12;
+const WATCH_EVERY: Duration = Duration::from_secs(1800);
+
+#[derive(Default)]
+struct SpeedWatch {
+    recent: [std::collections::VecDeque<f32>; 2],
+    last: Option<usize>,
+    best: [Option<f32>; 2],
+    fired: Option<Instant>,
+}
+
+/// What the cached plan view was worked out from.
+type PlanRevision = (u64, u64, u64);
 
 pub(crate) struct Inner {
     dir: PathBuf,
@@ -109,6 +142,17 @@ pub(crate) struct Inner {
     wake: Notify,
     /// Counts wake-ups, so a stale Notify permit doesn't cut a backoff short.
     wakes: std::sync::atomic::AtomicU64,
+    /// The benchmark has VCP to itself: nothing starts, jobs wait where they are.
+    hold: std::sync::atomic::AtomicBool,
+    bench: Mutex<Option<BenchProgress>>,
+    bench_stop: std::sync::atomic::AtomicBool,
+    plan: Mutex<Option<plan::Plan>>,
+    plan_rev: std::sync::atomic::AtomicU64,
+    plan_view: Mutex<Option<(PlanRevision, PlanView)>>,
+    /// Batches that stopped halfway (VCP restarted, job paused): what's
+    /// designed and checked isn't done again.
+    parked: Mutex<HashMap<String, Vec<run::Item>>>,
+    watch: Mutex<SpeedWatch>,
 }
 
 #[derive(Clone)]
@@ -126,6 +170,7 @@ impl Engine {
                 j.view.state = JobState::Queued;
             }
         }
+        let saved_plan = plan::load(&dir);
         let inner = Arc::new(Inner {
             library: Library::load(dir.join("library.jsonl")),
             archive: Library::load(dir.join("archive.jsonl")),
@@ -138,6 +183,14 @@ impl Engine {
             activity,
             wake: Notify::new(),
             wakes: Default::default(),
+            hold: std::sync::atomic::AtomicBool::new(false),
+            bench: Mutex::new(None),
+            bench_stop: std::sync::atomic::AtomicBool::new(false),
+            plan: Mutex::new(saved_plan),
+            plan_rev: std::sync::atomic::AtomicU64::new(0),
+            plan_view: Mutex::new(None),
+            parked: Mutex::new(HashMap::new()),
+            watch: Mutex::new(SpeedWatch::default()),
         });
         let _ = inner.relate_all();
         Self { inner }
@@ -158,14 +211,19 @@ impl Engine {
         self.inner.events.subscribe()
     }
 
-    /// Some job is waiting to run or running (paused ones don't count).
+    /// Some job is waiting to run or running (paused ones don't count), the
+    /// benchmark runs, or the plan has more to do.
     pub fn working(&self) -> bool {
         self.inner.jobs.lock().iter().any(|j| matches!(j.view.state, JobState::Queued | JobState::Running | JobState::Waiting))
+            || self.inner.hold.load(std::sync::atomic::Ordering::SeqCst)
+            || self.inner.plan.lock().as_ref().is_some_and(plan::Plan::running)
     }
 
     pub fn status(&self) -> EngineStatus {
         EngineStatus {
             jobs: self.inner.jobs.lock().iter().map(|j| j.view.clone()).collect(),
+            bench: self.inner.bench.lock().clone(),
+            plan: plan::view(&self.inner),
             secs_per_voice: self.inner.stats.lock().secs_per_voice,
             library_size: self.inner.library.len() as u32,
             library_rev: self.inner.library.rev(),
@@ -224,8 +282,41 @@ impl Engine {
         n
     }
 
+    /// Measures VCP with nothing else running (see `bench`). Returns at once;
+    /// `status().bench` shows the progress.
+    pub fn bench_start(&self, req: BenchRequest, tools: BenchTools) -> Result<(), String> {
+        bench::start(&self.inner, req, tools)
+    }
+
+    pub fn bench_stop(&self) {
+        self.inner.bench_stop.store(true, std::sync::atomic::Ordering::SeqCst);
+    }
+
+    /// The last benchmarks, newest first.
+    pub fn bench_history(&self) -> BenchHistory {
+        bench::history(&self.inner)
+    }
+
+    /// Starts the automatic plan (see `plan`).
+    pub fn plan_start(&self, req: PlanRequest) -> Result<PlanView, String> {
+        plan::start(&self.inner, req)
+    }
+
+    /// pause, resume or stop.
+    pub fn plan_control(&self, action: &str) -> Result<(), String> {
+        plan::control(&self.inner, action)
+    }
+
+    /// VCP was restarted: the speed measured so far no longer applies.
+    pub fn speed_reset(&self) {
+        self.inner.speed_reset();
+    }
+
     /// pause, resume, cancel or remove (finished jobs).
     pub fn control(&self, id: &str, action: &str) -> Result<(), String> {
+        if matches!(action, "cancel" | "remove") {
+            self.inner.parked.lock().remove(id);
+        }
         let mut jobs = self.inner.jobs.lock();
         let i = jobs.iter().position(|j| j.view.id == id).ok_or("unknown job")?;
         match action {
@@ -383,6 +474,8 @@ impl Engine {
                 // the archive keeps what the sample says
                 (true, Some(f)) => (e.ref_text.clone().unwrap_or_else(|| lang.text.to_string()), f),
                 (true, None) => return Err(format!("{}: the archived sample is missing", e.voice_name)),
+                // packs built away from VCP: designed voices say the language's sentence
+                (false, Some(f)) if vcp.is_none() => (e.ref_text.clone().unwrap_or_else(|| lang.text.to_string()), f),
                 (false, backup) => {
                     let vcp = vcp.as_ref().ok_or("Voice Creator Pro is not connected")?;
                     // VCP knows what the sample says (1.x voices say other sentences)
@@ -491,6 +584,7 @@ impl Inner {
             .filter(|k| only.is_empty() || only.contains(k.as_str()))
             .filter(|k| match req.kind {
                 JobKind::Compute => !self.library.contains(k) && !self.archive.contains(k),
+                JobKind::Restore => self.archive.contains(k),
                 _ => self.library.contains(k),
             })
             .count() as u32;
@@ -500,7 +594,7 @@ impl Inner {
             // 2–3 takes plus the review, on average 1.5 rounds
             JobKind::Improve => self.estimate(total, o.takes.max(2), true).map(|s| s * 2),
             JobKind::Review => Some((total as f32 * self.stats.lock().review_secs.unwrap_or(8.0)).round() as u64),
-            JobKind::Import => Some(total as u64 * 3),
+            JobKind::Import | JobKind::Restore => Some(total as u64 * 3),
         };
         let view = JobView {
             id: format!("job{}", rand::random::<u32>()),
@@ -549,6 +643,52 @@ impl Inner {
     fn save_stats(&self) {
         let s = self.stats.lock().clone();
         write_json(&self.dir.join("stats.json"), &s);
+    }
+
+    /// Voices per batch: what the benchmark found, else the defaults.
+    pub(crate) fn batch_size(&self, archive: bool) -> usize {
+        match self.stats.lock().batch_voices {
+            Some(n) if n > 0 => n as usize,
+            _ if archive => BATCH_ARCHIVE,
+            _ => BATCH,
+        }
+    }
+
+    pub(crate) fn speed_reset(&self) {
+        *self.watch.lock() = SpeedWatch::default();
+    }
+
+    /// One call of the engine's own work. The first call after another model
+    /// doesn't count: it pays for the switch.
+    pub(crate) fn speed_sample(&self, kind: usize, secs: f32) {
+        let limit = self.stats.lock().limits.map(|l| l[kind]).filter(|l| *l > 0.0);
+        let mut w = self.watch.lock();
+        if w.last != Some(kind) {
+            w.last = Some(kind);
+            return;
+        }
+        let recent = &mut w.recent[kind];
+        recent.push_back(secs);
+        if recent.len() > WATCH {
+            recent.pop_front();
+        }
+        if recent.len() < WATCH {
+            return;
+        }
+        let mut sorted: Vec<f32> = recent.iter().copied().collect();
+        sorted.sort_by(f32::total_cmp);
+        let median = sorted[WATCH / 2];
+        let best = w.best[kind].map_or(median, |b| b.min(median));
+        w.best[kind] = Some(best);
+        // without a benchmark: against the best this run has seen
+        let limit = limit.unwrap_or(best * 3.0 + 1.0);
+        if median > limit && w.fired.is_none_or(|t| t.elapsed() > WATCH_EVERY) {
+            w.fired = Some(Instant::now());
+            w.recent = Default::default();
+            drop(w);
+            let what = if kind == DESIGNING { "designing" } else { "listening" };
+            let _ = self.events.send(EngineEvent::Slow(format!("{what} takes {median:.1} s, normal is under {limit:.1} s")));
+        }
     }
 
     fn emit_job(&self, v: &JobView) {
@@ -611,7 +751,8 @@ impl Inner {
                 Some(JobState::Running | JobState::Waiting | JobState::Queued) => {}
                 _ => return false,
             }
-            let busy = (self.activity)().is_some_and(|t| t.elapsed() < quiet);
+            let hold = self.hold.load(std::sync::atomic::Ordering::SeqCst);
+            let busy = hold || (self.activity)().is_some_and(|t| t.elapsed() < quiet);
             if !busy {
                 if waiting {
                     self.update(id, |j| j.view.state = JobState::Running);
@@ -662,7 +803,7 @@ pub(crate) async fn design(vcp: &ttv_vcp::Client, description: &str, l: &langs::
     decode_result(r)
 }
 
-fn decode_result(r: GenerationResult) -> Result<Vec<u8>, String> {
+pub(crate) fn decode_result(r: GenerationResult) -> Result<Vec<u8>, String> {
     if !r.success {
         return Err(r.error_detail.or(r.error_code).unwrap_or(r.status));
     }
@@ -724,7 +865,12 @@ pub(crate) struct Spoken {
 /// One normal generation with a saved voice (the priming sentence), or why
 /// VCP couldn't speak with it.
 pub(crate) async fn prime(vcp: &ttv_vcp::Client, voice_id: &str, l: &langs::DesignLang) -> Result<Spoken, Trouble> {
-    let body = serde_json::json!({ "voice_id": voice_id, "target_text": l.verify, "language": l.vcp });
+    speak(vcp, voice_id, l.verify, l).await
+}
+
+/// A saved voice speaks `text`.
+pub(crate) async fn speak(vcp: &ttv_vcp::Client, voice_id: &str, text: &str, l: &langs::DesignLang) -> Result<Spoken, Trouble> {
+    let body = serde_json::json!({ "voice_id": voice_id, "target_text": text, "language": l.vcp });
     let r: GenerationResult = vcp.post("/api/v1/generation/clone?sync=true", &body, STUCK).await?;
     let wav = decode_result(r)?;
     let (samples, rate) = audio::decode(&wav).ok_or("unreadable audio")?;
@@ -787,16 +933,53 @@ pub(crate) async fn save_voice(vcp: &ttv_vcp::Client, body: &serde_json::Value, 
     }
 }
 
+/// Working order: a pack being imported first (voices someone asked for, a
+/// few seconds each), then checks and improvements (short, and they finish
+/// voices that exist), then what was computed by hand. Archive jobs go last:
+/// they fill ready-made packs for weeks, and nothing should wait for them.
+/// The app's job list shows the same order (`rank` in JobList.vue).
+fn rank(j: &StoredJob) -> u8 {
+    match j.request.kind {
+        JobKind::Import => 0,
+        JobKind::Review | JobKind::Improve | JobKind::Restore => 1,
+        JobKind::Compute if !j.request.options.archive => 2,
+        JobKind::Compute => 3,
+    }
+}
+
+/// The job to work on now (the first of its rank). One that was at work and
+/// has to step aside goes back to waiting: it continues later where it is.
+fn next_job(inner: &Inner) -> Option<String> {
+    if inner.hold.load(std::sync::atomic::Ordering::SeqCst) {
+        return None;
+    }
+    let mut jobs = inner.jobs.lock();
+    let next = jobs.iter().filter(|j| matches!(j.view.state, JobState::Queued | JobState::Running | JobState::Waiting)).min_by_key(|j| rank(j)).map(|j| j.view.id.clone())?;
+    let mut aside = Vec::new();
+    for j in jobs.iter_mut().filter(|j| j.view.id != next && matches!(j.view.state, JobState::Running | JobState::Waiting)) {
+        j.view.state = JobState::Queued;
+        j.view.phase.clear();
+        j.view.current = None;
+        j.view.batch = 0;
+        j.view.step = 0;
+        j.view.steps = 0;
+        aside.push(j.view.clone());
+    }
+    drop(jobs);
+    for v in &aside {
+        inner.emit_job(v);
+    }
+    Some(next)
+}
+
 async fn worker(inner: Arc<Inner>) {
     // Consecutive failed batches: wait longer each time (VCP restarting,
     // speech recognition broken), so a broken setup doesn't keep the GPU busy.
     let mut failures = 0u32;
     loop {
-        let next = {
-            let jobs = inner.jobs.lock();
-            jobs.iter().find(|j| matches!(j.view.state, JobState::Queued | JobState::Running | JobState::Waiting)).map(|j| j.view.id.clone())
-        };
         let vcp = inner.vcp.read().clone();
+        // nothing open: the plan may have more to do (with VCP there to do it)
+        let next = next_job(&inner).or_else(|| (vcp.is_some() && !inner.hold.load(std::sync::atomic::Ordering::SeqCst) && plan::advance(&inner)).then(|| next_job(&inner)).flatten());
         let (Some(id), Some(vcp)) = (next, vcp) else {
             tokio::select! {
                 _ = inner.wake.notified() => {}
@@ -852,6 +1035,86 @@ mod tests {
         assert_eq!(instruct(&def("m", 9)), "A 9-year-old boy. Low, warm voice.");
         assert_eq!(instruct(&def("n", 40)), "Low, warm voice.");
     }
+
+    fn slow(rx: &mut tokio::sync::broadcast::Receiver<EngineEvent>) -> Option<String> {
+        std::iter::from_fn(|| rx.try_recv().ok()).find_map(|ev| if let EngineEvent::Slow(why) = ev { Some(why) } else { None })
+    }
+
+    #[test]
+    fn a_drop_in_speed_is_noticed_once() {
+        let dir = std::env::temp_dir().join(format!("ttv-engine-watch-{}", rand::random::<u64>()));
+        let e = Engine::new(dir, Arc::new(|| None));
+        e.inner.stats.lock().limits = Some([8.0, 2.0]);
+        let mut rx = e.subscribe();
+        // normal speed, with the odd long call
+        for i in 0..40 {
+            e.inner.speed_sample(DESIGNING, if i % 7 == 0 { 20.0 } else { 3.3 });
+        }
+        assert_eq!(slow(&mut rx), None);
+        // much slower: the median of a dozen calls crosses the limit, once
+        for _ in 0..40 {
+            e.inner.speed_sample(DESIGNING, 27.0);
+        }
+        assert!(slow(&mut rx).is_some_and(|w| w.contains("designing")));
+        assert_eq!(slow(&mut rx), None, "at most every 30 minutes");
+        // after a restart it's watched anew
+        e.speed_reset();
+        for _ in 0..14 {
+            e.inner.speed_sample(DESIGNING, 27.0);
+        }
+        assert!(slow(&mut rx).is_some());
+    }
+
+    #[test]
+    fn the_first_call_after_another_model_does_not_count() {
+        let dir = std::env::temp_dir().join(format!("ttv-engine-switch-{}", rand::random::<u64>()));
+        let e = Engine::new(dir, Arc::new(|| None));
+        e.inner.stats.lock().limits = Some([8.0, 2.0]);
+        let mut rx = e.subscribe();
+        // batches of one call per model: every call pays for a switch
+        for _ in 0..30 {
+            e.inner.speed_sample(0, 30.0);
+            e.inner.speed_sample(1, 30.0);
+        }
+        assert_eq!(slow(&mut rx), None);
+    }
+
+    #[test]
+    fn imports_and_improvements_go_before_computing_and_archive_jobs_last() {
+        let job = |id: &str, kind, archive, state| StoredJob {
+            view: JobView { id: id.into(), state, phase: "design".into(), step: 5, steps: 9, batch: 48, ..Default::default() },
+            request: JobRequest { kind, options: ttv_link::JobOptions { archive, ..Default::default() }, ..Default::default() },
+            ..Default::default()
+        };
+        let dir = std::env::temp_dir().join(format!("ttv-engine-order-{}", rand::random::<u64>()));
+        let e = Engine::new(dir, Arc::new(|| None));
+        e.inner.jobs.lock().extend([
+            job("packs", JobKind::Compute, true, JobState::Running),
+            job("packs2", JobKind::Compute, true, JobState::Queued),
+            job("mine", JobKind::Compute, false, JobState::Queued),
+            job("improve", JobKind::Improve, true, JobState::Queued),
+            job("review", JobKind::Review, false, JobState::Queued),
+            job("held", JobKind::Import, false, JobState::Paused),
+            job("gone", JobKind::Import, false, JobState::Done),
+            job("import", JobKind::Import, false, JobState::Queued),
+        ]);
+        let state = |id: &str| e.inner.state_of(id).unwrap();
+
+        assert_eq!(next_job(&e.inner).as_deref(), Some("import"));
+        // the job that was at work waits its turn, it doesn't stay "computing"
+        assert_eq!(state("packs"), JobState::Queued);
+        let v = e.status().jobs.into_iter().find(|j| j.id == "packs").unwrap();
+        assert!(v.phase.is_empty() && v.batch == 0 && v.step == 0 && v.steps == 0, "{v:?}");
+        // jobs that aren't open stay as they are
+        assert_eq!(state("held"), JobState::Paused);
+        assert_eq!(state("gone"), JobState::Done);
+
+        for id in ["import", "improve", "review", "mine", "packs", "packs2"] {
+            assert_eq!(next_job(&e.inner).as_deref(), Some(id));
+            e.inner.update(id, |j| j.view.state = JobState::Done);
+        }
+        assert_eq!(next_job(&e.inner), None);
+    }
 }
 
 
@@ -859,6 +1122,58 @@ mod tests {
 /// cargo test -p ttv-engine relate_all_settles -- --ignored --nocapture`.
 #[cfg(test)]
 mod real_data {
+    /// The archive holds the only copy of its voices (they left VCP). Copy
+    /// archive.jsonl and samples/ of a proxy into a folder, then
+    /// `TTV_REAL_ENGINE=<folder> cargo test -p ttv-engine archived_samples -- --ignored --nocapture`.
+    #[test]
+    #[ignore]
+    fn archived_samples_are_whole() {
+        let Ok(src) = std::env::var("TTV_REAL_ENGINE") else { return };
+        let src = std::path::PathBuf::from(src);
+        let entries = crate::Library::load(src.join("archive.jsonl")).snapshot().entries;
+        let next = std::sync::atomic::AtomicUsize::new(0);
+        let bad = parking_lot::Mutex::new(Vec::new());
+        let seconds = parking_lot::Mutex::new(0f64);
+        std::thread::scope(|s| {
+            for _ in 0..8 {
+                s.spawn(|| {
+                    while let Some(e) = entries.get(next.fetch_add(1, std::sync::atomic::Ordering::Relaxed)) {
+                        let path = src.join("samples").join(format!("{}.flac", e.key.replace(':', "_")));
+                        let problem = match std::fs::read(&path) {
+                            Err(err) => Some(format!("no sample: {err}")),
+                            Ok(flac) => match crate::pack::decode_flac(&flac) {
+                                Err(err) => Some(err),
+                                Ok((samples, rate)) => {
+                                    let secs = samples.len() as f32 / rate as f32;
+                                    let rms = (samples.iter().map(|x| x * x).sum::<f32>() / samples.len().max(1) as f32).sqrt();
+                                    *seconds.lock() += secs as f64;
+                                    if (secs - e.duration).abs() > 0.25 {
+                                        Some(format!("{secs:.2} s of audio, the entry says {:.2} s", e.duration))
+                                    } else if rms < 0.003 {
+                                        Some(format!("silent (rms {rms})"))
+                                    } else if e.ref_text.as_deref().is_none_or(|t| t.trim().is_empty()) {
+                                        Some("no spoken text".into())
+                                    } else {
+                                        None
+                                    }
+                                }
+                            },
+                        };
+                        if let Some(p) = problem {
+                            bad.lock().push(format!("{} ({}): {p}", e.key, e.name));
+                        }
+                    }
+                });
+            }
+        });
+        let bad = bad.into_inner();
+        println!("{} archived voices, {:.1} hours of audio, {} with a problem", entries.len(), seconds.into_inner() / 3600.0, bad.len());
+        for b in bad.iter().take(30) {
+            println!("  {b}");
+        }
+        assert!(bad.is_empty());
+    }
+
     #[test]
     #[ignore]
     fn relate_all_settles_on_real_data() {

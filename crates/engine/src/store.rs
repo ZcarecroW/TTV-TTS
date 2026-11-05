@@ -144,6 +144,11 @@ impl Library {
         LibrarySnapshot { rev: st.rev, entries: st.map.values().cloned().collect() }
     }
 
+    /// Every voice and whether it may sound odd.
+    pub fn quality_map(&self) -> std::collections::HashMap<String, bool> {
+        self.state.lock().map.values().map(|e| (e.key.clone(), e.quality.as_ref().is_some_and(|q| q.score < crate::quality::FLAG && !q.kept))).collect()
+    }
+
     pub fn rev(&self) -> u64 {
         self.state.lock().rev
     }

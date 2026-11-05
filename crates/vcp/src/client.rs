@@ -1,4 +1,4 @@
-use std::sync::atomic::{AtomicU8, AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, LazyLock};
 use std::time::{Duration, Instant};
 
@@ -13,6 +13,28 @@ use crate::types::*;
 /// clone came in over a second connection). Every work request of this
 /// process takes turns here; the turn is held until the answer is read.
 static TURN: LazyLock<Arc<tokio::sync::Mutex<()>>> = LazyLock::new(|| Arc::new(tokio::sync::Mutex::new(())));
+
+/// The benchmark has VCP to itself: other work is refused instead of waiting
+/// minutes for its turn.
+static EXCLUSIVE: AtomicBool = AtomicBool::new(false);
+
+pub fn set_exclusive(on: bool) {
+    EXCLUSIVE.store(on, Ordering::SeqCst);
+}
+
+pub fn exclusive() -> bool {
+    EXCLUSIVE.load(Ordering::SeqCst)
+}
+
+type BeforeChat = std::pin::Pin<Box<dyn std::future::Future<Output = ()> + Send>>;
+/// Work that has to happen before the next chat request reaches VCP.
+static BEFORE_CHAT: std::sync::Mutex<Option<BeforeChat>> = std::sync::Mutex::new(None);
+
+/// Sets (or clears) what the next chat request does first, while holding its
+/// turn. Computing uses it to free the model it has loaded.
+pub fn before_next_chat(work: Option<BeforeChat>) {
+    *BEFORE_CHAT.lock().unwrap_or_else(|e| e.into_inner()) = work;
+}
 
 /// Chat requests waiting for their turn; background work lets them first.
 static CHAT_WAITING: AtomicUsize = AtomicUsize::new(0);
@@ -90,6 +112,10 @@ pub async fn turn(path: &str) -> Turn {
     let waiting = Waiting;
     let guard = TURN.clone().lock_owned().await;
     drop(waiting);
+    let before = BEFORE_CHAT.lock().unwrap_or_else(|e| e.into_inner()).take();
+    if let Some(work) = before {
+        work.await;
+    }
     granted(guard, true, path)
 }
 

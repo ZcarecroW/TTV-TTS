@@ -9,6 +9,6 @@ mod types;
 pub mod perf;
 pub mod wav;
 
-pub use client::{Client, Error, Turn, background_turn, is_work, turn};
+pub use client::{Client, Error, Turn, background_turn, before_next_chat, exclusive, is_work, set_exclusive, turn};
 pub use reqwest::Method;
 pub use types::*;

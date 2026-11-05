@@ -123,6 +123,50 @@ pub async fn job_control(state: St<'_>, id: String, action: String) -> Result<()
     state.library.control(&state, &id, &action).await
 }
 
+#[tauri::command]
+pub async fn bench_start(state: St<'_>, request: ttv_link::BenchRequest) -> Result<(), String> {
+    state.library.bench_start(&state, request).await
+}
+
+#[tauri::command]
+pub async fn bench_stop(state: St<'_>) -> Result<(), String> {
+    state.library.bench_stop(&state).await
+}
+
+#[tauri::command]
+pub async fn bench_history(state: St<'_>) -> Result<ttv_link::BenchHistory, String> {
+    state.library.bench_history(&state).await
+}
+
+/// Computes all built-in presets in these languages, all by itself.
+#[tauri::command]
+pub async fn plan_start(state: St<'_>, languages: Vec<String>) -> Result<ttv_link::PlanView, String> {
+    if languages.is_empty() {
+        return Err("Pick at least one language.".into());
+    }
+    let presets = presets::builtins()
+        .iter()
+        .map(|p| ttv_link::PlanPreset { id: p.id.clone(), name: p.name.clone(), defs: p.defs.iter().enumerate().map(|(i, d)| JobDef { index: i as u32, def: d.clone() }).collect() })
+        .collect();
+    let options = JobOptions { speech_check: true, takes: 2, backup: true, quality: true, improve: true, archive: true, ..Default::default() };
+    state.library.plan_start(&state, ttv_link::PlanRequest { presets, languages, options }).await
+}
+
+#[tauri::command]
+pub async fn plan_control(state: St<'_>, action: String) -> Result<(), String> {
+    state.library.plan_control(&state, &action).await
+}
+
+#[tauri::command]
+pub async fn vcp_settings(state: St<'_>) -> Result<Option<ttv_link::VcpSettings>, String> {
+    state.library.vcp_settings(&state).await
+}
+
+#[tauri::command]
+pub async fn set_vcp_settings(state: St<'_>, settings: ttv_link::VcpSettings) -> Result<(), String> {
+    state.library.set_vcp_settings(&state, settings).await
+}
+
 /// Designs one computed voice again: deletes it (in VCP too) and queues a
 /// job for just this voice and language. For voices that came out different
 /// from their description.

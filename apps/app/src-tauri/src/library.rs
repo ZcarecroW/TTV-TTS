@@ -408,6 +408,60 @@ impl VoiceLibrary {
         }
     }
 
+    pub async fn bench_start(&self, state: &AppState, req: ttv_link::BenchRequest) -> Result<(), String> {
+        match Self::backend(state)? {
+            // VCP on this PC: nobody here can restart it
+            Backend::Local => self.local.bench_start(req, Default::default()),
+            Backend::Remote(c) => c.post::<_, serde_json::Value>("/ttv/v1/engine/bench", &req, T_SHORT).await.map(|_| ()).map_err(|e| e.to_string()),
+        }
+    }
+
+    pub async fn bench_stop(&self, state: &AppState) -> Result<(), String> {
+        match Self::backend(state)? {
+            Backend::Local => {
+                self.local.bench_stop();
+                Ok(())
+            }
+            Backend::Remote(c) => c.post::<_, serde_json::Value>("/ttv/v1/engine/bench/stop", &(), T_SHORT).await.map(|_| ()).map_err(|e| e.to_string()),
+        }
+    }
+
+    pub async fn bench_history(&self, state: &AppState) -> Result<ttv_link::BenchHistory, String> {
+        match Self::backend(state)? {
+            Backend::Local => Ok(self.local.bench_history()),
+            Backend::Remote(c) => c.get("/ttv/v1/engine/bench", T_SHORT).await.map_err(|e| e.to_string()),
+        }
+    }
+
+    pub async fn plan_start(&self, state: &AppState, req: ttv_link::PlanRequest) -> Result<ttv_link::PlanView, String> {
+        match Self::backend(state)? {
+            Backend::Local => self.local.plan_start(req),
+            Backend::Remote(c) => c.post("/ttv/v1/plan", &req, T_LONG).await.map_err(|e| e.to_string()),
+        }
+    }
+
+    pub async fn plan_control(&self, state: &AppState, action: &str) -> Result<(), String> {
+        match Self::backend(state)? {
+            Backend::Local => self.local.plan_control(action),
+            Backend::Remote(c) => c.post::<_, serde_json::Value>(&format!("/ttv/v1/plan/{action}"), &(), T_SHORT).await.map(|_| ()).map_err(|e| e.to_string()),
+        }
+    }
+
+    /// Settings of TTV-TTS Proxy; None with VCP on this PC.
+    pub async fn vcp_settings(&self, state: &AppState) -> Result<Option<ttv_link::VcpSettings>, String> {
+        match Self::backend(state)? {
+            Backend::Local => Ok(None),
+            Backend::Remote(c) => c.get("/ttv/v1/vcp/settings", T_SHORT).await.map(Some).map_err(|e| e.to_string()),
+        }
+    }
+
+    pub async fn set_vcp_settings(&self, state: &AppState, s: ttv_link::VcpSettings) -> Result<(), String> {
+        match Self::backend(state)? {
+            Backend::Local => Err("Only TTV-TTS Proxy can restart Voice Creator Pro.".into()),
+            Backend::Remote(c) => c.put::<_, serde_json::Value>("/ttv/v1/vcp/settings", &s, T_SHORT).await.map(|_| ()).map_err(|e| e.to_string()),
+        }
+    }
+
     /// The lossless backup of a voice's reference sample (FLAC); used by pack export.
     #[allow(dead_code)]
     pub async fn takes(&self, state: &AppState) -> Result<Vec<ttv_link::TakeChoice>, String> {
@@ -469,6 +523,7 @@ pub async fn local_events(state: Arc<AppState>) {
             ttv_engine::EngineEvent::Library(c) => state.library.on_change(&state, c),
             // VCP on this PC hangs: the app can't restart it, the job shows the error
             ttv_engine::EngineEvent::Stuck(why) => log::warn!("Voice Creator Pro hangs: {why}"),
+            ttv_engine::EngineEvent::Slow(why) => log::warn!("Voice Creator Pro has slowed down: {why}"),
         }
     }
 }

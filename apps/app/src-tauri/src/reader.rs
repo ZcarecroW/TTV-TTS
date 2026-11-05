@@ -44,6 +44,10 @@ impl Host for AppHost {
         self.state()?.vcp()
     }
 
+    fn busy(&self) -> bool {
+        ttv_vcp::exclusive() || self.state().is_some_and(|s| s.host.read().vcp.as_ref().is_some_and(|v| v.benchmark))
+    }
+
     fn connected(&self) -> bool {
         self.state().is_some_and(|s| s.host.read().connected)
     }

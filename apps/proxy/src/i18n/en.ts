@@ -204,7 +204,7 @@ export default {
     startWith: "Start VCP together with the proxy",
     keepRunning: "Keep VCP running",
     restartHang: "Restart VCP when it hangs",
-    restartSlow: "Restart VCP when it gets slow",
+    restartSlow: "Restart VCP when it gets much slower",
     speed: "Speed",
     speedValue: "{s} s per second of speech",
     speedUsual: "usually {s}",

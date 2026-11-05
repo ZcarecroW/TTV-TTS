@@ -35,7 +35,7 @@ Auf einen Blick: ob Voice Creator Pro läuft und seine HTTP-API antwortet, das g
 - **Start & Wächter**:
   - **VCP zusammen mit dem Proxy starten** (standardmäßig aus), **VCP am Laufen halten** (startet es wieder, wenn es sich schließt).
   - **VCP neu starten, wenn es hängt** – nach der eingestellten Zeit ohne Antwort.
-  - **VCP neu starten, wenn es langsam wird** – siehe [Wenn Voice Creator Pro langsam wird](voice-host#slow). Das aktuelle und das übliche **Tempo** stehen hier.
+  - **VCP neu starten, wenn es deutlich langsamer wird** (standardmäßig aus) – siehe [Wenn Voice Creator Pro langsam wird](voice-host#slow). Das aktuelle und das übliche **Tempo** stehen hier.
 
 ## Internet {#internet}
 

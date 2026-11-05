@@ -16,6 +16,7 @@ export function duration(secs: number): string {
   const s = Math.max(0, Math.round(secs));
   const h = Math.floor(s / 3600);
   const m = Math.floor((s % 3600) / 60);
+  if (h >= 48) return `${Math.floor(h / 24)} d ${h % 24} h`;
   if (h > 0) return `${h} h ${m} min`;
   if (m > 0) return `${m} min ${s % 60} s`;
   return `${s} s`;

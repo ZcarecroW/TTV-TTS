@@ -55,6 +55,11 @@ async fn engine_events(state: Arc<AppState>) {
         let out = match ev {
             ttv_engine::EngineEvent::Job(j) => ttv_link::Event::Job(j),
             ttv_engine::EngineEvent::Library(c) => ttv_link::Event::Library(c),
+            ttv_engine::EngineEvent::Slow(why) => {
+                let st = state.clone();
+                tokio::spawn(async move { restart_slow_vcp(&st, &why).await });
+                continue;
+            }
             ttv_engine::EngineEvent::Stuck(why) => {
                 restart_stuck_vcp(&state, &why).await;
                 continue;
@@ -64,6 +69,28 @@ async fn engine_events(state: Arc<AppState>) {
             let _ = app.emit("proxy://engine", &out);
         }
         let _ = state.events.send(out);
+    }
+}
+
+/// VCP's speed dropped significantly while computing. Restarts it if that's
+/// switched on: it waits for its turn, and what's computed so far stays.
+async fn restart_slow_vcp(state: &Arc<AppState>, why: &str) {
+    if !state.cfg.read().restart_when_slow {
+        log::warn!("Voice Creator Pro has slowed down ({why}) – restarting it automatically is off");
+        return;
+    }
+    if ttv_vcp::exclusive() || !state.vcp_state.read().reachable || !vcp_watch::auto_restart_due() {
+        return;
+    }
+    let _turn = ttv_vcp::turn("/ttv/restart").await;
+    log::warn!("Voice Creator Pro has slowed down ({why}) – restarting it");
+    match vcp_watch::restart(state).await {
+        Ok(m) => {
+            ttv_vcp::perf::clear_recent();
+            state.engine.speed_reset();
+            log::info!("{m}");
+        }
+        Err(e) => log::warn!("restarting VCP failed: {e}"),
     }
 }
 

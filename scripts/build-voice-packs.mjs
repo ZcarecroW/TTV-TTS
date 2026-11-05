@@ -7,12 +7,15 @@
 // aren't exported or uploaded again.
 //   TTV_PROXY=192.168.178.25:8110 TTV_TOKEN=<key or device token> node scripts/build-voice-packs.mjs [--dry]
 //   TTV_VIA_APP=1 node scripts/build-voice-packs.mjs [--dry]
+//   TTV_FROM=<folder> node scripts/build-voice-packs.mjs [--dry]
 // One pack per built-in preset, language and complete slice of 30 voices
 // (1–30, 31–60, …). Needs TTV-TTS Proxy 2.0.0-alpha.10+ (pack export) and gh.
 // The proxy's certificate is self-signed: run with NODE_TLS_REJECT_UNAUTHORIZED=0
 // on the LAN, or pin it. TTV_VIA_APP=1 goes through a running development
 // build of the app instead (remote debugging on :9333, `debug_proxy_fetch`),
-// with its pairing – no key or token needed here.
+// with its pairing – no key or token needed here. TTV_FROM reads a copy of an
+// engine's folder (library.jsonl, archive.jsonl, samples/) and needs neither a
+// proxy nor VCP: see scripts/publish-when-ready.mjs.
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -20,9 +23,10 @@ import { join } from "node:path";
 
 const root = new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
 const viaApp = process.env.TTV_VIA_APP === "1";
+const fromDir = process.env.TTV_FROM;
 const proxy = process.env.TTV_PROXY;
 const token = process.env.TTV_TOKEN;
-if (!viaApp && (!proxy || !token)) throw new Error("set TTV_PROXY and TTV_TOKEN, or TTV_VIA_APP=1");
+if (!viaApp && !fromDir && (!proxy || !token)) throw new Error("set TTV_PROXY and TTV_TOKEN, TTV_VIA_APP=1 or TTV_FROM");
 const dry = process.argv.includes("--dry");
 const repo = "ZcarecroW/TTV-TTS";
 const TAG = "voice-packs";
@@ -47,6 +51,22 @@ if (viaApp) {
     const bytes = Buffer.from(a.body, "base64");
     return { ok: a.status >= 200 && a.status < 300, status: a.status, json: async () => JSON.parse(bytes.toString("utf8")), text: async () => bytes.toString("utf8"), arrayBuffer: async () => bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.length) };
   };
+}
+
+if (fromDir) {
+  const entries = (file) => {
+    const m = new Map();
+    for (const l of readFileSync(join(fromDir, file), "utf8").split("\n")) {
+      if (!l.trim()) continue;
+      const o = JSON.parse(l);
+      if (o.op === "add") m.set(o.entry.key, o.entry);
+      else m.delete(o.key);
+    }
+    return { entries: [...m.values()] };
+  };
+  const version = /^version = "(.+)"/m.exec(readFileSync(join(root, "Cargo.toml"), "utf8"))[1];
+  const answers = { "/library": () => entries("library.jsonl"), "/library/archived": () => entries("archive.jsonl"), "/info": () => ({ version }) };
+  api = async (path) => ({ ok: true, json: async () => answers[path]() });
 }
 
 /** VoiceDef::hash: sha256(gender, 0, age, description) → "v" + 12 hex. */
@@ -94,6 +114,8 @@ const signature = (keys) =>
     .digest("hex")
     .slice(0, 16);
 const packs = [];
+/** TTV_FROM: packs to build in one go. */
+const waiting = [];
 let reused = 0;
 for (const id of ORDER) {
   const p = preset(id);
@@ -102,7 +124,8 @@ for (const id of ORDER) {
     for (let from = 0; from + SLICE <= p.defs.length; from += SLICE) {
       const slice = p.defs.slice(from, from + SLICE);
       const keys = slice.map((d) => `${defHash(d)}:${lang}`);
-      if (!keys.every((k) => byKey.has(k))) break;
+      // a voice that failed only holds back its own slice
+      if (!keys.every((k) => byKey.has(k))) continue;
       const file = `${id}-${lang}-${from + 1}-${from + SLICE}.ttvpack`;
       const sig = signature(keys);
       const old = previous.get(file);
@@ -117,6 +140,10 @@ for (const id of ORDER) {
         presets: [{ id, name: p.name, builtin: true, text: p.text }],
         voices: slice.map((d, i) => ({ key: `${defHash(d)}:${lang}`, preset_id: id, index: from + i, name: d.name, description: d.description })),
       };
+      if (fromDir) {
+        waiting.push({ file, request: body, pack: { file, preset: id, lang, from: from + 1, to: from + SLICE, voices: SLICE, sig } });
+        continue;
+      }
       const t = Date.now();
       const r = await api("/packs/export", { method: "POST", body: JSON.stringify(body) });
       if (!r.ok) throw new Error(`${file}: ${r.status} ${await r.text()}`);
@@ -126,6 +153,15 @@ for (const id of ORDER) {
       packs.push({ file, preset: id, lang, from: from + 1, to: from + SLICE, voices: SLICE, bytes: bytes.length, sha256, sig });
       console.log(`${file}: ${(bytes.length / 1048576).toFixed(1)} MB in ${((Date.now() - t) / 1000).toFixed(1)} s`);
     }
+  }
+}
+if (waiting.length) {
+  const requests = join(out, "requests.json");
+  writeFileSync(requests, JSON.stringify(waiting.map(({ file, request }) => ({ file, request }))));
+  execFileSync("cargo", ["run", "--release", "-q", "-p", "ttv-engine", "--example", "export_packs", "--", fromDir, requests, out, app], { cwd: root, stdio: "inherit" });
+  for (const w of waiting) {
+    const bytes = readFileSync(join(out, w.file));
+    packs.push({ ...w.pack, bytes: bytes.length, sha256: createHash("sha256").update(bytes).digest("hex") });
   }
 }
 console.log(`${packs.length - reused} packs exported, ${reused} unchanged`);
@@ -154,8 +190,23 @@ const release = (tag) => {
 if (!legacy.size && !assets(TAG)) {
   gh("release", "create", TAG, "-R", repo, "--prerelease", "--title", "Ready-made voices", "--notes", "Voice packs for the built-in presets, made with Voice Creator Pro and checked by TTV-TTS's quality check. TTV-TTS downloads them from here and from the releases voice-packs-<language>; you can also import a .ttvpack by hand.");
 }
+/** GitHub allows about 500 uploads an hour; waits and tries again when it says no. */
+const sleep = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+const upload = (...args) => {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return gh("release", "upload", ...args);
+    } catch (e) {
+      if (attempt >= 6) throw e;
+      const minutes = 2 ** attempt;
+      console.log(`upload failed (${String(e.message).split("\n")[0]}), trying again in ${minutes} min`);
+      sleep(minutes * 60_000);
+    }
+  }
+};
 // packs first, catalogs last: the app never sees a catalog entry without its file.
-// A pack GitHub already has with the same sha256 isn't uploaded again.
+// A pack GitHub already has with the same sha256 isn't uploaded again, so a
+// run that stopped goes on where it was.
 let skipped = 0;
 for (const p of packs) {
   if (release(p.tag).get(p.file) === `sha256:${p.sha256}`) {
@@ -163,10 +214,11 @@ for (const p of packs) {
     skipped++;
     continue;
   }
-  gh("release", "upload", p.tag, "-R", repo, "--clobber", join(out, p.file));
+  upload(p.tag, "-R", repo, "--clobber", join(out, p.file));
+  sleep(7500);
 }
 console.log(`${packs.length - skipped} packs uploaded, ${skipped} unchanged`);
-gh("release", "upload", TAG, "-R", repo, "--clobber", join(out, "catalog.json"), join(out, "catalog-v2.json"));
+upload(TAG, "-R", repo, "--clobber", join(out, "catalog.json"), join(out, "catalog-v2.json"));
 console.log("published", statSync(join(out, "catalog-v2.json")).size, "byte catalog");
 // the debugging connection to the app (TTV_VIA_APP) would keep Node running
 process.exit(0);
