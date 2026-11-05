@@ -126,7 +126,7 @@ function demoReport(level: BenchLevel): BenchReport {
     variants: level === "thorough" ? [{ low_vram: true, asr_model: null, series: [], switches: [], voice_secs: 26.4, listen_wer: null, vram_free_mb: null, error: null }, { low_vram: false, asr_model: "standard", series: [], switches: [], voice_secs: 11.1, listen_wer: 0.012, vram_free_mb: 500, error: null }] : [],
     vram_total_mb: 8192,
     vram_free_mb: 2294,
-    advice: { batch_voices: 240, voice_secs: 11.4, switch_secs: 33, switch_percent: 1.2, low_vram: level === "thorough" ? false : null, asr_model: level === "thorough" ? "standard" : null, design_limit: 8.3, speak_limit: 4, listen_limit: 1.5 },
+    advice: { batch_voices: 240, voice_secs: 11.4, switch_secs: 33, switch_percent: 1.2, low_vram: null, asr_model: level === "thorough" ? "higher_quality" : null, design_limit: 8.3, speak_limit: 4, listen_limit: 1.5 },
   };
 }
 function demoPlan(languages: string[]): PlanView {

@@ -958,12 +958,11 @@ async fn the_thorough_benchmark_compares_low_vram() {
     let h = e.bench_history();
     let r = &h.reports[0];
     assert_eq!(r.variants.len(), 2, "{r:?}");
-    assert!(r.variants[0].low_vram && r.variants[0].error.is_none() && !r.variants[0].series.is_empty(), "{:?}", r.variants);
+    assert!(r.variants[0].low_vram && r.variants[0].error.is_none() && !r.variants[0].series.is_empty(), "VCP left to itself: {:?}", r.variants);
     assert_eq!(r.variants[1].asr_model.as_deref(), Some("standard"), "the lighter model of the same family");
     assert_eq!(restarts.load(Ordering::SeqCst), 4, "before, for each variant, and back");
     assert_eq!(e.status().bench.unwrap().step, e.status().bench.unwrap().steps, "progress reaches its end");
-    // both equally fast here: the settings stay
-    assert_eq!(r.advice.low_vram, Some(false));
+    // the setting stays what it was
     assert!(!fake.low_vram.load(Ordering::SeqCst));
     assert_eq!(r.report_asr(), ("higher_quality", "higher_quality"));
     assert!(!fake.light_asr.load(Ordering::SeqCst));
@@ -1146,6 +1145,18 @@ async fn only_one_model_is_in_memory_at_a_time() {
     assert!(!fake.asr_loaded.load(Ordering::SeqCst), "nothing stays behind");
 }
 
+/// A proxy that stopped in the middle of a phase left its model behind.
+#[tokio::test(flavor = "multi_thread")]
+async fn what_was_left_in_memory_is_cleared_first() {
+    let (fake, base) = serve().await;
+    fake.asr_loaded.store(true, Ordering::SeqCst);
+    fake.voice_loaded.store(true, Ordering::SeqCst);
+    let e = engine(&base);
+    e.submit(request(2)).unwrap();
+    until("the job", || done(&e)).await;
+    assert_eq!(fake.collisions.load(Ordering::SeqCst), 0);
+}
+
 /// A second opinion and a check job keep the order too.
 #[tokio::test(flavor = "multi_thread")]
 async fn second_opinions_and_checks_keep_the_order() {
@@ -1158,15 +1169,40 @@ async fn second_opinions_and_checks_keep_the_order() {
     assert!(!fake.asr_loaded.load(Ordering::SeqCst));
 }
 
-/// With low VRAM on, VCP looks after it: nothing is switched behind its back.
+/// With low VRAM on (VCP's usual setting): off for speech recognition, so it
+/// stays loaded between clips, and on again afterwards.
 #[tokio::test(flavor = "multi_thread")]
-async fn low_vram_on_is_left_alone() {
+async fn low_vram_is_only_off_while_speech_recognition_works() {
     let (fake, base) = serve().await;
     fake.low_vram.store(true, Ordering::SeqCst);
     let e = engine(&base);
-    e.submit(request(2)).unwrap();
+    let mut req = odd_request(true, false);
+    req.options.takes = 2;
+    e.submit(req).unwrap();
     until("the job", || done(&e)).await;
-    assert!(fake.low_vram.load(Ordering::SeqCst));
+    assert!(fake.low_vram.load(Ordering::SeqCst), "back on");
+    assert_eq!(fake.collisions.load(Ordering::SeqCst), 0);
+    assert!(!fake.asr_loaded.load(Ordering::SeqCst));
+    // clips were heard with it off: one reload per phase, not one per clip
+    assert!(fake.transcriptions.load(Ordering::SeqCst) >= 4);
+}
+
+/// A proxy that stopped during speech recognition left the setting off.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_crash_during_speech_recognition_leaves_nothing_behind() {
+    let (fake, base) = serve().await;
+    let dir = std::env::temp_dir().join(format!("ttv-engine-crash-{}", rand::random::<u64>()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("stats.json"), r#"{"low_vram_was":true}"#).unwrap();
+    fake.low_vram.store(false, Ordering::SeqCst);
+    fake.asr_loaded.store(true, Ordering::SeqCst);
+    let e = Engine::new(dir, Arc::new(|| None));
+    e.set_vcp(Some(ttv_vcp::Client::new(&base, None)));
+    tokio::spawn(e.worker());
+    e.submit(request(1)).unwrap();
+    until("the job", || done(&e)).await;
+    assert!(fake.low_vram.load(Ordering::SeqCst), "the setting from before the crash");
+    assert_eq!(fake.collisions.load(Ordering::SeqCst), 0);
 }
 
 /// A paused job doesn't leave speech recognition in memory.

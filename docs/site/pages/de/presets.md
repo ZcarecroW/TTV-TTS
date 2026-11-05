@@ -32,7 +32,7 @@ Die Auftragsliste unter den Presets zeigt den Fortschritt. Gearbeitet wird in St
 Auch bei einer langen Warteschlange bleibt die Liste kurz: oben steht, wie viele Stimmen noch offen sind und bis wann es etwa dauert, darunter der laufende Auftrag und die nächsten; alles Weitere ist nach Sprachen zusammengeklappt. Importe und Verbesserungen laufen zuerst, dann das, was du selbst startest. Pausierte und fertige Aufträge haben eigene Bereiche mit **Alle entfernen**.
 
 > [!TIP]
-> Viel zu berechnen? Schalte in Voice Creator Pro **Low VRAM** aus und **starte es neu**. TTV-TTS hält dann genau ein Modell im Speicher: Die Spracherkennung bleibt für ihre ganze Phase geladen und ist wirklich weg, bevor das nächste Modell lädt. Auf einer RTX 3070 (8 GB) dauerte eine Prüfung 0,6 s statt 5 s, eine Stimme etwa 12 s statt 28 s, und der Chat blieb genauso schnell. Ändere die Einstellung nicht, solange Voice Creator Pro Modelle geladen hat: Der Speicher kann dann voll bleiben, und bis zum nächsten Neustart wird alles etwa zehnmal langsamer.
+> Jedes Modell erledigt seine Arbeit am Stück, und genau ein Modell ist im Speicher: Einzustellen ist nichts. TTV-TTS schaltet **Low VRAM** in Voice Creator Pro nur aus, solange die Spracherkennung arbeitet, damit sie zwischen den Clips geladen bleibt, und danach wieder ein. Auf einer RTX 3070 (8 GB) dauert eine Prüfung 0,5 s statt 5 s, eine Stimme etwa 11 s statt 28 s, und der Chat bleibt genauso schnell. Lass Low VRAM an: Ist es aus, kann Voice Creator Pro die Spracherkennung im Speicher lassen, und auf 8 GB wird dann bis zum nächsten Neustart alles etwa zehnmal langsamer.
 
 > [!TIP]
 > Viele Presets gibt es **fertig zum Herunterladen** (**Holen**): von TTV-TTS mit Qualitätsprüfung berechnet, ein paar Megabyte, in etwa einer Minute importiert.
@@ -51,7 +51,7 @@ Der **Benchmark** auf der Seite **Stimmen-Host** misst, was dein PC wirklich sch
 4. was jeder Wechsel zwischen zwei Modellen kostet,
 5. ob es beim Arbeiten langsamer wird.
 
-**Schnell** dauert etwa 5 Minuten, **Standard** etwa 12, **Gründlich** etwa 45 und vergleicht zusätzlich Low VRAM an und aus und eine leichtere Spracherkennung, mit echten Stimmen in allen Sprachen; die beste Einstellung bleibt. Nichts anderes läuft währenddessen: Der Chat wartet, das Berechnen geht danach dort weiter, wo es stand.
+**Schnell** dauert etwa 10 Minuten, **Standard** etwa 20, **Gründlich** etwa 50 und zeigt zusätzlich, was die Reihenfolge der Modelle bringt, und vergleicht eine leichtere Spracherkennung mit echten Stimmen in allen Sprachen; die beste Einstellung bleibt. Nichts anderes läuft währenddessen: Der Chat wartet, das Berechnen geht danach dort weiter, wo es stand.
 
 Aus dem Ergebnis legt TTV-TTS fest, wie viele Stimmen pro Durchgang berechnet werden, damit jedes Modell seine ganze Arbeit am Stück erledigt, und die Grenzen für den [Neustart, wenn es deutlich langsamer wird](voice-host#slow).
 

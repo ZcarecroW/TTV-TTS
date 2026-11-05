@@ -173,7 +173,7 @@ check(/0\.52 s (per s of speech|pro s Sprache)/.test(await page.locator("main [d
   check(/Not measured yet|Noch nicht gemessen/.test(await main.innerText()), "the benchmark says when nothing was measured");
   await main.getByRole("button", { name: /^(thorough|gründlich)$/i }).click();
   await page.waitForTimeout(100);
-  check(/45 (minutes|Minuten)/.test(await main.innerText()), "the intensity says how long it takes");
+  check(/50 (minutes|Minuten)/.test(await main.innerText()), "the intensity says how long it takes");
   await main.getByRole("button", { name: /^(start benchmark|benchmark starten)$/i }).click();
   await page.waitForTimeout(700);
   const during = await main.innerText();
@@ -182,7 +182,7 @@ check(/0\.52 s (per s of speech|pro s Sprache)/.test(await page.locator("main [d
   const report = await main.innerText();
   check(/11\.40 s|11,40 s|11\.4/.test(report.replace(",", ".")) && /240/.test(report), "the result shows seconds per voice and the batch size");
   check(/Before the restart|Vor dem Neustart/.test(report) && /First start|Erster Start/.test(report), "the result compares before and after the restart");
-  check(/low VRAM off|Low VRAM aus/.test(report), "the thorough result names the better low-VRAM setting");
+  check(/Without the order of the models|Ohne die Reihenfolge der Modelle/.test(report), "the thorough result shows what the order of the models is worth");
   const sw = main.getByRole("switch", { name: /much slower|deutlich langsamer/i });
   const toggle = (await sw.count()) ? sw : main.getByRole("switch").last();
   check((await toggle.getAttribute("aria-checked")) === "false", "restarting when slow is off by default");

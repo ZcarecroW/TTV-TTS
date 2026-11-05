@@ -72,9 +72,10 @@ const gain = computed(() => {
   const all = rows.value.filter((x) => x.before?.median_secs && x.now?.median_secs).map((x) => x.before!.median_secs / x.now!.median_secs);
   return all.length ? Math.max(...all) : null;
 });
+/** What slowed down the most; getting faster isn't worth a word. */
 const worstDrift = computed(() => {
   const d = last.value?.drift ?? [];
-  return d.length ? d.reduce((a, b) => (Math.abs(b.percent) > Math.abs(a.percent) ? b : a)) : null;
+  return d.length ? d.reduce((a, b) => (b.percent > a.percent ? b : a)) : null;
 });
 const when = computed(() => (last.value ? new Date(last.value.at * 1000).toLocaleString(locale.value, { dateStyle: "medium", timeStyle: "short" }) : ""));
 const expensive = computed(() => [...(last.value?.switches ?? [])].sort((a, b) => b.secs - a.secs));
@@ -144,10 +145,9 @@ const percent = (x: number | null) => (x == null ? "–" : `${(x * 100).toFixed(
 
       <ul class="mt-3 space-y-1 text-sm">
         <li v-if="gain != null">{{ gain >= 1.25 ? t("bench.gainBig", { x: gain.toFixed(1) }) : t("bench.gainNone") }}</li>
-        <li v-if="worstDrift">{{ Math.abs(worstDrift.percent) >= 15 ? t("bench.driftBad", { kind: t(`bench.kind.${worstDrift.kind}`), n: Math.round(worstDrift.percent) }) : t("bench.driftOk") }}</li>
+        <li v-if="worstDrift">{{ worstDrift.percent >= 15 ? t("bench.driftBad", { kind: t(`bench.kind.${worstDrift.kind}`), n: Math.round(worstDrift.percent) }) : t("bench.driftOk") }}</li>
         <li v-if="expensive.length">{{ t("bench.switchWorst", { from: t(`bench.kind.${expensive[0].from}`), to: t(`bench.kind.${expensive[0].to}`), s: expensive[0].secs.toFixed(1) }) }}</li>
-        <li v-for="v in lowVram" :key="String(v.low_vram)">{{ v.error ? t("bench.variantFailed", { state: t(v.low_vram ? "bench.on" : "bench.off") }) : t("bench.variant", { state: t(v.low_vram ? "bench.on" : "bench.off"), s: v.voice_secs.toFixed(1) }) }}</li>
-        <li v-if="last.advice.low_vram != null">{{ t("bench.lowVramBest", { state: t(last.advice.low_vram ? "bench.on" : "bench.off") }) }}</li>
+        <li v-for="v in lowVram" :key="String(v.low_vram)">{{ v.error ? t("bench.variantFailed") : t("bench.variant", { s: v.voice_secs.toFixed(1), now: last.advice.voice_secs.toFixed(1) }) }}</li>
         <li v-if="lighter">{{ lighter.error ? t("bench.lightFailed") : t("bench.light", { s: lighter.voice_secs.toFixed(1), wer: percent(lighter.listen_wer), big: percent(last.listen_wer), free: ((lighter.vram_free_mb ?? 0) / 1024).toFixed(1) }) }}</li>
         <li v-if="lighter && last.advice.asr_model">{{ last.advice.asr_model === last.asr_model ? t("bench.lightStays") : t("bench.lightChosen") }}</li>
       </ul>

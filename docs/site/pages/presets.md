@@ -32,7 +32,7 @@ The job list under the presets shows the progress. It works in batches: first al
 With a long queue the list stays short: on top how many voices are left and until when, then the job at work and the next ones; everything after that is folded by language. Imports and improvements run first, then what you start yourself. Paused and finished jobs have their own sections, with **Remove all**.
 
 > [!TIP]
-> Computing a lot? Turn off **low VRAM** in Voice Creator Pro and **restart it**. TTV-TTS then keeps exactly one model in memory: speech recognition stays loaded for its whole phase and is really gone before the next model loads. On an RTX 3070 (8 GB) a check took 0.6 s instead of 5 s, a voice about 12 s instead of 28 s, and chat stayed just as fast. Don't change the setting while Voice Creator Pro has models loaded: the memory can stay full and everything gets about ten times slower until the next restart.
+> Each model does all its work in one go, with exactly one model in memory: nothing to set up. TTV-TTS turns off **low VRAM** in Voice Creator Pro just while speech recognition works, so it stays loaded between clips, and turns it on again afterwards. On an RTX 3070 (8 GB) a check takes 0.5 s instead of 5 s, a voice about 11 s instead of 28 s, and chat stays just as fast. Leave low VRAM on: with it off, Voice Creator Pro can leave speech recognition in memory, and on 8 GB everything then gets about ten times slower until the next restart.
 
 > [!TIP]
 > Many presets can be **downloaded ready-made** (**Get**): computed by TTV-TTS with the quality check, a few megabytes, imported in about a minute.
@@ -51,7 +51,7 @@ The **Benchmark** on the **Voice host** page measures what your PC really manage
 4. what each switch between two models costs,
 5. whether it gets slower as it works.
 
-**Quick** takes about 5 minutes, **Standard** about 12, **Thorough** about 45 and also compares low VRAM on and off and a lighter speech recognition, on real voices in all languages; the best setting stays. Nothing else runs meanwhile: chat waits, computing continues afterwards where it stopped.
+**Quick** takes about 10 minutes, **Standard** about 20, **Thorough** about 50 and also shows what the order of the models is worth and compares a lighter speech recognition on real voices in all languages; the best setting stays. Nothing else runs meanwhile: chat waits, computing continues afterwards where it stopped.
 
 From the result TTV-TTS sets how many voices it computes per batch, so that each model does all its work in one go, and the limits for [restarting when it gets much slower](voice-host#slow).
 

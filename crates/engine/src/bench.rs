@@ -5,12 +5,10 @@
 //! VCP runs right now, restarts it, and measures it fresh: the first start of
 //! every model, each model at work (with short and long audio), what every
 //! switch between two models costs, and whether VCP gets slower as it works.
-//! The thorough level also runs all of that with VCP's low-VRAM mode switched
-//! and with a lighter speech recognition model, and keeps the best setting.
-//! The big speech recognition model (4 GB) and a voice model (4.6 GB) don't fit
-//! on an 8 GB card together: when VCP doesn't unload one in time, both spill
-//! into system memory and everything gets ten times slower. How well each
-//! model hears is measured on real voices in all languages.
+//! It works the way computing does, one model in memory at a time (see
+//! `models`). The thorough level also measures what VCP manages when it's
+//! left to itself with low VRAM on, and a lighter speech recognition model,
+//! and how well each model hears real voices in all languages.
 //!
 //! From that come the batch size (long enough that switching models hardly
 //! counts) and the limits beyond which VCP counts as having slowed down.
@@ -56,8 +54,11 @@ const MAX_BATCH: u32 = 240;
 const TAKES: f32 = 2.0;
 /// Real voices per language for measuring how well a model hears.
 const HEARING_CLIPS: usize = 4;
-/// A lighter speech recognition model may mishear this much more.
-const WER_MARGIN: f32 = 0.02;
+/// A lighter speech recognition model may mishear this much more. The check
+/// depends on it: a misheard word sends a good voice back to be computed
+/// again, which costs more than listening a little longer (measured on an
+/// RTX 3070: 1 % more wrong words for 7 % more speed isn't worth it).
+const WER_MARGIN: f32 = 0.005;
 /// Free video memory below this means the models are crowding each other.
 const VRAM_MARGIN: u32 = 200;
 
@@ -262,8 +263,9 @@ struct Bench<'a> {
     next: usize,
     vram_free: Option<u32>,
     vram_total: Option<u32>,
-    /// The model at work, and whether the engine has to free memory itself.
+    /// The model at work; VCP's low-VRAM setting; off when VCP is left alone.
     last: Option<Kind>,
+    setting: Option<bool>,
     managed: bool,
 }
 
@@ -271,16 +273,14 @@ impl Bench<'_> {
     /// One model in memory at a time, as in real work (see `models`).
     async fn switch_to(&mut self, kind: Kind) {
         let was = self.last.replace(kind);
-        if !self.managed || was == Some(kind) {
-            return;
-        }
+        let Some(found) = self.setting.filter(|_| self.managed && was != Some(kind)) else { return };
         if was == Some(Kind::Listen)
             && let Some(clip) = self.clips.last()
         {
-            models::release(&self.vcp, clip, langs::get("en").expect("en")).await;
+            models::leave(&self.vcp, clip, langs::get("en").expect("en"), found).await;
         }
         if kind == Kind::Listen {
-            models::clear(&self.vcp).await;
+            models::enter(&self.vcp, found).await;
         }
     }
 
@@ -453,10 +453,11 @@ impl Bench<'_> {
             for (kind, times) in all.iter_mut() {
                 for i in 0..s.per_cycle as usize {
                     self.tick("drift")?;
-                    let (t, _) = self.call(*kind, c + i).await?;
-                    // the first call pays for the switch
+                    let (t, audio) = self.call(*kind, c + i).await?;
+                    // the first call pays for the switch; per second of
+                    // audio, because the sentences differ in length
                     if i > 0 {
-                        times.push(t);
+                        times.push(audio.filter(|a| *a > 0.1).map_or(t, |a| t / a));
                     }
                 }
             }
@@ -475,7 +476,7 @@ impl Bench<'_> {
     /// After a restart: nothing is loaded, and the setting may be another one.
     async fn fresh(&mut self) {
         self.last = None;
-        self.managed = models::low_vram(&self.vcp).await == Some(false);
+        self.setting = models::low_vram(&self.vcp).await;
     }
 
     async fn low_vram(&self) -> Option<bool> {
@@ -485,8 +486,7 @@ impl Bench<'_> {
 
     /// Only right before a restart (see the top of this file).
     async fn set_low_vram(&self, on: bool) -> Result<(), String> {
-        let _: serde_json::Value = self.vcp.put(&format!("/api/v1/settings/low-vram?enabled={on}"), &serde_json::json!({}), Duration::from_secs(30)).await.map_err(|e| e.to_string())?;
-        Ok(())
+        if models::set_low_vram(&self.vcp, on).await { Ok(()) } else { Err("VCP didn't take the low-VRAM setting".into()) }
     }
 
     /// Share of the words misheard on real voices. None without clips.
@@ -577,7 +577,7 @@ async fn measure(inner: &Inner, vcp: ttv_vcp::Client, req: &BenchRequest, tools:
     let t0 = Instant::now();
     let s = sizes(req.level);
     let restart = req.restart && tools.restart.is_some();
-    let mut b = Bench { inner, vcp, tools, voice: None, clips: Vec::new(), next: 0, vram_free: None, vram_total: None, last: None, managed: false };
+    let mut b = Bench { inner, vcp, tools, voice: None, clips: Vec::new(), next: 0, vram_free: None, vram_total: None, last: None, setting: None, managed: true };
     let mut report = BenchReport { at: chrono::Utc::now().timestamp(), level: req.level, restarted: restart, ..Default::default() };
     b.test_voice().await?;
     b.fresh().await;
@@ -596,6 +596,7 @@ async fn measure(inner: &Inner, vcp: ttv_vcp::Client, req: &BenchRequest, tools:
         report.restart_secs = Some(b.restart().await?);
         // the old models are gone: the next calls show what loading costs
         b.fresh().await;
+        b.vram_free = None;
     }
     let round = b.round(s, 1).await?;
     report.drift = b.drift(s).await?;
@@ -609,24 +610,21 @@ async fn measure(inner: &Inner, vcp: ttv_vcp::Client, req: &BenchRequest, tools:
         report.listen_wer = b.hearing(&clips).await?;
         let models = b.asr_models().await;
         report.asr_model = models.as_ref().map(|m| m.0.clone());
-        let mut low_vram = report.low_vram;
+        // VCP left to itself: what the order of the models is worth
         if let Some(now) = report.low_vram {
             b.tick("variant")?;
-            let tried = variant(&mut b, s, !now, None, &[]).await;
-            let better = tried.error.is_none() && tried.voice_secs > 0.0 && tried.voice_secs < voice * 0.97;
-            advice.low_vram = Some(if better { !now } else { now });
-            low_vram = advice.low_vram;
-            if better {
-                log::info!("benchmark: low VRAM {} is faster ({:.1} instead of {voice:.1} s per voice)", !now, tried.voice_secs);
-            }
-            b.set_low_vram(low_vram.unwrap_or(now)).await?;
+            b.managed = false;
+            let tried = variant(&mut b, s, true, None, &[]).await;
+            b.managed = true;
+            log::info!("benchmark: left to itself {:.1} s per voice, in order {voice:.1} s", tried.voice_secs);
+            b.set_low_vram(now).await?;
             report.variants.push(tried);
         }
         // A lighter speech recognition model: does it hear well enough, and
         // do the models then fit into the video memory together?
         if let Some((now, Some(lighter))) = models {
             b.tick("variant")?;
-            let tried = variant(&mut b, s, low_vram.unwrap_or(false), Some(lighter.clone()), &clips).await;
+            let tried = variant(&mut b, s, report.low_vram.unwrap_or(true), Some(lighter.clone()), &clips).await;
             let hears = matches!((tried.listen_wer, report.listen_wer), (Some(a), Some(b)) if a <= b + WER_MARGIN);
             let crowded = free_now.is_some_and(|f| f < VRAM_MARGIN);
             let fits = tried.vram_free_mb.is_some_and(|f| f >= VRAM_MARGIN);

@@ -91,7 +91,7 @@ async function act(j: JobView, action: "pause" | "resume" | "cancel" | "remove")
 <template>
   <div v-if="all.length" class="space-y-3">
     <!-- the whole queue in one line -->
-    <div v-if="open.length > 1" class="rounded-xl bg-panel-2/40 px-3.5 py-2.5">
+    <div v-if="open.length > 1 && !store.engine?.plan" class="rounded-xl bg-panel-2/40 px-3.5 py-2.5">
       <div class="flex flex-wrap items-baseline gap-x-4 gap-y-0.5">
         <span class="font-medium">{{ t("jobs.overview", { voices: num(voicesLeft), jobs: num(open.length) }) }}</span>
         <span v-if="secsLeft" class="ml-auto text-sm">{{ t("jobs.overviewEta", { time: duration(secsLeft), date: until }) }}</span>

@@ -273,6 +273,16 @@ pub async fn debug_vcp_low_vram(state: St<'_>, enabled: bool) -> Result<serde_js
     vcp.put(&format!("/api/v1/settings/low-vram?enabled={enabled}"), &serde_json::json!({}), Duration::from_secs(60)).await.map_err(|e| e.to_string())
 }
 
+/// Development builds only: PUT to VCP's API, for measurements on the real setup.
+#[tauri::command]
+pub async fn debug_vcp_put(state: St<'_>, path: String) -> Result<serde_json::Value, String> {
+    if !cfg!(debug_assertions) || !path.starts_with("/api/v1/settings/") {
+        return Err("only in development builds".into());
+    }
+    let vcp = state.vcp().ok_or("no voice host")?;
+    vcp.put(&path, &serde_json::json!({}), Duration::from_secs(60)).await.map_err(|e| e.to_string())
+}
+
 /// Development builds only: every VCP generation fails while on.
 #[tauri::command]
 pub fn debug_fail_vcp(on: bool) -> Result<(), String> {

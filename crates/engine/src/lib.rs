@@ -105,6 +105,8 @@ struct Stats {
     batch_voices: Option<u32>,
     /// Slower than this counts as a drop in speed: design, listen (benchmark).
     limits: Option<[f32; 2]>,
+    /// A speech recognition phase runs; VCP's low-VRAM setting before it.
+    low_vram_was: Option<bool>,
 }
 
 /// The engine's own work tells when VCP has slowed down (chat speed alone
@@ -976,6 +978,7 @@ async fn worker(inner: Arc<Inner>) {
     // Consecutive failed batches: wait longer each time (VCP restarting,
     // speech recognition broken), so a broken setup doesn't keep the GPU busy.
     let mut failures = 0u32;
+    let mut settled = false;
     loop {
         let vcp = inner.vcp.read().clone();
         // nothing open: the plan may have more to do (with VCP there to do it)
@@ -988,6 +991,10 @@ async fn worker(inner: Arc<Inner>) {
             }
             continue;
         };
+        if !settled {
+            settled = true;
+            models::settle(&inner, &vcp).await;
+        }
         let wakes = inner.wakes.load(std::sync::atomic::Ordering::SeqCst);
         match run::batch(&inner, &vcp, &id).await {
             Ok(()) => {

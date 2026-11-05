@@ -270,7 +270,7 @@ async fn listen_to_takes(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &J
             }
             let l = name.clone();
             inner.update(id, |j| j.view.current = Some(l));
-            listening.keep_ready();
+            listening.keep_ready().await;
             let take = &mut it.takes[i];
             let t = Instant::now();
             match transcribe_retry(vcp, &take.wav, lang).await {
@@ -356,9 +356,9 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
         inner.phase(id, "check", todo);
         if todo > 0 {
             let first = items.iter().filter(|it| it.lang.asr).find_map(|it| it.takes.iter().find(|t| plausible(t)).map(|t| (t.wav.clone(), it.lang)));
-            let listening = Listening::begin(vcp, first.as_ref().map(|f| f.0.as_slice()), first.as_ref().map_or(items[0].lang, |f| f.1)).await;
+            let listening = Listening::begin(inner, vcp, first.as_ref().map(|f| f.0.as_slice()), first.as_ref().map_or(items[0].lang, |f| f.1)).await;
             let heard = listen_to_takes(inner, vcp, id, req, items, &listening, todo).await;
-            listening.end().await;
+            listening.end(inner).await;
             if !heard? {
                 return Ok(0);
             }
@@ -533,7 +533,7 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
     if req.options.quality || improving {
         inner.phase(id, "review", fresh.len());
         let first = fresh.iter().find(|f| items[f.item].lang.asr).map(|f| (f.spoken.wav.clone(), items[f.item].lang));
-        let listening = Listening::begin(vcp, first.as_ref().map(|f| f.0.as_slice()), first.as_ref().map_or(&langs::LANGS[0], |f| f.1)).await;
+        let listening = Listening::begin(inner, vcp, first.as_ref().map(|f| f.0.as_slice()), first.as_ref().map_or(&langs::LANGS[0], |f| f.1)).await;
         let items = &*items;
         let outcome: Result<bool, String> = async {
         for k in 0..fresh.len() {
@@ -544,7 +544,7 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
             let it = &items[fresh[k].item];
             let l = label(it);
             inner.update(id, |j| j.view.current = Some(l));
-            listening.keep_ready();
+            listening.keep_ready().await;
             let new_wer = if it.lang.asr {
                 match transcribe_retry(vcp, &fresh[k].spoken.wav, it.lang).await {
                     Ok(heard) => Some(langs::error_rate(it.lang.verify, &heard, it.lang.code)),
@@ -597,7 +597,7 @@ async fn compute(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, req: &JobReques
         Ok(true)
         }
         .await;
-        listening.end().await;
+        listening.end(inner).await;
         if !outcome? {
             return Ok(0);
         }
@@ -647,7 +647,7 @@ async fn double_check(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, voices: Ve
         inner.update(id, |j| j.view.step += 1);
     }
     let first = voices.iter().zip(&spoken).find_map(|(v, s)| s.as_ref().filter(|_| v.lang.asr).map(|s| (s.wav.clone(), v.lang)));
-    let listening = Listening::begin(vcp, first.as_ref().map(|f| f.0.as_slice()), first.as_ref().map_or(voices[0].lang, |f| f.1)).await;
+    let listening = Listening::begin(inner, vcp, first.as_ref().map(|f| f.0.as_slice()), first.as_ref().map_or(voices[0].lang, |f| f.1)).await;
     let outcome: Result<(), String> = async {
     for (v, s) in voices.iter().zip(spoken) {
         if !inner.gap_for(id, crate::SWITCH_GAP).await {
@@ -656,7 +656,7 @@ async fn double_check(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, voices: Ve
         let Some(s) = s else { continue };
         let l = v.label.clone();
         inner.update(id, |j| j.view.current = Some(l));
-        listening.keep_ready();
+        listening.keep_ready().await;
         let wer = if v.lang.asr {
             match transcribe_retry(vcp, &s.wav, v.lang).await {
                 Ok(heard) => Some(langs::error_rate(v.lang.text, &heard, v.lang.code)),
@@ -678,7 +678,7 @@ async fn double_check(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, voices: Ve
     Ok(())
     }
     .await;
-    listening.end().await;
+    listening.end(inner).await;
     outcome
 }
 
@@ -755,7 +755,7 @@ async fn review(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, items: Vec<Item>
     let mut checked = 0;
     let mut suspects = Vec::new();
     let first = items.iter().zip(&heard).find_map(|(it, h)| h.as_ref().and_then(|h| h.spoken.as_ref()).filter(|_| it.lang.asr).map(|s| (s.wav.clone(), it.lang)));
-    let listening = Listening::begin(vcp, first.as_ref().map(|f| f.0.as_slice()), first.as_ref().map_or(items[0].lang, |f| f.1)).await;
+    let listening = Listening::begin(inner, vcp, first.as_ref().map(|f| f.0.as_slice()), first.as_ref().map_or(items[0].lang, |f| f.1)).await;
     let outcome: Result<bool, String> = async {
     for (it, h) in items.iter().zip(heard) {
         if !inner.gap_for(id, crate::SWITCH_GAP).await {
@@ -763,7 +763,7 @@ async fn review(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, items: Vec<Item>
         }
         let l = label(it);
         inner.update(id, |j| j.view.current = Some(l));
-        listening.keep_ready();
+        listening.keep_ready().await;
         let old = it.old.clone().expect("review items exist");
         let Some(Heard { analysis, text, wav, spoken, failure }) = h else {
             inner.update(id, |j| {
@@ -823,7 +823,7 @@ async fn review(inner: &Inner, vcp: &ttv_vcp::Client, id: &str, items: Vec<Item>
     Ok(true)
     }
     .await;
-    listening.end().await;
+    listening.end(inner).await;
     if !outcome? {
         return Ok(checked);
     }

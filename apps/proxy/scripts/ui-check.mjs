@@ -72,7 +72,7 @@ await page.locator("nav button").nth(navItems.findIndex((n) => /VCP|Voice Creato
 await page.waitForTimeout(300);
 const vcpText = await page.locator("main").innerText();
 check(/0\.55 s (per second of speech|pro Sekunde Sprache)/.test(vcpText) && /(usually|sonst) 0\.50/.test(vcpText), "the VCP page shows its speed", vcpText.match(/0\.55[^\n]*/)?.[0] ?? "");
-check(/Restart VCP when it gets slow|VCP neu starten, wenn es langsam wird/.test(vcpText), "VCP can be restarted when it gets slow");
+check(/Restart VCP when it gets much slower|VCP neu starten, wenn es deutlich langsamer wird/.test(vcpText), "VCP can be restarted when it gets slow");
 // Internet page: the same friends card as in the app, run from the proxy window
 await page.locator("nav button").nth(navItems.findIndex((n) => /Internet/i.test(n))).click();
 await page.waitForTimeout(300);

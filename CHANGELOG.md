@@ -6,14 +6,14 @@ All notable changes to TTV-TTS are listed here. Downloads: [Releases](https://gi
 
 **Benchmark**
 
-- **A benchmark for Voice Creator Pro** on the **Voice host** page, in three levels (about 5, 12 or 45 minutes; Standard by default). It measures how VCP runs right now, restarts it, and measures it fresh: the first start of every model, each model at work with short and long audio, what each switch between two models costs, and whether it gets slower as it works. Nothing else uses VCP meanwhile: chat waits, computing continues afterwards where it stopped.
-- **Thorough** also compares low VRAM on and off and a lighter speech recognition model, and how well each hears real voices in all languages. The best setting stays.
+- **A benchmark for Voice Creator Pro** on the **Voice host** page, in three levels (about 10, 20 or 50 minutes; Standard by default). It measures how VCP runs right now, restarts it, and measures it fresh: the first start of every model, each model at work with short and long audio, what each switch between two models costs, and whether it gets slower as it works. Nothing else uses VCP meanwhile: chat waits, computing continues afterwards where it stopped.
+- **Thorough** also shows what the order of the models is worth and compares a lighter speech recognition, on real voices in all languages. The best setting stays.
 - Computing uses the result: batch size and the limits for a drop in speed.
 
 **Staying fast**
 
 - **Found the reason VCP sometimes loses speed**: speech recognition (4 GB) and a voice model (4.6 GB) don't fit on an 8 GB card together. When VCP doesn't unload one in time, both spill into system memory and everything gets about ten times slower until the next restart.
-- **One model in memory at a time**: with low VRAM off, TTV-TTS now makes sure the previous model is really gone before the next one loads. Speech recognition stays loaded for its whole phase, 0.6 s per clip instead of 5 s. A chat message during that phase frees it first. See the [guide](https://zcarecrow.github.io/TTV-TTS/presets#compute).
+- **One model in memory at a time**: TTV-TTS turns off low VRAM in VCP just while speech recognition does all its work in one go, 0.5 s per clip instead of 5 s, and makes sure it's gone before the next model loads. A chat message during that phase frees it first, and whatever a stopped proxy left behind is cleared before new work. Nothing to set up; leave low VRAM on. See the [guide](https://zcarecrow.github.io/TTV-TTS/presets#compute).
 - **Restart VCP when it gets much slower** can now be set in the app and watches computing too, not just chat. It's off by default (it used to be on without anybody choosing it). Nothing that's computed gets lost: a batch keeps its work when VCP restarts.
 
 **Computing everything, by itself**

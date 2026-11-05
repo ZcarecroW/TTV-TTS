@@ -143,6 +143,7 @@ pub fn run() {
             commands::set_deepl_key,
             commands::debug_vcp_get,
             commands::debug_vcp_low_vram,
+            commands::debug_vcp_put,
             commands::debug_fail_vcp,
             commands::skip,
             commands::get_reader,

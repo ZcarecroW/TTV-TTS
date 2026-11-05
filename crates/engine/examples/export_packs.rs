@@ -23,6 +23,9 @@ async fn main() {
         let path = engine.export(w.request.clone(), app).await.unwrap_or_else(|e| panic!("{}: {e}", w.file));
         let target = std::path::Path::new(out).join(&w.file);
         std::fs::rename(&path, &target).or_else(|_| std::fs::copy(&path, &target).map(|_| ())).expect("moving the pack");
+        // a pack that can't be read must never go online
+        let m = ttv_engine::pack::read_manifest(&target).unwrap_or_else(|e| panic!("{}: {e}", w.file));
+        assert_eq!(m.voices.len(), w.request.voices.len(), "{}: voices are missing", w.file);
         if (i + 1) % 50 == 0 {
             println!("{} of {} packs, {:.0} s", i + 1, wanted.len(), t.elapsed().as_secs_f32());
         }
