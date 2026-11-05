@@ -15,7 +15,8 @@
 // build of the app instead (remote debugging on :9333, `debug_proxy_fetch`),
 // with its pairing – no key or token needed here. TTV_FROM reads a copy of an
 // engine's folder (library.jsonl, archive.jsonl, samples/) and needs neither a
-// proxy nor VCP: see scripts/publish-when-ready.mjs.
+// proxy nor VCP: see scripts/publish-when-ready.mjs. TTV_ONLY=<id,id> builds
+// only these presets; what's online of the others stays as it is.
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
@@ -24,6 +25,7 @@ import { join } from "node:path";
 const root = new URL("..", import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1");
 const viaApp = process.env.TTV_VIA_APP === "1";
 const fromDir = process.env.TTV_FROM;
+const onlyPresets = process.env.TTV_ONLY?.split(",").filter(Boolean);
 const proxy = process.env.TTV_PROXY;
 const token = process.env.TTV_TOKEN;
 if (!viaApp && !fromDir && (!proxy || !token)) throw new Error("set TTV_PROXY and TTV_TOKEN, TTV_VIA_APP=1 or TTV_FROM");
@@ -118,6 +120,15 @@ const packs = [];
 const waiting = [];
 let reused = 0;
 for (const id of ORDER) {
+  if (onlyPresets && !onlyPresets.includes(id)) {
+    for (const e of previous.values()) {
+      if (e.preset === id) {
+        packs.push({ ...e, tag: e.tag ?? TAG });
+        reused++;
+      }
+    }
+    continue;
+  }
   const p = preset(id);
   const langs = [...new Set(lib.entries.map((e) => e.lang))].sort();
   for (const lang of langs) {
